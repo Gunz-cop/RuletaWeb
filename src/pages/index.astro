@@ -1,0 +1,954 @@
+---
+import Layout from '../layouts/Layout.astro';
+import AdSlot from '../components/AdSlot.astro';
+import HubGrid from '../components/HubGrid.astro';
+import SeoArticle from '../components/SeoArticle.astro';
+
+const title = 'Decídelo.app — Toma Decisiones Aleatorias en Segundos';
+const description = 'Herramientas gratuitas para tomar decisiones al azar: ruleta aleatoria, lanzar moneda, dados virtuales y más. Sin registro, sin dramas. ¡Dale al azar!';
+
+const schemaLD = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebApplication",
+      "@id": "https://decidelo.app/#webapp",
+      "name": "Decídelo.app",
+      "description": "Hub de herramientas de decisión aleatoria: ruleta online, lanzar moneda, dados virtuales, generador de números y más. Gratuito, privado y sin registro.",
+      "url": "https://decidelo.app/",
+      "applicationCategory": "UtilityApplication",
+      "operatingSystem": "All",
+      "browserRequirements": "Requires JavaScript and HTML5 Canvas",
+      "softwareVersion": "2.0.0",
+      "inLanguage": "es",
+      "offers": {
+        "@type": "Offer",
+        "price": "0.00",
+        "priceCurrency": "USD"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "@id": "https://decidelo.app/#organization",
+        "name": "Decídelo.app",
+        "url": "https://decidelo.app/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://decidelo.app/favicon.svg"
+        }
+      }
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://decidelo.app/#website",
+      "name": "Decídelo.app",
+      "url": "https://decidelo.app/",
+      "publisher": {
+        "@id": "https://decidelo.app/#organization"
+      }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://decidelo.app/#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Inicio",
+          "item": "https://decidelo.app/"
+        }
+      ]
+    }
+  ]
+};
+---
+
+<Layout title={title} description={description} schemaLD={schemaLD} showHomeHeader={true}>
+  <!-- Canvas transparente para el efecto de confeti -->
+  <canvas id="confetti-canvas" aria-hidden="true"></canvas>
+
+  <!-- ====================================================================
+       HERO SECTION
+       ==================================================================== -->
+  <section class="hero reveal" id="hero">
+    <div class="hero-particles" aria-hidden="true">
+      <div class="particle particle-1"></div>
+      <div class="particle particle-2"></div>
+      <div class="particle particle-3"></div>
+      <div class="particle particle-4"></div>
+    </div>
+
+    <div class="container hero-content">
+      <div class="hero-badge">
+        <span>✨</span> 100% Gratis · Sin Registro
+      </div>
+      <h1>Toma decisiones <span class="gradient-text">aleatorias</span> en segundos</h1>
+      <p class="hero-subtitle">La forma más fácil, rápida y divertida de resolver tus dilemas. Sin registro, sin dramas. ¡Dale al azar!</p>
+      <a href="#ruleta" class="hero-cta" id="hero-cta-btn">
+        Girar la Ruleta
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <polyline points="19 12 12 19 5 12"></polyline>
+        </svg>
+      </a>
+    </div>
+  </section>
+
+  <!-- Espacio Publicitario Superior -->
+  <AdSlot position="top" />
+
+  <!-- ====================================================================
+       SECCIÓN DE LA RULETA — Herramienta Principal
+       ==================================================================== -->
+  <section class="roulette-section reveal" id="ruleta" aria-label="Ruleta de Decisión Aleatoria">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-tag">🎡 Herramienta Principal</div>
+        <h2 class="section-heading">Ruleta de Decisión Aleatoria</h2>
+      </div>
+
+      <div class="app-grid">
+        <!-- Columna Izquierda: La Ruleta -->
+        <div class="wheel-column">
+          <div class="wheel-title-container">
+            <h3 id="wheel-title-text" title="Haz clic para editar el título">Ruleta de Opciones</h3>
+            <button id="edit-title-btn" class="edit-title-btn" title="Editar título" aria-label="Editar título de la ruleta">
+              <span aria-hidden="true">✏️</span>
+            </button>
+          </div>
+          <div class="wheel-card">
+            <div class="wheel-outer-wrapper">
+              <!-- Indicador visual superior -->
+              <div class="pointer" id="wheel-pointer">
+                <svg width="34" height="34" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M15 30L3 7.5L27 7.5L15 30Z" fill="url(#pointer-grad)"/>
+                  <path d="M15 25L6.5 9L23.5 9L15 25Z" fill="#00e5ff"/>
+                  <defs>
+                    <linearGradient id="pointer-grad" x1="15" y1="0" x2="15" y2="30" gradientUnits="userSpaceOnUse">
+                      <stop stop-color="#66f0ff"/>
+                      <stop offset="1" stop-color="#00e5ff"/>
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </div>
+              <!-- Canvas de la ruleta -->
+              <canvas id="roulette-canvas"></canvas>
+              <!-- Botón central GIRAR -->
+              <button id="spin-button" class="spin-center-button" aria-label="Girar la rueda aleatoria">GIRAR</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Columna Derecha: Entrada de Datos -->
+        <div class="input-column">
+          <div class="input-card">
+            <h3 id="input-title" class="section-title">Opciones de la Ruleta</h3>
+            <p class="section-desc">Escribe tus opciones o contrólalas de forma individual.</p>
+
+            <!-- Pestañas -->
+            <div class="card-tabs" role="tablist">
+              <button id="tab-edit" class="tab-btn active" role="tab" aria-selected="true" aria-controls="tab-edit-content">📝 Texto</button>
+              <button id="tab-manage" class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-manage-content">👁️ Ocultar/Activar (<span id="active-count">0</span>/<span id="total-count">0</span>)</button>
+            </div>
+
+            <!-- Pestaña 1: Editor de texto -->
+            <div id="tab-edit-content" class="tab-content-pane" role="tabpanel" aria-labelledby="tab-edit">
+              <textarea id="options-input" autocomplete="off" spellcheck="false" placeholder="Ingresa tus opciones aquí, una por línea..." aria-label="Escribe las opciones de la ruleta una por línea"></textarea>
+              <div class="btn-group">
+                <button id="shuffle-btn" class="secondary-btn" title="Mezclar aleatoriamente el orden">
+                  <span class="btn-icon" aria-hidden="true">🔀</span> Mezclar
+                </button>
+                <button id="clear-btn" class="danger-btn" title="Vaciar la lista completa">
+                  <span class="btn-icon" aria-hidden="true">🗑️</span> Limpiar
+                </button>
+              </div>
+            </div>
+
+            <!-- Pestaña 2: Lista de descarte -->
+            <div id="tab-manage-content" class="tab-content-pane hidden" role="tabpanel" aria-labelledby="tab-manage">
+              <div class="manage-header-flex">
+                <p class="manage-instruction">Desmarca las casillas para ocultar opciones de la ruleta temporalmente sin borrarlas.</p>
+                <button id="activate-all-btn" class="secondary-btn btn-sm" title="Activar todas las opciones">
+                  <span class="btn-icon" aria-hidden="true">✅</span> Activar Todas
+                </button>
+              </div>
+              <div id="options-checklist-container" class="options-checklist-container">
+                <!-- Se genera dinámicamente con JavaScript -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================================
+       HUB DE HERRAMIENTAS
+       ==================================================================== -->
+  <section class="hub-section" id="herramientas" aria-label="Más herramientas de decisión">
+    <div class="container">
+      <div class="section-header reveal">
+        <div class="section-tag">🧰 Caja de Herramientas</div>
+        <h2 class="section-heading">Más herramientas para decidir</h2>
+        <p class="section-subtitle">Explora nuestro arsenal completo de herramientas aleatorias. Nuevas opciones llegarán muy pronto.</p>
+      </div>
+
+      <HubGrid activeToolId="ruleta" />
+    </div>
+  </section>
+
+  <!-- ====================================================================
+       SECCIÓN DE ARTÍCULO SEO
+       ==================================================================== -->
+  <SeoArticle title="¿Qué es decídelo.app y para qué sirve?">
+    <p><strong>Decídelo.app</strong> es un hub de herramientas de decisión aleatoria diseñado para resolver esos momentos de indecisión que todos enfrentamos a diario. Ya sea que necesites elegir qué cenar, sortear un ganador entre participantes, asignar tareas de forma imparcial o simplemente dejar que el destino tome la decisión por ti, nuestras herramientas hacen el trabajo pesado en cuestión de segundos.</p>
+    <p>A diferencia de otros servicios similares, <strong>decídelo.app</strong> funciona 100% en tu navegador. Tus datos nunca salen de tu dispositivo: no hay servidores externos, no hay cookies de rastreo, y no hay necesidad de registro. Todo se almacena localmente mediante la tecnología <code>localStorage</code>, garantizando tu privacidad total.</p>
+
+    <h2>La Ruleta Aleatoria Online: Tu aliada contra la indecisión</h2>
+    <p>Nuestra herramienta estrella es la <strong>Ruleta Aleatoria Online</strong>. Construida con tecnología <strong>HTML5 Canvas</strong> de última generación, ofrece una experiencia visual fluida a 60 fotogramas por segundo con un algoritmo de desaceleración basado en física de fricción real. Cada giro se siente orgánico, impredecible y emocionante.</p>
+
+    <h3>¿Cómo funciona la Ruleta?</h3>
+    <ul>
+      <li><strong>Escribe tus opciones</strong> en el panel lateral (una por línea). La ruleta se actualiza en tiempo real.</li>
+      <li><strong>Personaliza el título</strong> haciendo clic sobre él. Ideal para sorteos con nombre: "¿Quién lava los platos?".</li>
+      <li><strong>Presiona GIRAR</strong> y observa cómo la rueda cobra vida con efectos de sonido sintetizados y un puntero que se sacude al pasar por cada segmento.</li>
+      <li><strong>¡Resultado con confeti!</strong> Al detenerse, un modal elegante revela al ganador con una celebración visual de confeti animado.</li>
+      <li><strong>Oculta opciones</strong> sin borrarlas. Perfecto para torneos por eliminación o para ir descartando candidatos ronda a ronda.</li>
+    </ul>
+
+    <h2>Casos de uso populares</h2>
+
+    <h3>Sorteos de nombres y ganadores</h3>
+    <p>Ya sea para dinamizar tus sorteos en redes sociales (Instagram, TikTok, Facebook), seleccionar ganadores en concursos, o elegir el orden de exposición de estudiantes en clase, la <em>ruleta de nombres</em> garantiza imparcialidad absoluta. El público confía en un resultado visualmente aleatorio más que en un simple número generado por computadora.</p>
+
+    <h3>Decidir qué comer</h3>
+    <p>El clásico dilema de parejas y amigos. Introduce opciones como "Pizza 🍕", "Tacos 🌮", "Sushi 🍣" o "Hamburguesas 🍔" y deja que el destino elija el menú del día. Elimina discusiones innecesarias de forma divertida y democrática.</p>
+
+    <h3>Dinámicas de clase y gamificación</h3>
+    <p>Los profesores y facilitadores utilizan esta herramienta para hacer preguntas aleatorias, asignar tareas, seleccionar equipos o elegir temas de debate. La ruleta mantiene a los participantes alerta, atentos y comprometidos porque cualquiera puede ser el próximo.</p>
+
+    <h3>Juegos y entretenimiento</h3>
+    <p>Úsala como una ruleta de la fortuna, verdad o reto, penitencias para fiestas o para determinar premios en eventos. Personalízala con retos, castigos, recompensas o cualquier contenido creativo que se te ocurra.</p>
+
+    <h2>Diseño accesible y enfoque en la concentración</h2>
+    <p>Hemos diseñado <strong>decídelo.app</strong> con especial atención a la accesibilidad y experiencia de usuario. Nuestro <strong>Modo Foco</strong> elimina todas las distracciones de la pantalla (texto informativo, herramientas secundarias, anuncios) y te permite centrarte exclusivamente en la ruleta y tus opciones. Este modo es especialmente útil para personas con TDAH o que simplemente prefieren una interfaz limpia.</p>
+    <p>El elegante modo oscuro predeterminado con una paleta cuidadosamente seleccionada reduce la fatiga ocular durante sesiones prolongadas. Los sonidos físicos sintéticos (totalmente opcionales) proporcionan retroalimentación sensorial sin ser intrusivos.</p>
+
+    <h2>¿Por qué decídelo.app es diferente?</h2>
+    <ul>
+      <li><strong>Privacidad real:</strong> Sin servidores, sin cookies, sin registro. Todo funciona localmente en tu navegador.</li>
+      <li><strong>Velocidad:</strong> Carga instantánea. No hay dependencias pesadas ni frameworks innecesarios.</li>
+      <li><strong>Diseño premium:</strong> Cada detalle está cuidado: desde las micro-animaciones hasta la paleta de colores.</li>
+      <li><strong>Accesibilidad:</strong> Compatible con lectores de pantalla, navegación por teclado y preferencias de movimiento reducido.</li>
+      <li><strong>Offline-ready:</strong> Una vez cargada, funciona sin conexión a internet.</li>
+    </ul>
+  </SeoArticle>
+
+  <!-- Espacio Publicitario Inferior -->
+  <AdSlot position="bottom" />
+
+  <!-- ====================================================================
+       MODAL DE GANADOR
+       ==================================================================== -->
+  <div id="winner-modal" class="modal-overlay" aria-hidden="true" role="dialog" aria-labelledby="modal-winner-title">
+    <div class="modal-card">
+      <span class="celebration-emoji" aria-hidden="true">🎉</span>
+      <h2 id="modal-winner-title" class="modal-title">¡Tenemos un ganador!</h2>
+      <div class="winner-name-container">
+        <p id="winner-display" class="winner-name-text">Resultado</p>
+      </div>
+      <button id="modal-close-btn" class="primary-btn">Aceptar</button>
+    </div>
+  </div>
+
+  <!-- Carga del JavaScript específico de la Ruleta -->
+  <script src="../scripts/roulette.js"></script>
+</Layout>
+
+<style>
+  /* Partículas decorativas flotantes del Hero */
+  .hero {
+    position: relative;
+    padding: 6rem 0 4rem;
+    text-align: center;
+    overflow: hidden;
+  }
+
+  .hero-particles {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .particle {
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0.08;
+    animation: particle-float linear infinite;
+  }
+
+  .particle-1 {
+    width: 300px; height: 300px;
+    background: var(--accent-cyan);
+    top: -80px; left: -100px;
+    animation-duration: 18s;
+    filter: blur(80px);
+  }
+
+  .particle-2 {
+    width: 250px; height: 250px;
+    background: var(--accent-purple);
+    top: 40%; right: -80px;
+    animation-duration: 22s;
+    animation-delay: -5s;
+    filter: blur(70px);
+  }
+
+  .particle-3 {
+    width: 180px; height: 180px;
+    background: var(--accent-cyan);
+    bottom: -60px; left: 40%;
+    animation-duration: 15s;
+    animation-delay: -8s;
+    filter: blur(60px);
+    opacity: 0.06;
+  }
+
+  .particle-4 {
+    width: 120px; height: 120px;
+    background: var(--accent-purple);
+    top: 20%; left: 25%;
+    animation-duration: 20s;
+    animation-delay: -3s;
+    filter: blur(50px);
+    opacity: 0.05;
+  }
+
+  @keyframes particle-float {
+    0% { transform: translate(0, 0) rotate(0deg); }
+    25% { transform: translate(30px, -40px) rotate(90deg); }
+    50% { transform: translate(-20px, -70px) rotate(180deg); }
+    75% { transform: translate(40px, -30px) rotate(270deg); }
+    100% { transform: translate(0, 0) rotate(360deg); }
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 1rem;
+    border-radius: 999px;
+    background: rgba(0, 229, 255, 0.08);
+    border: 1px solid rgba(0, 229, 255, 0.2);
+    color: var(--accent-cyan);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+  }
+
+  .hero h1 {
+    font-family: 'Outfit', sans-serif;
+    font-size: clamp(2rem, 5.5vw, 3.4rem);
+    font-weight: 800;
+    line-height: 1.12;
+    letter-spacing: -0.03em;
+    color: #ffffff;
+    margin-bottom: 1.25rem;
+  }
+
+  .hero h1 .gradient-text {
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-subtitle {
+    font-size: clamp(1rem, 2.2vw, 1.2rem);
+    color: var(--text-secondary);
+    line-height: 1.7;
+    max-width: 560px;
+    margin: 0 auto 2.5rem;
+    font-weight: 400;
+  }
+
+  .hero-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.9rem 2.2rem;
+    border-radius: 999px;
+    background: var(--accent-gradient);
+    color: #000000;
+    font-family: 'Outfit', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: 0 4px 20px rgba(0, 229, 255, 0.25), 0 0 40px rgba(0, 229, 255, 0.1);
+  }
+
+  .hero-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 30px rgba(0, 229, 255, 0.35), 0 0 60px rgba(0, 229, 255, 0.15);
+  }
+
+  .hero-cta:active {
+    transform: translateY(0);
+  }
+
+  .hero-cta svg {
+    width: 18px; height: 18px;
+    transition: transform 0.3s ease;
+  }
+
+  .hero-cta:hover svg {
+    transform: translateY(2px);
+  }
+
+  /* Ruleta Section */
+  .roulette-section {
+    padding: 2rem 0 4rem;
+  }
+
+  .section-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+  }
+
+  .section-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent-cyan);
+    margin-bottom: 0.75rem;
+  }
+
+  .section-heading {
+    font-family: 'Outfit', sans-serif;
+    font-size: clamp(1.6rem, 4vw, 2.2rem);
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.02em;
+  }
+
+  /* App Grid Layout */
+  .app-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  @media (min-width: 860px) {
+    .app-grid {
+      grid-template-columns: 1.1fr 0.9fr;
+      align-items: stretch;
+      gap: 2.5rem;
+    }
+  }
+
+  /* Wheel Styling */
+  .wheel-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .wheel-title-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+    width: 100%;
+    max-width: 520px;
+  }
+
+  #wheel-title-text {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #ffffff;
+    text-align: center;
+    word-break: break-word;
+    cursor: pointer;
+    transition: var(--transition);
+    user-select: none;
+  }
+
+  #wheel-title-text:hover {
+    color: var(--accent-cyan);
+    text-decoration: underline;
+    text-decoration-style: dashed;
+    text-underline-offset: 4px;
+  }
+
+  .edit-title-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    font-size: 1.1rem;
+    padding: 0.25rem;
+    display: flex;
+    align-items: center;
+    transition: var(--transition);
+    opacity: 0.5;
+  }
+
+  .edit-title-btn:hover {
+    color: var(--accent-cyan);
+    opacity: 1;
+    transform: scale(1.15);
+  }
+
+  .wheel-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-lg);
+    width: 100%;
+    max-width: 520px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .wheel-outer-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #roulette-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    border-radius: 50%;
+  }
+
+  .pointer {
+    position: absolute;
+    top: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    transform-origin: top center;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+    pointer-events: none;
+  }
+
+  .spin-center-button {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #151518 0%, #0a0a0a 100%);
+    border: 3px solid var(--accent-cyan);
+    color: #ffffff;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 800;
+    font-size: 0.95rem;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.6), 0 0 0 0px var(--accent-glow-cyan);
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+                box-shadow 0.3s ease,
+                border-color 0.3s ease;
+    user-select: none;
+    z-index: 20;
+    animation: neon-pulse 2.5s ease-in-out infinite;
+  }
+
+  @keyframes neon-pulse {
+    0%, 100% {
+      box-shadow: 0 4px 15px rgba(0,0,0,0.6),
+                  0 0 15px rgba(0, 229, 255, 0.15),
+                  0 0 30px rgba(0, 229, 255, 0.05);
+    }
+    50% {
+      box-shadow: 0 4px 15px rgba(0,0,0,0.6),
+                  0 0 20px rgba(0, 229, 255, 0.3),
+                  0 0 50px rgba(0, 229, 255, 0.12),
+                  0 0 80px rgba(0, 229, 255, 0.05);
+    }
+  }
+
+  .spin-center-button:hover {
+    transform: scale(1.08);
+    border-color: var(--accent-purple);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.7),
+                0 0 25px var(--accent-glow-purple);
+    animation: none;
+  }
+
+  .spin-center-button:active {
+    transform: scale(0.94);
+  }
+
+  .spin-center-button:disabled {
+    cursor: not-allowed;
+    border-color: rgba(255,255,255,0.1);
+    color: var(--text-tertiary);
+    background: #111113;
+    box-shadow: none;
+    transform: scale(1);
+    animation: none;
+  }
+
+  /* Input Column Styling */
+  .input-column {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .input-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .section-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 0.25rem;
+  }
+
+  .section-desc {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+  }
+
+  .card-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--card-border);
+    margin-bottom: 1.25rem;
+    gap: 0.25rem;
+  }
+
+  .tab-btn {
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--text-secondary);
+    font-family: inherit;
+    font-size: 0.88rem;
+    font-weight: 600;
+    padding: 0.6rem 0.9rem;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+
+  .tab-btn:hover { color: var(--text-primary); }
+
+  .tab-btn.active {
+    color: var(--accent-cyan);
+    border-bottom-color: var(--accent-cyan);
+  }
+
+  .tab-content-pane {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+
+  .tab-content-pane.hidden { display: none !important; }
+
+  #options-input {
+    width: 100%;
+    height: 250px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 1rem;
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    resize: none;
+    outline: none;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  }
+
+  #options-input:focus {
+    border-color: var(--accent-cyan);
+    box-shadow: 0 0 0 3px var(--accent-glow-cyan);
+  }
+
+  .btn-group {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+
+  .manage-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .manage-instruction {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    line-height: 1.4;
+    margin: 0;
+  }
+
+  .btn-sm {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .options-checklist-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-height: 250px;
+    overflow-y: auto;
+    padding-right: 0.25rem;
+  }
+
+  .options-checklist-container::-webkit-scrollbar { width: 5px; }
+  .options-checklist-container::-webkit-scrollbar-track { background: rgba(0,0,0,0.15); border-radius: 4px; }
+  .options-checklist-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.07); border-radius: 4px; }
+  .options-checklist-container::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.14); }
+
+  :global(.checklist-item) {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    padding: 0.6rem 0.85rem;
+    cursor: pointer;
+    user-select: none;
+    transition: var(--transition);
+  }
+
+  :global(.checklist-item:hover) {
+    background: rgba(255, 255, 255, 0.02);
+    border-color: var(--card-border-hover);
+  }
+
+  :global(.checklist-item input[type="checkbox"]) {
+    accent-color: var(--accent-cyan);
+    width: 17px; height: 17px;
+    cursor: pointer;
+  }
+
+  :global(.checklist-item span) {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    word-break: break-all;
+    transition: var(--transition);
+  }
+
+  :global(.checklist-item.disabled) {
+    opacity: 0.4;
+    background: rgba(0, 0, 0, 0.08);
+  }
+
+  :global(.checklist-item.disabled span) {
+    text-decoration: line-through;
+    color: var(--text-tertiary);
+  }
+
+  /* Winner Modal */
+  .modal-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background-color: rgba(6, 7, 10, 0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+
+  .modal-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .modal-card {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-xl);
+    padding: 2.5rem 2rem;
+    max-width: 440px;
+    width: 90%;
+    text-align: center;
+    box-shadow: var(--shadow-glow-cyan), 0 20px 40px rgba(0, 0, 0, 0.6);
+    transform: scale(0.9);
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .modal-overlay.active .modal-card {
+    transform: scale(1);
+  }
+
+  .celebration-emoji {
+    font-size: 3.5rem;
+    display: block;
+    margin-bottom: 0.75rem;
+    animation: emote-bounce 1s infinite alternate cubic-bezier(0.25, 0.8, 0.25, 1);
+  }
+
+  @keyframes emote-bounce {
+    from { transform: translateY(0) scale(1); }
+    to { transform: translateY(-12px) scale(1.05); }
+  }
+
+  .modal-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+  }
+
+  .winner-name-container {
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    padding: 1.25rem;
+    margin: 1.5rem 0;
+    overflow-wrap: break-word;
+  }
+
+  .winner-name-text {
+    font-family: 'Outfit', sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1.2;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 2px 8px rgba(0, 229, 255, 0.3));
+  }
+
+  #confetti-canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    pointer-events: none;
+    z-index: 99;
+  }
+
+  /* Hub grid margins */
+  .hub-section .section-header {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+
+  .hub-section .section-subtitle {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    max-width: 500px;
+    margin: 0.75rem auto 0;
+  }
+
+  /* Focus Mode Styles */
+  body.focus-mode-active {
+    background-color: #060608;
+  }
+
+  body.focus-mode-active :global(header) {
+    background: transparent;
+    border-bottom: none;
+  }
+
+  body.focus-mode-active :global(.logo-link),
+  body.focus-mode-active .hero,
+  body.focus-mode-active .hub-section,
+  body.focus-mode-active :global(.seo-section),
+  body.focus-mode-active :global(.ad-placeholder),
+  body.focus-mode-active :global(footer),
+  body.focus-mode-active :global(.nav-link) {
+    display: none !important;
+  }
+
+  body.focus-mode-active :global(.header-inner) {
+    justify-content: flex-end;
+  }
+
+  body.focus-mode-active .roulette-section {
+    min-height: calc(100vh - 80px);
+    display: flex;
+    align-items: center;
+    padding: 0;
+  }
+
+  body.focus-mode-active .roulette-section > .container {
+    width: 100%;
+  }
+
+  body.focus-mode-active .roulette-section .section-header {
+    display: none;
+  }
+
+  body.focus-mode-active .app-grid {
+    align-items: center;
+  }
+
+  @media (min-width: 860px) {
+    body.focus-mode-active .app-grid {
+      max-width: 950px;
+      margin: 0 auto;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .roulette-section .section-header {
+      margin-bottom: 1.5rem;
+    }
+
+    .wheel-card {
+      padding: 1rem;
+    }
+  }
+</style>

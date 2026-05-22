@@ -1,0 +1,593 @@
+---
+import Layout from '../layouts/Layout.astro';
+import AdSlot from '../components/AdSlot.astro';
+import HubGrid from '../components/HubGrid.astro';
+import SeoArticle from '../components/SeoArticle.astro';
+
+const title = 'Lanzar Dados Online — Tirar Dados Virtuales 3D Gratis | Decídelo.app';
+const description = 'Lanza dados virtuales en 3D gratis y al instante. Elige lanzar 1, 2 o 3 dados y selecciona entre temáticas Casino de Las Vegas, Calabozos y Dragones (D20) o Yu-Gi-Oh. Sin descargas.';
+const keywords = 'lanzar dados, dados virtuales, dados online, dados 3d, dados casino, dados d20, dado yugioh, dados de rol, tomar decisiones, azar';
+
+const schemaLD = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebApplication",
+      "@id": "https://decidelo.app/dados#webapp",
+      "name": "Lanzar Dados Online — Decídelo.app",
+      "description": "Herramienta online e independiente para lanzar dados virtuales (D6 y D20) con física interactiva, sonido y múltiples temáticas.",
+      "url": "https://decidelo.app/dados",
+      "applicationCategory": "UtilityApplication",
+      "operatingSystem": "All",
+      "browserRequirements": "Requires JavaScript and HTML5 3D Transforms",
+      "softwareVersion": "2.0.0",
+      "inLanguage": "es",
+      "offers": {
+        "@type": "Offer",
+        "price": "0.00",
+        "priceCurrency": "USD"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Decídelo.app",
+        "url": "https://decidelo.app/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://decidelo.app/favicon.svg"
+        }
+      }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://decidelo.app/dados#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Inicio",
+          "item": "https://decidelo.app/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Lanzar Dados",
+          "item": "https://decidelo.app/dados"
+        }
+      ]
+    }
+  ]
+};
+---
+
+<Layout title={title} description={description} keywords={keywords} schemaLD={schemaLD} showHomeHeader={false}>
+  <main class="container">
+    
+    <!-- Hero Section -->
+    <section class="hero slide-up delay-1">
+      <h1>Lanzar Dados <span class="gradient-text">Online</span></h1>
+      <p>Tira dados virtuales de alta gama con físicas de giro en 3D y sonido inmersivo. ¡Elige tus dados y ponte a jugar!</p>
+    </section>
+
+    <!-- Selectores de cantidad y temática -->
+    <div class="selectors-wrapper slide-up delay-2">
+      <!-- Selector de dados -->
+      <div class="selector-container" id="dice-count-selector">
+        <button class="selector-btn" data-count="1">1 Dado</button>
+        <button class="selector-btn" data-count="2">2 Dados</button>
+        <button class="selector-btn" data-count="3">3 Dados</button>
+      </div>
+
+      <!-- Selector de temática -->
+      <div class="selector-container" id="theme-selector">
+        <button class="selector-btn" data-theme="casino">🎰 Casino</button>
+        <button class="selector-btn" data-theme="dnd">🐉 Rol D&D</button>
+        <button class="selector-btn" data-theme="yugioh">🏺 Yu-Gi-Oh</button>
+      </div>
+    </div>
+
+    <!-- Tablero de Lanzamiento -->
+    <section class="game-board slide-up delay-3" aria-label="Tablero de lanzamiento de dados">
+      
+      <!-- Contenedor con la bandeja de dados -->
+      <div class="dice-tray-outer">
+        <div class="dice-tray" id="dice-container">
+          <!-- Generado dinámicamente -->
+        </div>
+      </div>
+
+      <!-- Indicador visual del resultado -->
+      <div class="result-display" id="result-display" aria-live="polite">
+        <!-- Rellenado dinámicamente -->
+      </div>
+
+      <!-- Botón de Lanzamiento -->
+      <button class="btn-spin" id="btn-spin">LANZAR</button>
+
+      <!-- Botón para permisos de agitar (iOS) / activar agitación -->
+      <button class="btn-shake-perm" id="shake-permission-btn" style="display: none;">
+        📱 Activar Lanzamiento por Movimiento
+      </button>
+
+    </section>
+
+    <!-- Historial de Resultados -->
+    <section class="history-card slide-up delay-4" aria-label="Historial de lanzamientos anteriores">
+      <div class="history-header">
+        <h3>
+          <span>🕒</span> Historial (Últimos 5)
+        </h3>
+        <button class="btn-clear" id="btn-clear">Borrar historial</button>
+      </div>
+      <div class="history-list" id="history-list">
+        <span class="history-empty">Sin lanzamientos aún</span>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Toast notification -->
+  <div class="toast" id="toast-message">Notificación</div>
+
+  <AdSlot position="top" />
+
+  <!-- Sección de Artículo SEO -->
+  <SeoArticle title="¿Cómo funciona el Lanzamiento de Dados Virtual y por qué usarlo?">
+    <p>Lanzar dados es una de las actividades lúdicas y decisionales más antiguas de la humanidad, utilizada desde hace milenios para juegos de mesa, adivinación y toma de decisiones equitativas. En la era digital, no siempre tienes un par de dados en tu bolsillo. Nuestro simulador de <strong>lanzar dados online en 3D</strong> soluciona esto proporcionando un entorno premium libre de distracciones.</p>
+    
+    <p>Esta herramienta ha sido programada con tecnología nativa en el navegador, combinando rotaciones 3D de alta velocidad (60fps) y síntesis de audio a través de la API <strong>Web Audio</strong>. Esto significa que la aplicación carga de forma instantánea y funciona de manera offline sin consumir tus datos de red.</p>
+
+    <h2>Múltiples Estilos Diseñados para Gamers y Coleccionistas</h2>
+    <p>Hemos adaptado la herramienta a tus necesidades y gustos mediante tres temáticas personalizables cargadas de personalidad:</p>
+    <ul>
+      <li><strong>Casino Las Vegas:</strong> Emulación de los dados de casino profesionales D6. Diseñados en color rojo translúcido, con brillo interno suavizado y pips blancos que recrean las físicas y la elegancia de una mesa de apuestas real.</li>
+      <li><strong>Calabozos y Dragones:</strong> Para los entusiastas del rol de mesa (D&D), recreamos un dado D20 de resina mística con gradientes azul/púrpura. El número central se calcula y cicla de forma dinámica durante el giro, garantizando aleatoriedad sin parpadeos visuales molestos.</li>
+      <li><strong>Yu-Gi-Oh:</strong> Inspirado en el antiguo Egipto de los juegos de sombras. Un dado D6 esculpido en piedra arenisca dorada con jeroglíficos desgastados. En la cara del número 6 se encuentra el legendario <strong>Ojo de Anubis</strong>, grabado en oro y obsidiana.</li>
+    </ul>
+
+    <h2>Ventajas Cognitivas y TDAH-Friendly</h2>
+    <p>Para personas con neurodivergencias como el <strong>TDAH</strong>, elegir una opción entre varias puede resultar exasperante o provocar bloqueo mental debido a la sobreestimulación de posibilidades (parálisis por análisis). Al delegar la elección en un dado (por ejemplo: asociar el número 1 a leer, el 2 a limpiar la habitación, el 3 a descansar), se libera la carga ejecutiva del cerebro. Nuestra interfaz de modo oscuro elegante y limpio minimiza distracciones sensoriales adicionales para ayudarte a enfocar tu atención.</p>
+
+    <h2>Compatibilidad con Sensor de Movimiento (Agitar Celular)</h2>
+    <p>Para una interactividad premium, implementamos la API <code>DeviceMotionEvent</code>. En dispositivos móviles que cuentan con acelerómetro, puedes lanzar físicamente los dados agitando el teléfono en tu mano, simulando el gesto tradicional de agitar los dados en un vaso antes de tirarlos a la mesa.</p>
+  </SeoArticle>
+
+  <AdSlot position="bottom" />
+
+  <section class="hub-section container">
+    <div class="section-header reveal">
+      <div class="section-tag">🧰 Caja de Herramientas</div>
+      <h2 class="section-heading">Prueba otras herramientas de decisión</h2>
+    </div>
+    <HubGrid activeToolId="dados" />
+  </section>
+
+  <script src="../scripts/dados.js"></script>
+</Layout>
+
+<style>
+  main {
+    padding: 3rem 0;
+  }
+
+  /* Selectores */
+  .selectors-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+    width: 100%;
+    max-width: 520px;
+  }
+
+  .selector-container {
+    display: flex;
+    background: var(--bg-surface);
+    border: 1px solid var(--card-border);
+    border-radius: 999px;
+    padding: 0.35rem;
+    width: 100%;
+    justify-content: space-between;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  }
+
+  .selector-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 0.88rem;
+    padding: 0.6rem 1.2rem;
+    border-radius: 999px;
+    cursor: pointer;
+    flex: 1;
+    text-align: center;
+    transition: var(--transition);
+    white-space: nowrap;
+  }
+
+  .selector-btn:hover {
+    color: #ffffff;
+  }
+
+  .selector-btn.active {
+    background: var(--accent-gradient);
+    color: #050505;
+    box-shadow: 0 4px 15px rgba(0, 229, 255, 0.2);
+  }
+
+  /* Contenedor de Dados */
+  .dice-tray-outer {
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.02);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+    width: 100%;
+    margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 160px;
+    box-shadow: inset 0 4px 15px rgba(0,0,0,0.4);
+  }
+
+  .dice-tray {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+    width: 100%;
+    perspective: 1000px;
+    flex-wrap: wrap;
+  }
+
+  /* 3D Dice Setup */
+  .dice-scene {
+    width: 80px;
+    height: 80px;
+    perspective: 600px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  :global(.dice-cube) {
+    width: 80px;
+    height: 80px;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 1.6s cubic-bezier(0.15, 0.85, 0.25, 1);
+  }
+
+  :global(.face) {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    padding: 8px;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    backface-visibility: visible;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+  }
+
+  /* Transformaciones de las Caras D6 */
+  :global(.face.front)  { transform: rotateY(0deg) translateZ(40px); }
+  :global(.face.back)   { transform: rotateY(180deg) translateZ(40px); }
+  :global(.face.right)  { transform: rotateY(90deg) translateZ(40px); }
+  :global(.face.left)   { transform: rotateY(-90deg) translateZ(40px); }
+  :global(.face.top)    { transform: rotateX(90deg) translateZ(40px); }
+  :global(.face.bottom) { transform: rotateX(-90deg) translateZ(40px); }
+
+  /* Puntos (Pips) */
+  :global(.dot) {
+    border-radius: 50%;
+    margin: auto;
+  }
+
+  :global(.dot-center)    { grid-area: 2 / 2; }
+  :global(.dot-top-left)  { grid-area: 1 / 1; }
+  :global(.dot-top-right) { grid-area: 1 / 3; }
+  :global(.dot-mid-left)  { grid-area: 2 / 1; }
+  :global(.dot-mid-right) { grid-area: 2 / 3; }
+  :global(.dot-bot-left)  { grid-area: 3 / 1; }
+  :global(.dot-bot-right) { grid-area: 3 / 3; }
+
+  /* ESTILO 1: Casino Las Vegas */
+  :global(.casino-face) {
+    background: rgba(220, 20, 40, 0.82);
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    border-radius: 12px;
+    box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.3), 0 4px 10px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(2px);
+  }
+  :global(.casino-dot) {
+    background: #ffffff;
+    width: 14px;
+    height: 14px;
+    box-shadow: inset 1px 1px 2px rgba(0,0,0,0.4), 0 1px 1px rgba(255,255,255,0.4);
+  }
+
+  /* ESTILO 3: Yu-Gi-Oh */
+  :global(.yugioh-face) {
+    background: linear-gradient(135deg, #e6c57e 0%, #aa842d 50%, #7d5b12 100%);
+    border: 2px solid #5c430e;
+    border-radius: 8px;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 4px 12px rgba(0,0,0,0.6);
+  }
+  :global(.yugioh-dot) {
+    background: #201a15;
+    border: 1.5px solid #d4af37;
+    width: 13px;
+    height: 13px;
+    box-shadow: inset 1px 1px 3px rgba(0,0,0,0.8);
+  }
+  :global(.eye-of-anubis) {
+    grid-area: 1 / 1 / 4 / 4;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+  }
+  :global(.eye-of-anubis svg) {
+    width: 85%;
+    height: 85%;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6));
+  }
+
+  /* ESTILO 2: Calabozos y Dragones (D20) */
+  :global(.d20-wrapper) {
+    width: 90px;
+    height: 90px;
+    display: inline-block;
+    transition: transform 1.6s cubic-bezier(0.15, 0.85, 0.25, 1);
+  }
+  
+  :global(.d20-wrapper.rolling) {
+    animation: d20-spin 1.6s cubic-bezier(0.15, 0.85, 0.25, 1) forwards;
+  }
+
+  @keyframes d20-spin {
+    0% { transform: scale(1) rotate(0deg) translateY(0); }
+    15% { transform: scale(1.15) rotate(180deg) translateY(-30px); }
+    45% { transform: scale(0.9) rotate(540deg) translateY(15px); }
+    75% { transform: scale(1.1) rotate(900deg) translateY(-10px); }
+    90% { transform: scale(0.98) rotate(1020deg) translateY(2px); }
+    100% { transform: scale(1) rotate(1080deg) translateY(0); }
+  }
+
+  :global(.d20-svg) {
+    width: 100%;
+    height: 100%;
+  }
+
+  :global(.d20-number) {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 800;
+    font-size: 22px;
+    fill: #ffffff;
+    text-shadow: 0 0 8px rgba(0, 229, 255, 0.6);
+  }
+
+  /* Sombra del Dado */
+  .dice-shadow {
+    width: 70px;
+    height: 6px;
+    background: rgba(0, 0, 0, 0.55);
+    border-radius: 50%;
+    margin: -0.5rem auto 1.5rem;
+    filter: blur(5px);
+    transition: transform 1.6s cubic-bezier(0.15, 0.85, 0.25, 1), opacity 1.6s;
+  }
+
+  /* Indicador del resultado */
+  .result-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+    min-height: 4.2rem;
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.4s ease;
+  }
+
+  .result-display.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .sum-value {
+    font-family: 'Outfit', sans-serif;
+    font-size: 2.2rem;
+    font-weight: 800;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 2px 8px rgba(0, 229, 255, 0.3));
+  }
+
+  .individual-values {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    font-weight: 500;
+  }
+
+  .btn-spin {
+    display: block;
+    margin: 0 auto;
+  }
+
+  /* Float Shake Button */
+  .btn-shake-perm {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px dashed var(--card-border-hover);
+    color: var(--text-secondary);
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 0.82rem;
+    padding: 0.6rem 1.2rem;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    margin: 1.2rem auto 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: var(--transition);
+  }
+
+  .btn-shake-perm:hover {
+    color: var(--accent-cyan);
+    border-color: var(--accent-cyan);
+    background: rgba(0, 229, 255, 0.03);
+  }
+
+  /* Historial */
+  .history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .btn-clear {
+    background: transparent;
+    border: none;
+    color: var(--text-tertiary);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+
+  .btn-clear:hover {
+    color: var(--accent-danger);
+  }
+
+  .history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    min-height: 40px;
+    justify-content: center;
+    margin-top: 0.75rem;
+  }
+
+  :global(.history-item-row) {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.6rem 1rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-sm);
+    width: 100%;
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  }
+
+  @keyframes popIn {
+    0% {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  :global(.history-sum) {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    color: var(--accent-cyan);
+    font-size: 1.1rem;
+  }
+
+  :global(.history-details) {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+  }
+
+  .history-empty {
+    color: var(--text-tertiary);
+    font-size: 0.85rem;
+    font-style: italic;
+    text-align: center;
+  }
+
+  /* Toast notification */
+  .toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--bg-surface-hover);
+    border: 1px solid var(--accent-cyan);
+    border-radius: 999px;
+    padding: 0.6rem 1.5rem;
+    color: #ffffff;
+    font-size: 0.85rem;
+    font-weight: 500;
+    z-index: 999;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    pointer-events: none;
+  }
+  
+  .toast.show {
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* Hub Section styling */
+  .hub-section {
+    padding: 3rem 0;
+  }
+
+  .section-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .section-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent-cyan);
+    margin-bottom: 0.5rem;
+  }
+
+  .section-heading {
+    font-family: 'Outfit', sans-serif;
+    font-size: clamp(1.4rem, 3.5vw, 1.8rem);
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.02em;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 600px) {
+    .dice-tray {
+      gap: 1rem;
+    }
+    .dice-scene {
+      transform: scale(0.85);
+    }
+  }
+  @media (max-width: 380px) {
+    .dice-scene {
+      transform: scale(0.7);
+    }
+  }
+</style>

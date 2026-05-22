@@ -1,0 +1,568 @@
+---
+import Layout from '../layouts/Layout.astro';
+import AdSlot from '../components/AdSlot.astro';
+import HubGrid from '../components/HubGrid.astro';
+import SeoArticle from '../components/SeoArticle.astro';
+
+const title = 'Temporizador Aleatorio Online — Cuenta Regresiva Sorpresa | Decídelo.app';
+const description = 'Establece un rango de tiempo mínimo y máximo, y deja que el temporizador finalice en un segundo aleatorio. Ideal para juegos de mesa, retos y dinámicas de grupo.';
+const keywords = 'temporizador aleatorio, timer sorpresa, pass the bomb online, patata caliente juego, cuenta regresiva sorpresa, temporizador bomba, oraculo virtual, decidir al azar';
+
+const schemaLD = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebApplication",
+      "@id": "https://decidelo.app/temporizador#webapp",
+      "name": "Temporizador Aleatorio Online — Decídelo.app",
+      "description": "Temporizador interactivo con cuenta regresiva aleatoria y modo bomba oculta para juegos de mesa, dinámicas de grupo y retos.",
+      "url": "https://decidelo.app/temporizador",
+      "applicationCategory": "UtilityApplication",
+      "operatingSystem": "All",
+      "browserRequirements": "Requires JavaScript",
+      "softwareVersion": "2.0.0",
+      "inLanguage": "es",
+      "offers": {
+        "@type": "Offer",
+        "price": "0.00",
+        "priceCurrency": "USD"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Decídelo.app",
+        "url": "https://decidelo.app/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://decidelo.app/favicon.svg"
+        }
+      }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://decidelo.app/temporizador#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Inicio",
+          "item": "https://decidelo.app/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Temporizador Aleatorio",
+          "item": "https://decidelo.app/temporizador"
+        }
+      ]
+    }
+  ]
+};
+---
+
+<Layout title={title} description={description} keywords={keywords} schemaLD={schemaLD} showHomeHeader={false}>
+  <main class="container">
+    
+    <!-- Hero Section -->
+    <section class="hero slide-up delay-1">
+      <h1>Temporizador <span class="gradient-text">Aleatorio</span></h1>
+      <p>Configura un rango de tiempo y deja que el cronómetro se detenga en un segundo al azar. ¡Añade adrenalina y sorpresa a tus dinámicas!</p>
+    </section>
+
+    <AdSlot position="top" />
+
+    <!-- Tablero de Juego -->
+    <section class="game-board slide-up delay-2" aria-label="Tablero del Temporizador">
+      
+      <!-- Selectores de Modo -->
+      <div class="selector-container" id="timer-mode-selector">
+        <button class="selector-btn active" data-mode="normal" aria-label="Modo normal revelado">
+          👁️ Revelar Cuenta
+        </button>
+        <button class="selector-btn" data-mode="secret" aria-label="Modo bomba secreta">
+          💣 Bomba Secreta
+        </button>
+      </div>
+
+      <!-- Configuración del Rango -->
+      <div class="settings-panel">
+        <div class="range-sliders">
+          <div class="slider-group">
+            <div class="slider-header">
+              <label for="timer-min-slider">Rango Mínimo</label>
+              <span class="value-display" id="min-value-display">10 segundos</span>
+            </div>
+            <input 
+              type="range" 
+              id="timer-min-slider" 
+              min="5" 
+              max="300" 
+              step="5" 
+              value="10" 
+              aria-valuemin="5" 
+              aria-valuemax="300" 
+              aria-valuenow="10"
+            />
+          </div>
+
+          <div class="slider-group">
+            <div class="slider-header">
+              <label for="timer-max-slider">Rango Máximo</label>
+              <span class="value-display" id="max-value-display">60 segundos</span>
+            </div>
+            <input 
+              type="range" 
+              id="timer-max-slider" 
+              min="5" 
+              max="600" 
+              step="5" 
+              value="60" 
+              aria-valuemin="5" 
+              aria-valuemax="600" 
+              aria-valuenow="60"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Visualizador del Timer -->
+      <div class="timer-display-scene">
+        <div class="timer-ring-container">
+          <svg class="progress-ring" width="220" height="220" viewBox="0 0 220 220">
+            <circle class="progress-ring-bg" stroke="rgba(255, 255, 255, 0.05)" stroke-width="8" fill="transparent" r="95" cx="110" cy="110" />
+            <circle class="progress-ring-fill" id="timer-progress-fill" stroke="url(#timer-gradient)" stroke-width="8" stroke-linecap="round" fill="transparent" r="95" cx="110" cy="110" />
+            <defs>
+              <linearGradient id="timer-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#00e5ff" />
+                <stop offset="100%" stop-color="#b366ff" />
+              </linearGradient>
+            </defs>
+          </svg>
+          <div class="timer-text-container">
+            <span class="timer-icon" id="timer-icon">⏳</span>
+            <span class="timer-time" id="timer-time">00:00</span>
+            <span class="timer-status" id="timer-status">Configurado</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botón de Control -->
+      <button class="btn-spin" id="btn-spin">INICIAR TEMPORIZADOR</button>
+
+    </section>
+
+    <!-- Historial de Tiempos -->
+    <section class="history-card slide-up delay-3" aria-label="Historial de tiempos del temporizador">
+      <div class="history-header">
+        <h3>
+          <span>🕒</span> Rondas Recientes
+        </h3>
+        <button class="btn-clear" id="btn-clear">Borrar historial</button>
+      </div>
+      <div class="history-list-vertical" id="history-list">
+        <span class="history-empty">Sin rondas iniciadas aún</span>
+      </div>
+    </section>
+
+  </main>
+
+  <div class="toast" id="toast-message">Mensaje de alerta</div>
+
+  <SeoArticle title="Temporizador Aleatorio: El ingrediente perfecto para dinamizar tus juegos y retos">
+    <p>¿Alguna vez has jugado a un juego de mesa donde el factor tiempo era predecible? Saber exactamente cuándo va a sonar la alarma reduce drásticamente la tensión y la adrenalina del momento. Para resolver esto, existe el **Temporizador Aleatorio Online**, una herramienta interactiva diseñada para dinamizar actividades grupales, entrenamientos, dinámicas en el aula y retos divertidos.</p>
+
+    <p>El concepto es tan simple como emocionante: en lugar de configurar una duración fija (por ejemplo, 30 segundos), estableces un límite **mínimo** y uno **máximo** de tiempo. El sistema calculará una duración secreta en segundos comprendida en ese intervalo y la cuenta regresiva comenzará a correr. Nadie sabrá cuándo va a terminar el tiempo hasta que suene la alarma final.</p>
+
+    <h2>Modos de Juego: Adaptado para cada Dinámica</h2>
+    <p>Nuestra aplicación incorpora dos formas únicas de experimentar el paso de los segundos:</p>
+    <ul>
+      <li><strong>Modo Revelado (👁️ Cuenta Visible):</strong> Muestra los minutos y segundos transcurriendo en tiempo real en la pantalla y la barra de progreso se va vaciando de forma continua. Ideal para debates rápidos, turnos de palabra limitados, o ejercicios físicos donde cada segundo de concentración cuenta.</li>
+      <li><strong>Modo Secreto (💣 Bomba de Tiempo):</strong> El temporizador oculta por completo el reloj en pantalla y la barra de progreso. La única pista del avance es un sutil parpadeo de la bola de luz y un sonido de "tictac" que se acelera gradualmente a medida que se acerca al final del intervalo aleatorio. Este modo simula la mítica dinámica del juego **"Pass the Bomb"** o **"La Patata Caliente"**, donde el objeto debe pasarse rápido antes de que explote en tus manos.</li>
+    </ul>
+
+    <h2>Beneficios de Usar un Timer Sorpresa en Educación y Dinámicas de Team Building</h2>
+    <p>En ámbitos corporativos y educativos, el control del tiempo aleatorio es un gran aliado pedagógico:</p>
+    <ul>
+      <li><strong>Fomenta la agilidad mental:</strong> En dinámicas de lluvia de ideas (brainstorming), el reloj oculto obliga a los participantes a expresarse con rapidez, rompiendo filtros mentales e ideas preconcebidas.</li>
+      <li><strong>Igualdad de condiciones:</strong> Al evitar la predicción del reloj tradicional, ningún participante puede jugar de manera táctica para quemar los segundos finales, asegurando que las dinámicas sean 100% justas y espontáneas.</li>
+      <li><strong>Diversión gamificada:</strong> La incertidumbre y la animación final (con sonido de sirena y vibración háptica en dispositivos móviles compatibles) crean momentos memorables y risas que mejoran la cohesión de los grupos.</li>
+    </ul>
+
+    <h2>Sonido Dinámico y Vibración 100% Servidor Web</h2>
+    <p>Hemos optimizado este temporizador utilizando la moderna tecnología **Web Audio API** para sintetizar sonidos de relojería analógica y alarma de sirena en tiempo real, sin sobrecargar tu conexión a internet ni requerir descargas pesadas de ficheros MP3. Adicionalmente, cuenta con soporte de la **Vibration API** en dispositivos móviles compatibles con Android, para que sientas un pulso vibratorio en tus manos cuando la bomba explote o el temporizador termine.</p>
+  </SeoArticle>
+
+  <AdSlot position="bottom" />
+
+  <section class="hub-section container">
+    <div class="section-header reveal">
+      <div class="section-tag">🧰 Caja de Herramientas</div>
+      <h2 class="section-heading">Prueba otras herramientas de decisión</h2>
+    </div>
+    <HubGrid activeToolId="temporizador" />
+  </section>
+
+  <script src="../scripts/temporizador.js"></script>
+</Layout>
+
+<style>
+  main {
+    padding: 3rem 0;
+  }
+
+  /* Panel de configuración */
+  .settings-panel {
+    margin-bottom: 2rem;
+    background: var(--bg-surface-alt);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+  }
+
+  .range-sliders {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .slider-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .slider-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .slider-header label {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+
+  .value-display {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--accent-cyan);
+  }
+
+  /* Sliders visuales premium */
+  .slider-group input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 3px;
+    outline: none;
+    transition: var(--transition);
+  }
+
+  .slider-group input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--accent-cyan);
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(0, 229, 255, 0.4);
+    transition: transform 0.15s ease, background 0.15s ease;
+  }
+
+  .slider-group input[type="range"]:focus-visible::-webkit-slider-thumb {
+    outline: 2px solid #ffffff;
+  }
+
+  .slider-group input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.25);
+    background: #ffffff;
+  }
+
+  /* Escena del Timer */
+  .timer-display-scene {
+    position: relative;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin: 1.5rem 0 2.5rem;
+  }
+
+  .timer-ring-container {
+    position: relative;
+    width: 220px;
+    height: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .progress-ring {
+    transform: rotate(-90deg);
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  .progress-ring-fill {
+    stroke-dasharray: 597;
+    stroke-dashoffset: 0; /* Completo al inicio */
+    transition: stroke-dashoffset 0.1s linear; /* Muy fluido */
+  }
+
+  .timer-text-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    text-align: center;
+  }
+
+  .timer-icon {
+    font-size: 2.2rem;
+    margin-bottom: 0.25rem;
+    display: inline-block;
+    transition: transform 0.3s ease;
+  }
+
+  .timer-ring-container.ticking .timer-icon {
+    animation: pulseIcon 1s infinite alternate ease-in-out;
+  }
+
+  @keyframes pulseIcon {
+    from { transform: scale(1); }
+    to { transform: scale(1.15); }
+  }
+
+  .timer-ring-container.secret-ticking .timer-icon {
+    animation: shakeIcon 0.5s infinite linear;
+  }
+
+  @keyframes shakeIcon {
+    0% { transform: rotate(0) scale(1.05); }
+    25% { transform: rotate(-5deg) scale(1.05); }
+    75% { transform: rotate(5deg) scale(1.05); }
+    100% { transform: rotate(0) scale(1.05); }
+  }
+
+  .timer-time {
+    font-family: 'Outfit', sans-serif;
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #ffffff;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+
+  .timer-status {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-top: 0.35rem;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 0.2rem 0.6rem;
+    border-radius: 99px;
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .timer-ring-container.running .timer-status {
+    color: var(--accent-cyan);
+    border-color: rgba(0, 229, 255, 0.15);
+    background: rgba(0, 229, 255, 0.05);
+  }
+
+  .timer-ring-container.running.danger .timer-status {
+    color: var(--accent-danger);
+    border-color: rgba(239, 68, 68, 0.15);
+    background: rgba(239, 68, 68, 0.05);
+  }
+
+  /* Animación de Explode / Éxito */
+  .timer-ring-container.completed .timer-icon {
+    animation: jumpWin 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) infinite alternate;
+  }
+
+  @keyframes jumpWin {
+    from { transform: translateY(0) scale(1.2); }
+    to { transform: translateY(-10px) scale(1.2); }
+  }
+
+  .timer-ring-container.completed .timer-time {
+    color: var(--accent-success);
+    text-shadow: 0 0 10px rgba(57, 255, 20, 0.3);
+  }
+
+  .timer-ring-container.completed.exploded .timer-time {
+    color: var(--accent-danger);
+    text-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+  }
+
+  .timer-ring-container.completed .timer-status {
+    color: var(--accent-success);
+    border-color: rgba(57, 255, 20, 0.15);
+    background: rgba(57, 255, 20, 0.05);
+  }
+
+  .timer-ring-container.completed.exploded .timer-status {
+    color: var(--accent-danger);
+    border-color: rgba(239, 68, 68, 0.15);
+    background: rgba(239, 68, 68, 0.05);
+  }
+
+  /* Historial */
+  .history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .btn-clear {
+    background: transparent;
+    border: none;
+    color: var(--text-tertiary);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+
+  .btn-clear:hover {
+    color: var(--accent-danger);
+  }
+
+  .history-list-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-top: 1rem;
+    max-height: 280px;
+    overflow-y: auto;
+    padding-right: 0.4rem;
+  }
+
+  .history-list-vertical::-webkit-scrollbar {
+    width: 6px;
+  }
+  .history-list-vertical::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .history-list-vertical::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.06);
+    border-radius: 999px;
+  }
+
+  :global(.history-item-row.timer-row) {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-surface-alt);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem 1.25rem;
+    gap: 1.5rem;
+    animation: slideInRow 0.25s ease-out forwards;
+  }
+
+  @keyframes slideInRow {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  :global(.timer-meta-block) {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  :global(.history-timer-mode) {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  :global(.history-timer-range) {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+  }
+
+  :global(.history-time) {
+    font-size: 0.7rem;
+    color: var(--text-tertiary);
+  }
+
+  :global(.history-value.success) {
+    color: var(--accent-success);
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-shadow: 0 0 6px rgba(57, 255, 20, 0.15);
+  }
+
+  :global(.history-value.danger) {
+    color: var(--accent-danger);
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-shadow: 0 0 6px rgba(239, 68, 68, 0.15);
+  }
+
+  .history-empty {
+    color: var(--text-tertiary);
+    font-size: 0.85rem;
+    font-style: italic;
+    text-align: center;
+    padding: 1rem 0;
+  }
+
+  /* Hub Section Header */
+  .hub-section {
+    padding: 3rem 0;
+  }
+
+  .section-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .section-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent-cyan);
+    margin-bottom: 0.5rem;
+  }
+
+  .section-heading {
+    font-family: 'Outfit', sans-serif;
+    font-size: clamp(1.4rem, 3.5vw, 1.8rem);
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.02em;
+  }
+
+  /* Responsive overrides */
+  @media (max-width: 600px) {
+    :global(.history-item-row.timer-row) {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+    :global(.history-value) {
+      align-self: flex-end;
+    }
+  }
+</style>

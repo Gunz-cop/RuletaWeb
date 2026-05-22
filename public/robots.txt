@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://decidelo.app/sitemap-index.xml

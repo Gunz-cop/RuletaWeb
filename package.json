@@ -1,0 +1,27 @@
+{
+  "name": "decidelo-app",
+  "version": "2.0.0",
+  "description": "Hub de herramientas de decisión aleatoria — decidelo.app",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Gunz-cop/azares.git"
+  },
+  "keywords": ["decidelo", "ruleta", "aleatorio", "sorteo"],
+  "author": "Decídelo.app",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Gunz-cop/azares/issues"
+  },
+  "homepage": "https://github.com/Gunz-cop/azares#readme",
+  "dependencies": {
+    "@astrojs/sitemap": "^3.7.2",
+    "astro": "^6.3.7"
+  }
+}

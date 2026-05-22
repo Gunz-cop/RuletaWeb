@@ -1,0 +1,463 @@
+---
+import Layout from '../layouts/Layout.astro';
+import AdSlot from '../components/AdSlot.astro';
+import HubGrid from '../components/HubGrid.astro';
+import SeoArticle from '../components/SeoArticle.astro';
+
+const title = 'Generador de Números Aleatorios Online — Sorteos y Rifas | Decídelo.app';
+const description = 'Genera números aleatorios online de forma justa y transparente. Configura tu rango (mínimo/máximo), cantidad de números a generar y decide si se repiten.';
+const keywords = 'generador de numeros aleatorios, sorteador de numeros, numero al azar, rifa online, sorteo numeros, tomar decisiones, numeros aleatorios';
+
+const schemaLD = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebApplication",
+      "@id": "https://decidelo.app/numeros#webapp",
+      "name": "Generador de Números Aleatorios Online — Decídelo.app",
+      "description": "Herramienta online para generar números aleatorios dentro de un rango configurable, útil para sorteos, rifas, bingo y toma de decisiones.",
+      "url": "https://decidelo.app/numeros",
+      "applicationCategory": "UtilityApplication",
+      "operatingSystem": "All",
+      "browserRequirements": "Requires JavaScript",
+      "softwareVersion": "2.0.0",
+      "inLanguage": "es",
+      "offers": {
+        "@type": "Offer",
+        "price": "0.00",
+        "priceCurrency": "USD"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Decídelo.app",
+        "url": "https://decidelo.app/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://decidelo.app/favicon.svg"
+        }
+      }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://decidelo.app/numeros#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Inicio",
+          "item": "https://decidelo.app/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Generador de Números",
+          "item": "https://decidelo.app/numeros"
+        }
+      ]
+    }
+  ]
+};
+---
+
+<Layout title={title} description={description} keywords={keywords} schemaLD={schemaLD} showHomeHeader={false}>
+  <main class="container">
+    
+    <!-- Hero Section -->
+    <section class="hero slide-up delay-1">
+      <h1>Generador de Números <span class="gradient-text">Aleatorios</span></h1>
+      <p>La forma más rápida y justa de obtener números al azar para rifas, sorteos, loterías, o dinámicas escolares.</p>
+    </section>
+
+    <AdSlot position="top" />
+
+    <!-- Configuración del Generador -->
+    <section class="game-board slide-up delay-2" aria-label="Generador de números">
+      
+      <!-- Panel de Control / Configuración -->
+      <div class="control-panel">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="num-min">Mínimo</label>
+            <input type="number" id="num-min" value="1" min="-999999" max="999999">
+          </div>
+          <div class="form-group">
+            <label for="num-max">Máximo</label>
+            <input type="number" id="num-max" value="100" min="-999999" max="999999">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="num-count">Cantidad a generar</label>
+            <input type="number" id="num-count" value="1" min="1" max="100">
+          </div>
+        </div>
+
+        <div class="checkbox-group">
+          <label class="switch-label">
+            <input type="checkbox" id="num-duplicates" checked>
+            <span class="custom-checkbox"></span>
+            Permitir números repetidos
+          </label>
+        </div>
+      </div>
+
+      <!-- Pantalla de Exhibición de Números -->
+      <div class="display-wrapper">
+        <div class="number-display" id="number-display-container">
+          <span class="number-badge large landed">?</span>
+        </div>
+      </div>
+
+      <!-- Botón de Generar -->
+      <button class="btn-spin" id="btn-spin">GENERAR</button>
+
+    </section>
+
+    <!-- Historial de Resultados -->
+    <section class="history-card slide-up delay-3" aria-label="Historial de números generados">
+      <div class="history-header">
+        <h3>
+          <span>🕒</span> Historial (Últimos 10)
+        </h3>
+        <button class="btn-clear" id="btn-clear">Borrar historial</button>
+      </div>
+      <div class="history-list-vertical" id="history-list">
+        <span class="history-empty">Sin lanzamientos aún</span>
+      </div>
+    </section>
+
+  </main>
+
+  <div class="toast" id="toast-message">Mensaje de alerta</div>
+
+  <SeoArticle title="¿Cómo generar números aleatorios de forma justa para rifas y sorteos?">
+    <p>La generación de números aleatorios es la base de la transparencia en cualquier sorteo, rifa o toma de decisiones grupales. Ya sea que estés organizando una rifa escolar, un intercambio navideño, asignando turnos en un juego de mesa o jugando al bingo, garantizar que los números sean obtenidos de forma equitativa es fundamental para la confianza de todos los participantes.</p>
+    
+    <p>Nuestra herramienta de <strong>Generador de Números Aleatorios</strong> utiliza el algoritmo criptográfico del navegador local para ofrecer aleatoriedad matemáticamente pura, operando en milisegundos y con un diseño interactivo optimizado para todo tipo de pantallas.</p>
+
+    <h2>¿Qué es la aleatoriedad pseudoaleatoria y por qué es segura?</h2>
+    <p>En el mundo digital, las computadoras no pueden generar aleatoriedad pura por sí mismas porque operan bajo reglas lógicas fijas. Para solucionar esto, las aplicaciones modernas de software utilizan Generadores de Números Pseudoaleatorios (PRNG). El navegador web utiliza un motor interno alimentado por factores físicos del dispositivo (como microsegundos de reloj o movimientos del cursor) como semilla original.</p>
+    <p>Esto garantiza que el resultado obtenido sea <strong>imposible de predecir o sesgar</strong> por parte de ningún organizador, haciendo tu rifa 100% confiable y transparente.</p>
+
+    <h2>Opciones avanzadas: Permitir repetidos o generar sin duplicados</h2>
+    <p>Cada tipo de juego o sorteo requiere reglas distintas. Por ello, hemos dotado a nuestro generador de opciones flexibles que puedes ajustar en un solo clic:</p>
+    <ul>
+      <li><strong>Generación con duplicados (Bingo, Simulaciones):</strong> Ideal cuando requieres que el número seleccionado vuelva a estar disponible para la siguiente tirada. Por ejemplo, al simular tiradas de dados de más de 6 caras o re-insertar boletos en una tómbola virtual.</li>
+      <li><strong>Generación sin duplicados (Rifas, Loterías, Asignaciones):</strong> Esta opción (sin repetición) garantiza que cada número seleccionado sea retirado del grupo disponible. Es el método estándar para sorteos donde cada participante tiene un boleto único y no puede haber ganadores dobles con el mismo número.</li>
+    </ul>
+
+    <h2>Estética moderna con efecto de tómbola digital</h2>
+    <p>No nos limitamos a mostrarte un texto aburrido. Para emular el suspenso y la emoción de una tómbola o ruleta física, hemos programado un efecto visual de <strong>dígitos veloces en rotación</strong> (slot-machine roll). Combinando esto con sutiles sonidos analógicos de campanas de resultado, tus espectadores experimentarán la adrenalina del azar en tiempo real.</p>
+  </SeoArticle>
+
+  <AdSlot position="bottom" />
+
+  <section class="hub-section container">
+    <div class="section-header reveal">
+      <div class="section-tag">🧰 Caja de Herramientas</div>
+      <h2 class="section-heading">Prueba otras herramientas de decisión</h2>
+    </div>
+    <HubGrid activeToolId="numeros" />
+  </section>
+
+  <script src="../scripts/numeros.js"></script>
+</Layout>
+
+<style>
+  main {
+    padding: 3rem 0;
+  }
+
+  /* Configuración del Panel */
+  .control-panel {
+    margin-bottom: 2rem;
+  }
+
+  .form-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .form-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .form-group label {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+
+  .form-group input {
+    background: var(--bg-surface-alt);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    padding: 0.8rem 1rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    transition: var(--transition);
+    width: 100%;
+  }
+
+  .form-group input:focus {
+    outline: none;
+    border-color: var(--accent-cyan);
+    box-shadow: 0 0 12px rgba(0, 229, 255, 0.15);
+  }
+
+  /* Checkbox switch moderno */
+  .checkbox-group {
+    margin-top: 1.25rem;
+  }
+
+  .switch-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    user-select: none;
+    transition: var(--transition);
+  }
+
+  .switch-label:hover {
+    color: #ffffff;
+  }
+
+  .switch-label input {
+    display: none;
+  }
+
+  .custom-checkbox {
+    width: 20px;
+    height: 20px;
+    border: 1px solid var(--card-border-hover);
+    border-radius: 6px;
+    background: var(--bg-surface-alt);
+    display: inline-block;
+    position: relative;
+    transition: var(--transition);
+  }
+
+  .switch-label input:checked + .custom-checkbox {
+    background: var(--accent-cyan);
+    border-color: var(--accent-cyan);
+    box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+  }
+
+  .switch-label input:checked + .custom-checkbox::after {
+    content: '✓';
+    color: #000000;
+    font-size: 0.85rem;
+    font-weight: bold;
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  /* Pantalla de exhibición */
+  .display-wrapper {
+    background: var(--bg-surface-alt);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-md);
+    min-height: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+  }
+
+  .number-display {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    justify-content: center;
+    width: 100%;
+  }
+
+  :global(.number-badge) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    font-family: 'Outfit', sans-serif;
+    font-weight: 800;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    transition: transform 0.15s ease;
+  }
+
+  :global(.number-badge.large) {
+    font-size: clamp(3rem, 10vw, 4.5rem);
+    min-width: 90px;
+  }
+
+  :global(.number-badge.medium) {
+    font-size: clamp(2rem, 6vw, 3rem);
+    min-width: 60px;
+    padding: 0.4rem 0.8rem;
+    border: 1px solid rgba(0, 229, 255, 0.15);
+    background: rgba(0, 229, 255, 0.03);
+    -webkit-text-fill-color: var(--accent-cyan);
+    color: var(--accent-cyan);
+  }
+
+  :global(.number-badge.small) {
+    font-size: 1.6rem;
+    min-width: 48px;
+    padding: 0.3rem 0.6rem;
+    border: 1px solid rgba(179, 102, 255, 0.15);
+    background: rgba(179, 102, 255, 0.03);
+    -webkit-text-fill-color: var(--accent-purple);
+    color: var(--accent-purple);
+  }
+
+  :global(.number-badge.tiny) {
+    font-size: 1.15rem;
+    min-width: 36px;
+    padding: 0.2rem 0.4rem;
+    border: 1px solid var(--card-border-hover);
+    background: rgba(255, 255, 255, 0.02);
+    -webkit-text-fill-color: var(--text-primary);
+    color: var(--text-primary);
+  }
+
+  :global(.number-badge.rolling) {
+    transform: scale(0.9) translateY(-2px);
+    opacity: 0.7;
+    filter: blur(1px);
+  }
+
+  :global(.number-badge.landed) {
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  }
+
+  @keyframes popIn {
+    0% { transform: scale(0.7); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  /* Historial list */
+  .history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .btn-clear {
+    background: transparent;
+    border: none;
+    color: var(--text-tertiary);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+
+  .btn-clear:hover {
+    color: var(--accent-danger);
+  }
+
+  .history-list-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-top: 1rem;
+    max-height: 250px;
+    overflow-y: auto;
+    padding-right: 0.4rem;
+  }
+
+  /* Scrollbar para historial */
+  .history-list-vertical::-webkit-scrollbar {
+    width: 6px;
+  }
+  .history-list-vertical::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .history-list-vertical::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.06);
+    border-radius: 999px;
+  }
+  .history-list-vertical::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,255,255,0.15);
+  }
+
+  :global(.history-item-row) {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-surface-alt);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-sm);
+    padding: 0.6rem 1rem;
+    animation: slideInRow 0.25s ease-out forwards;
+  }
+
+  @keyframes slideInRow {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  :global(.history-time) {
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+  }
+
+  :global(.history-value) {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--accent-cyan);
+  }
+
+  .history-empty {
+    color: var(--text-tertiary);
+    font-size: 0.85rem;
+    font-style: italic;
+    text-align: center;
+    padding: 1rem 0;
+  }
+
+  /* Hub grid header */
+  .hub-section {
+    padding: 3rem 0;
+  }
+
+  .section-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .section-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent-cyan);
+    margin-bottom: 0.5rem;
+  }
+
+  .section-heading {
+    font-family: 'Outfit', sans-serif;
+    font-size: clamp(1.4rem, 3.5vw, 1.8rem);
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.02em;
+  }
+</style>

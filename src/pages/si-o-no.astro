@@ -1,0 +1,547 @@
+---
+import Layout from '../layouts/Layout.astro';
+import AdSlot from '../components/AdSlot.astro';
+import HubGrid from '../components/HubGrid.astro';
+import SeoArticle from '../components/SeoArticle.astro';
+
+const title = 'Oráculo Sí o No Online — Tomar Decisiones Rápidas | Decídelo.app';
+const description = 'Haz tu pregunta al oráculo místico de Sí o No. Escribe tu duda, presiona consultar y deja que la bola mágica tome una decisión por ti al instante.';
+const keywords = 'oraculo si o no, bola magica si o no, bola 8 magica online, tomar decisiones gratis, decidir al azar, suerte, oraculo virtual';
+
+const schemaLD = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebApplication",
+      "@id": "https://decidelo.app/si-o-no#webapp",
+      "name": "Oráculo Sí o No Online — Decídelo.app",
+      "description": "Oráculo interactivo virtual inspirado en la clásica bola 8 para resolver preguntas binarias (sí o no) con respuestas animadas y místicas.",
+      "url": "https://decidelo.app/si-o-no",
+      "applicationCategory": "UtilityApplication",
+      "operatingSystem": "All",
+      "browserRequirements": "Requires JavaScript",
+      "softwareVersion": "2.0.0",
+      "inLanguage": "es",
+      "offers": {
+        "@type": "Offer",
+        "price": "0.00",
+        "priceCurrency": "USD"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Decídelo.app",
+        "url": "https://decidelo.app/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://decidelo.app/favicon.svg"
+        }
+      }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://decidelo.app/si-o-no#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Inicio",
+          "item": "https://decidelo.app/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Oráculo Sí o No",
+          "item": "https://decidelo.app/si-o-no"
+        }
+      ]
+    }
+  ]
+};
+---
+
+<Layout title={title} description={description} keywords={keywords} schemaLD={schemaLD} showHomeHeader={false}>
+  <main class="container">
+    
+    <!-- Hero Section -->
+    <section class="hero slide-up delay-1">
+      <h1>Oráculo <span class="gradient-text">Sí o No</span></h1>
+      <p>¿Tienes dudas sobre una decisión? Formula tu pregunta cerrada (cuya respuesta sea Sí o No), consulta a la bola mística y despeja tu mente.</p>
+    </section>
+
+    <AdSlot position="top" />
+
+    <!-- Tablero del Oráculo -->
+    <section class="game-board slide-up delay-2" aria-label="Tablero del Oráculo">
+      
+      <!-- Entrada de Pregunta -->
+      <div class="question-panel">
+        <div class="form-group">
+          <label for="oracle-question">¿Cuál es tu pregunta?</label>
+          <input type="text" id="oracle-question" placeholder="Escribe aquí tu duda..." autocomplete="off" aria-label="Escribe aquí tu pregunta">
+        </div>
+      </div>
+
+      <!-- Área de la Bola Mágica -->
+      <div class="ball-scene">
+        <div class="oracle-ball" id="oracle-ball">
+          <!-- Brillo de iluminación 3D -->
+          <div class="ball-reflection"></div>
+          
+          <!-- Ventana de Líquido -->
+          <div class="oracle-window">
+            <!-- Contenedor del Triángulo Revelado -->
+            <div class="oracle-answer-container" id="oracle-answer-container">
+              <!-- Triángulo Místico SVG -->
+              <svg class="triangle-svg" viewBox="0 0 100 100">
+                <polygon points="50,15 15,80 85,80"></polygon>
+              </svg>
+              <!-- Texto de la Respuesta -->
+              <span class="answer-inner" id="oracle-answer-text"></span>
+            </div>
+            <!-- Efecto de niebla/humo en ventana -->
+            <div class="window-fog"></div>
+          </div>
+        </div>
+        <!-- Sombra proyectada en el suelo -->
+        <div class="ball-shadow"></div>
+      </div>
+
+      <!-- Botón de Consulta -->
+      <button class="btn-spin" id="btn-spin">CONSULTAR AL ORÁCULO</button>
+
+    </section>
+
+    <!-- Historial de Preguntas -->
+    <section class="history-card slide-up delay-3" aria-label="Historial de consultas al oráculo">
+      <div class="history-header">
+        <h3>
+          <span>🕒</span> Consultas Recientes
+        </h3>
+        <button class="btn-clear" id="btn-clear">Borrar historial</button>
+      </div>
+      <div class="history-list-vertical" id="history-list">
+        <span class="history-empty">Sin preguntas aún</span>
+      </div>
+    </section>
+
+  </main>
+
+  <div class="toast" id="toast-message">Mensaje de alerta</div>
+
+  <SeoArticle title="Oráculo Sí o No: ¿Cómo utilizarlo para destrabar tus decisiones cotidianas?">
+    <p>A lo largo de la historia, la humanidad ha buscado métodos para reducir la incertidumbre del porvenir y facilitar la toma de decisiones difíciles. Desde el milenario oráculo de Delfos en Grecia, las lecturas del I Ching en Oriente, hasta los juegos lúdicos modernos como la clásica <strong>Bola 8 Mágica</strong> (Magic 8-Ball) patentada en los años 50 en Estados Unidos. El deseo de obtener una respuesta clara y binaria (Sí o No) es un reflejo de nuestra necesidad de superar la procrastinación y la parálisis decisional.</p>
+    
+    <p>Nuestra versión del <strong>Oráculo de Sí o No Virtual</strong> fusiona la psicología de la toma de decisiones con una experiencia visual inmersiva. No pretendemos predecir el futuro de manera mística, sino proporcionarte un espejo cognitivo e interactivo.</p>
+
+    <h2>La Psicología del Oráculo: Descubriendo tu Verdadera Preferencia</h2>
+    <p>¿Funciona realmente el oráculo para tomar una decisión seria? Curiosamente, los psicólogos señalan que las herramientas de azar actúan como catalizadores de nuestra **intuición inconsciente**. Cuando delegas una decisión importante en un elemento externo y el oráculo te responde con un rotundo "No", tu cerebro procesa instantáneamente una reacción afectiva:</p>
+    <ul>
+      <li><strong>Alivio:</strong> Si sientes tranquilidad al ver el resultado negativo, confirmas que esa era la opción adecuada.</li>
+      <li><strong>Decepción/Frustración:</strong> Si al leer un "No" sientes un deseo inmediato de volver a consultar o te enojas con la respuesta, tu mente te está indicando con absoluta certeza que **en realidad querías un Sí**.</li>
+    </ul>
+    <p>De este modo, forzar una respuesta aleatoria binaria desbloquea lo que tus emociones ya sabían, pero tu razonamiento analítico bloqueaba por exceso de dudas.</p>
+
+    <h2>Diseño Místico con Físicas de Fluido en Tres Dimensiones</h2>
+    <p>Hemos construido este oráculo utilizando herramientas de diseño avanzadas. La bola mágica está modelada con gradients radiales de profundidad que le otorgan un **aspecto tridimensional de baquelita pulida** bajo luces de ambiente neón. Al presionar "Consultar", la bola ejecuta una simulación física de vibración (shake animation) mientras escuchas el sutil movimiento del líquido en el que flota el dado triangular interno.</p>
+    <p>Al detenerse, la neblina azulada de la ventana se disipa dando paso a un dado en forma de triángulo equilátero que emerge desde la profundidad del fluido, revelando la respuesta final acompañada de una campanilla cristalina sintetizada.</p>
+  </SeoArticle>
+
+  <AdSlot position="bottom" />
+
+  <section class="hub-section container">
+    <div class="section-header reveal">
+      <div class="section-tag">🧰 Caja de Herramientas</div>
+      <h2 class="section-heading">Prueba otras herramientas de decisión</h2>
+    </div>
+    <HubGrid activeToolId="si-o-no" />
+  </section>
+
+  <script src="../scripts/si-o-no.js"></script>
+</Layout>
+
+<style>
+  main {
+    padding: 3rem 0;
+  }
+
+  /* Formulario de Pregunta */
+  .question-panel {
+    margin-bottom: 2rem;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .form-group label {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+
+  .form-group input {
+    background: var(--bg-surface-alt);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    padding: 0.8rem 1rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    transition: var(--transition);
+    width: 100%;
+    text-align: center;
+  }
+
+  .form-group input:focus {
+    outline: none;
+    border-color: var(--accent-cyan);
+    box-shadow: 0 0 12px rgba(0, 229, 255, 0.15);
+  }
+
+  /* Escena de la Bola 8 */
+  .ball-scene {
+    position: relative;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 1.5rem 0 2.5rem;
+  }
+
+  .oracle-ball {
+    position: relative;
+    width: 280px;
+    height: 280px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #30313b 0%, #0e0f14 60%, #020203 100%);
+    box-shadow: inset -10px -10px 30px rgba(0,0,0,0.8),
+                10px 10px 30px rgba(0,0,0,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+  }
+
+  .ball-reflection {
+    position: absolute;
+    top: 15px; left: 45px;
+    width: 90px;
+    height: 45px;
+    background: linear-gradient(to bottom, rgba(255,255,255,0.15), rgba(255,255,255,0));
+    border-radius: 50% / 100% 100% 0 0;
+    transform: rotate(-15deg);
+    pointer-events: none;
+  }
+
+  .oracle-window {
+    position: relative;
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    border: 5px solid #1c1d26;
+    background: radial-gradient(circle at center, #0a0b12 0%, #030305 100%);
+    box-shadow: inset 0 0 20px rgba(0, 229, 255, 0.18),
+                0 0 10px rgba(0,0,0,0.5);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Animación de Vibración */
+  @keyframes shake {
+    0% { transform: translate(0, 0) rotate(0deg); }
+    10% { transform: translate(-6px, 4px) rotate(-3deg); }
+    20% { transform: translate(5px, -4px) rotate(3deg); }
+    30% { transform: translate(-4px, 2px) rotate(-1deg); }
+    40% { transform: translate(4px, -2px) rotate(2deg); }
+    50% { transform: translate(-5px, 3px) rotate(-2deg); }
+    60% { transform: translate(3px, -2px) rotate(1deg); }
+    70% { transform: translate(-3px, 1px) rotate(-1deg); }
+    80% { transform: translate(2px, -1px) rotate(1deg); }
+    90% { transform: translate(-1px, 1px) rotate(0deg); }
+    100% { transform: translate(0, 0) rotate(0deg); }
+  }
+
+  .oracle-ball.shaking {
+    animation: shake 0.6s ease-in-out infinite;
+  }
+
+  .oracle-ball.shaking .oracle-answer-container {
+    opacity: 0;
+    transform: scale(0.5);
+    transition: none;
+  }
+
+  .oracle-ball.shaking .window-fog {
+    opacity: 0.8;
+  }
+
+  /* Contenedor del triángulo flotante */
+  .oracle-answer-container {
+    position: relative;
+    width: 110px;
+    height: 110px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: scale(0.6) rotate(-15deg);
+    transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .oracle-answer-container.revealed {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+
+  .triangle-svg {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    fill: #060810;
+    stroke: var(--accent-purple);
+    stroke-width: 2.5;
+    filter: drop-shadow(0 0 8px rgba(179, 102, 255, 0.3));
+    transition: stroke 0.4s ease, filter 0.4s ease;
+  }
+
+  /* Si sale respuesta afirmativa cambiamos color del triangulo por JS o clases */
+  .oracle-answer-container:has(.cyan) .triangle-svg {
+    stroke: var(--accent-cyan);
+    filter: drop-shadow(0 0 8px rgba(0, 229, 255, 0.3));
+  }
+
+  .oracle-answer-container:has(.neutral) .triangle-svg {
+    stroke: var(--text-secondary);
+    filter: drop-shadow(0 0 5px rgba(255,255,255,0.1));
+  }
+
+  .answer-inner {
+    position: relative;
+    z-index: 10;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-align: center;
+    max-width: 65px;
+    line-height: 1.15;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    padding-top: 15px; /* Ajuste para centrar sobre el triángulo invertido */
+    transition: var(--transition);
+  }
+
+  .answer-inner.cyan {
+    color: var(--accent-cyan);
+    text-shadow: 0 0 8px rgba(0, 229, 255, 0.4);
+  }
+
+  .answer-inner.purple {
+    color: var(--accent-purple);
+    text-shadow: 0 0 8px rgba(179, 102, 255, 0.4);
+  }
+
+  .answer-inner.neutral {
+    color: var(--text-primary);
+    text-shadow: 0 0 4px rgba(255,255,255,0.2);
+  }
+
+  /* Neblina */
+  .window-fog {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle, rgba(0, 229, 255, 0.08) 0%, rgba(0,0,0,0) 80%);
+    opacity: 0.3;
+    pointer-events: none;
+    transition: opacity 0.8s ease;
+  }
+
+  /* Sombra del suelo */
+  .ball-shadow {
+    width: 200px;
+    height: 14px;
+    background: rgba(0, 0, 0, 0.65);
+    border-radius: 50%;
+    filter: blur(8px);
+    margin-top: 0.5rem;
+    transition: var(--transition);
+  }
+
+  .oracle-ball.shaking + .ball-shadow {
+    transform: scale(0.9);
+    opacity: 0.4;
+  }
+
+  /* Historial */
+  .history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .btn-clear {
+    background: transparent;
+    border: none;
+    color: var(--text-tertiary);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+
+  .btn-clear:hover {
+    color: var(--accent-danger);
+  }
+
+  .history-list-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-top: 1rem;
+    max-height: 280px;
+    overflow-y: auto;
+    padding-right: 0.4rem;
+  }
+
+  /* Scrollbar para historial */
+  .history-list-vertical::-webkit-scrollbar {
+    width: 6px;
+  }
+  .history-list-vertical::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .history-list-vertical::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.06);
+    border-radius: 999px;
+  }
+
+  :global(.history-item-row.oracle-row) {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-surface-alt);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem 1.25rem;
+    gap: 1.5rem;
+    animation: slideInRow 0.25s ease-out forwards;
+  }
+
+  :global(.oracle-q-block) {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  :global(.history-q-text) {
+    font-size: 0.88rem;
+    font-style: italic;
+    color: var(--text-secondary);
+    line-height: 1.4;
+  }
+
+  :global(.history-time) {
+    font-size: 0.7rem;
+    color: var(--text-tertiary);
+  }
+
+  :global(.history-value.cyan) {
+    color: var(--accent-cyan);
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-shadow: 0 0 6px rgba(0, 229, 255, 0.15);
+  }
+
+  :global(.history-value.purple) {
+    color: var(--accent-purple);
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-shadow: 0 0 6px rgba(179, 102, 255, 0.15);
+  }
+
+  :global(.history-value.neutral) {
+    color: var(--text-primary);
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+
+  .history-empty {
+    color: var(--text-tertiary);
+    font-size: 0.85rem;
+    font-style: italic;
+    text-align: center;
+    padding: 1rem 0;
+  }
+
+  /* Hub Section Header */
+  .hub-section {
+    padding: 3rem 0;
+  }
+
+  .section-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .section-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent-cyan);
+    margin-bottom: 0.5rem;
+  }
+
+  .section-heading {
+    font-family: 'Outfit', sans-serif;
+    font-size: clamp(1.4rem, 3.5vw, 1.8rem);
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.02em;
+  }
+
+  /* Responsive overrides */
+  @media (max-width: 600px) {
+    .oracle-ball {
+      width: 220px;
+      height: 220px;
+    }
+    .oracle-window {
+      width: 105px;
+      height: 105px;
+    }
+    .oracle-answer-container {
+      width: 90px;
+      height: 90px;
+    }
+    .answer-inner {
+      font-size: 0.62rem;
+      max-width: 50px;
+      padding-top: 10px;
+    }
+    .ball-shadow {
+      width: 160px;
+    }
+    :global(.history-item-row.oracle-row) {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+    :global(.history-value) {
+      align-self: flex-end;
+    }
+  }
+</style>

@@ -1,0 +1,14 @@
+---
+interface Props {
+  position: 'top' | 'bottom';
+  id?: string;
+}
+
+const { position, id } = Astro.props;
+const slotId = id || `ad-slot-${position}`;
+---
+
+<!-- INSTRUCCIONES ADSENSE: Reemplaza este div con tu script de AdSense -->
+<div class="container">
+  <div class="ad-placeholder" id={slotId} aria-hidden="true"></div>
+</div>

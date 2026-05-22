@@ -1,0 +1,128 @@
+---
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description: string;
+  canonical?: string;
+  ogType?: string;
+  keywords?: string;
+  schemaLD?: object;
+  showHomeHeader?: boolean;
+  bodyClass?: string;
+}
+
+const {
+  title,
+  description,
+  canonical = Astro.url.href,
+  ogType = 'website',
+  keywords = 'decidelo, ruleta aleatoria, tomar decisiones, sorteo, generador aleatorio',
+  schemaLD,
+  showHomeHeader = false,
+  bodyClass = '',
+} = Astro.props;
+
+const siteUrl = 'https://decidelo.app';
+---
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- SEO -->
+  <title>{title}</title>
+  <meta name="description" content={description}>
+  <meta name="keywords" content={keywords}>
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href={canonical}>
+  
+  <!-- Icons -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content={title}>
+  <meta property="og:description" content={description}>
+  <meta property="og:type" content={ogType}>
+  <meta property="og:url" content={canonical}>
+  <meta property="og:site_name" content="Decídelo.app">
+  <meta property="og:image" content="https://decidelo.app/social-share.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+
+  <!-- Twitter Cards -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content={title}>
+  <meta name="twitter:description" content={description}>
+  <meta name="twitter:image" content="https://decidelo.app/social-share.png">
+
+  <!-- Fonts — Preload for performance -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Schema.org JSON-LD -->
+  {schemaLD && (
+    <script type="application/ld+json" set:html={JSON.stringify(schemaLD)} />
+  )}
+
+  <!-- View Transitions -->
+  <meta name="view-transition" content="same-origin">
+
+  <slot name="head" />
+</head>
+<body class={bodyClass}>
+  <!-- Scroll Progress Indicator -->
+  <div class="scroll-progress" id="scroll-progress" aria-hidden="true"></div>
+
+  <!-- Screen Reader Announcer -->
+  <div id="sr-announcer" class="sr-only" aria-live="assertive" aria-atomic="true"></div>
+
+  <Header showHomeHeader={showHomeHeader} />
+
+  <slot />
+
+  <Footer />
+
+  <!-- Scroll Progress Script -->
+  <script>
+    const progressBar = document.getElementById('scroll-progress');
+    if (progressBar) {
+      window.addEventListener('scroll', () => {
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const scrollPercent = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+        progressBar.style.width = `${scrollPercent}%`;
+      }, { passive: true });
+    }
+  </script>
+
+  <!-- Scroll Reveal Script -->
+  <script>
+    (function initScrollReveal() {
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (prefersReducedMotion) {
+        document.querySelectorAll('.reveal, .reveal-scale, .slide-up').forEach(el => {
+          el.classList.add('revealed');
+          el.style.opacity = '1';
+          el.style.transform = 'none';
+        });
+        return;
+      }
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('revealed');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+      document.querySelectorAll('.reveal, .reveal-scale').forEach(el => observer.observe(el));
+    })();
+  </script>
+</body>
+</html>

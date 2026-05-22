@@ -1,0 +1,861 @@
+---
+import Layout from '../layouts/Layout.astro';
+import AdSlot from '../components/AdSlot.astro';
+import HubGrid from '../components/HubGrid.astro';
+import SeoArticle from '../components/SeoArticle.astro';
+
+const title = 'Piedra, Papel o Tijera Online — Juego Gratis PvP y vs IA | Decídelo.app';
+const description = 'Juega Piedra, Papel o Tijera online gratis contra la IA o en modo 2 jugadores local. Animaciones premium, modo oscuro elegante y sin distracciones. Resuelve disputas al instante.';
+const keywords = 'piedra papel tijera, piedra papel o tijera online, juego ppt, rps online, decidir al azar, juego gratis, pvp local, vs ia, decidelo';
+
+const schemaLD = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebApplication",
+      "@id": "https://decidelo.app/piedra-papel-tijera#webapp",
+      "name": "Piedra, Papel o Tijera Online — Decídelo.app",
+      "description": "Juego interactivo de Piedra, Papel o Tijera con modo 1 jugador contra IA y modo 2 jugadores local. Animaciones de sacudida premium y diseño modo oscuro.",
+      "url": "https://decidelo.app/piedra-papel-tijera",
+      "applicationCategory": "GameApplication",
+      "operatingSystem": "All",
+      "browserRequirements": "Requires JavaScript and CSS3 Animations",
+      "softwareVersion": "2.0.0",
+      "inLanguage": "es",
+      "offers": {
+        "@type": "Offer",
+        "price": "0.00",
+        "priceCurrency": "USD"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Decídelo.app",
+        "url": "https://decidelo.app/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://decidelo.app/favicon.svg"
+        }
+      }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://decidelo.app/piedra-papel-tijera#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Inicio",
+          "item": "https://decidelo.app/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Piedra, Papel o Tijera",
+          "item": "https://decidelo.app/piedra-papel-tijera"
+        }
+      ]
+    }
+  ]
+};
+---
+
+<Layout title={title} description={description} keywords={keywords} schemaLD={schemaLD} showHomeHeader={false}>
+  <main class="container">
+
+    <!-- Hero Section -->
+    <section class="hero slide-up delay-1">
+      <h1>Piedra, Papel o Tijera <span class="gradient-text">Online</span></h1>
+      <p>Resuelve disputas al instante con el clásico juego de manos. Modo IA para jugar solo o modo local para retar a un amigo. Sin distracciones.</p>
+    </section>
+
+    <!-- Selector de Modo de Juego -->
+    <div class="selector-container slide-up delay-2" id="mode-selector">
+      <button class="selector-btn active" data-mode="1p">🤖 1 Jugador (vs IA)</button>
+      <button class="selector-btn" data-mode="2p">👥 2 Jugadores (Local)</button>
+    </div>
+
+    <!-- Tablero de Juego -->
+    <section class="game-board slide-up delay-3" aria-label="Tablero de juego Piedra, Papel o Tijera">
+
+      <!-- =================== MODO 1 JUGADOR (vs IA) =================== -->
+      <div class="ai-container active" id="ai-container">
+
+        <!-- Marcador -->
+        <div class="scoreboard">
+          <div class="score-item">
+            <span class="score-label">Victorias</span>
+            <span class="score-value wins" id="score-wins">0</span>
+          </div>
+          <div class="score-item">
+            <span class="score-label">Derrotas</span>
+            <span class="score-value losses" id="score-losses">0</span>
+          </div>
+          <div class="score-item">
+            <span class="score-label">Empates</span>
+            <span class="score-value ties" id="score-ties">0</span>
+          </div>
+        </div>
+
+        <!-- Botones de elección 1P -->
+        <div class="choices-row" id="ai-choices">
+          <button class="choice-btn" data-choice="piedra" aria-label="Elegir Piedra">
+            <svg viewBox="0 0 80 80" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M28 52 C28 52, 22 46, 22 38 C22 34, 25 31, 29 31 C31 31, 33 32, 34 34"></path>
+              <path d="M34 34 C34 28, 34 24, 38 22 C42 20, 46 22, 46 26 L46 34"></path>
+              <path d="M46 30 C46 26, 50 24, 53 26 C56 28, 56 31, 56 34"></path>
+              <path d="M56 32 C56 28, 60 27, 62 30 C64 33, 63 36, 62 40"></path>
+              <path d="M62 40 C62 40, 63 48, 58 54 C53 60, 44 62, 38 60 C32 58, 28 54, 28 52"></path>
+              <path d="M34 34 L34 42" opacity="0.4"></path>
+              <path d="M46 34 L46 42" opacity="0.4"></path>
+              <path d="M56 34 L56 40" opacity="0.4"></path>
+            </svg>
+            <span class="choice-label">Piedra</span>
+          </button>
+
+          <button class="choice-btn" data-choice="papel" aria-label="Elegir Papel">
+            <svg viewBox="0 0 80 80" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M26 56 C26 56, 22 48, 22 42 C22 38, 25 36, 28 36 L28 54"></path>
+              <path d="M28 36 L30 18 C30 14, 34 13, 36 16 L36 36"></path>
+              <path d="M36 36 L37 16 C37 12, 41 11, 43 14 L43 36"></path>
+              <path d="M43 36 L44 18 C44 14, 48 13, 50 16 L50 38"></path>
+              <path d="M50 38 L51 24 C51 20, 55 19, 57 22 L57 42"></path>
+              <path d="M57 42 C57 42, 58 50, 53 56 C48 62, 40 63, 34 61 C28 59, 26 56, 26 56"></path>
+            </svg>
+            <span class="choice-label">Papel</span>
+          </button>
+
+          <button class="choice-btn" data-choice="tijera" aria-label="Elegir Tijera">
+            <svg viewBox="0 0 80 80" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M28 58 C28 58, 24 50, 24 44 C24 40, 27 38, 30 39 L32 42"></path>
+              <path d="M32 42 L26 16 C25 12, 29 10, 31 14 L38 38"></path>
+              <path d="M38 38 L38 14 C38 10, 42 9, 43 13 L44 38"></path>
+              <path d="M44 38 C44 38, 46 36, 48 38 C50 40, 50 42, 50 44"></path>
+              <path d="M50 44 C50 44, 52 42, 54 44 C56 46, 56 48, 55 50"></path>
+              <path d="M55 50 C55 50, 55 56, 50 60 C45 64, 38 63, 33 61 C28 59, 28 58, 28 58"></path>
+              <path d="M48 38 L48 44" opacity="0.3"></path>
+            </svg>
+            <span class="choice-label">Tijera</span>
+          </button>
+        </div>
+
+        <!-- Arena de Batalla -->
+        <div class="battle-arena" id="ai-arena">
+          <div class="arena-player">
+            <span class="arena-label cyan">Tú</span>
+            <div class="arena-hand" id="arena-p1">
+              <svg viewBox="0 0 80 80" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="40" cy="40" r="24" opacity="0.2"></circle>
+                <path d="M33 32 C33 26, 40 22, 45 26 C50 30, 48 35, 40 38 L40 44"></path>
+                <circle cx="40" cy="52" r="2" fill="currentColor" stroke="none"></circle>
+              </svg>
+            </div>
+          </div>
+          <span class="arena-vs">VS</span>
+          <div class="arena-player">
+            <span class="arena-label purple">IA</span>
+            <div class="arena-hand" id="arena-ai">
+              <svg viewBox="0 0 80 80" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="40" cy="40" r="24" opacity="0.2"></circle>
+                <path d="M33 32 C33 26, 40 22, 45 26 C50 30, 48 35, 40 38 L40 44"></path>
+                <circle cx="40" cy="52" r="2" fill="currentColor" stroke="none"></circle>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Resultado -->
+        <div class="result-display" id="ai-result" aria-live="polite"></div>
+
+        <!-- Botón Reiniciar Marcador -->
+        <button class="btn-reset" id="btn-reset-score">Reiniciar marcador</button>
+      </div>
+
+      <!-- =================== MODO 2 JUGADORES (PvP Local) =================== -->
+      <div class="pvp-container" id="pvp-container">
+
+        <!-- Paneles de jugadores -->
+        <div class="pvp-panels">
+          <!-- Panel Jugador 1 -->
+          <div class="player-panel" id="panel-p1">
+            <div class="panel-label cyan">Jugador 1</div>
+            <div class="panel-choices" id="choices-p1">
+              <button class="choice-btn" data-choice="piedra" aria-label="Jugador 1: Piedra">
+                <svg viewBox="0 0 80 80" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M28 52 C28 52, 22 46, 22 38 C22 34, 25 31, 29 31 C31 31, 33 32, 34 34"></path>
+                  <path d="M34 34 C34 28, 34 24, 38 22 C42 20, 46 22, 46 26 L46 34"></path>
+                  <path d="M46 30 C46 26, 50 24, 53 26 C56 28, 56 31, 56 34"></path>
+                  <path d="M56 32 C56 28, 60 27, 62 30 C64 33, 63 36, 62 40"></path>
+                  <path d="M62 40 C62 40, 63 48, 58 54 C53 60, 44 62, 38 60 C32 58, 28 54, 28 52"></path>
+                  <path d="M34 34 L34 42" opacity="0.4"></path>
+                  <path d="M46 34 L46 42" opacity="0.4"></path>
+                  <path d="M56 34 L56 40" opacity="0.4"></path>
+                </svg>
+                <span class="choice-label">Piedra</span>
+              </button>
+              <button class="choice-btn" data-choice="papel" aria-label="Jugador 1: Papel">
+                <svg viewBox="0 0 80 80" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M26 56 C26 56, 22 48, 22 42 C22 38, 25 36, 28 36 L28 54"></path>
+                  <path d="M28 36 L30 18 C30 14, 34 13, 36 16 L36 36"></path>
+                  <path d="M36 36 L37 16 C37 12, 41 11, 43 14 L43 36"></path>
+                  <path d="M43 36 L44 18 C44 14, 48 13, 50 16 L50 38"></path>
+                  <path d="M50 38 L51 24 C51 20, 55 19, 57 22 L57 42"></path>
+                  <path d="M57 42 C57 42, 58 50, 53 56 C48 62, 40 63, 34 61 C28 59, 26 56, 26 56"></path>
+                </svg>
+                <span class="choice-label">Papel</span>
+              </button>
+              <button class="choice-btn" data-choice="tijera" aria-label="Jugador 1: Tijera">
+                <svg viewBox="0 0 80 80" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M28 58 C28 58, 24 50, 24 44 C24 40, 27 38, 30 39 L32 42"></path>
+                  <path d="M32 42 L26 16 C25 12, 29 10, 31 14 L38 38"></path>
+                  <path d="M38 38 L38 14 C38 10, 42 9, 43 13 L44 38"></path>
+                  <path d="M44 38 C44 38, 46 36, 48 38 C50 40, 50 42, 50 44"></path>
+                  <path d="M50 44 C50 44, 52 42, 54 44 C56 46, 56 48, 55 50"></path>
+                  <path d="M55 50 C55 50, 55 56, 50 60 C45 64, 38 63, 33 61 C28 59, 28 58, 28 58"></path>
+                  <path d="M48 38 L48 44" opacity="0.3"></path>
+                </svg>
+                <span class="choice-label">Tijera</span>
+              </button>
+            </div>
+            <div class="lock-status">
+              <span class="lock-icon">🔒</span>
+              <span class="lock-text">Jugador 1: ¡Listo!</span>
+            </div>
+          </div>
+
+          <!-- Panel Jugador 2 -->
+          <div class="player-panel" id="panel-p2">
+            <div class="panel-label purple">Jugador 2</div>
+            <div class="panel-choices" id="choices-p2">
+              <button class="choice-btn" data-choice="piedra" aria-label="Jugador 2: Piedra">
+                <svg viewBox="0 0 80 80" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M28 52 C28 52, 22 46, 22 38 C22 34, 25 31, 29 31 C31 31, 33 32, 34 34"></path>
+                  <path d="M34 34 C34 28, 34 24, 38 22 C42 20, 46 22, 46 26 L46 34"></path>
+                  <path d="M46 30 C46 26, 50 24, 53 26 C56 28, 56 31, 56 34"></path>
+                  <path d="M56 32 C56 28, 60 27, 62 30 C64 33, 63 36, 62 40"></path>
+                  <path d="M62 40 C62 40, 63 48, 58 54 C53 60, 44 62, 38 60 C32 58, 28 54, 28 52"></path>
+                  <path d="M34 34 L34 42" opacity="0.4"></path>
+                  <path d="M46 34 L46 42" opacity="0.4"></path>
+                  <path d="M56 34 L56 40" opacity="0.4"></path>
+                </svg>
+                <span class="choice-label">Piedra</span>
+              </button>
+              <button class="choice-btn" data-choice="papel" aria-label="Jugador 2: Papel">
+                <svg viewBox="0 0 80 80" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M26 56 C26 56, 22 48, 22 42 C22 38, 25 36, 28 36 L28 54"></path>
+                  <path d="M28 36 L30 18 C30 14, 34 13, 36 16 L36 36"></path>
+                  <path d="M36 36 L37 16 C37 12, 41 11, 43 14 L43 36"></path>
+                  <path d="M43 36 L44 18 C44 14, 48 13, 50 16 L50 38"></path>
+                  <path d="M50 38 L51 24 C51 20, 55 19, 57 22 L57 42"></path>
+                  <path d="M57 42 C57 42, 58 50, 53 56 C48 62, 40 63, 34 61 C28 59, 26 56, 26 56"></path>
+                </svg>
+                <span class="choice-label">Papel</span>
+              </button>
+              <button class="choice-btn" data-choice="tijera" aria-label="Jugador 2: Tijera">
+                <svg viewBox="0 0 80 80" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M28 58 C28 58, 24 50, 24 44 C24 40, 27 38, 30 39 L32 42"></path>
+                  <path d="M32 42 L26 16 C25 12, 29 10, 31 14 L38 38"></path>
+                  <path d="M38 38 L38 14 C38 10, 42 9, 43 13 L44 38"></path>
+                  <path d="M44 38 C44 38, 46 36, 48 38 C50 40, 50 42, 50 44"></path>
+                  <path d="M50 44 C50 44, 52 42, 54 44 C56 46, 56 48, 55 50"></path>
+                  <path d="M55 50 C55 50, 55 56, 50 60 C45 64, 38 63, 33 61 C28 59, 28 58, 28 58"></path>
+                  <path d="M48 38 L48 44" opacity="0.3"></path>
+                </svg>
+                <span class="choice-label">Tijera</span>
+              </button>
+            </div>
+            <div class="lock-status">
+              <span class="lock-icon">🔒</span>
+              <span class="lock-text">Jugador 2: ¡Listo!</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botón Revelar -->
+        <div style="text-align:center;">
+          <button class="btn-reveal" id="btn-reveal">✨ ¡REVELAR!</button>
+        </div>
+
+        <!-- Arena de Batalla PvP -->
+        <div class="battle-arena" id="pvp-arena">
+          <div class="arena-player">
+            <span class="arena-label cyan">J1</span>
+            <div class="arena-hand" id="arena-pvp-p1">
+              <svg viewBox="0 0 80 80" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="40" cy="40" r="24" opacity="0.2"></circle>
+                <path d="M33 32 C33 26, 40 22, 45 26 C50 30, 48 35, 40 38 L40 44"></path>
+                <circle cx="40" cy="52" r="2" fill="currentColor" stroke="none"></circle>
+              </svg>
+            </div>
+          </div>
+          <span class="arena-vs">VS</span>
+          <div class="arena-player">
+            <span class="arena-label purple">J2</span>
+            <div class="arena-hand" id="arena-pvp-p2">
+              <svg viewBox="0 0 80 80" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="40" cy="40" r="24" opacity="0.2"></circle>
+                <path d="M33 32 C33 26, 40 22, 45 26 C50 30, 48 35, 40 38 L40 44"></path>
+                <circle cx="40" cy="52" r="2" fill="currentColor" stroke="none"></circle>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Resultado PvP -->
+        <div class="result-display" id="pvp-result" aria-live="polite"></div>
+
+        <!-- Botón Jugar de Nuevo -->
+        <div style="text-align:center;">
+          <button class="btn-play-again" id="btn-play-again">🔄 Jugar de Nuevo</button>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <AdSlot position="top" />
+
+  <SeoArticle title="¿Cómo se juega Piedra, Papel o Tijera? Reglas, Estrategia y Psicología">
+    <p><strong>Piedra, Papel o Tijera</strong> (también conocido como <em>cachipún</em>, <em>jan-ken-pon</em> o <em>roshambo</em>) es uno de los juegos de mano más universales del planeta. Utilizado desde hace siglos para resolver disputas rápidas, asignar turnos o simplemente divertirse, este juego de suma cero ha fascinado tanto a matemáticos como a psicólogos por su aparente simplicidad y su sorprendente profundidad estratégica.</p>
+
+    <h2>Reglas Fundamentales del Juego</h2>
+    <p>Las reglas son elegantemente simples y se aprenden en segundos:</p>
+    <ul>
+      <li><strong>Piedra</strong> (puño cerrado) aplasta a <strong>Tijera</strong>.</li>
+      <li><strong>Tijera</strong> (gesto en V) corta a <strong>Papel</strong>.</li>
+      <li><strong>Papel</strong> (mano abierta) envuelve a <strong>Piedra</strong>.</li>
+      <li>Si ambos jugadores eligen lo mismo, es un <strong>empate</strong> y se repite la ronda.</li>
+    </ul>
+    <p>Cada opción vence a exactamente una de las otras y pierde contra la restante, creando un ciclo perfecto de dominancia sin jerarquía absoluta. Matemáticamente, esto se modela como un <strong>juego no transitivo</strong>.</p>
+
+    <h2>Historia y Orígenes</h2>
+    <p>Aunque muchos creen que el juego es de origen japonés (<em>jan-ken</em>), sus raíces se remontan a la <strong>dinastía Han</strong> en China (aproximadamente 200 a.C.), donde se le conocía como <em>shǒushìlìng</em> (juego de gestos con la mano). Llegó a Japón en el siglo XVII y desde allí se extendió globalmente durante el siglo XX, convirtiéndose en un fenómeno cultural universal.</p>
+    <p>Hoy en día existen <strong>torneos profesionales internacionales</strong> con premios en efectivo, como el Campeonato Mundial de la World RPS Society, lo que demuestra que incluso un juego aparentemente simple puede alcanzar niveles competitivos serios.</p>
+
+    <h2>Estrategias Psicológicas Avanzadas</h2>
+    <p>Aunque en teoría la estrategia óptima es elegir de forma completamente aleatoria (distribución uniforme 1/3 para cada opción), los humanos somos <strong>terriblemente malos generando aleatoriedad</strong>. Estudios de la Universidad de Zhejiang analizaron más de 300 rondas por participante y descubrieron patrones predecibles:</p>
+    <ul>
+      <li><strong>Efecto "ganador repite":</strong> Los jugadores que ganan una ronda tienden a repetir la misma elección en la siguiente con una frecuencia significativamente superior al 33%.</li>
+      <li><strong>Efecto "perdedor escala":</strong> Quienes pierden tienden a cambiar a la siguiente opción en el ciclo (de Piedra pasan a Papel, de Papel a Tijera, etc.).</li>
+      <li><strong>Sesgo inicial hacia Piedra:</strong> En la primera ronda, los jugadores inexpertos eligen Piedra con mayor frecuencia (~36%), posiblemente por la asociación instintiva del puño con la fuerza.</li>
+    </ul>
+    <p>Conocer estos sesgos te permite anticipar la jugada de tu oponente y elegir estratégicamente en consecuencia. Por ejemplo: si tu oponente acaba de perder con Tijera, probablemente elegirá Piedra en la siguiente ronda, así que tú deberías elegir Papel.</p>
+
+    <h2>¿Por qué usar la versión digital?</h2>
+    <p>Nuestra herramienta de <strong>Piedra, Papel o Tijera online</strong> resuelve varios problemas comunes del juego presencial:</p>
+    <ul>
+      <li><strong>Eliminación de trampas:</strong> En el modo 2 jugadores, las elecciones se ocultan hasta que ambos han confirmado, haciendo imposible reaccionar a la jugada del oponente.</li>
+      <li><strong>IA verdaderamente aleatoria:</strong> El modo contra la inteligencia artificial utiliza generación de números pseudoaleatorios del navegador, garantizando una distribución equitativa sin sesgos humanos.</li>
+      <li><strong>Registro de puntuación:</strong> El marcador se guarda automáticamente en tu navegador, permitiéndote llevar un historial de tu rendimiento sin necesidad de papel ni memoria.</li>
+      <li><strong>Accesibilidad universal:</strong> Funciona en cualquier dispositivo con navegador, sin instalaciones, sin registro y sin publicidad invasiva.</li>
+    </ul>
+  </SeoArticle>
+
+  <AdSlot position="bottom" />
+
+  <section class="hub-section container">
+    <div class="section-header reveal">
+      <div class="section-tag">🧰 Caja de Herramientas</div>
+      <h2 class="section-heading">Prueba otras herramientas de decisión</h2>
+    </div>
+    <HubGrid activeToolId="piedra-papel-tijera" />
+  </section>
+
+  <script src="../scripts/piedra-papel-tijera.js"></script>
+</Layout>
+
+<style>
+  /* PPT Game Custom Overrides */
+  .game-board {
+    max-width: 700px;
+    padding: 2.5rem 2rem 2rem;
+  }
+
+  /* ===== MARCADOR ===== */
+  .scoreboard {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .score-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .score-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-tertiary);
+  }
+
+  .score-value {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .score-value.wins { color: var(--accent-cyan); }
+  .score-value.losses { color: var(--accent-danger); }
+  .score-value.ties { color: var(--accent-purple); }
+
+  /* ===== BOTONES DE ELECCIÓN ===== */
+  .choices-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .choice-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    background: var(--bg-surface-alt);
+    border: 2px solid var(--card-border);
+    border-radius: var(--radius-md);
+    padding: 1.2rem 1.5rem;
+    cursor: pointer;
+    transition: var(--transition);
+    color: var(--text-primary);
+    min-width: 100px;
+  }
+
+  .choice-btn:hover:not(:disabled):not(.locked) {
+    border-color: rgba(0, 229, 255, 0.4);
+    background: var(--bg-surface-hover);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 229, 255, 0.1);
+  }
+
+  .choice-btn.selected {
+    border-color: transparent;
+    background: linear-gradient(var(--bg-surface-alt), var(--bg-surface-alt)) padding-box,
+                var(--accent-gradient) border-box;
+    border: 2px solid transparent;
+    box-shadow: 0 0 20px rgba(0, 229, 255, 0.15), 0 0 20px rgba(179, 102, 255, 0.1);
+  }
+
+  .choice-btn.locked {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  .choice-btn svg {
+    width: 56px;
+    height: 56px;
+  }
+
+  .choice-btn .choice-label {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 0.03em;
+  }
+
+  /* ===== ARENA DE BATALLA ===== */
+  .battle-arena {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    margin-bottom: 1.5rem;
+    width: 100%;
+    min-height: 180px;
+  }
+
+  .arena-player {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .arena-label {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .arena-label.cyan { color: var(--accent-cyan); }
+  .arena-label.purple { color: var(--accent-purple); }
+
+  .arena-hand {
+    width: 110px;
+    height: 110px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-surface-alt);
+    border: 2px solid var(--card-border);
+    border-radius: var(--radius-lg);
+    transition: border-color 0.4s ease;
+  }
+
+  .arena-hand svg {
+    width: 70px;
+    height: 70px;
+    color: var(--text-tertiary);
+    transition: color 0.3s ease;
+  }
+
+  .arena-hand.revealed svg {
+    color: var(--text-primary);
+  }
+
+  .arena-hand.revealed.cyan-glow {
+    border-color: rgba(0, 229, 255, 0.4);
+    box-shadow: 0 0 20px rgba(0, 229, 255, 0.1);
+  }
+
+  .arena-hand.revealed.purple-glow {
+    border-color: rgba(179, 102, 255, 0.4);
+    box-shadow: 0 0 20px rgba(179, 102, 255, 0.1);
+  }
+
+  .arena-vs {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--text-tertiary);
+  }
+
+  /* Animación de sacudida */
+  @keyframes handShake {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    15% { transform: translateY(-30px) rotate(-8deg); }
+    30% { transform: translateY(0) rotate(0deg); }
+    45% { transform: translateY(-25px) rotate(6deg); }
+    60% { transform: translateY(0) rotate(0deg); }
+    75% { transform: translateY(-20px) rotate(-4deg); }
+    90% { transform: translateY(0) rotate(0deg); }
+  }
+
+  .arena-hand.shaking {
+    animation: handShake 1.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  /* Resultado del combate */
+  .result-display {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    min-height: 2.5rem;
+    margin-bottom: 1.5rem;
+    color: #ffffff;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .result-display.show {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  .result-display :global(.result-win) { color: var(--accent-cyan); text-shadow: 0 0 15px rgba(0, 229, 255, 0.3); }
+  .result-display :global(.result-lose) { color: var(--accent-danger); text-shadow: 0 0 15px rgba(255, 77, 106, 0.3); }
+  .result-display :global(.result-tie) { color: var(--accent-purple); text-shadow: 0 0 15px rgba(179, 102, 255, 0.3); }
+
+  /* Botón reiniciar marcador */
+  .btn-reset {
+    background: transparent;
+    border: 1px solid var(--card-border);
+    color: var(--text-tertiary);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 0.5rem 1.2rem;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: var(--transition);
+    margin-top: 0.5rem;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .btn-reset:hover {
+    color: var(--accent-danger);
+    border-color: rgba(255, 77, 106, 0.3);
+  }
+
+  /* ===== MODO 2 JUGADORES ===== */
+  .pvp-container {
+    display: none;
+    width: 100%;
+  }
+
+  .pvp-container.active {
+    display: block;
+  }
+
+  .ai-container {
+    display: none;
+    width: 100%;
+  }
+
+  .ai-container.active {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .pvp-panels {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    width: 100%;
+  }
+
+  .player-panel {
+    background: var(--bg-surface-alt);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-md);
+    padding: 1.5rem 1rem;
+    text-align: center;
+    transition: var(--transition);
+  }
+
+  .player-panel .panel-label {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    letter-spacing: 0.03em;
+  }
+
+  .player-panel .panel-label.cyan { color: var(--accent-cyan); }
+  .player-panel .panel-label.purple { color: var(--accent-purple); }
+
+  .panel-choices {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .panel-choices .choice-btn {
+    padding: 0.8rem 1rem;
+    min-width: 70px;
+  }
+
+  .panel-choices .choice-btn svg {
+    width: 40px;
+    height: 40px;
+  }
+
+  .panel-choices .choice-btn .choice-label {
+    font-size: 0.7rem;
+  }
+
+  /* Estado bloqueado del panel */
+  .player-panel .lock-status {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1.5rem;
+    color: var(--text-secondary);
+  }
+
+  .player-panel.locked .panel-choices {
+    display: none;
+  }
+
+  .player-panel.locked .lock-status {
+    display: flex;
+  }
+
+  .lock-status .lock-icon {
+    font-size: 2rem;
+  }
+
+  .lock-status .lock-text {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+
+  /* Botón REVELAR */
+  .btn-reveal {
+    display: none;
+    background: var(--accent-gradient);
+    color: #050505;
+    border: none;
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    padding: 1rem 3rem;
+    border-radius: 999px;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: var(--transition);
+    box-shadow: 0 4px 20px rgba(0, 229, 255, 0.15);
+    margin-bottom: 1.5rem;
+  }
+
+  .btn-reveal.visible {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    animation: pulseGlow 2s ease-in-out infinite;
+  }
+
+  @keyframes pulseGlow {
+    0%, 100% { box-shadow: 0 4px 20px rgba(0, 229, 255, 0.15); }
+    50% { box-shadow: 0 4px 35px rgba(0, 229, 255, 0.35), 0 0 20px rgba(179, 102, 255, 0.2); }
+  }
+
+  .btn-reveal:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(0, 229, 255, 0.3), 0 0 15px rgba(179, 102, 255, 0.2);
+  }
+
+  .btn-reveal:active {
+    transform: translateY(1px);
+  }
+
+  /* Botón Jugar de Nuevo */
+  .btn-play-again {
+    display: none;
+    background: transparent;
+    border: 2px solid var(--card-border);
+    color: var(--text-primary);
+    font-family: 'Outfit', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 0.8rem 2.5rem;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: var(--transition);
+    margin-top: 0.5rem;
+  }
+
+  .btn-play-again.visible {
+    display: inline-block;
+  }
+
+  .btn-play-again:hover {
+    border-color: rgba(0, 229, 255, 0.4);
+    background: rgba(0, 229, 255, 0.05);
+  }
+
+  /* Hub section styling */
+  .hub-section {
+    padding: 3rem 0;
+  }
+
+  .section-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .section-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent-cyan);
+    margin-bottom: 0.5rem;
+  }
+
+  .section-heading {
+    font-family: 'Outfit', sans-serif;
+    font-size: clamp(1.4rem, 3.5vw, 1.8rem);
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.02em;
+  }
+
+  /* ===== RESPONSIVO MÓVIL ===== */
+  @media (max-width: 640px) {
+    .game-board {
+      padding: 2rem 1rem 1.5rem;
+    }
+
+    .selector-container {
+      flex-direction: column;
+      border-radius: var(--radius-md);
+      gap: 0.25rem;
+    }
+
+    .selector-btn {
+      border-radius: var(--radius-sm);
+      text-align: center;
+    }
+
+    .choices-row {
+      gap: 0.6rem;
+    }
+
+    .choice-btn {
+      padding: 1rem 1rem;
+      min-width: 85px;
+    }
+
+    .choice-btn svg {
+      width: 44px;
+      height: 44px;
+    }
+
+    .battle-arena {
+      gap: 1rem;
+      min-height: 150px;
+    }
+
+    .arena-hand {
+      width: 85px;
+      height: 85px;
+    }
+
+    .arena-hand svg {
+      width: 50px;
+      height: 50px;
+    }
+
+    .pvp-panels {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    .panel-choices .choice-btn {
+      padding: 0.6rem 0.6rem;
+      min-width: 60px;
+    }
+
+    .panel-choices .choice-btn svg {
+      width: 32px;
+      height: 32px;
+    }
+
+    .result-display {
+      font-size: 1.3rem;
+    }
+
+    .scoreboard {
+      gap: 1rem;
+    }
+
+    .score-value {
+      font-size: 1.5rem;
+    }
+  }
+</style>

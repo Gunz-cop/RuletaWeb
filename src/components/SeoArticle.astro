@@ -1,0 +1,37 @@
+---
+interface Props {
+  title?: string;
+  id?: string;
+  ariaLabel?: string;
+}
+
+const { title, id = 'acerca', ariaLabel = 'Información detallada sobre la herramienta' } = Astro.props;
+---
+
+<section id={id} class="seo-section reveal" aria-label={ariaLabel}>
+  <div class="container">
+    <article class="seo-article">
+      {title && <h2>{title}</h2>}
+      <slot />
+    </article>
+  </div>
+</section>
+
+<style>
+  /* Standardised CSS scoping for SEO articles in components if not in global.css */
+  .seo-section {
+    background: var(--bg-surface-alt);
+    border-top: 1px solid var(--card-border);
+    border-bottom: 1px solid var(--card-border);
+    padding: 4.5rem 0;
+    width: 100%;
+  }
+
+  .seo-article {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    line-height: 1.8;
+    max-width: 780px;
+    margin: 0 auto;
+  }
+</style>

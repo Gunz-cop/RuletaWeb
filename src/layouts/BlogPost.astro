@@ -1,0 +1,497 @@
+---
+import Layout from './Layout.astro';
+import HubGrid from '../components/HubGrid.astro';
+import AdSlot from '../components/AdSlot.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  pubDate: Date;
+  updatedDate?: Date;
+  heroImage?: string;
+  tags: string[];
+  author: string;
+}
+
+const { title, description, pubDate, updatedDate, heroImage, tags, author } = Astro.props;
+
+const formattedDate = new Date(pubDate).toLocaleDateString('es-ES', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric'
+});
+
+const postUrl = new URL(Astro.url.pathname, 'https://decidelo.app').href;
+
+const schemaLD = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BlogPosting",
+      "@id": `${postUrl}#blogposting`,
+      "mainEntityOfPage": postUrl,
+      "headline": title,
+      "description": description,
+      "datePublished": pubDate instanceof Date ? pubDate.toISOString() : new Date(pubDate).toISOString(),
+      ...(updatedDate && { "dateModified": updatedDate instanceof Date ? updatedDate.toISOString() : new Date(updatedDate).toISOString() }),
+      "author": {
+        "@type": "Person",
+        "name": author,
+        "url": "https://decidelo.app/"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Decídelo.app",
+        "url": "https://decidelo.app/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://decidelo.app/favicon.svg"
+        }
+      },
+      "image": heroImage ? (heroImage.startsWith('http') ? heroImage : `https://decidelo.app${heroImage}`) : "https://decidelo.app/social-share.png"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": `${postUrl}#breadcrumb`,
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Inicio",
+          "item": "https://decidelo.app/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Blog",
+          "item": "https://decidelo.app/blog"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": title,
+          "item": postUrl
+        }
+      ]
+    }
+  ]
+};
+---
+
+<Layout title={`${title} | Blog Decídelo.app`} description={description} schemaLD={schemaLD} showHomeHeader={false}>
+  <main class="container">
+    
+    <!-- Breadcrumb -->
+    <nav class="blog-breadcrumbs slide-up delay-1" aria-label="Breadcrumb">
+      <a href="/">Inicio</a>
+      <span class="separator">/</span>
+      <a href="/blog">Blog</a>
+      <span class="separator">/</span>
+      <span class="current" aria-current="page">{title}</span>
+    </nav>
+
+    <!-- Post Article -->
+    <article class="blog-post-card slide-up delay-2">
+      <header class="post-header">
+        <div class="post-tags">
+          {tags.map(tag => (
+            <span class="tag-badge">#{tag}</span>
+          ))}
+        </div>
+        <h1 class="post-title">{title}</h1>
+        <div class="post-meta">
+          <span class="post-author">Por <strong>{author}</strong></span>
+          <span class="bullet">•</span>
+          <time datetime={pubDate.toISOString()}>{formattedDate}</time>
+          {updatedDate && (
+            <>
+              <span class="bullet">•</span>
+              <span class="post-updated">Actualizado: {new Date(updatedDate).toLocaleDateString('es-ES')}</span>
+            </>
+          )}
+        </div>
+      </header>
+
+      <AdSlot position="top" />
+
+      {heroImage && (
+        <div class="post-hero-image">
+          <img src={heroImage} alt={title} loading="lazy" />
+        </div>
+      )}
+
+      <!-- Markdown Rendered Content -->
+      <section class="post-content">
+        <slot />
+      </section>
+
+      <footer class="post-footer">
+        <div class="post-footer-nav">
+          <a href="/blog" class="btn-back-blog">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            Volver al listado de artículos
+          </a>
+        </div>
+      </footer>
+    </article>
+
+    <AdSlot position="bottom" />
+
+    <!-- Related tools section -->
+    <section class="hub-section container">
+      <div class="section-header reveal">
+        <div class="section-tag">🎯 Toma una decisión</div>
+        <h2 class="section-heading">Prueba nuestras herramientas gratuitas</h2>
+      </div>
+      <HubGrid />
+    </section>
+
+  </main>
+</Layout>
+
+<style>
+  main {
+    padding: 2rem 0;
+  }
+
+  /* Breadcrumbs */
+  .blog-breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    width: 100%;
+    max-width: 820px;
+    margin-bottom: 1.5rem;
+  }
+
+  .blog-breadcrumbs a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: var(--transition);
+  }
+
+  .blog-breadcrumbs a:hover {
+    color: var(--accent-cyan);
+  }
+
+  .blog-breadcrumbs .separator {
+    color: var(--text-tertiary);
+  }
+
+  .blog-breadcrumbs .current {
+    color: var(--text-primary);
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 250px;
+  }
+
+  /* Post Card Layout */
+  .blog-post-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-lg);
+    padding: 2.5rem;
+    box-shadow: var(--shadow-lg);
+    width: 100%;
+    max-width: 820px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .blog-post-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: var(--accent-gradient);
+  }
+
+  .post-header {
+    margin-bottom: 2rem;
+  }
+
+  .post-tags {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.8rem;
+    flex-wrap: wrap;
+  }
+
+  .tag-badge {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--accent-cyan);
+    background: rgba(0, 229, 255, 0.08);
+    border: 1px solid rgba(0, 229, 255, 0.15);
+    padding: 0.2rem 0.6rem;
+    border-radius: 99px;
+  }
+
+  .post-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: clamp(1.8rem, 5vw, 2.6rem);
+    font-weight: 800;
+    line-height: 1.2;
+    color: #ffffff;
+    letter-spacing: -0.02em;
+    margin-bottom: 1rem;
+  }
+
+  .post-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    flex-wrap: wrap;
+  }
+
+  .post-meta strong {
+    color: var(--text-primary);
+  }
+
+  .bullet {
+    color: var(--text-tertiary);
+  }
+
+  .post-hero-image {
+    width: 100%;
+    max-height: 380px;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    margin-bottom: 2.5rem;
+    border: 1px solid var(--card-border);
+  }
+
+  .post-hero-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Custom Typography for Markdown rendering inside .post-content */
+  .post-content {
+    color: var(--text-secondary);
+    font-size: 1.05rem;
+    line-height: 1.8;
+  }
+
+  .post-content :global(h2),
+  .post-content :global(h3) {
+    color: #ffffff;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  .post-content :global(h2) {
+    font-size: 1.6rem;
+    margin-top: 2.5rem;
+    margin-bottom: 0.8rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .post-content :global(h3) {
+    font-size: 1.25rem;
+    margin-top: 1.8rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .post-content :global(p) {
+    margin-bottom: 1.5rem;
+  }
+
+  .post-content :global(strong) {
+    color: #ffffff;
+  }
+
+  .post-content :global(ul),
+  .post-content :global(ol) {
+    margin-bottom: 1.8rem;
+    padding-left: 1.5rem;
+  }
+
+  .post-content :global(ul) {
+    list-style: none;
+  }
+
+  .post-content :global(ul li) {
+    margin-bottom: 0.6rem;
+    position: relative;
+    padding-left: 1.2rem;
+  }
+
+  .post-content :global(ul li::before) {
+    content: '▸';
+    color: var(--accent-cyan);
+    position: absolute;
+    left: 0;
+    font-weight: bold;
+  }
+
+  .post-content :global(ol) {
+    list-style: decimal;
+  }
+
+  .post-content :global(ol li) {
+    margin-bottom: 0.6rem;
+    padding-left: 0.4rem;
+  }
+
+  .post-content :global(blockquote) {
+    border-left: 4px solid var(--accent-purple);
+    background: rgba(179, 102, 255, 0.05);
+    padding: 1rem 1.5rem;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    margin: 1.5rem 0 2rem;
+    font-style: italic;
+    color: var(--text-primary);
+  }
+
+  .post-content :global(blockquote p) {
+    margin-bottom: 0;
+  }
+
+  .post-content :global(a) {
+    color: var(--accent-cyan);
+    text-decoration: none;
+    transition: var(--transition);
+    border-bottom: 1px dashed rgba(0, 229, 255, 0.4);
+  }
+
+  .post-content :global(a:hover) {
+    color: #ffffff;
+    border-bottom-color: #ffffff;
+  }
+
+  .post-content :global(pre) {
+    background: var(--bg-surface-alt);
+    border: 1px solid var(--card-border);
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius-sm);
+    overflow-x: auto;
+    margin: 1.5rem 0;
+    font-family: monospace;
+    font-size: 0.9rem;
+  }
+
+  .post-content :global(code) {
+    background: rgba(0, 229, 255, 0.08);
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-family: monospace;
+    color: var(--accent-cyan);
+  }
+
+  .post-content :global(pre code) {
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    color: inherit;
+    font-size: inherit;
+  }
+
+  /* Table styling */
+  .post-content :global(table) {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.8rem 0;
+    font-size: 0.95rem;
+  }
+
+  .post-content :global(th),
+  .post-content :global(td) {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--card-border);
+    text-align: left;
+  }
+
+  .post-content :global(th) {
+    color: #ffffff;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .post-content :global(tr:hover) {
+    background: rgba(255, 255, 255, 0.01);
+  }
+
+  /* Post Footer */
+  .post-footer {
+    margin-top: 3.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .btn-back-blog {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: var(--transition);
+  }
+
+  .btn-back-blog:hover {
+    color: var(--accent-cyan);
+  }
+
+  .btn-back-blog svg {
+    transition: transform 0.2s ease;
+  }
+
+  .btn-back-blog:hover svg {
+    transform: translateX(-3px);
+  }
+
+  /* Hub Section Header */
+  .hub-section {
+    padding: 3rem 0 1rem;
+  }
+
+  .section-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .section-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent-cyan);
+    margin-bottom: 0.5rem;
+  }
+
+  .section-heading {
+    font-family: 'Outfit', sans-serif;
+    font-size: clamp(1.4rem, 3.5vw, 1.8rem);
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.02em;
+  }
+
+  /* Responsive overrides */
+  @media (max-width: 600px) {
+    .blog-post-card {
+      padding: 1.5rem;
+    }
+    .post-header {
+      margin-bottom: 1.5rem;
+    }
+  }
+</style>

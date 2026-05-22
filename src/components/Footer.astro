@@ -1,0 +1,28 @@
+---
+const tools = [
+  { name: 'Ruleta', href: '/' },
+  { name: 'Moneda', href: '/moneda' },
+  { name: 'Dados', href: '/dados' },
+  { name: 'Piedra, Papel o Tijera', href: '/piedra-papel-tijera' },
+  { name: 'Amigo Secreto', href: '/amigo-secreto' },
+  { name: 'Números', href: '/numeros' },
+  { name: 'Equipos', href: '/equipos' },
+  { name: 'Sí o No', href: '/si-o-no' },
+  { name: 'Temporizador', href: '/temporizador' },
+];
+
+const year = new Date().getFullYear();
+---
+
+<footer>
+  <div class="container">
+    <div class="footer-links">
+      {tools.map(tool => (
+        <a href={tool.href}>{tool.name}</a>
+      ))}
+      <a href="/blog">Blog</a>
+    </div>
+    <p>&copy; {year} <strong>decídelo.app</strong> — Hub de Herramientas de Decisión Aleatoria.</p>
+    <p>Creado con ❤️ para resolver tus dilemas. 100% privado y sin registro.</p>
+  </div>
+</footer>

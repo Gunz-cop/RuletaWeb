@@ -1,0 +1,442 @@
+---
+import Layout from '../layouts/Layout.astro';
+import AdSlot from '../components/AdSlot.astro';
+import HubGrid from '../components/HubGrid.astro';
+import SeoArticle from '../components/SeoArticle.astro';
+
+const title = 'Generador de Equipos Aleatorios Online — Grupos y Parejas | Decídelo.app';
+const description = 'Divide una lista de nombres en equipos o grupos aleatorios de forma equilibrada. Configura el número de equipos o el tamaño de cada grupo al azar.';
+const keywords = 'generador de equipos, hacer grupos online, dividir equipos, grupos aleatorios, sorteador de equipos, sorteo de grupos, tomar decisiones';
+
+const schemaLD = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebApplication",
+      "@id": "https://decidelo.app/equipos#webapp",
+      "name": "Generador de Equipos Aleatorios Online — Decídelo.app",
+      "description": "Herramienta online para dividir una lista de participantes en grupos o equipos de forma aleatoria, ideal para juegos, clases y dinámicas laborales.",
+      "url": "https://decidelo.app/equipos",
+      "applicationCategory": "UtilityApplication",
+      "operatingSystem": "All",
+      "browserRequirements": "Requires JavaScript",
+      "softwareVersion": "2.0.0",
+      "inLanguage": "es",
+      "offers": {
+        "@type": "Offer",
+        "price": "0.00",
+        "priceCurrency": "USD"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Decídelo.app",
+        "url": "https://decidelo.app/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://decidelo.app/favicon.svg"
+        }
+      }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://decidelo.app/equipos#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Inicio",
+          "item": "https://decidelo.app/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Generador de Equipos",
+          "item": "https://decidelo.app/equipos"
+        }
+      ]
+    }
+  ]
+};
+---
+
+<Layout title={title} description={description} keywords={keywords} schemaLD={schemaLD} showHomeHeader={false}>
+  <main class="container">
+    
+    <!-- Hero Section -->
+    <section class="hero slide-up delay-1">
+      <h1>Generador de Equipos <span class="gradient-text">Aleatorios</span></h1>
+      <p>Organiza grupos equilibrados en segundos. Ingresa los nombres de los participantes y decide cómo quieres dividirlos.</p>
+    </section>
+
+    <AdSlot position="top" />
+
+    <!-- App Card -->
+    <section class="app-card slide-up delay-2" aria-label="Generador de equipos">
+      
+      <!-- Entrada de Participantes -->
+      <div class="input-panel">
+        <label for="participants-textarea" class="panel-label">Participantes (uno por línea)</label>
+        <textarea id="participants-textarea" placeholder="Escribe o pega los nombres aquí&#10;Ejemplo:&#10;Carlos&#10;María&#10;Juan&#10;Sofía&#10;Luis&#10;Elena"></textarea>
+      </div>
+
+      <!-- Ajustes de División -->
+      <div class="control-panel">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="team-mode">Método de división</label>
+            <select id="team-mode">
+              <option value="teams">Dividir en N equipos</option>
+              <option value="size">Equipos de N personas</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="team-count">Cantidad</label>
+            <input type="number" id="team-count" value="2" min="1" max="100">
+          </div>
+        </div>
+      </div>
+
+      <!-- Botón de Generación -->
+      <button class="btn-spin" id="btn-spin" style="margin-top: 1rem;">GENERAR EQUIPOS</button>
+
+    </section>
+
+    <!-- Resultados -->
+    <section class="results-container" aria-label="Equipos generados">
+      <div class="teams-grid" id="teams-display-container">
+        <!-- Rellenado dinámicamente -->
+      </div>
+
+      <!-- Compartir Resultados -->
+      <div class="share-section" id="share-section">
+        <h3>📢 Compartir esta distribución</h3>
+        <div class="share-buttons">
+          <button class="btn-share-action" id="btn-copy-teams">
+            📋 Copiar Lista
+          </button>
+          <button class="btn-share-action btn-wa" id="btn-wa-teams">
+            💬 Compartir por WhatsApp
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <div class="toast" id="toast-message">Mensaje de alerta</div>
+
+  <SeoArticle title="¿Cómo dividir grupos al azar para juegos, clases y dinámicas?">
+    <p>Dividir un gran grupo de personas en equipos más pequeños es un paso necesario en múltiples contextos: desde partidos de fútbol de fin de semana, dinámicas de integración empresarial (team building), tareas cooperativas en aulas escolares o partidas de videojuegos competitivos. Sin embargo, hacerlo de forma manual suele conllevar quejas de favoritismo o desequilibrios de habilidades.</p>
+    
+    <p>Nuestra herramienta de <strong>Generador de Equipos Aleatorios</strong> elimina por completo los sesgos personales, garantizando una asignación totalmente transparente y equitativa.</p>
+
+    <h2>Equilibrio y Diversión: Algoritmo Fisher-Yates de Mezcla Perfecta</h2>
+    <p>Para asegurar que la asignación sea enteramente justa, nuestro generador emplea una versión optimizada del **algoritmo de barajado Fisher-Yates**. Este método matemático recorre el arreglo de nombres de atrás hacia adelante y los intercambia de manera uniforme con cualquier elemento anterior de forma aleatoria.</p>
+    <p>Posteriormente, realiza una **distribución secuencial equilibrada**. Si tienes 10 personas y quieres hacer 3 equipos, el generador entregará dos equipos de 3 miembros y uno de 4, distribuyendo los integrantes de uno en uno para evitar que los últimos nombres de la lista queden amontonados en un único equipo.</p>
+
+    <h2>Dos formas inteligentes de dividir tus grupos</h2>
+    <p>Para adaptarnos a cualquier dinámica, nuestra aplicación cuenta con dos modalidades:</p>
+    <ul>
+      <li><strong>Dividir en N equipos (Estructura fija):</strong> Ideal cuando tienes un número limitado de mesas de trabajo, campos de juego o capitanes disponibles. Por ejemplo: "tengo 12 alumnos y necesito exactamente 3 equipos".</li>
+      <li><strong>Equipos de N personas (Tamaño fijo):</strong> Útil cuando el reglamento del juego o la tarea grupal exige un número exacto de integrantes por grupo. Por ejemplo: "necesito equipos de 2 personas (parejas) a partir de un grupo de 10 participantes". El generador calculará de forma automática la cantidad de equipos necesarios.</li>
+    </ul>
+
+    <h2>Efectos dinámicos en cascada y colores temáticos</h2>
+    <p>Cada equipo generado se renderiza dentro de una **tarjeta visual única con gradients color-coded** (cyan, purple, yellow, success, pink, blue). Para añadir emoción, las tarjetas aparecen con una animación de caída en cascada escalonada (staggered transition). Al finalizar, puedes copiar toda la distribución con un solo clic en un formato limpio listo para enviar por WhatsApp.</p>
+  </SeoArticle>
+
+  <AdSlot position="bottom" />
+
+  <section class="hub-section container">
+    <div class="section-header reveal">
+      <div class="section-tag">🧰 Caja de Herramientas</div>
+      <h2 class="section-heading">Prueba otras herramientas de decisión</h2>
+    </div>
+    <HubGrid activeToolId="equipos" />
+  </section>
+
+  <script src="../scripts/equipos.js"></script>
+</Layout>
+
+<style>
+  main {
+    padding: 3rem 0;
+  }
+
+  /* App Card */
+  .app-card {
+    width: 100%;
+    background: var(--bg-surface);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-lg);
+    padding: 2.5rem;
+    box-shadow: var(--shadow-lg);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 2rem;
+  }
+
+  .app-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--accent-gradient);
+  }
+
+  /* Textarea */
+  .input-panel {
+    margin-bottom: 1.5rem;
+  }
+
+  .panel-label {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+
+  textarea {
+    width: 100%;
+    height: 150px;
+    background: var(--bg-surface-alt);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    padding: 1rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    resize: vertical;
+    transition: var(--transition);
+  }
+
+  textarea:focus {
+    outline: none;
+    border-color: var(--accent-cyan);
+    box-shadow: 0 0 12px rgba(0, 229, 255, 0.15);
+  }
+
+  /* Control Panel */
+  .form-row {
+    display: flex;
+    gap: 1rem;
+  }
+
+  .form-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .form-group label {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+
+  .form-group select, .form-group input {
+    background: var(--bg-surface-alt);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    padding: 0.8rem 1rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    transition: var(--transition);
+    width: 100%;
+  }
+
+  .form-group select:focus, .form-group input:focus {
+    outline: none;
+    border-color: var(--accent-cyan);
+    box-shadow: 0 0 12px rgba(0, 229, 255, 0.15);
+  }
+
+  /* Grid de equipos */
+  .results-container {
+    width: 100%;
+    margin-top: 1rem;
+  }
+
+  .teams-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 2.5rem;
+    width: 100%;
+  }
+
+  :global(.team-card) {
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-md);
+    padding: 1.25rem;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: cardFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    transition: transform 0.2s ease;
+  }
+
+  :global(.team-card:hover) {
+    transform: scale(1.02);
+  }
+
+  @keyframes cardFadeIn {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  :global(.team-card-header) {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    padding-bottom: 0.6rem;
+    margin-bottom: 0.8rem;
+  }
+
+  :global(.team-card-header h4) {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+
+  :global(.team-card-badge) {
+    background: rgba(255,255,255,0.06);
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+
+  :global(.team-card-list) {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  :global(.team-card-list li) {
+    font-size: 0.92rem;
+    color: var(--text-primary);
+    padding: 0.3rem 0.5rem;
+    background: rgba(255,255,255,0.02);
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.02);
+  }
+
+  /* Compartir sección */
+  .share-section {
+    background: var(--bg-surface);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    text-align: center;
+    display: none;
+    box-shadow: var(--shadow-md);
+  }
+
+  .share-section.show {
+    display: block;
+    animation: fadeIn 0.4s ease forwards;
+  }
+
+  .share-section h3 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.15rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .share-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-share-action {
+    background: var(--bg-surface-hover);
+    border: 1px solid var(--card-border-hover);
+    color: var(--text-primary);
+    padding: 0.8rem 1.8rem;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: var(--transition);
+  }
+
+  .btn-share-action:hover {
+    border-color: var(--accent-cyan);
+    background: rgba(0, 229, 255, 0.05);
+    color: #ffffff;
+  }
+
+  .btn-share-action.btn-wa {
+    border-color: rgba(57, 255, 20, 0.3);
+    background: rgba(57, 255, 20, 0.02);
+  }
+
+  .btn-share-action.btn-wa:hover {
+    border-color: var(--accent-success);
+    background: rgba(57, 255, 20, 0.08);
+    color: #ffffff;
+  }
+
+  /* Hub header styling */
+  .hub-section {
+    padding: 3rem 0;
+  }
+
+  .section-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .section-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent-cyan);
+    margin-bottom: 0.5rem;
+  }
+
+  .section-heading {
+    font-family: 'Outfit', sans-serif;
+    font-size: clamp(1.4rem, 3.5vw, 1.8rem);
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.02em;
+  }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .app-card {
+      padding: 1.5rem;
+    }
+    .form-row {
+      flex-direction: column;
+    }
+    .share-buttons {
+      flex-direction: column;
+    }
+    .btn-share-action {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+</style>

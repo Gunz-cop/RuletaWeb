@@ -1,0 +1,195 @@
+---
+interface Props {
+  showHomeHeader?: boolean;
+}
+
+const { showHomeHeader = false } = Astro.props;
+---
+
+<header>
+  <div class="container header-inner">
+    {showHomeHeader ? (
+      <!-- HOME header: logo + nav + controls -->
+      <a href="/" class="logo-link" aria-label="Inicio de decídelo.app">
+        <span class="logo-icon" aria-hidden="true">🎯</span>
+        <span class="logo-text">decídelo.app</span>
+      </a>
+      <nav class="header-nav" aria-label="Navegación principal">
+        <a href="/#ruleta" class="nav-link">Ruleta</a>
+        <a href="/#herramientas" class="nav-link">Herramientas</a>
+        <a href="/blog" class="nav-link">Blog</a>
+        <a href="/#acerca" class="nav-link">Acerca de</a>
+        <button id="focus-toggle-btn" class="control-btn" title="Activar Modo Foco" aria-pressed="false">
+          <span class="btn-icon" aria-hidden="true">🎯</span>
+          <span class="btn-label">Foco</span>
+        </button>
+        <button id="sound-toggle-btn" class="control-btn" title="Activar/Desactivar sonido" aria-pressed="true">
+          <span class="btn-icon" aria-hidden="true">🔊</span>
+          <span class="btn-label">Sonido</span>
+        </button>
+      </nav>
+    ) : (
+      <!-- TOOL page header: logo + back button -->
+      <a href="/" class="logo" id="header-logo">
+        <span>decídelo.app</span>
+      </a>
+      <a href="/" class="btn-back" id="btn-back-hub">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        Volver al Hub
+      </a>
+    )}
+  </div>
+</header>
+
+<style>
+  /* Home header styles */
+  .header-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .logo-link {
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .logo-icon {
+    font-size: 1.6rem;
+    display: inline-block;
+    animation: logo-float 3s ease-in-out infinite;
+  }
+
+  @keyframes logo-float {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-3px) rotate(8deg); }
+  }
+
+  .logo-text {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .header-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .nav-link {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius-sm);
+    transition: var(--transition);
+    display: none;
+  }
+
+  .nav-link:hover {
+    color: var(--text-primary);
+    background: rgba(255,255,255,0.05);
+  }
+
+  @media (min-width: 640px) {
+    .nav-link { display: inline-flex; }
+  }
+
+  .control-btn {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 0.45rem 0.65rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    transition: var(--transition);
+  }
+
+  .control-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.14);
+  }
+
+  .control-btn:focus-visible {
+    outline: 2px solid var(--accent-cyan);
+    outline-offset: 2px;
+  }
+
+  .control-btn.active {
+    background: rgba(0, 229, 255, 0.12);
+    border-color: rgba(0, 229, 255, 0.3);
+    color: var(--accent-cyan);
+  }
+
+  .control-btn .btn-label {
+    display: none;
+  }
+
+  @media (min-width: 480px) {
+    .control-btn .btn-label { display: inline; }
+  }
+
+  /* Tool page header styles */
+  .logo {
+    text-decoration: none;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 800;
+    font-size: 1.15rem;
+    letter-spacing: -0.02em;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .btn-back {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.82rem;
+    font-weight: 500;
+    padding: 0.45rem 0.85rem;
+    border-radius: var(--radius-sm);
+    transition: var(--transition);
+  }
+
+  .btn-back:hover {
+    color: var(--accent-cyan);
+    background: rgba(0, 229, 255, 0.06);
+  }
+
+  .btn-back svg {
+    transition: transform 0.25s ease;
+  }
+
+  .btn-back:hover svg {
+    transform: translateX(-3px);
+  }
+
+  /* Header nav for tool pages uses simpler layout */
+  .header-inner:has(.logo) {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+</style>

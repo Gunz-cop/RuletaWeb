@@ -1,0 +1,623 @@
+---
+import Layout from '../layouts/Layout.astro';
+import AdSlot from '../components/AdSlot.astro';
+import HubGrid from '../components/HubGrid.astro';
+import SeoArticle from '../components/SeoArticle.astro';
+
+const title = 'Lanzar Moneda Online — Cara o Cruz 3D Gratis | Decídelo.app';
+const description = 'Lanza una moneda virtual en 3D con físicas de giro realistas. Elige entre moneda clásica dorada, antigua de pirata o forajida con agujero de bala calado. Sin anuncios molestos.';
+const keywords = 'lanzar moneda, cara o cruz, moneda virtual 3d, azar, tomar decisiones, moneda online, cara cruz, decidir al azar';
+
+const schemaLD = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebApplication",
+      "@id": "https://decidelo.app/moneda#webapp",
+      "name": "Lanzar Moneda Online — Decídelo.app",
+      "description": "Herramienta online e independiente para simular el lanzamiento de una moneda 3D (Cara o Cruz) con físicas de desaceleración y múltiples aspectos visuales.",
+      "url": "https://decidelo.app/moneda",
+      "applicationCategory": "UtilityApplication",
+      "operatingSystem": "All",
+      "browserRequirements": "Requires JavaScript and HTML5 3D Transforms",
+      "softwareVersion": "2.0.0",
+      "inLanguage": "es",
+      "offers": {
+        "@type": "Offer",
+        "price": "0.00",
+        "priceCurrency": "USD"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Decídelo.app",
+        "url": "https://decidelo.app/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://decidelo.app/favicon.svg"
+        }
+      }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://decidelo.app/moneda#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Inicio",
+          "item": "https://decidelo.app/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Lanzar Moneda",
+          "item": "https://decidelo.app/moneda"
+        }
+      ]
+    }
+  ]
+};
+---
+
+<Layout title={title} description={description} keywords={keywords} schemaLD={schemaLD} showHomeHeader={false}>
+  <main class="container">
+    
+    <!-- Hero Section -->
+    <section class="hero slide-up delay-1">
+      <h1>Lanzar Moneda <span class="gradient-text">Online</span></h1>
+      <p>La forma más limpia, rápida y libre de distracciones para tomar decisiones binarias en segundos. ¡Elige tu moneda y hazla girar!</p>
+    </section>
+
+    <!-- Selector de Aspecto de la Moneda -->
+    <div class="selector-container slide-up delay-2" id="coin-selector">
+      <button class="selector-btn active" data-style="classic">🪙 Clásica Dorada</button>
+      <button class="selector-btn" data-style="ancient">🏴‍☠️ Antigua Pirata</button>
+      <button class="selector-btn" data-style="outlaw">🤠 Forajida Calada</button>
+    </div>
+
+    <!-- Tablero de Lanzamiento -->
+    <section class="game-board slide-up delay-3" aria-label="Tablero de lanzamiento de moneda">
+      
+      <!-- Contenedor 3D de la Moneda -->
+      <div class="coin-wrapper" id="coin-wrapper">
+        <div class="coin-container">
+          <div class="coin classic" id="coin" role="button" aria-label="Moneda virtual 3D. Pulsa Lanzar para girar.">
+            
+            <!-- Frente (Classic Cara) -->
+            <div class="coin-face front classic-face">
+              <svg width="100%" height="100%" viewBox="0 0 100 100">
+                <defs>
+                  <radialGradient id="classic-gold" cx="30%" cy="30%" r="70%">
+                    <stop offset="0%" stop-color="#ffe67e" />
+                    <stop offset="50%" stop-color="#d4af37" />
+                    <stop offset="90%" stop-color="#aa7c11" />
+                    <stop offset="100%" stop-color="#805600" />
+                  </radialGradient>
+                  <linearGradient id="laurel-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#ffffff" stop-opacity="0.6" />
+                    <stop offset="100%" stop-color="#ffe67e" stop-opacity="0.1" />
+                  </linearGradient>
+                </defs>
+                <circle cx="50" cy="50" r="48" fill="url(#classic-gold)" stroke="#805600" stroke-width="1.5" />
+                <circle cx="50" cy="50" r="44" fill="none" stroke="#ffe67e" stroke-width="0.8" stroke-dasharray="1.5 1.5" />
+                <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(0,0,0,0.15)" stroke-width="1" />
+                <path d="M 28 50 C 28 65, 38 72, 50 72 C 62 72, 72 65, 72 50" fill="none" stroke="url(#laurel-grad)" stroke-width="2" stroke-linecap="round" />
+                <g transform="translate(50, 48)">
+                  <path d="M -12 -12 L -6 -6 L 0 -15 L 6 -6 L 12 -12 L 8 2 L -8 2 Z" fill="#ffe67e" stroke="#805600" stroke-width="0.8" />
+                  <rect x="-8" y="2" width="16" height="2" fill="#aa7c11" />
+                  <text x="0" y="20" font-family="'Outfit', sans-serif" font-weight="800" font-size="22" fill="#ffffff" text-anchor="middle" stroke="#805600" stroke-width="0.8">C</text>
+                </g>
+                <text x="50" y="85" font-family="'Inter', sans-serif" font-weight="600" font-size="5" fill="#805600" text-anchor="middle" letter-spacing="1.5">CARA</text>
+                <text x="50" y="22" font-family="'Inter', sans-serif" font-weight="600" font-size="4" fill="rgba(0,0,0,0.3)" text-anchor="middle" letter-spacing="1">DECÍDELO.APP</text>
+              </svg>
+            </div>
+
+            <!-- Reverso (Classic Cruz) -->
+            <div class="coin-face back classic-face">
+              <svg width="100%" height="100%" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="48" fill="url(#classic-gold)" stroke="#805600" stroke-width="1.5" />
+                <circle cx="50" cy="50" r="44" fill="none" stroke="#ffe67e" stroke-width="0.8" stroke-dasharray="1.5 1.5" />
+                <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(0,0,0,0.15)" stroke-width="1" />
+                <g transform="translate(50, 48)">
+                  <path d="M -12 -12 C -6 -12, 6 -12, 12 -12 C 12 2, 0 15, 0 15 C 0 15, -12 2, -12 -12 Z" fill="#ffe67e" stroke="#805600" stroke-width="0.8" />
+                  <path d="M -9 -9 L 9 -9 C 9 0, 0 11, 0 11 C 0 11, -9 0, -9 -9 Z" fill="rgba(0,0,0,0.06)" />
+                  <text x="0" y="2" font-family="'Outfit', sans-serif" font-weight="800" font-size="18" fill="#ffffff" text-anchor="middle" stroke="#805600" stroke-width="0.8">X</text>
+                </g>
+                <text x="50" y="85" font-family="'Inter', sans-serif" font-weight="600" font-size="5" fill="#805600" text-anchor="middle" letter-spacing="1.5">CRUZ</text>
+                <text x="50" y="22" font-family="'Inter', sans-serif" font-weight="600" font-size="4" fill="rgba(0,0,0,0.3)" text-anchor="middle" letter-spacing="1">DECÍDELO.APP</text>
+              </svg>
+            </div>
+
+            <!-- Frente (Pirata Cara) -->
+            <div class="coin-face front ancient-face">
+              <svg width="100%" height="100%" viewBox="0 0 100 100">
+                <defs>
+                  <radialGradient id="ancient-silver" cx="30%" cy="30%" r="70%">
+                    <stop offset="0%" stop-color="#b8bacf" />
+                    <stop offset="60%" stop-color="#60627a" />
+                    <stop offset="90%" stop-color="#343547" />
+                    <stop offset="100%" stop-color="#1e1f2b" />
+                  </radialGradient>
+                </defs>
+                <path d="M 50 2 C 77 1, 98 21, 98 48 C 97 75, 76 98, 49 97 C 22 98, 2 76, 2 50 C 1 23, 23 3, 50 2 Z" fill="url(#ancient-silver)" stroke="#1a1b24" stroke-width="2" />
+                <path d="M 50 6 C 73 5, 93 23, 93 48 C 92 72, 73 93, 49 92 C 25 93, 7 73, 7 50 C 6 26, 26 7, 50 6 Z" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1.5" class="ancient-border" />
+                <g transform="translate(50, 48) scale(0.85)">
+                  <path d="M -22 -14 L 22 14 M -22 14 L 22 -14" stroke="#1e1f2b" stroke-width="5" stroke-linecap="round" />
+                  <path d="M -22 -14 L 22 14 M -22 14 L 22 -14" stroke="#8e90a6" stroke-width="2" stroke-linecap="round" />
+                  <path d="M -10 -8 C -10 -20, 10 -20, 10 -8 C 10 -2, 7 2, 7 6 L -7 6 C -7 2, -10 -2, -10 -8 Z" fill="#8e90a6" stroke="#1e1f2b" stroke-width="2" />
+                  <rect x="-4" y="6" width="8" height="4" rx="1" fill="#8e90a6" stroke="#1e1f2b" stroke-width="1.5" />
+                  <line x1="-2" y1="6" x2="-2" y2="10" stroke="#1e1f2b" stroke-width="1" />
+                  <line x1="0" y1="6" x2="0" y2="10" stroke="#1e1f2b" stroke-width="1" />
+                  <line x1="2" y1="6" x2="2" y2="10" stroke="#1e1f2b" stroke-width="1" />
+                  <circle cx="-4.5" cy="-7" r="3.5" fill="#1e1f2b" />
+                  <circle cx="4.5" cy="-7" r="3.5" fill="#1e1f2b" />
+                  <polygon points="0,-2 -2.5,1 2.5,1" fill="#1e1f2b" />
+                  <path d="M -11 -13 L 0 -6 M -9 -7 C -9 -3, -2 -3, -2 -7 Z" stroke="#1e1f2b" stroke-width="1.5" fill="#1e1f2b" />
+                </g>
+                <text x="50" y="84" font-family="'Outfit', sans-serif" font-weight="700" font-size="7" fill="#1e1f2b" text-anchor="middle" letter-spacing="1">CARA</text>
+                <text x="50" y="21" font-family="'Outfit', sans-serif" font-weight="700" font-size="5" fill="rgba(0,0,0,0.3)" text-anchor="middle" letter-spacing="1.5">1715</text>
+              </svg>
+            </div>
+
+            <!-- Reverso (Pirata Cruz) -->
+            <div class="coin-face back ancient-face">
+              <svg width="100%" height="100%" viewBox="0 0 100 100">
+                <path d="M 50 2 C 77 1, 98 21, 98 48 C 97 75, 76 98, 49 97 C 22 98, 2 76, 2 50 C 1 23, 23 3, 50 2 Z" fill="url(#ancient-silver)" stroke="#1a1b24" stroke-width="2" />
+                <path d="M 50 6 C 73 5, 93 23, 93 48 C 92 72, 73 93, 49 92 C 25 93, 7 73, 7 50 C 6 26, 26 7, 50 6 Z" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1.5" class="ancient-border" />
+                <g transform="translate(50, 48) scale(0.9)">
+                  <circle cx="0" cy="0" r="18" fill="none" stroke="#1e1f2b" stroke-width="1.5" />
+                  <circle cx="0" cy="0" r="15" fill="none" stroke="#1e1f2b" stroke-width="0.8" stroke-dasharray="2 1" />
+                  <polygon points="0,-22 4,0 0,3 -4,0" fill="#1e1f2b" />
+                  <polygon points="0,22 4,0 0,3 -4,0" fill="#8e90a6" stroke="#1e1f2b" stroke-width="0.5" />
+                  <polygon points="22,0 0,4 -3,0 0,-4" fill="#1e1f2b" />
+                  <polygon points="-22,0 0,4 -3,0 0,-4" fill="#8e90a6" stroke="#1e1f2b" stroke-width="0.5" />
+                  <g transform="rotate(45)">
+                    <polygon points="0,-16 2.5,0 0,2 -2.5,0" fill="#1e1f2b" />
+                    <polygon points="0,16 2.5,0 0,2 -2.5,0" fill="#8e90a6" stroke="#1e1f2b" stroke-width="0.5" />
+                    <polygon points="16,0 0,2.5 -2,0 0,-2.5" fill="#1e1f2b" />
+                    <polygon points="-16,0 0,2.5 -2,0 0,-2.5" fill="#8e90a6" stroke="#1e1f2b" stroke-width="0.5" />
+                  </g>
+                  <circle cx="0" cy="0" r="3.5" fill="#1e1f2b" />
+                  <circle cx="0" cy="0" r="1.5" fill="#ffffff" />
+                </g>
+                <text x="50" y="84" font-family="'Outfit', sans-serif" font-weight="700" font-size="7" fill="#1e1f2b" text-anchor="middle" letter-spacing="1">CRUZ</text>
+                <text x="50" y="21" font-family="'Outfit', sans-serif" font-weight="700" font-size="5" fill="rgba(0,0,0,0.3)" text-anchor="middle" letter-spacing="1.5">1715</text>
+              </svg>
+            </div>
+
+            <!-- Frente (Forajida Cara) -->
+            <div class="coin-face front outlaw-face">
+              <svg width="100%" height="100%" viewBox="0 0 100 100">
+                <defs>
+                  <radialGradient id="outlaw-steel" cx="30%" cy="30%" r="70%">
+                    <stop offset="0%" stop-color="#555861" />
+                    <stop offset="60%" stop-color="#212229" />
+                    <stop offset="90%" stop-color="#14151a" />
+                    <stop offset="100%" stop-color="#0a0a0d" />
+                  </radialGradient>
+                  <linearGradient id="bronze-star" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#cca762" />
+                    <stop offset="50%" stop-color="#806227" />
+                    <stop offset="100%" stop-color="#403010" />
+                  </linearGradient>
+                </defs>
+                <path fill="url(#outlaw-steel)" stroke="#0e0f12" stroke-width="1.8" fill-rule="evenodd"
+                      d="M 50 0 A 50 50 0 1 0 50 100 A 50 50 0 1 0 50 0 Z 
+                         M 50 35 L 53 37 L 52 42 L 56 40 L 59 44 L 62 41 L 65 46 L 63 51 L 66 53 L 62 57 L 63 62 L 58 61 L 56 65 L 50 63 L 45 65 L 43 60 L 38 62 L 37 57 L 34 54 L 37 51 L 34 46 L 39 43 L 41 38 L 46 40 Z" />
+                <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(255, 255, 255, 0.05)" stroke-width="1" />
+                <g fill="rgba(255,255,255,0.15)">
+                  <circle cx="50" cy="6" r="1.2" />
+                  <circle cx="94" cy="50" r="1.2" />
+                  <circle cx="50" cy="94" r="1.2" />
+                  <circle cx="6" cy="50" r="1.2" />
+                  <circle cx="72" cy="72" r="1.2" />
+                  <circle cx="28" cy="28" r="1.2" />
+                  <circle cx="72" cy="28" r="1.2" />
+                  <circle cx="28" cy="72" r="1.2" />
+                </g>
+                <path fill="url(#bronze-star)" stroke="#14151a" stroke-width="0.8" fill-rule="evenodd"
+                      d="M 50 14 L 59 36 L 82 36 L 64 50 L 71 72 L 50 59 L 29 72 L 36 50 L 18 36 L 41 36 Z
+                         M 50 35 L 53 37 L 52 42 L 56 40 L 59 44 L 62 41 L 65 46 L 63 51 L 66 53 L 62 57 L 63 62 L 58 61 L 56 65 L 50 63 L 45 65 L 43 60 L 38 62 L 37 57 L 34 54 L 37 51 L 34 46 L 39 43 L 41 38 L 46 40 Z" />
+                <g fill="#cca762">
+                  <circle cx="50" cy="14" r="2" />
+                  <circle cx="82" cy="36" r="2" />
+                  <circle cx="71" cy="72" r="2" />
+                  <circle cx="29" cy="72" r="2" />
+                  <circle cx="18" cy="36" r="2" />
+                </g>
+                <path class="bullet-hole-shadow"
+                      d="M 50 35 L 53 37 L 52 42 L 56 40 L 59 44 L 62 41 L 65 46 L 63 51 L 66 53 L 62 57 L 63 62 L 58 61 L 56 65 L 50 63 L 45 65 L 43 60 L 38 62 L 37 57 L 34 54 L 37 51 L 34 46 L 39 43 L 41 38 L 46 40 Z" />
+                <path class="bullet-hole-rim" 
+                      d="M 50 35 L 53 37 L 52 42 L 56 40 L 59 44 L 62 41 L 65 46 L 63 51 L 66 53 L 62 57 L 63 62 L 58 61 L 56 65 L 50 63 L 45 65 L 43 60 L 38 62 L 37 57 L 34 54 L 37 51 L 34 46 L 39 43 L 41 38 L 46 40 Z" />
+                <g stroke="#14151a" stroke-width="1" opacity="0.6">
+                  <path d="M 34 46 L 25 43 M 65 46 L 73 45 M 50 35 L 52 25 M 50 63 L 48 73 M 43 60 L 37 68" />
+                </g>
+                <text x="50" y="87" font-family="'Outfit', sans-serif" font-weight="700" font-size="5" fill="#cca762" text-anchor="middle" letter-spacing="1">CARA</text>
+                <text x="50" y="27" font-family="'Inter', sans-serif" font-weight="600" font-size="3" fill="rgba(255,255,255,0.2)" text-anchor="middle" letter-spacing="0.5">SHERIFF</text>
+              </svg>
+            </div>
+
+            <!-- Reverso (Forajida Cruz) -->
+            <div class="coin-face back outlaw-face">
+              <svg width="100%" height="100%" viewBox="0 0 100 100">
+                <path fill="url(#outlaw-steel)" stroke="#0e0f12" stroke-width="1.8" fill-rule="evenodd"
+                      d="M 50 0 A 50 50 0 1 0 50 100 A 50 50 0 1 0 50 0 Z 
+                         M 50 35 L 53 37 L 52 42 L 56 40 L 59 44 L 62 41 L 65 46 L 63 51 L 66 53 L 62 57 L 63 62 L 58 61 L 56 65 L 50 63 L 45 65 L 43 60 L 38 62 L 37 57 L 34 54 L 37 51 L 34 46 L 39 43 L 41 38 L 46 40 Z" />
+                <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(255, 255, 255, 0.05)" stroke-width="1" />
+                <g fill="rgba(255,255,255,0.15)">
+                  <circle cx="50" cy="6" r="1.2" />
+                  <circle cx="94" cy="50" r="1.2" />
+                  <circle cx="50" cy="94" r="1.2" />
+                  <circle cx="6" cy="50" r="1.2" />
+                  <circle cx="72" cy="72" r="1.2" />
+                  <circle cx="28" cy="28" r="1.2" />
+                  <circle cx="72" cy="28" r="1.2" />
+                  <circle cx="28" cy="72" r="1.2" />
+                </g>
+                <path fill="#2a2c35" stroke="#14151a" stroke-width="1.2" fill-rule="evenodd"
+                      d="M 50 14 A 36 36 0 1 0 50 86 A 36 36 0 1 0 50 14 Z
+                         M 50 35 L 53 37 L 52 42 L 56 40 L 59 44 L 62 41 L 65 46 L 63 51 L 66 53 L 62 57 L 63 62 L 58 61 L 56 65 L 50 63 L 45 65 L 43 60 L 38 62 L 37 57 L 34 54 L 37 51 L 34 46 L 39 43 L 41 38 L 46 40 Z" />
+                <circle cx="50" cy="24" r="5" fill="#14151a" stroke="#cca762" stroke-width="1.5" />
+                <circle cx="50" cy="24" r="2.5" fill="#cca762" />
+                <circle cx="72.5" cy="37" r="5" fill="#14151a" stroke="#cca762" stroke-width="1.5" />
+                <circle cx="72.5" cy="37" r="2.5" fill="#cca762" />
+                <circle cx="72.5" cy="63" r="5" fill="#14151a" stroke="#cca762" stroke-width="1.5" />
+                <circle cx="72.5" cy="63" r="2.5" fill="#cca762" />
+                <circle cx="50" cy="76" r="5" fill="#14151a" stroke="#cca762" stroke-width="1.5" />
+                <circle cx="50" cy="76" r="2.5" fill="#cca762" />
+                <circle cx="27.5" cy="63" r="5" fill="#14151a" stroke="#cca762" stroke-width="1.5" />
+                <circle cx="27.5" cy="63" r="2.5" fill="#cca762" />
+                <circle cx="27.5" cy="37" r="5" fill="#14151a" stroke="#cca762" stroke-width="1.5" />
+                <circle cx="27.5" cy="37" r="2.5" fill="#cca762" />
+                <path class="bullet-hole-shadow"
+                      d="M 50 35 L 53 37 L 52 42 L 56 40 L 59 44 L 62 41 L 65 46 L 63 51 L 66 53 L 62 57 L 63 62 L 58 61 L 56 65 L 50 63 L 45 65 L 43 60 L 38 62 L 37 57 L 34 54 L 37 51 L 34 46 L 39 43 L 41 38 L 46 40 Z" />
+                <path class="bullet-hole-rim" 
+                      d="M 50 35 L 53 37 L 52 42 L 56 40 L 59 44 L 62 41 L 65 46 L 63 51 L 66 53 L 62 57 L 63 62 L 58 61 L 56 65 L 50 63 L 45 65 L 43 60 L 38 62 L 37 57 L 34 54 L 37 51 L 34 46 L 39 43 L 41 38 L 46 40 Z" />
+                <g stroke="#14151a" stroke-width="1" opacity="0.6">
+                  <path d="M 34 46 L 25 43 M 65 46 L 73 45 M 50 35 L 52 25 M 50 63 L 48 73 M 43 60 L 37 68" />
+                </g>
+                <text x="50" y="87" font-family="'Outfit', sans-serif" font-weight="700" font-size="5" fill="#cca762" text-anchor="middle" letter-spacing="1">CRUZ</text>
+                <text x="50" y="27" font-family="'Inter', sans-serif" font-weight="600" font-size="3" fill="rgba(255,255,255,0.2)" text-anchor="middle" letter-spacing="0.5">CYLINDER</text>
+              </svg>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Sombra Proyectada -->
+      <div class="coin-shadow" id="coin-shadow"></div>
+
+      <!-- Indicador visual del Ganador -->
+      <div class="result-display" id="result-display" aria-live="polite">
+      </div>
+
+      <!-- Botón de Lanzamiento -->
+      <button class="btn-spin" id="btn-spin">LANZAR</button>
+
+    </section>
+
+    <!-- Historial de Resultados -->
+    <section class="history-card slide-up delay-4" aria-label="Historial de lanzamientos anteriores">
+      <div class="history-header">
+        <h3>
+          <span>🕒</span> Historial (Últimos 5)
+        </h3>
+        <button class="btn-clear" id="btn-clear">Borrar historial</button>
+      </div>
+      <div class="history-list" id="history-list">
+        <span class="history-empty">Sin lanzamientos aún</span>
+      </div>
+    </section>
+
+  </main>
+
+  <AdSlot position="top" />
+
+  <!-- Sección de Artículo SEO -->
+  <SeoArticle title="¿Cómo funciona el Lanzamiento de Moneda Online y por qué usarlo?">
+    <p>El lanzamiento de una moneda al aire, conocido popularmente en el mundo de habla hispana como <strong>cara o cruz</strong>, ha sido el método definitivo para resolver disputas, tomar decisiones rápidas y dividir turnos desde la época del Imperio Romano, donde se le conocía como <em>"Navia aut Caput"</em> (barco o cabeza).</p>
+    
+    <p>En el entorno moderno, no siempre llevamos cambio físico en los bolsillos. Nuestra herramienta de <strong>lanzar moneda online en 3D</strong> te ofrece un simulador virtual perfecto que emula de manera exacta las leyes de probabilidad clásica en un formato limpio, elegante y libre de distracciones externas.</p>
+
+    <h2>La Ciencia Detrás del 50/50 y la Toma de Decisiones</h2>
+    <p>Desde un punto de vista matemático, el giro de una moneda ideal ofrece exactamente un <strong>50% de probabilidad</strong> de obtener cara y un 50% de obtener cruz. Aunque estudios del matemático de Stanford Persi Diaconis sugieren que las monedas físicas tienen un ligero sesgo del 51% hacia el lado que estaba bocarriba antes del lanzamiento debido a la dinámica física, nuestro simulador virtual utiliza un algoritmo criptográficamente seguro de aleatoriedad computacional para garantizar una equidad matemática pura de 50/50.</p>
+
+    <h2>Ventajas de Lanzar una Moneda para Personas con TDAH e Indecisión</h2>
+    <p>Para personas que sufren de fatiga por decisiones o con neurodivergencias como el <strong>TDAH</strong>, elegir entre dos opciones simples (¿debería empezar a estudiar ahora o tomar un vaso de agua?, ¿hago primero la tarea A o la tarea B?) puede provocar un bloqueo mental prolongado o parálisis por análisis. El lanzamiento de moneda actúa como un catalizador cognitivo:</p>
+    <ul>
+      <li><strong>Elimina el bloqueo inmediato:</strong> Reduce el abanico de infinitas opciones a un simple disparador binario externo.</li>
+      <li><strong>Filtra tus verdaderos deseos:</strong> A menudo, mientras la moneda está girando en el aire, tu mente experimenta una respuesta emocional espontánea. Sientes el deseo secreto de que salga "cara". En ese preciso segundo, descubres qué es lo que realmente querías elegir en tu fuero interno, independientemente de lo que muestre el resultado final.</li>
+      <li><strong>Estética visual libre de distracciones:</strong> Esta interfaz ha sido diseñada meticulosamente bajo un modo oscuro elegante y limpio para evitar gatillos sensoriales que dispersen la concentración.</li>
+    </ul>
+
+    <h2>Tres Diseños Exclusivos Creados con Precisión CSS/SVG</h2>
+    <p>Nuestra aplicación no utiliza imágenes pesadas que ralenticen la velocidad de carga de tu móvil. Hemos programado cada detalle visual mediante código vectorial SVG de alto rendimiento:</p>
+    <ul>
+      <li><strong>Moneda Clásica Dorada:</strong> Inspirada en monedas de oro tradicionales con acabados pulidos y relieves clásicos de coronas y escudos.</li>
+      <li><strong>Moneda Antigua/Pirata:</strong> Un doblón desgastado con bordes imperfectos y una calavera pirata grabada que te transportará al Caribe de los corsarios.</li>
+      <li><strong>Moneda Forajida (Efecto Calado):</strong> Diseñada con una textura de acero cepillado oscuro y un agujero de bala real atravesando de lado a lado. Mediante transparencias de capas CSS y máscaras de dibujo, el centro de la moneda está físicamente vacío, dejando entrever el fondo de la pantalla mientras la moneda da vueltas en el espacio 3D.</li>
+    </ul>
+  </SeoArticle>
+
+  <AdSlot position="bottom" />
+
+  <section class="hub-section container">
+    <div class="section-header reveal">
+      <div class="section-tag">🧰 Caja de Herramientas</div>
+      <h2 class="section-heading">Prueba otras herramientas de decisión</h2>
+    </div>
+    <HubGrid activeToolId="moneda" />
+  </section>
+
+  <script src="../scripts/moneda.js"></script>
+</Layout>
+
+<style>
+  main {
+    padding: 3rem 0;
+  }
+
+  /* Coin 3D Physics Setup */
+  .coin-wrapper {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    margin: 1.5rem auto;
+    z-index: 10;
+  }
+
+  .coin-container {
+    perspective: 1000px;
+    width: 100%;
+    height: 100%;
+  }
+
+  .coin {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    transform-style: preserve-3d;
+    transition: transform 3s cubic-bezier(0.15, 0.85, 0.25, 1);
+    cursor: pointer;
+  }
+
+  /* Sombras 3D y Efectos */
+  .coin-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    display: none; /* Se activa por JS/CSS */
+    filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.4));
+  }
+
+  /* Mostrar caras segun clase activa de la moneda */
+  .coin.classic .classic-face,
+  .coin.ancient .ancient-face,
+  .coin.outlaw .outlaw-face {
+    display: block;
+  }
+
+  .coin-face.back {
+    transform: rotateY(180deg);
+  }
+
+  /* Sombra proyectada en el suelo */
+  .coin-shadow {
+    width: 150px;
+    height: 10px;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 50%;
+    margin: -0.5rem auto 2rem;
+    filter: blur(6px);
+    transition: transform 3s cubic-bezier(0.15, 0.85, 0.25, 1), opacity 3s;
+    z-index: 1;
+  }
+
+  /* Animación de Lanzamiento Físico (Lanzar arriba) */
+  @keyframes tossUp {
+    0% {
+      transform: translateY(0);
+    }
+    45% {
+      transform: translateY(-130px) scale(1.08);
+    }
+    100% {
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes shadowAnimate {
+    0% {
+      transform: scale(1);
+      opacity: 0.6;
+      filter: blur(6px);
+    }
+    45% {
+      transform: scale(0.5);
+      opacity: 0.2;
+      filter: blur(12px);
+    }
+    100% {
+      transform: scale(1);
+      opacity: 0.6;
+      filter: blur(6px);
+    }
+  }
+
+  .coin-wrapper.tossing {
+    animation: tossUp 3s cubic-bezier(0.2, 0.8, 0.35, 1) forwards;
+  }
+
+  .coin-shadow.tossing {
+    animation: shadowAnimate 3s cubic-bezier(0.2, 0.8, 0.35, 1) forwards;
+  }
+
+  /* Indicador del resultado */
+  .result-display {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    height: 2.2rem;
+    margin-bottom: 1.5rem;
+    color: #ffffff;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.4s ease;
+  }
+
+  .result-display.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .result-display :global(span.cyan) {
+    color: var(--accent-cyan);
+    text-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+  }
+
+  .result-display :global(span.purple) {
+    color: var(--accent-purple);
+    text-shadow: 0 0 10px rgba(179, 102, 255, 0.3);
+  }
+
+  .btn-spin {
+    display: block;
+    margin: 0 auto;
+  }
+
+  /* Historial */
+  .history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .btn-clear {
+    background: transparent;
+    border: none;
+    color: var(--text-tertiary);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+
+  .btn-clear:hover {
+    color: var(--accent-danger);
+  }
+
+  .history-list {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-start;
+    min-height: 42px;
+    align-items: center;
+    margin-top: 0.75rem;
+  }
+
+  :global(.history-item) {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    border: 1px solid rgba(255,255,255,0.08);
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  }
+
+  @keyframes popIn {
+    0% {
+      opacity: 0;
+      transform: scale(0.6);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  :global(.history-item.cara) {
+    background: rgba(0, 229, 255, 0.08);
+    border-color: rgba(0, 229, 255, 0.25);
+    color: var(--accent-cyan);
+  }
+
+  :global(.history-item.cruz) {
+    background: rgba(179, 102, 255, 0.08);
+    border-color: rgba(179, 102, 255, 0.25);
+    color: var(--accent-purple);
+  }
+
+  .history-empty {
+    color: var(--text-tertiary);
+    font-size: 0.85rem;
+    font-style: italic;
+  }
+
+  /* CSS de Moneda Antigua e Irregularidades */
+  .ancient-border {
+    stroke-dasharray: 4 2;
+  }
+
+  /* Estilos del Agujero de Bala (Forajida) */
+  .bullet-hole-rim {
+    stroke: #1b1c1e;
+    stroke-width: 1.5;
+    fill: none;
+  }
+  
+  .bullet-hole-shadow {
+    fill: none;
+    stroke: rgba(0,0,0,0.85);
+    stroke-width: 3;
+    filter: blur(1.5px);
+  }
+
+  /* Hub Section positioning */
+  .hub-section {
+    padding: 3rem 0;
+  }
+
+  .section-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .section-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent-cyan);
+    margin-bottom: 0.5rem;
+  }
+
+  .section-heading {
+    font-family: 'Outfit', sans-serif;
+    font-size: clamp(1.4rem, 3.5vw, 1.8rem);
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.02em;
+  }
+
+  /* Responsive overrides */
+  @media (max-width: 600px) {
+    .coin-wrapper {
+      width: 160px;
+      height: 160px;
+    }
+  }
+</style>

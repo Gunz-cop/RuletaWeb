@@ -1,0 +1,283 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import AdSlot from '../../components/AdSlot.astro';
+
+const posts = await getCollection('blog');
+// Sort posts by date descending
+const sortedPosts = posts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+const title = 'Blog de Decisiones y Sorteos — Artículos y Guías | Decídelo.app';
+const description = 'Encuentra guías completas, consejos de probabilidad y dinámicas para organizar sorteos justos, juegos de mesa y tomar mejores decisiones al azar.';
+const keywords = 'blog de decisiones, sorteos online, como hacer sorteos, ruleta de nombres, amigo secreto guia, probabilidad de lanzar moneda';
+
+const schemaLD = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Blog",
+      "@id": "https://decidelo.app/blog#blog",
+      "name": "Blog de Decisiones y Sorteos — Decídelo.app",
+      "description": description,
+      "url": "https://decidelo.app/blog",
+      "publisher": {
+        "@type": "Organization",
+        "name": "Decídelo.app",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://decidelo.app/favicon.svg"
+        },
+        "url": "https://decidelo.app/"
+      }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://decidelo.app/blog#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Inicio",
+          "item": "https://decidelo.app/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Blog",
+          "item": "https://decidelo.app/blog"
+        }
+      ]
+    }
+  ]
+};
+---
+
+<Layout title={title} description={description} keywords={keywords} schemaLD={schemaLD} showHomeHeader={false}>
+  <main class="container">
+    
+    <!-- Hero Section -->
+    <section class="hero slide-up delay-1">
+      <h1>Blog de <span class="gradient-text">Decisiones</span></h1>
+      <p>Aprende a organizar sorteos, dinámicas de grupo, juegos y descubre la ciencia detrás de la probabilidad y la toma de decisiones.</p>
+    </section>
+
+    <AdSlot position="top" />
+
+    <!-- Articles Grid -->
+    <section class="blog-section slide-up delay-2" aria-label="Listado de artículos del blog">
+      {sortedPosts.length === 0 ? (
+        <div class="no-posts-card">
+          <p>Próximamente publicaremos nuestros primeros artículos. ¡Mantente al tanto!</p>
+        </div>
+      ) : (
+        <div class="blog-grid">
+          {sortedPosts.map((post, index) => {
+            const formattedDate = new Date(post.data.pubDate).toLocaleDateString('es-ES', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            });
+            const delayClass = `reveal-delay-${(index % 4) + 1}`;
+
+            return (
+              <article class={`blog-card reveal-scale ${delayClass}`}>
+                <a href={`/blog/${post.id}`} class="blog-card-link">
+                  <div class="blog-card-content">
+                    <div class="blog-card-meta">
+                      <time datetime={post.data.pubDate.toISOString()}>{formattedDate}</time>
+                      <span class="bullet">•</span>
+                      <span class="blog-card-author">{post.data.author}</span>
+                    </div>
+                    <h2 class="blog-card-title">{post.data.title}</h2>
+                    <p class="blog-card-desc">{post.data.description}</p>
+                    <div class="blog-card-tags">
+                      {post.data.tags.map(tag => (
+                        <span class="tag-badge">#{tag}</span>
+                      ))}
+                    </div>
+                    <span class="read-more-btn">
+                      Leer artículo 
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                      </svg>
+                    </span>
+                  </div>
+                </a>
+              </article>
+            );
+          })}
+        </div>
+      )}
+    </section>
+
+    <AdSlot position="bottom" />
+
+  </main>
+</Layout>
+
+<style>
+  main {
+    padding: 3rem 0;
+  }
+
+  .blog-section {
+    width: 100%;
+    margin-top: 1.5rem;
+  }
+
+  .no-posts-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-lg);
+    padding: 3rem;
+    text-align: center;
+    color: var(--text-secondary);
+  }
+
+  .blog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 2rem;
+    width: 100%;
+  }
+
+  .blog-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    position: relative;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.35s ease,
+                box-shadow 0.35s ease;
+  }
+
+  .blog-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--accent-gradient);
+    opacity: 0;
+    transition: opacity 0.35s ease;
+  }
+
+  .blog-card:hover {
+    transform: translateY(-5px);
+    border-color: rgba(179, 102, 255, 0.25);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35),
+                0 0 20px rgba(179, 102, 255, 0.08);
+  }
+
+  .blog-card:hover::before {
+    opacity: 1;
+  }
+
+  .blog-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    height: 100%;
+  }
+
+  .blog-card-content {
+    padding: 2.2rem 2rem;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 0.8rem;
+  }
+
+  .blog-card-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.78rem;
+    color: var(--text-tertiary);
+  }
+
+  .bullet {
+    color: rgba(255, 255, 255, 0.08);
+  }
+
+  .blog-card-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: #ffffff;
+    margin: 0;
+    transition: var(--transition);
+  }
+
+  .blog-card:hover .blog-card-title {
+    color: var(--accent-purple);
+  }
+
+  .blog-card-desc {
+    color: var(--text-secondary);
+    font-size: 0.88rem;
+    line-height: 1.5;
+    margin: 0;
+    flex: 1;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .blog-card-tags {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    margin: 0.4rem 0;
+  }
+
+  .tag-badge {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--accent-cyan);
+    background: rgba(0, 229, 255, 0.06);
+    border: 1px solid rgba(0, 229, 255, 0.1);
+    padding: 0.15rem 0.5rem;
+    border-radius: 99px;
+  }
+
+  .blog-card:nth-child(even) .tag-badge {
+    color: var(--accent-purple);
+    background: rgba(179, 102, 255, 0.06);
+    border-color: rgba(179, 102, 255, 0.1);
+  }
+
+  .read-more-btn {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-top: 0.6rem;
+    transition: var(--transition);
+  }
+
+  .read-more-btn svg {
+    transition: transform 0.25s ease;
+  }
+
+  .blog-card:hover .read-more-btn {
+    color: var(--accent-cyan);
+  }
+
+  .blog-card:hover .read-more-btn svg {
+    transform: translateX(3px);
+  }
+
+  /* Responsive overrides */
+  @media (max-width: 480px) {
+    .blog-card-content {
+      padding: 1.5rem;
+    }
+  }
+</style>
