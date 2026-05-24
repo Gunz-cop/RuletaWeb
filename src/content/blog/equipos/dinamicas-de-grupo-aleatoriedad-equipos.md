@@ -4,6 +4,7 @@ description: 'Una guía extensa sobre psicología organizacional, dinámicas de 
 pubDate: '2026-05-23'
 tags: ['equipos', 'team building', 'educacion', 'productividad', 'psicologia']
 author: 'Decídelo.app'
+heroImage: '/blog/equipos.png'
 ---
 
 Si hay una frase capaz de generar escalofríos y suspiros de resignación tanto en una escuela secundaria como en una sala de juntas corporativa, es la siguiente: *"Por favor, formen grupos de cuatro"*.

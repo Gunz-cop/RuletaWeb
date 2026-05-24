@@ -4,6 +4,7 @@ description: 'Conoce los juegos de dados más divertidos y populares para animar
 pubDate: '2026-05-24'
 tags: ['dados', 'juegos-de-beber', 'fiestas', 'entretenimiento']
 author: 'Decídelo.app'
+heroImage: '/blog/dados.png'
 ---
 
 Organizar una reunión con amigos en casa o una fiesta de fin de semana a menudo requiere un catalizador social: dinámicas divertidas que rompan el hielo, arranquen risas y mantengan el ambiente dinámico. De todas las opciones disponibles, los **juegos de dados** son los favoritos por excelencia. Son rápidos, fáciles de entender, no requieren tableros complejos y añaden una dosis perfecta de suspenso y azar.

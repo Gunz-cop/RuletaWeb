@@ -4,6 +4,7 @@ description: 'Todo lo que necesitas saber sobre el lanzamiento de moneda (Cara o
 pubDate: '2026-05-23'
 tags: ['moneda', 'azar', 'decisiones', 'cara o cruz', 'probabilidad']
 author: 'Decídelo.app'
+heroImage: '/blog/moneda.png'
 ---
 
 Desde el inicio de las civilizaciones acuñadoras de metales, el ser humano ha confiado en un simple acto para resolver disputas, tomar decisiones binarias y someterse al arbitrio del destino: lanzar una moneda al aire. El clásico juego de "Cara o Cruz" (conocido como *Heads or Tails* en inglés, *Águila o Sol* en México o *Cara o Sello* en gran parte de Latinoamérica) es el método de azar más universal del mundo.

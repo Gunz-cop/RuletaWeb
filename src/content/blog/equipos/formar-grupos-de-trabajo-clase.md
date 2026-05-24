@@ -4,6 +4,7 @@ description: 'Descubre los beneficios pedagógicos de la asignación aleatoria d
 pubDate: '2026-05-24'
 tags: ['equipos', 'educacion', 'aula', 'profesores', 'pedagogia']
 author: 'Decídelo.app'
+heroImage: '/blog/equipos.png'
 ---
 
 En el diseño pedagógico contemporáneo, el **aprendizaje cooperativo** es una de las metodologías más eficaces para desarrollar habilidades cognitivas y sociales en los estudiantes. Sin embargo, cualquier maestro o educador sabe que el momento de organizar el aula para trabajar en equipo suele venir acompañado de roces, quejas y pérdida de tiempo valioso de clase.

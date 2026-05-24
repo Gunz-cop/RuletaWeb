@@ -4,6 +4,7 @@ description: '¿Quieres jugar al Monopoly, Parchís o Serpientes y Escaleras per
 pubDate: '2026-05-24'
 tags: ['dados', 'juegos-de-mesa', 'entretenimiento', 'azar']
 author: 'Decídelo.app'
+heroImage: '/blog/dados.png'
 ---
 
 Es el plan perfecto de fin de semana: has sacado el tablero del Monopoly, la mesa está limpia, las botanas listas y tus amigos o familiares están ansiosos por competir. Pero al abrir la caja, ocurre la tragedia cotidiana: **los dados no aparecen por ningún lado**. 

@@ -4,6 +4,7 @@ description: 'Descubre todo sobre la ruleta aleatoria virtual: su historia, los 
 pubDate: '2026-05-23'
 tags: ['ruleta', 'azar', 'decisiones', 'gamificacion', 'matematicas']
 author: 'Decídelo.app'
+heroImage: '/blog/ruleta.png'
 ---
 
 En un mundo saturado de opciones, tomar decisiones puede ser abrumador. Desde elegir qué película ver el viernes por la noche hasta decidir qué miembro del equipo liderará la próxima presentación, nuestra vida diaria está llena de pequeñas encrucijadas. Aquí es donde interviene una de las herramientas digitales más populares y versátiles de internet: la [Ruleta Aleatoria](https://decidelo.app/). 

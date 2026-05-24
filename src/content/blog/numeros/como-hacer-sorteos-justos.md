@@ -4,6 +4,7 @@ description: 'Guía completa para organizar sorteos y rifas transparentes y hone
 pubDate: '2026-05-20'
 tags: ['sorteos', 'transparencia', 'tutorial']
 author: 'Decídelo.app'
+heroImage: '/blog/numeros.png'
 ---
 
 Organizar un sorteo online es una excelente manera de interactuar con tu comunidad, premiar a tus clientes o resolver dinámicas grupales de forma lúdica. Sin embargo, para que el sorteo sea exitoso, es fundamental garantizar la **transparencia** y la **justicia** en la selección del ganador. Si los participantes sospechan que hay manipulación o favoritismo, el sorteo perderá toda credibilidad y puede dañar tu reputación.

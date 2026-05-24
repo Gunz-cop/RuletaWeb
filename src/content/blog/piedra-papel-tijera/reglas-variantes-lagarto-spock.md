@@ -4,6 +4,7 @@ description: '¿Aburrido de los empates constantes en Piedra, Papel o Tijera? Ap
 pubDate: '2026-05-24'
 tags: ['juegos', 'variantes', 'lagarto-spock', 'big-bang-theory', 'entretenimiento']
 author: 'Decídelo.app'
+heroImage: '/blog/piedra-papel-tijera.png'
 ---
 
 Piedra, Papel o Tijera es, sin duda, el juego de resolución rápida más universal del planeta. Es limpio, no requiere equipo y se decide en un segundo. Sin embargo, tiene un problema de diseño que los jugadores de toda la vida conocen bien: **cuando juegas con alguien que te conoce, la tasa de empates es altísima**.

@@ -4,6 +4,7 @@ description: 'Inyecta gamificación, atención y dinamismo en tu salón de clase
 pubDate: '2026-05-24'
 tags: ['temporizador', 'aula', 'profesores', 'educacion', 'gamificacion']
 author: 'Decídelo.app'
+heroImage: '/blog/temporizador.png'
 ---
 
 Mantener la atención y el compromiso de los estudiantes en el aula de clases del siglo XXI es uno de los mayores desafíos diarios de cualquier profesor o educador. Con estímulos constantes fuera del colegio, los métodos tradicionales de lectura y cátedra lineal a menudo resultan en alumnos distraídos o cansados.

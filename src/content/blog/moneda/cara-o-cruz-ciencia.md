@@ -4,6 +4,7 @@ description: 'Analizamos la historia, las matemáticas y la física detrás del 
 pubDate: '2026-05-22'
 tags: ['probabilidad', 'moneda', 'ciencia']
 author: 'Decídelo.app'
+heroImage: '/blog/moneda.png'
 ---
 
 Desde decidir quién saca de centro en la final de un mundial de fútbol, hasta resolver quién se queda con el asiento del copiloto en un viaje familiar. Lanzar una moneda al aire (el clásico juego de **cara o cruz**, *cara o ceca* o *águila o sol*) es el método de resolución de conflictos cotidianos por excelencia.

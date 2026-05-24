@@ -4,6 +4,7 @@ description: '¿Crees que Piedra, Papel o Tijera es pura suerte? Descubre los es
 pubDate: '2026-05-24'
 tags: ['juegos', 'estrategia', 'psicologia', 'azar', 'piedra-papel-tijera']
 author: 'Decídelo.app'
+heroImage: '/blog/piedra-papel-tijera.png'
 ---
 
 Para la mayoría, el juego de **Piedra, Papel o Tijera** es un recurso rápido para resolver disputas menores: quién lava los platos, quién saca la basura o quién paga la primera ronda en el bar. Se asume que es un juego de pura suerte, con un 50% de probabilidad de ganar en cada enfrentamiento directo.

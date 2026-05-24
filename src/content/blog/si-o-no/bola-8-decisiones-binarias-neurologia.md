@@ -4,6 +4,7 @@ description: 'Una inmersión en la neurociencia de la indecisión, la historia d
 pubDate: '2026-05-23'
 tags: ['si o no', 'decisiones', 'azar', 'bola 8', 'psicologia']
 author: 'Decídelo.app'
+heroImage: '/blog/si-o-no.png'
 ---
 
 Desde el antiguo Oráculo de Delfos en Grecia, donde sacerdotisas inhalaban vapores para responder preguntas sobre la guerra y la paz, hasta la adolescente moderna preguntándole a una esfera de plástico negro si su enamorado la invitará al baile de graduación; la humanidad siempre ha buscado respuestas externas y categóricas a sus dilemas internos.

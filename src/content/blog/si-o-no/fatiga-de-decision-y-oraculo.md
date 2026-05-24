@@ -4,6 +4,7 @@ description: '¿Te cuesta elegir qué cenar, qué ver en Netflix o qué ponerte 
 pubDate: '2026-05-24'
 tags: ['si-o-no', 'psicologia', 'productividad', 'fatiga-de-decision', 'oraculo']
 author: 'Decídelo.app'
+heroImage: '/blog/si-o-no.png'
 ---
 
 Desde el momento en que nos despertamos por la mañana, nos enfrentamos a una corriente interminable de elecciones. ¿Me levanto ya o configuro 5 minutos más de alarma? ¿Qué me pongo hoy para ir a la oficina? ¿Qué desayuno? ¿Qué correo respondo primero? ¿Qué ceno esta noche? ¿Qué película veo en Netflix entre un catálogo de miles de opciones?

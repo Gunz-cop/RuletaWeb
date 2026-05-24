@@ -4,6 +4,7 @@ description: 'Descubre los juegos de mesa tradicionales y dinámicas caseras que
 pubDate: '2026-05-24'
 tags: ['temporizador', 'juegos-de-mesa', 'familia', 'entretenimiento', 'azar']
 author: 'Decídelo.app'
+heroImage: '/blog/temporizador.png'
 ---
 
 Las tardes de juegos en familia o con amigos son excelentes para desconectar de las pantallas y compartir momentos de risas. Sin embargo, a veces las partidas se alargan innecesariamente porque algunos jugadores sufren de "parálisis por análisis": pasan varios minutos analizando cada movimiento posible en su turno mientras el resto del grupo bosteza impaciente.

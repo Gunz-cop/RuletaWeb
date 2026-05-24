@@ -4,6 +4,7 @@ description: 'Todo lo que necesitas saber para organizar el juego de amigo secre
 pubDate: '2026-05-22'
 tags: ['amigo-secreto', 'juegos', 'navidad']
 author: 'Decídelo.app'
+heroImage: '/blog/amigo-secreto.png'
 ---
 
 El juego del **Amigo Secreto** (también conocido como *Santa Secreto*, *Lover* o *Angelito* en distintos países de Latinoamérica y España) es una de las tradiciones más populares en oficinas, colegios y reuniones familiares cuando se acercan las fiestas navideñas o celebraciones especiales.

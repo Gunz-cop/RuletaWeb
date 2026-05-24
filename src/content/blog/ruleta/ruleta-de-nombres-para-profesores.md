@@ -4,6 +4,7 @@ description: 'Descubre cómo usar una ruleta de nombres aleatorios en clase para
 pubDate: '2026-05-21'
 tags: ['educacion', 'ruleta', 'gamificacion']
 author: 'Decídelo.app'
+heroImage: '/blog/ruleta.png'
 ---
 
 Mantener la atención y el entusiasmo de los estudiantes en el aula moderna es uno de los mayores desafíos para cualquier educador. Cuando un profesor lanza una pregunta al grupo, suele ocurrir una de dos cosas: o siempre levantan la mano los mismos tres alumnos de siempre, o el resto de la clase desvía la mirada para evitar ser seleccionado.

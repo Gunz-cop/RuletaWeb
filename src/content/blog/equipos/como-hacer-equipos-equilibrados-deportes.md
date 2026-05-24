@@ -4,6 +4,7 @@ description: '¿Organizas el partido de fútbol del fin de semana con amigos y s
 pubDate: '2026-05-24'
 tags: ['equipos', 'futbol', 'deportes', 'azar', 'organizacion']
 author: 'Decídelo.app'
+heroImage: '/blog/equipos.png'
 ---
 
 Es una escena repetida cada semana en miles de canchas de fútbol sala, baloncesto y campos amateur de todo el mundo. Los jugadores llegan, se saludan, se atan las zapatillas y comienza el debate interminable: **¿cómo armamos los equipos?**

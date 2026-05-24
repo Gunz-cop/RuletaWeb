@@ -4,6 +4,7 @@ description: 'Descubre los secretos matemáticos, la evolución histórica y las
 pubDate: '2026-05-23'
 tags: ['juegos', 'teoria de juegos', 'psicologia', 'azar', 'piedra papel tijera']
 author: 'Decídelo.app'
+heroImage: '/blog/piedra-papel-tijera.png'
 ---
 
 Parece el juego infantil por excelencia, la forma más rápida y rudimentaria de resolver quién se sienta en el asiento delantero del coche o quién paga la última ronda de bebidas. Sin embargo, detrás del veloz choque de manos en el juego de **Piedra, Papel o Tijera** (Rock-Paper-Scissors o RPS en inglés, *Ken-pon* en Japón, *Cachipún* en Chile) se esconde un universo fascinante de biología evolutiva, economía matemática y psicología conductual humana.

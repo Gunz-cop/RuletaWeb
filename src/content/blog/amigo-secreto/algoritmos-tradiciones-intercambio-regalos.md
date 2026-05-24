@@ -4,6 +4,7 @@ description: 'Descubre la historia del Amigo Secreto, los algoritmos matemático
 pubDate: '2026-05-23'
 tags: ['amigo secreto', 'sorteo', 'navidad', 'matematicas', 'algoritmos']
 author: 'Decídelo.app'
+heroImage: '/blog/amigo-secreto.png'
 ---
 
 Diciembre se acerca, el frío (o el calor en el hemisferio sur) empieza a sentirse, y en miles de oficinas, escuelas y grupos familiares de WhatsApp comienza a circular la misma y temida propuesta: *"¿Hacemos un Amigo Secreto este año?"*.

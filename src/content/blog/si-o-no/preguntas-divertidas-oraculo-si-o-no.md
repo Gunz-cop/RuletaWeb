@@ -4,6 +4,7 @@ description: 'Anima tus reuniones sociales con estas preguntas absurdas, gracios
 pubDate: '2026-05-24'
 tags: ['si-o-no', 'juegos', 'fiestas', 'entretenimiento', 'oraculo']
 author: 'Decídelo.app'
+heroImage: '/blog/si-o-no.png'
 ---
 
 Las reuniones en casa, las cenas con amigos y las fiestas de fin de semana son el escenario perfecto para dinámicas que despierten risas, generen debates absurdos y rompan el hielo. De todas las herramientas sencillas que puedes usar, un **Oráculo de Sí o No** (la versión moderna y digital de la clásica Bola 8 de billar) es una de las más divertidas.

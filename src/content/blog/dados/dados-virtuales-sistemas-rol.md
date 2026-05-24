@@ -4,6 +4,7 @@ description: 'Explora la historia milenaria de los dados, la matemática probabi
 pubDate: '2026-05-23'
 tags: ['dados', 'rol', 'azar', 'dnd', 'juegos de mesa']
 author: 'Decídelo.app'
+heroImage: '/blog/dados.png'
 ---
 
 Desde el antiguo Egipto hasta las épicas campañas de *Dungeons & Dragons* (D&D) transmitidas por Twitch, los dados han sido el motor inquebrantable del destino en los juegos de azar y estrategia. Estos pequeños objetos geométricos son la representación física del caos controlado, dictando el éxito de un ataque con espada, la ruina financiera en el Monopoly o el resultado de una apuesta de casino.

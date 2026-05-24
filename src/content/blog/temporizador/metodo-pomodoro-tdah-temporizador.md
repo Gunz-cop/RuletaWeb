@@ -4,6 +4,7 @@ description: 'Guía sobre gestión del tiempo: desde el reloj de arena históric
 pubDate: '2026-05-23'
 tags: ['temporizador', 'productividad', 'pomodoro', 'tiempo', 'tdah']
 author: 'Decídelo.app'
+heroImage: '/blog/temporizador.png'
 ---
 
 En la economía moderna de la atención, el tiempo ya no es oro; es un recurso aún más escaso y valioso: **enfoque cognitivo**. Con notificaciones de redes sociales interrumpiéndonos cada 3 minutos, mantener el estado de flujo (Flow) se ha convertido en una disciplina cuasi-marcial.

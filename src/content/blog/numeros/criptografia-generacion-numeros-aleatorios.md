@@ -4,6 +4,7 @@ description: 'Entiende cómo las computadoras generan azar. Una inmersión profu
 pubDate: '2026-05-23'
 tags: ['numeros', 'rng', 'aleatoriedad', 'sorteos', 'criptografia']
 author: 'Decídelo.app'
+heroImage: '/blog/numeros.png'
 ---
 
 Desde el sorteo del bingo dominical en la iglesia del barrio hasta la encriptación de grado militar que protege los billones de dólares en transacciones bancarias mundiales, el mundo moderno depende de una sola e invisible fuerza matemática: **Los Números Aleatorios**.
