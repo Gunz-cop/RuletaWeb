@@ -34,6 +34,7 @@ const schemaLD = {
       "description": description,
       "datePublished": pubDate instanceof Date ? pubDate.toISOString() : new Date(pubDate).toISOString(),
       ...(updatedDate && { "dateModified": updatedDate instanceof Date ? updatedDate.toISOString() : new Date(updatedDate).toISOString() }),
+      "inLanguage": "es-ES",
       "author": {
         "@type": "Person",
         "name": author,
@@ -41,6 +42,7 @@ const schemaLD = {
       },
       "publisher": {
         "@type": "Organization",
+        "@id": "https://decidelo.app/#organization",
         "name": "Decídelo.app",
         "url": "https://decidelo.app/",
         "logo": {
