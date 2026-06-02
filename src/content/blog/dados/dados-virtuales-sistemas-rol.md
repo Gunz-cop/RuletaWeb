@@ -90,7 +90,7 @@ Lanzar dados de resina física tiene varios problemas que los jugadores empedern
 3.  **Falta de Espacio (Cocked Dice):** Tirar múltiples dados en una mesa desordenada provoca dados apoyados en lápices, libros o cayendo al suelo bajo el sofá, obligando a repeticiones frustrantes.
 
 ### El Algoritmo Perfecto de la App
-En aplicaciones web de simulación 3D como nuestro [Lanzador de Dados Virtual](https://decidelo.app/dados/), los algoritmos basados en física WebGL y librerías de simulación (como Three.js o Cannon.js) aseguran una equidad perfecta. El código JavaScript genera resultados basados en la entropía criptográfica inquebrantable (`crypto.getRandomValues`) y luego la interfaz gráfica traduce eso en una experiencia visual rica: dados botando, colisionando entre sí e iluminándose con destellos de neón (nuestra famosa temática de D&D) sin las imprecisiones moleculares del plástico del mundo real.
+En aplicaciones web de simulación 3D como nuestro [Lanzador de Dados Virtual](https://decidelo.app/dados), los algoritmos basados en física WebGL y librerías de simulación (como Three.js o Cannon.js) aseguran una equidad perfecta. El código JavaScript genera resultados basados en la entropía criptográfica inquebrantable (`crypto.getRandomValues`) y luego la interfaz gráfica traduce eso en una experiencia visual rica: dados botando, colisionando entre sí e iluminándose con destellos de neón (nuestra famosa temática de D&D) sin las imprecisiones moleculares del plástico del mundo real.
 
 ---
 
@@ -147,6 +147,6 @@ Sí. El internet ha permitido la programación de "Dados Zocchi" (como el D3, D5
 
 El dado es, sin lugar a duda, el hardware de toma de decisiones más exitoso de la historia humana. Ha trascendido culturas, religiones y eras tecnológicas, evolucionando del hueso rudimentario al bloque de código en un servidor en la nube.
 
-Ya seas un Mago de nivel 20 enfrentando a un Dios Antiguo, un profesor explicando la desviación estándar, o simplemente un grupo de amigos incapaces de decidir quién va al supermercado a por bebidas, el [Lanzador de Dados Virtuales](https://decidelo.app/dados/) te ofrece la herramienta de resolución más antigua y pura de la humanidad, pulida con la precisión matemática del siglo XXI.
+Ya seas un Mago de nivel 20 enfrentando a un Dios Antiguo, un profesor explicando la desviación estándar, o simplemente un grupo de amigos incapaces de decidir quién va al supermercado a por bebidas, el [Lanzador de Dados Virtuales](https://decidelo.app/dados) te ofrece la herramienta de resolución más antigua y pura de la humanidad, pulida con la precisión matemática del siglo XXI.
 
 Prepara tu hoja de personaje, ajusta tus modificadores y deja que la física virtual dicte tu aventura.
