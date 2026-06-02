@@ -68,6 +68,29 @@ const schemaLD = {
   <!-- Canvas transparente para el efecto de confeti -->
   <canvas id="confetti-canvas" aria-hidden="true"></canvas>
 
+  <!-- Marquesina de Dilemas -->
+  <div class="marquee-container" aria-hidden="true">
+    <div class="marquee-content">
+      <span class="marquee-item"><span class="dot">✦</span> ¿Pizza o hamburguesa? 🍕</span>
+      <span class="marquee-item"><span class="dot">✦</span> ¿Quién saca al perro? 🦮</span>
+      <span class="marquee-item"><span class="dot">✦</span> ¿Netflix o leer un libro? 📚</span>
+      <span class="marquee-item"><span class="dot">✦</span> ¿Verdad o Reto? 😈</span>
+      <span class="marquee-item"><span class="dot">✦</span> ¿Quién paga la cena? 💸</span>
+      <span class="marquee-item"><span class="dot">✦</span> ¿Gimnasio o pereza? 💪</span>
+      <span class="marquee-item"><span class="dot">✦</span> ¿Qué serie ver hoy? 🎬</span>
+      <span class="marquee-item"><span class="dot">✦</span> ¿Estudiar o jugar? 🎮</span>
+      <!-- Bucle duplicado -->
+      <span class="marquee-item"><span class="dot">✦</span> ¿Pizza o hamburguesa? 🍕</span>
+      <span class="marquee-item"><span class="dot">✦</span> ¿Quién saca al perro? 🦮</span>
+      <span class="marquee-item"><span class="dot">✦</span> ¿Netflix o leer un libro? 📚</span>
+      <span class="marquee-item"><span class="dot">✦</span> ¿Verdad o Reto? 😈</span>
+      <span class="marquee-item"><span class="dot">✦</span> ¿Quién paga la cena? 💸</span>
+      <span class="marquee-item"><span class="dot">✦</span> ¿Gimnasio o pereza? 💪</span>
+      <span class="marquee-item"><span class="dot">✦</span> ¿Qué serie ver hoy? 🎬</span>
+      <span class="marquee-item"><span class="dot">✦</span> ¿Estudiar o jugar? 🎮</span>
+    </div>
+  </div>
+
   <!-- ====================================================================
        HERO SECTION
        ==================================================================== -->
@@ -83,9 +106,9 @@ const schemaLD = {
       <div class="hero-badge">
         <span>✨</span> 100% Gratis · Sin Registro
       </div>
-      <h1>Toma decisiones <span class="gradient-text">aleatorias</span> en segundos</h1>
+      <h1>Decisiones sin dramas, <span class="gradient-text">dejadas al azar</span></h1>
       <p class="hero-subtitle">La forma más fácil, rápida y divertida de resolver tus dilemas. Sin registro, sin dramas. ¡Dale al azar!</p>
-      <a href="#ruleta" class="hero-cta" id="hero-cta-btn">
+      <a href="#ruleta" class="hero-cta arcade-button-glow" id="hero-cta-btn">
         Girar la Ruleta
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -103,12 +126,21 @@ const schemaLD = {
        ==================================================================== -->
   <section class="roulette-section reveal" id="ruleta" aria-label="Ruleta de Decisión Aleatoria">
     <div class="container">
-      <div class="section-header">
-        <div class="section-tag">🎡 Herramienta Principal</div>
-        <h2 class="section-heading">Ruleta de Decisión Aleatoria</h2>
-      </div>
+      <div class="arcade-cabinet-frame">
+        <!-- Cabecera de la Cabina Arcade -->
+        <div class="arcade-header">
+          <div class="arcade-title">
+            <span class="arcade-badge">DECI-BOARD V2.0</span>
+            <div class="arcade-leds">
+              <span class="led led-coral"></span>
+              <span class="led led-mint"></span>
+              <span class="led led-purple"></span>
+            </div>
+          </div>
+          <div class="section-tag" style="margin-bottom: 0;">🎡 Máquina Principal</div>
+        </div>
 
-      <div class="app-grid">
+        <div class="app-grid">
         <!-- Columna Izquierda: La Ruleta -->
         <div class="wheel-column">
           <div class="wheel-title-container">
@@ -178,10 +210,9 @@ const schemaLD = {
               </div>
             </div>
           </div>
-        </div>
-
-      </div>
-    </div>
+      </div> <!-- app-grid -->
+      </div> <!-- arcade-cabinet-frame -->
+    </div> <!-- container -->
   </section>
 
   <!-- ====================================================================

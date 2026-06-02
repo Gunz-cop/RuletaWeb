@@ -103,7 +103,7 @@ const tools: Tool[] = [
     return (
       <a 
         href={tool.status === 'active' ? tool.href : '#'} 
-        class={`hub-card reveal-scale ${delayClass} ${isCurrent ? 'current-active' : ''}`}
+        class={`hub-card token-grid-card reveal-scale ${delayClass} ${isCurrent ? 'current-active' : ''}`}
         id={`card-${tool.id}`}
         style={tool.status !== 'active' ? 'cursor: not-allowed; opacity: 0.7;' : 'text-decoration: none;'}
       >
@@ -217,17 +217,10 @@ const tools: Tool[] = [
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0;
-    height: 3px;
+    height: 3.5px;
     background: var(--accent-gradient);
     opacity: 0;
     transition: opacity 0.35s ease;
-  }
-
-  .hub-card:hover {
-    transform: translateY(-4px);
-    border-color: rgba(0, 229, 255, 0.25);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3),
-                0 0 20px rgba(0, 229, 255, 0.08);
   }
 
   .hub-card:hover::before {
@@ -235,14 +228,14 @@ const tools: Tool[] = [
   }
 
   .hub-card.current-active {
-    border-color: rgba(179, 102, 255, 0.3);
-    box-shadow: 0 4px 20px rgba(179, 102, 255, 0.05);
+    border-color: rgba(255, 94, 98, 0.25);
+    box-shadow: 0 4px 20px rgba(255, 94, 98, 0.05);
     pointer-events: none; /* No clickable if you are already on that page */
   }
 
   .hub-card.current-active::before {
-    opacity: 0.5;
-    background: linear-gradient(135deg, #b366ff 0%, #00e5ff 100%);
+    opacity: 0.6;
+    background: var(--accent-gradient);
   }
 
   .hub-card-icon {
@@ -253,24 +246,32 @@ const tools: Tool[] = [
     align-items: center;
     justify-content: center;
     font-size: 1.5rem;
-    background: rgba(0, 229, 255, 0.08);
-    border: 1px solid rgba(0, 229, 255, 0.12);
+    background: rgba(0, 242, 254, 0.06);
+    border: 1px solid rgba(0, 242, 254, 0.12);
     flex-shrink: 0;
   }
 
   .hub-card-icon svg {
     width: 26px; height: 26px;
-    stroke: var(--accent-cyan);
+    stroke: var(--accent-mint);
     stroke-width: 1.8;
     fill: none;
   }
 
-  /* Color variation for some icons to make the hub look premium and lively */
-  .hub-card:nth-child(even) .hub-card-icon {
-    background: rgba(179, 102, 255, 0.08);
+  /* 3-color Rotation for icons and tags */
+  .hub-card:nth-child(3n+1) .hub-card-icon {
+    background: rgba(255, 94, 98, 0.06);
+    border-color: rgba(255, 94, 98, 0.12);
+  }
+  .hub-card:nth-child(3n+1) .hub-card-icon svg {
+    stroke: var(--accent-coral);
+  }
+
+  .hub-card:nth-child(3n+2) .hub-card-icon {
+    background: rgba(179, 102, 255, 0.06);
     border-color: rgba(179, 102, 255, 0.12);
   }
-  .hub-card:nth-child(even) .hub-card-icon svg {
+  .hub-card:nth-child(3n+2) .hub-card-icon svg {
     stroke: var(--accent-purple);
   }
 
@@ -307,14 +308,20 @@ const tools: Tool[] = [
   }
 
   .hub-card-badge.active {
-    background: rgba(0, 229, 255, 0.08);
-    border: 1px solid rgba(0, 229, 255, 0.18);
-    color: var(--accent-cyan);
+    background: rgba(0, 242, 254, 0.06);
+    border: 1px solid rgba(0, 242, 254, 0.15);
+    color: var(--accent-mint);
   }
 
-  .hub-card:nth-child(even) .hub-card-badge.active {
-    background: rgba(179, 102, 255, 0.08);
-    border-color: rgba(179, 102, 255, 0.18);
+  .hub-card:nth-child(3n+1) .hub-card-badge.active {
+    background: rgba(255, 94, 98, 0.06);
+    border-color: rgba(255, 94, 98, 0.15);
+    color: var(--accent-coral);
+  }
+
+  .hub-card:nth-child(3n+2) .hub-card-badge.active {
+    background: rgba(179, 102, 255, 0.06);
+    border-color: rgba(179, 102, 255, 0.15);
     color: var(--accent-purple);
   }
 </style>
