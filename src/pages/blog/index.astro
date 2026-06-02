@@ -70,33 +70,37 @@ const schemaLD = {
           <p>Próximamente publicaremos nuestros primeros artículos. ¡Mantente al tanto!</p>
         </div>
       ) : (
-        <div class="blog-grid">
-          {sortedPosts.map((post, index) => {
-            const formattedDate = new Date(post.data.pubDate).toLocaleDateString('es-ES', {
+        <>
+          <!-- Post Destacado -->
+          {(() => {
+            const featuredPost = sortedPosts[0];
+            const formattedDate = new Date(featuredPost.data.pubDate).toLocaleDateString('es-ES', {
               year: 'numeric',
               month: 'long',
               day: 'numeric'
             });
-            const delayClass = `reveal-delay-${(index % 4) + 1}`;
+            const words = featuredPost.body ? featuredPost.body.split(/\s+/).length : 0;
+            const readingTime = Math.max(1, Math.round(words / 200));
 
             return (
-              <article class={`blog-card reveal-scale ${delayClass}`}>
-                <a href={`/blog/${post.id}`} class="blog-card-link">
-                  {post.data.heroImage && (
-                    <div class="blog-card-image">
-                      <img src={post.data.heroImage} alt={post.data.title} loading="lazy" />
+              <article class="featured-post-card token-grid-card">
+                <a href={`/blog/${featuredPost.id}`} class="featured-post-link">
+                  {featuredPost.data.heroImage && (
+                    <div class="featured-post-image">
+                      <img src={featuredPost.data.heroImage} alt={featuredPost.data.title} loading="eager" />
                     </div>
                   )}
-                  <div class="blog-card-content">
+                  <div class="featured-post-content">
+                    <div class="featured-badge">🔥 Destacado</div>
+                    <h2 class="featured-post-title">{featuredPost.data.title}</h2>
+                    <p class="featured-post-desc">{featuredPost.data.description}</p>
                     <div class="blog-card-meta">
-                      <time datetime={post.data.pubDate.toISOString()}>{formattedDate}</time>
+                      <time datetime={featuredPost.data.pubDate.toISOString()}>{formattedDate}</time>
                       <span class="bullet">•</span>
-                      <span class="blog-card-author">{post.data.author}</span>
+                      <span>⏱️ {readingTime} min de lectura</span>
                     </div>
-                    <h2 class="blog-card-title">{post.data.title}</h2>
-                    <p class="blog-card-desc">{post.data.description}</p>
                     <div class="blog-card-tags">
-                      {post.data.tags.map(tag => (
+                      {featuredPost.data.tags.map(tag => (
                         <span class="tag-badge">#{tag}</span>
                       ))}
                     </div>
@@ -111,8 +115,61 @@ const schemaLD = {
                 </a>
               </article>
             );
-          })}
-        </div>
+          })()}
+
+          <!-- Título sección recientes -->
+          {sortedPosts.length > 1 && (
+            <div class="recents-header">
+              <h2 class="recents-title">Artículos Recientes</h2>
+            </div>
+            
+            <div class="blog-grid">
+              {sortedPosts.slice(1).map((post, index) => {
+                const formattedDate = new Date(post.data.pubDate).toLocaleDateString('es-ES', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                });
+                const words = post.body ? post.body.split(/\s+/).length : 0;
+                const readingTime = Math.max(1, Math.round(words / 200));
+                const delayClass = `reveal-delay-${(index % 4) + 1}`;
+
+                return (
+                  <article class={`blog-card token-grid-card reveal-scale ${delayClass}`}>
+                    <a href={`/blog/${post.id}`} class="blog-card-link">
+                      {post.data.heroImage && (
+                        <div class="blog-card-image">
+                          <img src={post.data.heroImage} alt={post.data.title} loading="lazy" />
+                        </div>
+                      )}
+                      <div class="blog-card-content">
+                        <div class="blog-card-meta">
+                          <time datetime={post.data.pubDate.toISOString()}>{formattedDate}</time>
+                          <span class="bullet">•</span>
+                          <span>⏱️ {readingTime} min</span>
+                        </div>
+                        <h2 class="blog-card-title">{post.data.title}</h2>
+                        <p class="blog-card-desc">{post.data.description}</p>
+                        <div class="blog-card-tags">
+                          {post.data.tags.map(tag => (
+                            <span class="tag-badge">#{tag}</span>
+                          ))}
+                        </div>
+                        <span class="read-more-btn">
+                          Leer artículo 
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                          </svg>
+                        </span>
+                      </div>
+                    </a>
+                  </article>
+                );
+              })}
+            </div>
+          )}
+        </>
       )}
     </section>
 
@@ -140,6 +197,128 @@ const schemaLD = {
     color: var(--text-secondary);
   }
 
+  /* Featured Post Card */
+  .featured-post-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    margin-bottom: 3.5rem;
+    position: relative;
+  }
+
+  .featured-post-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: var(--accent-gradient);
+  }
+
+  .featured-post-link {
+    text-decoration: none;
+    color: inherit;
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 860px) {
+    .featured-post-link {
+      grid-template-columns: 1.2fr 0.8fr;
+    }
+  }
+
+  .featured-post-image {
+    width: 100%;
+    height: 240px;
+    overflow: hidden;
+    border-bottom: 1px solid var(--card-border);
+  }
+
+  @media (min-width: 860px) {
+    .featured-post-image {
+      height: 100%;
+      min-height: 380px;
+      border-bottom: none;
+      border-right: 1px solid var(--card-border);
+    }
+  }
+
+  .featured-post-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .featured-post-card:hover .featured-post-image img {
+    transform: scale(1.03);
+  }
+
+  .featured-post-content {
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.85rem;
+  }
+
+  @media (min-width: 860px) {
+    .featured-post-content {
+      padding: 3rem;
+    }
+  }
+
+  .featured-badge {
+    align-self: flex-start;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: var(--accent-coral);
+    background: rgba(255, 94, 98, 0.1);
+    border: 1px solid rgba(255, 94, 98, 0.2);
+    padding: 0.25rem 0.6rem;
+    border-radius: var(--radius-sm);
+    text-transform: uppercase;
+  }
+
+  .featured-post-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: clamp(1.5rem, 4vw, 2.1rem);
+    font-weight: 800;
+    line-height: 1.2;
+    color: #ffffff;
+    margin: 0;
+    transition: var(--transition);
+  }
+
+  .featured-post-card:hover .featured-post-title {
+    color: var(--accent-coral);
+  }
+
+  .featured-post-desc {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  /* Recent Posts Section */
+  .recents-header {
+    border-bottom: 1.5px solid rgba(255, 255, 255, 0.04);
+    margin-bottom: 2rem;
+    padding-bottom: 0.5rem;
+  }
+
+  .recents-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0;
+  }
+
   .blog-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
@@ -162,17 +341,10 @@ const schemaLD = {
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0;
-    height: 3px;
+    height: 3.5px;
     background: var(--accent-gradient);
     opacity: 0;
     transition: opacity 0.35s ease;
-  }
-
-  .blog-card:hover {
-    transform: translateY(-5px);
-    border-color: rgba(179, 102, 255, 0.25);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35),
-                0 0 20px rgba(179, 102, 255, 0.08);
   }
 
   .blog-card:hover::before {
@@ -199,7 +371,7 @@ const schemaLD = {
     align-items: center;
     gap: 0.5rem;
     font-size: 0.78rem;
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
   }
 
   .bullet {
@@ -217,6 +389,10 @@ const schemaLD = {
   }
 
   .blog-card:hover .blog-card-title {
+    color: var(--accent-mint);
+  }
+
+  .blog-card:nth-child(even):hover .blog-card-title {
     color: var(--accent-purple);
   }
 
@@ -242,9 +418,9 @@ const schemaLD = {
   .tag-badge {
     font-size: 0.7rem;
     font-weight: 600;
-    color: var(--accent-cyan);
-    background: rgba(0, 229, 255, 0.06);
-    border: 1px solid rgba(0, 229, 255, 0.1);
+    color: var(--accent-mint);
+    background: rgba(0, 242, 254, 0.06);
+    border: 1px solid rgba(0, 242, 254, 0.1);
     padding: 0.15rem 0.5rem;
     border-radius: 99px;
   }
@@ -253,6 +429,12 @@ const schemaLD = {
     color: var(--accent-purple);
     background: rgba(179, 102, 255, 0.06);
     border-color: rgba(179, 102, 255, 0.1);
+  }
+
+  .blog-card:nth-child(3n+1) .tag-badge {
+    color: var(--accent-coral);
+    background: rgba(255, 94, 98, 0.06);
+    border-color: rgba(255, 94, 98, 0.1);
   }
 
   .read-more-btn {
@@ -272,10 +454,15 @@ const schemaLD = {
   }
 
   .blog-card:hover .read-more-btn {
-    color: var(--accent-cyan);
+    color: var(--accent-mint);
   }
 
-  .blog-card:hover .read-more-btn svg {
+  .featured-post-card:hover .read-more-btn {
+    color: var(--accent-coral);
+  }
+
+  .blog-card:hover .read-more-btn svg,
+  .featured-post-card:hover .read-more-btn svg {
     transform: translateX(3px);
   }
 
@@ -300,11 +487,15 @@ const schemaLD = {
 
   /* Responsive overrides */
   @media (max-width: 480px) {
-    .blog-card-content {
+    .blog-card-content,
+    .featured-post-content {
       padding: 1.5rem;
     }
     .blog-card-image {
       height: 160px;
+    }
+    .featured-post-image {
+      height: 180px;
     }
   }
 </style>
