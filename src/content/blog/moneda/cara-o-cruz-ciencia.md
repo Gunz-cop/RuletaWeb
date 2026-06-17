@@ -1,6 +1,6 @@
 ---
-title: '¿Cara o cruz? La ciencia detrás de lanzar una moneda'
-description: 'Analizamos la historia, las matemáticas y la física detrás del juego de cara o cruz. ¿Es realmente un método 50/50 equilibrado?'
+title: 'Cara o cruz online: la ciencia detrás de lanzar una moneda'
+description: 'Analizamos la historia, las matemáticas y la física detrás de cara o cruz, cara o sello y el lanzamiento de moneda online.'
 pubDate: '2026-05-22'
 tags: ['probabilidad', 'moneda', 'ciencia']
 author: 'Decídelo.app'
@@ -48,8 +48,24 @@ Si vas a lanzar una moneda física para una decisión importante, los científic
 - **Taparla al atraparla:** Captura la moneda con tu palma e inmediatamente dale la vuelta sobre el dorso de tu otra mano. Esto interrumpe el seguimiento visual y mecánico del giro.
 
 ### El método virtual
-Si no tienes una moneda a la mano o quieres eliminar por completo cualquier tipo de sesgo físico humano o desgaste del metal, lo ideal es recurrir a un simulador digital.
+Si no tienes una moneda a la mano o quieres eliminar varios sesgos físicos humanos, lo ideal es recurrir a un simulador digital.
 
-En nuestra herramienta de [Lanzar Moneda](https://decidelo.app/moneda) puedes hacer tiradas virtuales. El sistema utiliza generadores de números pseudoaleatorios de alta precisión y renderiza animaciones en 3D que respetan los coeficientes de giro de forma neutral. Además, puedes cambiar el estilo de la moneda (clásica, pirata o con agujero de bala) para hacer las rondas más divertidas.
+En nuestra herramienta de [lanzar moneda online](https://decidelo.app/moneda) puedes hacer tiradas virtuales de cara o cruz, cara o sello o volado. El sistema decide primero el resultado con aleatoriedad del navegador y luego renderiza una animación en 3D. Además, puedes cambiar el estilo de la moneda y revisar un historial breve de resultados.
+
+## Experimento rápido: compara moneda física vs moneda online
+
+Si quieres probarlo en clase, en una reunión o simplemente por curiosidad, haz este ejercicio:
+
+1. Escribe una tabla con 20 filas.
+2. Lanza una moneda física 20 veces y anota Cara o Cruz.
+3. Abre la herramienta de [cara o cruz online](https://decidelo.app/moneda) y repite 20 lanzamientos.
+4. Cuenta cuántas caras y cruces aparecen en cada tanda.
+5. Compara resultados sin esperar una alternancia perfecta.
+
+Es normal que aparezcan rachas. Cinco caras seguidas no significan que el sistema esté roto; solo muestran cómo se comporta el azar en muestras pequeñas.
+
+## Cuándo sí y cuándo no usar cara o cruz
+
+Úsalo para decisiones pequeñas: quién empieza, qué opción probar primero, qué equipo saca, qué tarea cotidiana hacer o cómo romper un empate amistoso. No lo uses para decisiones médicas, legales, financieras, de seguridad o apuestas reguladas.
 
 ¡La próxima vez que pidas cara o cruz, recuerda que tu elección de partida en el dedo podría darte ese pequeño 1% de ventaja que marque la diferencia!

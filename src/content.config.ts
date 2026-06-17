@@ -11,6 +11,7 @@ const blog = defineCollection({
     heroImage: z.string().optional(),
     tags: z.array(z.string()),
     author: z.string().default('Decídelo.app'),
+    indexable: z.boolean().default(false),
   }),
 });
 

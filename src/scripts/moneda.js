@@ -190,6 +190,15 @@ function initMoneda() {
   });
 
   // Lógica de lanzamiento al pulsar LANZAR o la moneda misma
+  function randomUnit() {
+    if (window.crypto && window.crypto.getRandomValues) {
+      const values = new Uint32Array(1);
+      window.crypto.getRandomValues(values);
+      return values[0] / 4294967296;
+    }
+    return Math.random();
+  }
+
   function launchCoin() {
     if (isTossing) return;
 
@@ -205,12 +214,12 @@ function initMoneda() {
     if (coinShadow) coinShadow.classList.add('tossing');
 
     // 3. Decidir aleatoriamente (50% de probabilidad)
-    const result = Math.random() < 0.5 ? 'Cara' : 'Cruz';
+    const result = randomUnit() < 0.5 ? 'Cara' : 'Cruz';
 
     // 4. Calcular los giros 3D aleatorios acumulativos
     // Generamos entre 5 y 9 vueltas completas sobre el eje X e Y para dar sensación caótica
-    const spinsX = Math.floor(Math.random() * 4) + 6; // 6 a 9 giros
-    const spinsY = Math.floor(Math.random() * 4) + 6; // 6 a 9 giros
+    const spinsX = Math.floor(randomUnit() * 4) + 6; // 6 a 9 giros
+    const spinsY = Math.floor(randomUnit() * 4) + 6; // 6 a 9 giros
 
     // Cara (C) finaliza en un múltiplo de 360° en el eje Y (0, 360, 720...)
     // Cruz (X) finaliza en un múltiplo impar de 180° en el eje Y (180, 540, 900...)

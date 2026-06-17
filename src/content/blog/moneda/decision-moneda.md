@@ -1,6 +1,6 @@
 ---
-title: 'Cara o cruz online: Cómo tomar decisiones difíciles en segundos y sin arrepentirte'
-description: '¿Sufres de parálisis por análisis? Descubre el truco psicológico del lanzamiento de moneda (cara o cruz) y cómo delegar en el azar puede desbloquear tu mente de inmediato.'
+title: 'Cara o cruz online: cómo decidir con una moneda sin arrepentirte'
+description: '¿Sufres parálisis por análisis? Aprende cuándo lanzar una moneda online, tirar cara o cruz o usar cara o sello para desbloquear decisiones pequeñas.'
 pubDate: '2026-06-02'
 tags: ['psicologia', 'moneda', 'toma-de-decisiones', 'productividad']
 author: 'Decídelo.app'
@@ -65,9 +65,9 @@ Pero para el 80% de tus decisiones cotidianas, la moneda es la herramienta de pr
 
 En la era moderna, casi nadie lleva monedas de metal en el bolsillo. Además, lanzar una moneda física en la oficina o en la cama suele acabar con la moneda rodando debajo de un mueble o perdiéndose. 
 
-Por eso, una herramienta de **Lanzar Moneda virtual** es la solución ideal. En nuestra aplicación, puedes lanzar una moneda en 3D con físicas realistas y sonido desde tu smartphone u ordenador en un solo clic, sin anuncios intrusivos y de forma instantánea.
+Por eso, una herramienta de **lanzar moneda virtual** es la solución ideal. En nuestra aplicación, puedes tirar una moneda en 3D desde tu smartphone u ordenador en un solo clic. Sirve tanto si lo llamas cara o cruz, cara o sello, águila o sol o volado.
 
 > [!IMPORTANT]
-> El simulador de **Lanzar Moneda** de Decídelo.app utiliza un algoritmo aleatorio puro, asegurando que la probabilidad sea del 50/50 exacto en cada tirada, sin memoria de lanzamientos previos.
+> El simulador de **Lanzar Moneda** de Decídelo.app elige el resultado con aleatoriedad del navegador mediante `crypto.getRandomValues` cuando está disponible. Cada tirada es independiente: la moneda no tiene memoria de lanzamientos previos.
 
-No malgastes más energía mental en decisiones sin importancia. La próxima vez que te encuentres debatiendo contigo mismo sobre dos opciones equivalentes, no lo pienses más. Abre nuestra aplicación, haz clic en [Lanzar Moneda](https://decidelo.app/moneda) y deja que tu cerebro subconsciente se revele mientras la moneda gira en tu pantalla. ¡Libera espacio mental para lo que de verdad importa!
+No malgastes más energía mental en decisiones sin importancia. La próxima vez que te encuentres debatiendo contigo mismo sobre dos opciones equivalentes, no lo pienses más. Abre nuestra aplicación, haz clic en [cara o cruz online](https://decidelo.app/moneda) y deja que tu cerebro subconsciente se revele mientras la moneda gira en tu pantalla. ¡Libera espacio mental para lo que de verdad importa!

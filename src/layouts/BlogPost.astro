@@ -2,8 +2,10 @@
 import Layout from './Layout.astro';
 import HubGrid from '../components/HubGrid.astro';
 import AdSlot from '../components/AdSlot.astro';
+import { getEditorialKit, getFallbackMistakes } from '../data/adsenseEditorial';
 
 interface Props {
+  slug: string;
   title: string;
   description: string;
   pubDate: Date;
@@ -11,10 +13,13 @@ interface Props {
   heroImage?: string;
   tags: string[];
   author: string;
+  indexable?: boolean;
   readingTime?: number;
 }
 
-const { title, description, pubDate, updatedDate, heroImage, tags, author, readingTime } = Astro.props;
+const { slug, title, description, pubDate, updatedDate, heroImage, tags, author, indexable = false, readingTime } = Astro.props;
+const editorialKit = getEditorialKit(slug);
+const fallbackMistakes = getFallbackMistakes();
 
 const formattedDate = new Date(pubDate).toLocaleDateString('es-ES', {
   year: 'numeric',
@@ -53,6 +58,18 @@ const schemaLD = {
       },
       "image": heroImage ? (heroImage.startsWith('http') ? heroImage : `https://decidelo.app${heroImage}`) : "https://decidelo.app/social-share.png"
     },
+    ...(editorialKit ? [{
+      "@type": "FAQPage",
+      "@id": `${postUrl}#faq`,
+      "mainEntity": editorialKit.faqs.map((faq) => ({
+        "@type": "Question",
+        "name": faq.question,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": faq.answer
+        }
+      }))
+    }] : []),
     {
       "@type": "BreadcrumbList",
       "@id": `${postUrl}#breadcrumb`,
@@ -81,7 +98,7 @@ const schemaLD = {
 };
 ---
 
-<Layout title={`${title} | Blog Decídelo.app`} description={description} schemaLD={schemaLD} showHomeHeader={false}>
+<Layout title={`${title} | Blog Decídelo.app`} description={description} robots={indexable ? 'index, follow' : 'noindex, follow'} schemaLD={schemaLD} showHomeHeader={false}>
   <main class="container">
     
     <!-- Breadcrumb -->
@@ -136,6 +153,54 @@ const schemaLD = {
           <section class="post-content">
             <slot />
           </section>
+
+          {editorialKit ? (
+            <section class="field-guide" aria-labelledby="field-guide-title">
+              <p class="field-label">Probado con Decídelo.app</p>
+              <h2 id="field-guide-title">Guía práctica para aplicar esta idea</h2>
+              <p>{editorialKit.testedUseCase}</p>
+
+              <h3>Pasos recomendados</h3>
+              <ol>
+                {editorialKit.steps.map((step) => <li>{step}</li>)}
+              </ol>
+
+              <div class="template-box">
+                <h3>{editorialKit.templateTitle}</h3>
+                <ul>
+                  {editorialKit.templateItems.map((item) => <li>{item}</li>)}
+                </ul>
+                <a class="tool-cta" href={editorialKit.toolUrl}>Abrir {editorialKit.toolName}</a>
+              </div>
+
+              <h3>Errores comunes</h3>
+              <ul>
+                {editorialKit.mistakes.map((mistake) => <li>{mistake}</li>)}
+              </ul>
+
+              <h3>Preguntas frecuentes</h3>
+              {editorialKit.faqs.map((faq) => (
+                <details class="faq-item">
+                  <summary>{faq.question}</summary>
+                  <p>{faq.answer}</p>
+                </details>
+              ))}
+
+              <div class="related-links">
+                <h3>Lecturas relacionadas</h3>
+                {editorialKit.related.map((link) => <a href={link.href}>{link.label}</a>)}
+              </div>
+            </section>
+          ) : (
+            <section class="field-guide compact" aria-label="Nota editorial">
+              <p class="field-label">Artículo en revisión editorial</p>
+              <p>Esta guía sigue disponible para lectores directos, pero estamos reforzando el blog con casos prácticos, plantillas y ejemplos propios antes de volver a solicitar la revisión de AdSense.</p>
+              <h3>Mientras tanto, evita estos errores</h3>
+              <ul>
+                {fallbackMistakes.map((mistake) => <li>{mistake}</li>)}
+              </ul>
+            </section>
+          )}
 
           <footer class="post-footer">
             <div class="post-footer-nav">
@@ -615,6 +680,104 @@ const schemaLD = {
     margin-top: 3.5rem;
     padding-top: 1.5rem;
     border-top: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .field-guide {
+    margin-top: 2.5rem;
+    padding: 1.5rem;
+    border: 1px solid rgba(0, 242, 254, 0.18);
+    border-radius: var(--radius-md);
+    background: linear-gradient(135deg, rgba(0, 242, 254, 0.05), rgba(179, 102, 255, 0.05));
+    color: var(--text-secondary);
+  }
+
+  .field-guide.compact {
+    border-color: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .field-label {
+    margin: 0 0 0.5rem;
+    color: var(--accent-mint);
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .field-guide h2,
+  .field-guide h3 {
+    font-family: 'Outfit', sans-serif;
+    color: #ffffff;
+  }
+
+  .field-guide h2 {
+    font-size: 1.45rem;
+    margin-bottom: 0.85rem;
+  }
+
+  .field-guide h3 {
+    font-size: 1.05rem;
+    margin-top: 1.35rem;
+    margin-bottom: 0.65rem;
+  }
+
+  .field-guide p,
+  .field-guide li {
+    line-height: 1.7;
+  }
+
+  .template-box {
+    margin: 1.25rem 0;
+    padding: 1.25rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-sm);
+    background: rgba(0, 0, 0, 0.2);
+  }
+
+  .tool-cta {
+    display: inline-flex;
+    margin-top: 0.75rem;
+    padding: 0.7rem 1rem;
+    border-radius: var(--radius-sm);
+    background: var(--accent-gradient);
+    color: #050506;
+    font-weight: 800;
+    text-decoration: none;
+  }
+
+  .faq-item {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 0.75rem 0;
+  }
+
+  .faq-item summary {
+    cursor: pointer;
+    color: #ffffff;
+    font-weight: 700;
+  }
+
+  .faq-item p {
+    margin-top: 0.75rem;
+    margin-bottom: 0;
+  }
+
+  .related-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+  }
+
+  .related-links h3 {
+    flex-basis: 100%;
+    margin-bottom: 0;
+  }
+
+  .related-links a {
+    color: var(--accent-mint);
+    text-decoration: none;
+    border-bottom: 1px dashed rgba(0, 242, 254, 0.45);
   }
 
   .btn-back-blog {

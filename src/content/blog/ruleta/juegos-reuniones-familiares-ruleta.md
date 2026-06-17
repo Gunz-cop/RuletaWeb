@@ -1,6 +1,6 @@
 ---
-title: '7 Juegos Divertidos para Reuniones Familiares Usando una Ruleta de Nombres'
-description: 'Haz que tus fiestas y reuniones familiares sean inolvidables introduciendo dinámicas dinámicas e interactivas con la ruleta aleatoria.'
+title: '7 juegos para reuniones familiares con ruleta de nombres'
+description: 'Ideas sencillas para usar una ruleta de nombres en reuniones familiares: trivia, karaoke, retos suaves, mímica, sorteos y turnos.'
 pubDate: '2026-05-25'
 tags: ['familia', 'juegos', 'reuniones', 'fiestas', 'ruleta']
 author: 'Decídelo.app'

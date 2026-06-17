@@ -1,6 +1,6 @@
 ---
-title: 'Juegos de Mesa y Dinámicas Familiares con Temporizador Aleatorio: Tensión al Máximo'
-description: 'Descubre los juegos de mesa tradicionales y dinámicas caseras que se vuelven diez veces más divertidos e intensivos usando un cronómetro aleatorio.'
+title: 'Temporizador aleatorio para juegos de mesa y dinámicas familiares'
+description: 'Ideas prácticas para usar un temporizador aleatorio en patata caliente, palabras encadenadas, turnos de juegos de mesa y reuniones familiares.'
 pubDate: '2026-05-24'
 tags: ['temporizador', 'juegos-de-mesa', 'familia', 'entretenimiento', 'azar']
 author: 'Decídelo.app'

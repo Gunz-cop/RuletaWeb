@@ -1,6 +1,6 @@
 ---
-title: 'Dinámicas de Grupo y Team Building: Por Qué la Asignación Aleatoria de Equipos Elimina Sesgos'
-description: 'Una guía extensa sobre psicología organizacional, dinámicas de aula, sesgos de afinidad y los algoritmos matemáticos que hacen posible la formación de equipos perfectos de manera virtual.'
+title: 'Dinámicas de grupo: cómo formar equipos aleatorios sin sesgos'
+description: 'Guía práctica para usar equipos aleatorios en clase, trabajo remoto y team building sin repetir siempre los mismos grupos.'
 pubDate: '2026-05-23'
 tags: ['equipos', 'team building', 'educacion', 'productividad', 'psicologia']
 author: 'Decídelo.app'

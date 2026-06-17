@@ -1,0 +1,153 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const title = 'Términos y Condiciones — Decídelo.app';
+const description = 'Lee los términos y condiciones de uso de decídelo.app. Información sobre licencia de uso, exención de responsabilidad y reglas de la plataforma.';
+---
+
+<Layout title={title} description={description}>
+  <section class="legal-hero">
+    <div class="container text-center">
+      <h1>Términos y <span class="gradient-text">Condiciones</span></h1>
+      <p class="subtitle">Última actualización: 16 de junio de 2026</p>
+    </div>
+  </section>
+
+  <section class="legal-content">
+    <div class="container container-narrow">
+      <article class="legal-article">
+        <p>Te damos la bienvenida a <strong>decídelo.app</strong>. Estos términos y condiciones describen las reglas y regulaciones para el uso del sitio web de decídelo.app, ubicado en <code>https://decidelo.app</code>.</p>
+        <p>Al acceder a este sitio web, asumimos que aceptas estos términos y condiciones en su totalidad. No sigas utilizando decídelo.app si no estás de acuerdo con todos los términos y condiciones establecidos en esta página.</p>
+
+        <hr />
+
+        <h2>1. Uso de las Herramientas</h2>
+        <p>Nuestras herramientas (ruleta aleatoria, dados, lanzamiento de moneda, etc.) están destinadas exclusivamente a fines de entretenimiento, gamificación y ayuda recreativa en la toma de decisiones cotidianas.</p>
+        <ul>
+          <li><strong>decídelo.app</strong> no es un sitio de juegos de azar, apuestas ni sorteos regulados por ley.</li>
+          <li>No somos responsables de las consecuencias que puedan derivarse de los resultados arrojados por nuestras herramientas aleatorias.</li>
+          <li>El usuario se compromete a no utilizar las herramientas para dirimir disputas legales, transacciones financieras o actividades críticas de alta seguridad.</li>
+        </ul>
+
+        <h2>2. Exención de Responsabilidad</h2>
+        <p>En la medida máxima permitida por la ley aplicable, excluimos todas las representaciones, garantías y condiciones relacionadas con nuestro sitio web y el uso de este. Nada en esta exención de responsabilidad:</p>
+        <ul>
+          <li>Limita o excluye nuestra o tu responsabilidad por muerte o lesiones personales resultantes de negligencia.</li>
+          <li>Limita o excluye nuestra o tu responsabilidad por fraude o tergiversación fraudulenta.</li>
+          <li>Limita cualquiera de nuestras o tus responsabilidades de cualquier manera que no esté permitida por la ley aplicable.</li>
+        </ul>
+        <p>Las limitaciones y exclusiones de responsabilidad establecidas en esta Sección y en otras partes de esta exención de responsabilidad rigen todas las responsabilidades derivadas de la exención de responsabilidad, incluidas las responsabilidades derivadas del contrato, la responsabilidad extracontractual y por incumplimiento de obligaciones legales.</p>
+        <p>Dado que el sitio web y las herramientas se proporcionan de forma gratuita, no seremos responsables de ninguna pérdida o daño de cualquier naturaleza.</p>
+
+        <h2>3. Propiedad Intelectual</h2>
+        <p>A menos que se indique lo contrario, <strong>decídelo.app</strong> y/o sus licenciantes poseen los derechos de propiedad intelectual de todo el material en decídelo.app. Todos los derechos de propiedad intelectual están reservados. Puedes acceder a esto desde decídelo.app para tu uso personal sujeto a las restricciones establecidas en estos términos y condiciones.</p>
+        <p>No debes:</p>
+        <ul>
+          <li>Volver a publicar material de decídelo.app sin la debida atribución.</li>
+          <li>Vender, alquilar o sublicenciar material de decídelo.app.</li>
+          <li>Reproducir, duplicar o copiar código fuente de nuestras herramientas con fines comerciales.</li>
+        </ul>
+
+        <h2>4. Enlaces a nuestro contenido</h2>
+        <p>Las siguientes organizaciones pueden enlazarse a nuestro sitio web sin aprobación previa por escrito:</p>
+        <ul>
+          <li>Agencias gubernamentales.</li>
+          <li>Motores de búsqueda.</li>
+          <li>Organizaciones de noticias.</li>
+          <li>Distribuidores de directorios en línea.</li>
+        </ul>
+        <p>Estas organizaciones pueden enlazarse a nuestra página de inicio, a publicaciones o a otra información del sitio web siempre que el enlace no sea de ninguna manera engañoso, no implique falsamente patrocinio o respaldo, y encaje en el contexto del sitio de la parte que lo enlaza.</p>
+
+        <h2>5. Modificaciones de los Términos</h2>
+        <p>Nos reservamos el derecho de modificar estos términos en cualquier momento. Al continuar utilizando el sitio después de que se publiquen las modificaciones, aceptas los nuevos términos. Si no estás de acuerdo con los términos modificados, debes dejar de usar el sitio.</p>
+      </article>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .legal-hero {
+    padding: 6rem 0 3rem;
+    text-align: center;
+    background: linear-gradient(180deg, rgba(0, 242, 254, 0.03) 0%, rgba(7, 7, 10, 0) 100%);
+    border-bottom: 1px solid rgba(0, 242, 254, 0.05);
+  }
+
+  .legal-hero h1 {
+    font-family: 'Outfit', sans-serif;
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 800;
+    margin-bottom: 0.75rem;
+    color: #ffffff;
+  }
+
+  .subtitle {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+  }
+
+  .legal-content {
+    padding: 4rem 0;
+    flex-grow: 1;
+  }
+
+  .container-narrow {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+  }
+
+  .legal-article {
+    color: var(--text-secondary);
+    line-height: 1.8;
+    font-size: 1.05rem;
+  }
+
+  .legal-article p {
+    margin-bottom: 1.5rem;
+  }
+
+  .legal-article h2 {
+    font-family: 'Outfit', sans-serif;
+    color: #ffffff;
+    font-size: 1.5rem;
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+    font-weight: 700;
+  }
+
+  .legal-article ul {
+    margin-bottom: 1.5rem;
+    padding-left: 1.5rem;
+  }
+
+  .legal-article li {
+    margin-bottom: 0.5rem;
+  }
+
+  .legal-article hr {
+    border: none;
+    border-top: 1px solid var(--card-border);
+    margin: 2.5rem 0;
+  }
+
+  .legal-article a {
+    color: var(--accent-mint);
+    text-decoration: none;
+    border-bottom: 1px dashed var(--accent-mint);
+    transition: var(--transition);
+  }
+
+  .legal-article a:hover {
+    color: #ffffff;
+    border-bottom-style: solid;
+  }
+
+  .legal-article code {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.2rem 0.4rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.9em;
+    color: var(--accent-mint);
+  }
+</style>

@@ -2,8 +2,9 @@
 import { getCollection } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
 import AdSlot from '../../components/AdSlot.astro';
+import { adsenseReadySet } from '../../data/adsenseEditorial';
 
-const posts = await getCollection('blog');
+const posts = (await getCollection('blog')).filter((post) => post.data.indexable || adsenseReadySet.has(post.id));
 // Sort posts by date descending
 const sortedPosts = posts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 

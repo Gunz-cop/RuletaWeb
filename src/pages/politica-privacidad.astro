@@ -1,0 +1,148 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const title = 'Política de Privacidad — Decídelo.app';
+const description = 'Conoce nuestra política de privacidad. Transparencia sobre el uso de datos, almacenamiento local y cookies en decídelo.app.';
+---
+
+<Layout title={title} description={description}>
+  <section class="legal-hero">
+    <div class="container text-center">
+      <h1>Política de <span class="gradient-text">Privacidad</span></h1>
+      <p class="subtitle">Última actualización: 16 de junio de 2026</p>
+    </div>
+  </section>
+
+  <section class="legal-content">
+    <div class="container container-narrow">
+      <article class="legal-article">
+        <p>En <strong>decídelo.app</strong>, accesible desde <code>https://decidelo.app</code>, una de nuestras principales prioridades es la privacidad de nuestros visitantes. Este documento de política de privacidad contiene los tipos de información que recopilamos y registramos, y cómo la utilizamos.</p>
+        <p>Si tienes preguntas adicionales o necesitas más información sobre nuestra Política de Privacidad, no dudes en ponerte en contacto con nosotros.</p>
+
+        <hr />
+
+        <h2>1. Almacenamiento Local (Local Storage)</h2>
+        <p>A diferencia de la mayoría de los sitios web modernos, <strong>decídelo.app</strong> está diseñado para ejecutarse principalmente en tu navegador de forma cliente (client-side). Esto significa que:</p>
+        <ul>
+          <li>Tus opciones de ruleta, nombres, configuraciones de dados y listas de sorteos no se envían a ningún servidor externo.</li>
+          <li>Esta información se guarda directamente en tu dispositivo utilizando la tecnología <code>localStorage</code> de HTML5.</li>
+          <li>Puedes borrar completamente tus datos en cualquier momento limpiando la caché de tu navegador.</li>
+        </ul>
+
+        <h2>2. Archivos de Registro (Log Files)</h2>
+        <p><strong>decídelo.app</strong> sigue un procedimiento estándar de uso de archivos de registro. Estos archivos registran a los visitantes cuando visitan sitios web. Todas las empresas de alojamiento web hacen esto y forman parte del análisis de los servicios de alojamiento. La información recopilada por los archivos de registro incluye direcciones de protocolo de internet (IP), tipo de navegador, proveedor de servicios de internet (ISP), marca de fecha y hora, páginas de referencia/salida y, posiblemente, el número de clics. Estos datos no están vinculados a ninguna información que sea personalmente identificable. El propósito de la información es analizar tendencias, administrar el sitio, rastrear el movimiento de los usuarios en el sitio web y recopilar información demográfica.</p>
+
+        <h2>3. Política de Cookies y Web Beacons</h2>
+        <p>Como cualquier otro sitio web, <strong>decídelo.app</strong> utiliza "cookies". Estas cookies se utilizan para almacenar información, incluidas las preferencias de los visitantes y las páginas del sitio web a las que el visitante accedió o visitó. La información se utiliza para optimizar la experiencia de los usuarios al personalizar el contenido de nuestra página web en función del tipo de navegador de los visitantes y/u otra información.</p>
+
+        <h2>4. Publicidad y cookies de terceros</h2>
+        <p>Actualmente <strong>decídelo.app</strong> no muestra anuncios personalizados ni carga el script de Google AdSense mientras el sitio se prepara para una nueva revisión. Si en el futuro activamos publicidad, actualizaremos esta política y los proveedores externos podrían utilizar cookies o tecnologías similares para publicar y medir anuncios.</p>
+        <p><a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener noreferrer">https://policies.google.com/technologies/ads</a></p>
+
+        <h2>5. Posibles socios publicitarios</h2>
+        <p>Si el sitio es aprobado para monetización, el socio publicitario previsto es Google AdSense. Cada proveedor externo mantiene su propia política de privacidad y opciones de control para los usuarios. Para referencia, enlazamos la información de Google sobre publicidad:</p>
+        <ul>
+          <li><strong>Google:</strong> <a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener noreferrer">https://policies.google.com/technologies/ads</a></li>
+        </ul>
+
+        <h2>6. Políticas de Privacidad de Terceros</h2>
+        <p>La Política de privacidad de <strong>decídelo.app</strong> no se aplica a otros anunciantes o sitios web. Por lo tanto, te aconsejamos que consultes las respectivas Políticas de privacidad de estos servidores de anuncios de terceros para obtener información más detallada. Puede incluir sus prácticas e instrucciones sobre cómo optar por no participar en ciertas opciones.</p>
+        <p>Puedes optar por desactivar las cookies a través de las opciones de tu navegador individual. Para obtener información más detallada sobre la gestión de cookies con navegadores web específicos, se puede encontrar en los respectivos sitios web de los navegadores.</p>
+
+        <h2>7. Información para Niños</h2>
+        <p>Otra parte de nuestra prioridad es añadir protección para los niños mientras usan internet. Animamos a los padres y tutores a observar, participar y/o monitorear y guiar su actividad en línea.</p>
+        <p><strong>decídelo.app</strong> no recopila a sabiendas ninguna información de identificación personal de niños menores de 13 años. Si crees que tu hijo proporcionó este tipo de información en nuestro sitio web, te sugerimos encarecidamente que te pongas en contacto con nosotros inmediatamente y haremos todo lo posible para eliminar rápidamente dicha información de nuestros registros.</p>
+
+        <h2>8. Consentimiento</h2>
+        <p>Al utilizar nuestro sitio web, aceptas nuestra Política de Privacidad y estás de acuerdo con sus términos.</p>
+      </article>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .legal-hero {
+    padding: 6rem 0 3rem;
+    text-align: center;
+    background: linear-gradient(180deg, rgba(255, 94, 98, 0.03) 0%, rgba(7, 7, 10, 0) 100%);
+    border-bottom: 1px solid rgba(255, 94, 98, 0.05);
+  }
+
+  .legal-hero h1 {
+    font-family: 'Outfit', sans-serif;
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 800;
+    margin-bottom: 0.75rem;
+    color: #ffffff;
+  }
+
+  .subtitle {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+  }
+
+  .legal-content {
+    padding: 4rem 0;
+    flex-grow: 1;
+  }
+
+  .container-narrow {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+  }
+
+  .legal-article {
+    color: var(--text-secondary);
+    line-height: 1.8;
+    font-size: 1.05rem;
+  }
+
+  .legal-article p {
+    margin-bottom: 1.5rem;
+  }
+
+  .legal-article h2 {
+    font-family: 'Outfit', sans-serif;
+    color: #ffffff;
+    font-size: 1.5rem;
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+    font-weight: 700;
+  }
+
+  .legal-article ul {
+    margin-bottom: 1.5rem;
+    padding-left: 1.5rem;
+  }
+
+  .legal-article li {
+    margin-bottom: 0.5rem;
+  }
+
+  .legal-article hr {
+    border: none;
+    border-top: 1px solid var(--card-border);
+    margin: 2.5rem 0;
+  }
+
+  .legal-article a {
+    color: var(--accent-mint);
+    text-decoration: none;
+    border-bottom: 1px dashed var(--accent-mint);
+    transition: var(--transition);
+  }
+
+  .legal-article a:hover {
+    color: #ffffff;
+    border-bottom-style: solid;
+  }
+
+  .legal-article code {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.2rem 0.4rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.9em;
+    color: var(--accent-coral);
+  }
+</style>

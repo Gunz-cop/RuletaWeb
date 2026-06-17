@@ -8,11 +8,5 @@ const { position, id } = Astro.props;
 const slotId = id || `ad-slot-${position}`;
 ---
 
-<!-- INSTRUCCIONES ADSENSE: Reemplaza este div con tu script de AdSense -->
-{position === 'sidebar' ? (
-  <div class="ad-placeholder" id={slotId} aria-hidden="true" style="margin: 1.5rem auto 0; max-width: 100%; min-height: 250px;"></div>
-) : (
-  <div class="container">
-    <div class="ad-placeholder" id={slotId} aria-hidden="true"></div>
-  </div>
-)}
+<!-- AdSense pausado hasta que el sitio sea aprobado. -->
+<div id={slotId} data-ad-paused={position} hidden></div>

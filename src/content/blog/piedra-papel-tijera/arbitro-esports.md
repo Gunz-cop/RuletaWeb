@@ -1,6 +1,6 @@
 ---
-title: 'Piedra, Papel o Tijera en los eSports: Cómo decidir el primer turno de forma justa'
-description: 'Descubre cómo el Piedra, Papel o Tijera virtual se ha convertido en el árbitro transparente para decidir turnos y lados en torneos competitivos de eSports.'
+title: 'Piedra, papel o tijera online para decidir turnos en eSports'
+description: 'Cómo usar piedra, papel o tijera online como árbitro simple para decidir lado, turno inicial o desempates en torneos y partidas remotas.'
 pubDate: '2026-06-02'
 tags: ['esports', 'videojuegos', 'gaming', 'arbitraje']
 author: 'Decídelo.app'

@@ -21,8 +21,20 @@ const year = new Date().getFullYear();
         <a href={tool.href}>{tool.name}</a>
       ))}
       <a href="/blog">Blog</a>
+      <a href="/sobre">Sobre</a>
     </div>
-    <p>&copy; {year} <strong>decídelo.app</strong> — Hub de Herramientas de Decisión Aleatoria.</p>
+    <div class="footer-legal-links" style="margin-top: 0.75rem; display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap;">
+      <a href="/contacto" style="color: var(--text-tertiary); font-size: 0.85rem; text-decoration: none; transition: var(--transition);">Contacto</a>
+      <a href="/politica-privacidad" style="color: var(--text-tertiary); font-size: 0.85rem; text-decoration: none; transition: var(--transition);">Política de Privacidad</a>
+      <a href="/terminos-condiciones" style="color: var(--text-tertiary); font-size: 0.85rem; text-decoration: none; transition: var(--transition);">Términos y Condiciones</a>
+    </div>
+    <p style="margin-top: 1.5rem;">&copy; {year} <strong>decídelo.app</strong> — Hub de Herramientas de Decisión Aleatoria.</p>
     <p>Creado con ❤️ para resolver tus dilemas. 100% privado y sin registro.</p>
   </div>
 </footer>
+
+<style>
+  .footer-legal-links a:hover {
+    color: var(--text-secondary) !important;
+  }
+</style>

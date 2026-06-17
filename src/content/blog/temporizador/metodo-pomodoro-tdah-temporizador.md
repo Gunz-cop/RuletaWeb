@@ -1,6 +1,6 @@
 ---
-title: 'Gestión del Tiempo y Pomodoro: El Poder de los Temporizadores en la Concentración'
-description: 'Guía sobre gestión del tiempo: desde el reloj de arena histórico hasta el método Pomodoro, y cómo un temporizador visual y aleatorio puede salvarte de la procrastinación crónica.'
+title: 'Temporizador Pomodoro online: concentración, TDAH y bloques de tiempo'
+description: 'Guía práctica para usar un temporizador Pomodoro online, bloques cortos y temporizadores visuales para estudiar, trabajar o reducir procrastinación.'
 pubDate: '2026-05-23'
 tags: ['temporizador', 'productividad', 'pomodoro', 'tiempo', 'tdah']
 author: 'Decídelo.app'

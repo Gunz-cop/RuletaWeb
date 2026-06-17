@@ -1,6 +1,6 @@
 ---
-title: 'Respuestas del Azar: El Impacto Neurológico de las Decisiones Binarias y la Bola 8 Mágica'
-description: 'Una inmersión en la neurociencia de la indecisión, la historia de la icónica Bola 8 Mágica de Mattel y cómo un simple generador virtual de "Sí o No" puede destrabar tu mente.'
+title: 'Bola 8 mágica online: usar Sí o No para desbloquear decisiones'
+description: 'Aprende cómo usar una bola 8 mágica online o generador de Sí o No para decisiones pequeñas, juegos y preguntas rápidas sin tomarlo como consejo serio.'
 pubDate: '2026-05-23'
 tags: ['si o no', 'decisiones', 'azar', 'bola 8', 'psicologia']
 author: 'Decídelo.app'

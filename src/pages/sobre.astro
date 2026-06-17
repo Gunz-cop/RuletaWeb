@@ -1,0 +1,146 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const title = 'Sobre Decídelo.app — Herramientas de azar para grupos';
+const description = 'Conoce el propósito editorial de Decídelo.app, cómo probamos las herramientas de azar y cómo cuidamos la privacidad de tus listas y decisiones.';
+
+const schemaLD = {
+  '@context': 'https://schema.org',
+  '@type': 'AboutPage',
+  name: 'Sobre Decídelo.app',
+  url: 'https://decidelo.app/sobre',
+  description,
+  publisher: {
+    '@type': 'Organization',
+    name: 'Decídelo.app',
+    url: 'https://decidelo.app/',
+  },
+};
+---
+
+<Layout title={title} description={description} schemaLD={schemaLD}>
+  <main class="about-page">
+    <section class="about-hero">
+      <div class="container container-narrow">
+        <p class="eyebrow">Sobre el proyecto</p>
+        <h1>Herramientas simples para decidir en grupo sin convertirlo en un drama</h1>
+        <p class="lead">Decídelo.app reúne ruletas, dados, moneda, generadores de números, equipos y temporizadores para actividades de aula, reuniones, juegos familiares, sorteos recreativos y dinámicas de trabajo.</p>
+      </div>
+    </section>
+
+    <section class="about-content">
+      <div class="container container-narrow">
+        <article class="about-article">
+          <h2>Qué hacemos</h2>
+          <p>Diseñamos herramientas gratuitas de azar para decisiones cotidianas de baja consecuencia: elegir turnos, repartir equipos, dinamizar una clase, ordenar presentaciones, escoger retos seguros o resolver pequeños dilemas cuando todas las opciones son aceptables.</p>
+          <p>Decídelo.app no es un casino, no promueve apuestas y no debe usarse para decisiones legales, médicas, financieras o de seguridad. El azar es útil para repartir turnos y romper empates; no reemplaza el criterio humano.</p>
+
+          <h2>Cómo probamos el contenido</h2>
+          <p>El blog se está reorganizando alrededor de casos prácticos. Cada guía prioritaria incluye un escenario realista, pasos para usar una herramienta concreta, plantillas copiables, errores comunes y enlaces relacionados. La intención es que una persona pueda aplicar la dinámica sin leer teoría de más.</p>
+
+          <h2>Privacidad y datos</h2>
+          <p>Las herramientas funcionan principalmente en el navegador. Las listas que escribes en ruletas, equipos o dinámicas se procesan del lado del cliente y, cuando se guardan preferencias, se usan mecanismos locales del navegador como <code>localStorage</code>. No necesitas crear una cuenta para usar el sitio.</p>
+
+          <h2>Responsable editorial y contacto</h2>
+          <p>El sitio es mantenido por el equipo de Decídelo.app. Para reportar errores, sugerir una herramienta o solicitar correcciones editoriales, puedes escribir a <a href="mailto:soporte@decidelo.app">soporte@decidelo.app</a>.</p>
+
+          <div class="about-actions">
+            <a href="/#herramientas">Ver herramientas</a>
+            <a href="/blog">Leer guías</a>
+            <a href="/contacto">Contacto</a>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
+</Layout>
+
+<style>
+  .about-page {
+    color: var(--text-secondary);
+  }
+
+  .about-hero {
+    padding: 6rem 0 3rem;
+    border-bottom: 1px solid rgba(0, 242, 254, 0.07);
+    background: linear-gradient(180deg, rgba(0, 242, 254, 0.04), rgba(7, 7, 10, 0));
+  }
+
+  .container-narrow {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+  }
+
+  .eyebrow {
+    color: var(--accent-mint);
+    font-weight: 800;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+  }
+
+  h1 {
+    font-family: 'Outfit', sans-serif;
+    color: #ffffff;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    line-height: 1.12;
+    margin-bottom: 1rem;
+  }
+
+  .lead {
+    font-size: 1.1rem;
+    line-height: 1.75;
+    max-width: 720px;
+  }
+
+  .about-content {
+    padding: 4rem 0;
+  }
+
+  .about-article {
+    font-size: 1.05rem;
+    line-height: 1.8;
+  }
+
+  .about-article h2 {
+    font-family: 'Outfit', sans-serif;
+    color: #ffffff;
+    font-size: 1.45rem;
+    margin-top: 2.25rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .about-article p {
+    margin-bottom: 1.25rem;
+  }
+
+  .about-article a {
+    color: var(--accent-mint);
+    text-decoration: none;
+    border-bottom: 1px dashed rgba(0, 242, 254, 0.45);
+  }
+
+  .about-article code {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--accent-mint);
+    padding: 0.15rem 0.35rem;
+    border-radius: 4px;
+  }
+
+  .about-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 2rem;
+  }
+
+  .about-actions a {
+    border: 1px solid rgba(0, 242, 254, 0.25);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem 1rem;
+    background: rgba(0, 242, 254, 0.06);
+    font-weight: 700;
+  }
+</style>

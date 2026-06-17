@@ -1,6 +1,6 @@
 ---
-title: 'Cara o Cruz: Historia, Teoría de la Probabilidad y Psicología al Lanzar una Moneda'
-description: 'Todo lo que necesitas saber sobre el lanzamiento de moneda (Cara o Cruz): su fascinante origen histórico, las leyes de la probabilidad, los sesgos psicológicos y cómo utilizar una moneda virtual.'
+title: 'Cara o cruz online: probabilidad, historia y cómo lanzar una moneda justa'
+description: 'Aprende cómo funciona cara o cruz, cara o sello o volado: probabilidad 50/50, sesgos de una moneda física y cómo usar una moneda online para decisiones rápidas.'
 pubDate: '2026-05-23'
 tags: ['moneda', 'azar', 'decisiones', 'cara o cruz', 'probabilidad']
 author: 'Decídelo.app'
@@ -58,8 +58,9 @@ Diaconis demostró que, debido a la dinámica del giro en el aire (precesión), 
 Aunque un 1% de desviación parece insignificante para decidir quién paga los tacos, en estadística a gran escala, invalida la noción de azar perfecto.
 
 ### ¿Por qué la Moneda Virtual es Más Justa?
-Aquí es donde la informática supera a la física. Una aplicación de lanzamiento de moneda virtual bien programada no utiliza gravedad simulada sujeta al estado inicial de la moneda. En su lugar, emplea un algoritmo RNG (Random Number Generator) criptográfico. 
-Cuando presionas "Lanzar" en la app, la computadora elige instantáneamente entre el número 0 y el 1, con un peso exacto del 50.000000% para cada uno. La impresionante animación 3D de la moneda girando en la pantalla se renderiza *después* de que se ha calculado el resultado matemáticamente perfecto, garantizando una equidad que el mundo físico no puede lograr.
+Aquí es donde la informática puede reducir varios sesgos físicos. Una aplicación de lanzamiento de moneda virtual bien programada no depende del lado inicial, de la fuerza del pulgar ni de la superficie donde cae la moneda. En Decídelo.app, el resultado se elige con aleatoriedad del navegador mediante `crypto.getRandomValues` cuando está disponible, y la animación 3D se alinea después con ese resultado.
+
+Para el usuario, el flujo es simple: asigna una opción a cara, otra a cruz y pulsa [lanzar moneda online](https://decidelo.app/moneda). Si en tu país dices **cara o sello**, **águila o sol** o **volado**, la dinámica es la misma.
 
 ---
 
@@ -119,7 +120,7 @@ Existe la creencia popular de que una moneda física de un centavo es más pesad
 ## 7. Preguntas Frecuentes (FAQ)
 
 ### ¿Cómo asegura la app que el resultado sea justo?
-Nuestra aplicación web utiliza la función criptográfica `Math.random()` implementada en el motor V8 de JavaScript. Cada vez que tocas la pantalla, el sistema no calcula cómo gira el gráfico 3D; en realidad, sortea digitalmente el resultado (0.0 a 0.49 = Cara, 0.5 a 0.99 = Cruz) y luego ejecuta una animación dinámica que siempre termina en el resultado pre-calculado, asegurando cero manipulaciones.
+Nuestra aplicación web usa la API criptográfica del navegador `crypto.getRandomValues` cuando está disponible. Si el navegador no la soporta, usa una alternativa pseudoaleatoria estándar. Cada vez que tocas la pantalla, el sistema elige primero el resultado y luego ejecuta una animación dinámica que termina en cara o cruz.
 
 ### ¿Puedo lanzar la moneda múltiples veces rápido?
 Sí. A diferencia de las monedas físicas donde tienes que agacharte a recogerlas si caen al suelo, un solo toque en la pantalla de *decidelo.app* la hará volar al instante y caerá limpiamente en milisegundos.
