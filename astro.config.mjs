@@ -14,6 +14,7 @@ const adsenseReadyBlogUrls = new Set([
   'https://decidelo.app/blog/moneda/cara-o-cruz-lanzamiento-probabilidad',
   'https://decidelo.app/blog/moneda/cara-o-cruz-ciencia',
   'https://decidelo.app/blog/numeros/sorteo-rifa',
+  'https://decidelo.app/blog/numeros/organizar-sorteo-rifa-redes-sociales',
   'https://decidelo.app/blog/temporizador/dinamicas-aula-temporizador-aleatorio',
   'https://decidelo.app/blog/temporizador/patata-caliente',
   'https://decidelo.app/blog/si-o-no/preguntas-divertidas-oraculo-si-o-no',
