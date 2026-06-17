@@ -24,6 +24,7 @@ const adsenseReadyBlogUrls = new Set([
   'https://decidelo.app/blog/equipos/dinamicas-de-grupo-aleatoriedad-equipos',
   'https://decidelo.app/blog/ruleta/juegos-reuniones-familiares-ruleta',
   'https://decidelo.app/blog/piedra-papel-tijera/arbitro-esports',
+  'https://decidelo.app/blog/temporizador/ley-parkinson-procrastinacion-teletrabajo',
   'https://decidelo.app/blog/temporizador/metodo-pomodoro-tdah-temporizador',
 ]);
 

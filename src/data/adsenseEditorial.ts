@@ -18,6 +18,7 @@ export const adsenseReadySlugs = [
   'piedra-papel-tijera/reglas-variantes-lagarto-spock',
   'si-o-no/bola-8-decisiones-binarias-neurologia',
   'temporizador/juegos-de-mesa-temporizador-aleatorio',
+  'temporizador/ley-parkinson-procrastinacion-teletrabajo',
   'equipos/dinamicas-de-grupo-aleatoriedad-equipos',
   'ruleta/juegos-reuniones-familiares-ruleta',
   'piedra-papel-tijera/arbitro-esports',
@@ -297,6 +298,17 @@ export const editorialKits: Record<string, EditorialKit> = {
     mistakes: ['Usar el descanso para abrir redes sin límite.', 'Intentar hacer multitarea dentro del bloque.', 'Forzarte a 25 minutos si necesitas empezar con 10.'],
     related: [{ label: 'Temporizador online', href: '/temporizador' }, { label: 'Temporizador para aula', href: '/blog/temporizador/dinamicas-aula-temporizador-aleatorio' }],
     faqs: [{ question: '¿Tiene que ser exactamente 25 minutos?', answer: 'No. 25 minutos es una convención útil, pero puedes empezar con 10 o 15 si eso reduce la fricción.' }],
+  },
+  'temporizador/ley-parkinson-procrastinacion-teletrabajo': {
+    toolName: 'Temporizador',
+    toolUrl: '/temporizador',
+    testedUseCase: 'Una persona en teletrabajo convierte una tarea abierta en un sprint de 15 minutos con un resultado minimo definido antes de empezar.',
+    steps: ['Elige una tarea que pueda avanzar en menos de 30 minutos.', 'Define que resultado minimo cuenta como terminado.', 'Configura el temporizador entre 10 y 25 minutos.', 'Trabaja solo en esa tarea hasta que suene.', 'Anota que quedo pendiente antes de tomar descanso.'],
+    templateTitle: 'Plantilla de sprint contra la procrastinacion',
+    templateItems: ['Tarea unica', 'Resultado minimo', 'Duracion del sprint', 'Distracciones bloqueadas', 'Siguiente paso al terminar'],
+    mistakes: ['Usar el temporizador para una lista completa de tareas.', 'Elegir bloques tan largos que pierden urgencia.', 'Saltar de tarea cuando aparece incomodidad.', 'No cerrar el sprint con una accion concreta.'],
+    related: [{ label: 'Pomodoro online', href: '/blog/temporizador/metodo-pomodoro-tdah-temporizador' }, { label: 'Temporizador para aula', href: '/blog/temporizador/dinamicas-aula-temporizador-aleatorio' }],
+    faqs: [{ question: '¿Esto reemplaza un metodo de productividad completo?', answer: 'No. Es una tecnica simple para iniciar tareas. Puedes combinarla con Pomodoro, time blocking o una lista diaria corta.' }],
   },
 };
 
