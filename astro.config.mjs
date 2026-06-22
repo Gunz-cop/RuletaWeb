@@ -10,6 +10,7 @@ const adsenseReadyBlogUrls = new Set([
   'https://decidelo.app/blog/equipos/como-hacer-equipos-equilibrados-deportes',
   'https://decidelo.app/blog/dados/juegos-de-mesa-dados-virtuales',
   'https://decidelo.app/blog/dados/dados-dnd',
+  'https://decidelo.app/blog/dados/dados-virtuales-sistemas-rol',
   'https://decidelo.app/blog/moneda/decision-moneda',
   'https://decidelo.app/blog/moneda/cara-o-cruz-lanzamiento-probabilidad',
   'https://decidelo.app/blog/moneda/cara-o-cruz-ciencia',
@@ -26,6 +27,19 @@ const adsenseReadyBlogUrls = new Set([
   'https://decidelo.app/blog/piedra-papel-tijera/arbitro-esports',
   'https://decidelo.app/blog/temporizador/ley-parkinson-procrastinacion-teletrabajo',
   'https://decidelo.app/blog/temporizador/metodo-pomodoro-tdah-temporizador',
+  'https://decidelo.app/blog/dados/juegos-de-mesa-clasicos-era-digital',
+  'https://decidelo.app/blog/dados/juegos-de-beber-con-dados',
+  'https://decidelo.app/blog/equipos/scrum-agile-division-equipos-tareas',
+  'https://decidelo.app/blog/amigo-secreto/cultura-organizacional-dinamicas-gratitud-remoto',
+  'https://decidelo.app/blog/ruleta/herramientas-digitales-gratuitas-estudiantes',
+  'https://decidelo.app/blog/si-o-no/fatiga-de-decision-y-oraculo',
+  'https://decidelo.app/blog/amigo-secreto/algoritmos-tradiciones-intercambio-regalos',
+  'https://decidelo.app/blog/piedra-papel-tijera/teoria-de-juegos-y-psicologia',
+  'https://decidelo.app/blog/piedra-papel-tijera/como-ganar-piedra-papel-o-tijera',
+  'https://decidelo.app/blog/piedra-papel-tijera/teoria-de-juegos-resolucion-disputas',
+  'https://decidelo.app/blog/equipos/actividades-teambuilding-teletrabajo',
+  'https://decidelo.app/blog/si-o-no/ia-toma-decisiones-carrera-profesional',
+  'https://decidelo.app/blog/temporizador/entrenamiento-reaccion',
 ]);
 
 export default defineConfig({
