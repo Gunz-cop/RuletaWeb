@@ -9,7 +9,7 @@ const { showHomeHeader = false } = Astro.props;
 <header>
   <div class="container header-inner">
     {showHomeHeader ? (
-      <!-- HOME header: logo + nav + controls -->
+      <Fragment>
       <a href="/" class="logo-link" aria-label="Inicio de decídelo.app">
         <span class="logo-icon" aria-hidden="true">🎯</span>
         <span class="logo-text">decídelo.app</span>
@@ -28,8 +28,9 @@ const { showHomeHeader = false } = Astro.props;
           <span class="btn-label">Sonido</span>
         </button>
       </nav>
+      </Fragment>
     ) : (
-      <!-- TOOL page header: logo + back button -->
+      <Fragment>
       <a href="/" class="logo" id="header-logo">
         <span>decídelo.app</span>
       </a>
@@ -40,6 +41,7 @@ const { showHomeHeader = false } = Astro.props;
         </svg>
         Volver al Hub
       </a>
+      </Fragment>
     )}
   </div>
 </header>
