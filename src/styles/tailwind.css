@@ -18,7 +18,23 @@
    ================================================================== */
 
 @import "tailwindcss/theme.css" layer(theme);
-@import "tailwindcss/utilities.css";
+@import "tailwindcss/utilities.css" source(none);
+
+/* ------------------------------------------------------------------
+   RASTREO DE FUENTES: LISTA BLANCA, NO AUTOMÁTICO
+   ------------------------------------------------------------------
+   Por defecto Tailwind 4 rastrea el proyecto entero salvo lo que ignora
+   git, y genera una utilidad por cada cosa que parezca un nombre de
+   clase. Eso incluye archivos que no son plantillas: un snapshot de CSS
+   en tests/, un ejemplo dentro de AGENTS.md o una frase en un mensaje
+   de error de un script bastan para inflar la hoja de estilos con
+   utilidades que ninguna página usa.
+
+   `source(none)` apaga esa detección y `@source` declara la única
+   carpeta que de verdad contiene plantillas. Si algún día el marcado
+   vive fuera de src/, hay que añadirlo aquí a mano.
+   ------------------------------------------------------------------ */
+@source "../../src";
 
 /* ==================================================================
    TOKENS DEL SITIO EXPUESTOS A TAILWIND

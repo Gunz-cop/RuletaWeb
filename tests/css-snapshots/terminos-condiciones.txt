@@ -1,0 +1,14 @@
+.legal-hero[S]{text-align:center;background:linear-gradient(#00f2fe08 0%,#07070a00 100%);border-bottom:1px solid #00f2fe0d;padding:6rem 0 3rem}
+.legal-hero[S] h1[S]{color:#fff;margin-bottom:.75rem;font-family:Outfit,sans-serif;font-size:clamp(2rem,5vw,3rem);font-weight:800}
+.subtitle[S]{color:var(--text-secondary);font-size:.95rem}
+.legal-content[S]{flex-grow:1;padding:4rem 0}
+.container-narrow[S]{max-width:800px;margin:0 auto;padding:0 1.5rem}
+.legal-article[S]{color:var(--text-secondary);font-size:1.05rem;line-height:1.8}
+.legal-article[S] p[S]{margin-bottom:1.5rem}
+.legal-article[S] h2[S]{color:#fff;margin-top:2.5rem;margin-bottom:1rem;font-family:Outfit,sans-serif;font-size:1.5rem;font-weight:700}
+.legal-article[S] ul[S]{margin-bottom:1.5rem;padding-left:1.5rem}
+.legal-article[S] li[S]{margin-bottom:.5rem}
+.legal-article[S] hr[S]{border:none;border-top:1px solid var(--card-border);margin:2.5rem 0}
+.legal-article[S] a[S]{color:var(--accent-mint);border-bottom:1px dashed var(--accent-mint);transition:var(--transition);text-decoration:none}
+.legal-article[S] a[S]:hover{color:#fff;border-bottom-style:solid}
+.legal-article[S] code[S]{border-radius:var(--radius-sm);color:var(--accent-mint);background:#ffffff0d;padding:.2rem .4rem;font-size:.9em}

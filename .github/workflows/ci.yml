@@ -1,0 +1,43 @@
+name: CI
+
+# El sitio no tiene backend ni suite de comportamiento: lo que se puede romper
+# sin avisar es el CSS. Este workflow construye el sitio y comprueba que las
+# reglas que llegan a cada página siguen siendo las mismas.
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+# Un push nuevo sobre la misma rama cancela el build anterior: el build tarda
+# más de un minuto por el procesado de imágenes y no interesa acumular colas.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  css:
+    name: Build y snapshots de CSS
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # Ejecuta build + paridad de tokens + snapshots. Ver AGENTS.md.
+      - run: npm test
+
+      # Si los snapshots fallan, el diff de arriba dice qué reglas cambiaron.
+      # Esto deja además el dist/ construido a mano para poder inspeccionarlo.
+      - name: Guarda el CSS construido cuando algo falla
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-css
+          path: dist/_astro/*.css
+          retention-days: 7

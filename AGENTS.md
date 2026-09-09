@@ -50,10 +50,42 @@ npm run build        # build de producción a dist/
 npm run preview      # previsualiza el build con Astro
 npm run preview:cf   # previsualiza en el runtime real de Cloudflare
 npm run deploy       # build + despliegue manual con wrangler
+npm test             # build + paridad de tokens + snapshots de CSS
+npm run test:update  # reescribe la línea base de snapshots
 ```
 
-No hay tests ni linter configurados. La verificación es `npm run build`
-limpio más una revisión de las páginas afectadas.
+No hay linter. Los tests que hay vigilan el CSS, que es lo único que puede
+romperse en silencio en un sitio sin backend, y corren en CI en cada push.
+
+### Qué comprueban los tests
+
+`scripts/token-parity.mjs` compara los tokens de `:root` en `global.css`
+con los del `@theme` de `tailwind.css`. Los nombres no coinciden entre los
+dos archivos, así que la correspondencia va escrita en el propio script. Si
+cambias un color en un sitio y no en el otro, falla.
+
+`scripts/class-collisions.mjs` avisa cuando una clase del proyecto se llama
+igual que una utilidad de Tailwind. Como las utilidades se importan sin capa
+para poder ganarle a `global.css`, en un empate de especificidad gana
+Tailwind y la clase propia deja de hacer lo que dice, sin error de build. Las
+colisiones ya revisadas están en la constante `ACEPTADAS` del script, cada
+una con su motivo. **`.container` está ahí como pendiente de decisión, no
+como inofensiva**: la utilidad de Tailwind pisa el `max-width: 1200px` del
+proyecto con su propia escala.
+
+`scripts/css-snapshot.mjs` recoge, página por página, todas las reglas que
+el navegador va a aplicar, y las compara con `tests/css-snapshots/`. Recoge
+tanto las hojas enlazadas con `<link>` como el `<style>` que Astro inlinea:
+con `inlineStylesheets: 'auto'`, una hoja que baja de 4 KB deja de existir
+como archivo y viaja dentro del HTML. **Mirar solo `dist/_astro/*.css`
+engaña**: una página puede quedarse sin su `.css` y estar perfecta.
+
+Los selectores scopeados por Astro se guardan con `[S]` en lugar del hash
+`data-astro-cid-XXXX`, que cambia cada vez que se edita el archivo.
+
+Si un cambio de CSS es intencionado, revisa el diff que imprime el test
+regla por regla y luego `npm run test:update`. Actualizar la línea base sin
+leerla convierte el test en decoración.
 
 ---
 
@@ -112,7 +144,12 @@ resumen:
 - **Los tokens están duplicados a propósito** entre `:root` de `global.css`
   y `@theme` de `tailwind.css`, con los mismos valores. Si cambias un color
   o un radio, **cámbialo en los dos sitios** o el sistema de diseño se parte
-  en dos.
+  en dos. Hay un test que lo comprueba (`npm run test:tokens`).
+- **`tests/` está excluido del rastreo** con `@source not`. Tailwind 4
+  detecta las fuentes rastreando el proyecto salvo lo ignorado por git, y
+  los snapshots contienen CSS compilado con nombres de clase dentro:
+  sin esa exclusión, Tailwind genera utilidades que nadie usa y el snapshot
+  acaba alimentando al build que vigila.
 
 Las páginas de herramientas siguen con su CSS propio y su bloque `<style>`.
 La migración a Tailwind es gradual, una herramienta a la vez, verificando
