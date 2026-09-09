@@ -173,6 +173,9 @@ const schemaLD = {
 </Layout>
 
 <style>
+  /* Base compartida en global.css; aquí solo lo que cambia. */
+  .form-group { flex: 1; }
+
   main {
     padding: 3rem 0;
   }
@@ -186,38 +189,6 @@ const schemaLD = {
     display: flex;
     gap: 1rem;
     margin-bottom: 1rem;
-  }
-
-  .form-group {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-  }
-
-  .form-group label {
-    font-family: 'Outfit', sans-serif;
-    font-size: 0.88rem;
-    font-weight: 600;
-    color: var(--text-secondary);
-  }
-
-  .form-group input {
-    background: var(--bg-surface-alt);
-    border: 1px solid var(--card-border);
-    border-radius: var(--radius-md);
-    color: var(--text-primary);
-    padding: 0.8rem 1rem;
-    font-family: 'Inter', sans-serif;
-    font-size: 0.95rem;
-    transition: var(--transition);
-    width: 100%;
-  }
-
-  .form-group input:focus {
-    outline: none;
-    border-color: var(--accent-cyan);
-    box-shadow: 0 0 12px rgba(0, 229, 255, 0.15);
   }
 
   /* Checkbox switch moderno */

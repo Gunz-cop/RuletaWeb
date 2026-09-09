@@ -834,3 +834,50 @@ footer a:hover {
 .btn-clear:hover {
   color: var(--accent-danger);
 }
+
+/* ------------------------------------------------------------------
+   Formularios de las páginas de herramientas
+   ------------------------------------------------------------------
+   Base compartida por numeros, equipos y si-o-no, donde el bloque
+   estaba copiado casi idéntico. Las diferencias reales de cada página
+   quedan como override en su propio <style>.
+
+   contacto.astro NO usa esta base: tiene un formulario con otro
+   diseño (radios menores, label en mayúsculas) y sus reglas, al estar
+   scopeadas por Astro, ganan en especificidad sobre estas.
+   ------------------------------------------------------------------ */
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.form-group label {
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  background: var(--bg-surface-alt);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  padding: 0.8rem 1rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  transition: var(--transition);
+  width: 100%;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.15);
+}

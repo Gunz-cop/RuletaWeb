@@ -193,6 +193,9 @@ const description = 'Ponte en contacto con el equipo de decídelo.app. Escríben
   }
 
   .form-group label {
+    /* La base de global.css usa Outfit; este formulario heredaba
+       la tipografía del body y debe seguir haciéndolo. */
+    font-family: inherit;
     font-size: 0.85rem;
     font-weight: 600;
     color: var(--text-primary);
