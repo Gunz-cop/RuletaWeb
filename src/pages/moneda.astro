@@ -3,10 +3,15 @@ import Layout from '../layouts/Layout.astro';
 import AdSlot from '../components/AdSlot.astro';
 import HubGrid from '../components/HubGrid.astro';
 import SeoArticle from '../components/SeoArticle.astro';
+import { getSocialImageUrl } from '../lib/heroImages';
 
 const title = 'Cara o Cruz Online — Lanzar Moneda Gratis | Decídelo.app';
 const description = 'Lanza una moneda online para decidir entre cara o cruz, cara o sello, sí o no, turnos o pequeños dilemas. Gratis, rápido, sin registro y con historial.';
 const keywords = 'cara o cruz online, lanzar moneda, tirar moneda, tira una moneda, cara o sello, moneda online, moneda virtual, lanzar una moneda, volado online';
+
+// La imagen vive en src/assets y la optimiza Astro; el JSON-LD necesita
+// su URL absoluta ya generada, no la ruta pública que tenía antes.
+const socialImage = await getSocialImageUrl('/blog/moneda.png');
 
 const schemaLD = {
   "@context": "https://schema.org",
@@ -27,8 +32,8 @@ const schemaLD = {
         "price": "0.00",
         "priceCurrency": "USD"
       },
-      "image": "https://decidelo.app/blog/moneda.png",
-      "screenshot": "https://decidelo.app/blog/moneda.png",
+      "image": socialImage,
+      "screenshot": socialImage,
       "publisher": {
         "@type": "Organization",
         "@id": "https://decidelo.app/#organization",

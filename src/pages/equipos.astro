@@ -3,10 +3,15 @@ import Layout from '../layouts/Layout.astro';
 import AdSlot from '../components/AdSlot.astro';
 import HubGrid from '../components/HubGrid.astro';
 import SeoArticle from '../components/SeoArticle.astro';
+import { getSocialImageUrl } from '../lib/heroImages';
 
 const title = 'Generador de Equipos Aleatorios Online — Grupos y Parejas | Decídelo.app';
 const description = 'Divide una lista de nombres en equipos o grupos aleatorios de forma equilibrada. Configura el número de equipos o el tamaño de cada grupo al azar.';
 const keywords = 'generador de equipos, hacer grupos online, dividir equipos, grupos aleatorios, sorteador de equipos, sorteo de grupos, tomar decisiones';
+
+// La imagen vive en src/assets y la optimiza Astro; el JSON-LD necesita
+// su URL absoluta ya generada, no la ruta pública que tenía antes.
+const socialImage = await getSocialImageUrl('/blog/equipos.png');
 
 const schemaLD = {
   "@context": "https://schema.org",
@@ -27,8 +32,8 @@ const schemaLD = {
         "price": "0.00",
         "priceCurrency": "USD"
       },
-      "image": "https://decidelo.app/blog/equipos.png",
-      "screenshot": "https://decidelo.app/blog/equipos.png",
+      "image": socialImage,
+      "screenshot": socialImage,
       "publisher": {
         "@type": "Organization",
         "@id": "https://decidelo.app/#organization",

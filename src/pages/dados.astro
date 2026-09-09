@@ -3,10 +3,15 @@ import Layout from '../layouts/Layout.astro';
 import AdSlot from '../components/AdSlot.astro';
 import HubGrid from '../components/HubGrid.astro';
 import SeoArticle from '../components/SeoArticle.astro';
+import { getSocialImageUrl } from '../lib/heroImages';
 
 const title = 'Lanzar Dados Online — Tirar Dados Virtuales 3D Gratis | Decídelo.app';
 const description = 'Lanza dados virtuales en 3D gratis y al instante. Elige lanzar 1, 2 o 3 dados y selecciona entre temáticas Casino de Las Vegas, Calabozos y Dragones (D20) o Yu-Gi-Oh. Sin descargas.';
 const keywords = 'lanzar dados, dados virtuales, dados online, dados 3d, dados casino, dados d20, dado yugioh, dados de rol, tomar decisiones, azar';
+
+// La imagen vive en src/assets y la optimiza Astro; el JSON-LD necesita
+// su URL absoluta ya generada, no la ruta pública que tenía antes.
+const socialImage = await getSocialImageUrl('/blog/dados.png');
 
 const schemaLD = {
   "@context": "https://schema.org",
@@ -27,8 +32,8 @@ const schemaLD = {
         "price": "0.00",
         "priceCurrency": "USD"
       },
-      "image": "https://decidelo.app/blog/dados.png",
-      "screenshot": "https://decidelo.app/blog/dados.png",
+      "image": socialImage,
+      "screenshot": socialImage,
       "publisher": {
         "@type": "Organization",
         "@id": "https://decidelo.app/#organization",

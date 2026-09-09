@@ -3,6 +3,8 @@ import { getCollection } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
 import AdSlot from '../../components/AdSlot.astro';
 import { adsenseReadySet } from '../../data/adsenseEditorial';
+import { Picture } from 'astro:assets';
+import { getHeroImage } from '../../lib/heroImages';
 
 const posts = (await getCollection('blog')).filter((post) => post.data.indexable || adsenseReadySet.has(post.id));
 // Sort posts by date descending
@@ -86,9 +88,19 @@ const schemaLD = {
             return (
               <article class="featured-post-card token-grid-card">
                 <a href={`/blog/${featuredPost.id}`} class="featured-post-link">
-                  {featuredPost.data.heroImage && (
+                  {getHeroImage(featuredPost.data.heroImage) && (
                     <div class="featured-post-image">
-                      <img src={featuredPost.data.heroImage} alt={featuredPost.data.title} loading="eager" />
+                      <Picture
+                        src={getHeroImage(featuredPost.data.heroImage)!}
+                        alt={featuredPost.data.title}
+                        widths={[480, 800, 1200]}
+                        sizes="(max-width: 768px) 100vw, 720px"
+                        formats={['avif', 'webp']}
+                        fallbackFormat="webp"
+                        loading="eager"
+                        fetchpriority="high"
+                        decoding="async"
+                      />
                     </div>
                   )}
                   <div class="featured-post-content">
@@ -138,9 +150,18 @@ const schemaLD = {
                 return (
                   <article class={`blog-card token-grid-card reveal-scale ${delayClass}`}>
                     <a href={`/blog/${post.id}`} class="blog-card-link">
-                      {post.data.heroImage && (
+                      {getHeroImage(post.data.heroImage) && (
                         <div class="blog-card-image">
-                          <img src={post.data.heroImage} alt={post.data.title} loading="lazy" />
+                          <Picture
+                            src={getHeroImage(post.data.heroImage)!}
+                            alt={post.data.title}
+                            widths={[320, 480, 640]}
+                            sizes="(max-width: 640px) 100vw, 360px"
+                            formats={['avif', 'webp']}
+                            fallbackFormat="webp"
+                            loading="lazy"
+                            decoding="async"
+                          />
                         </div>
                       )}
                       <div class="blog-card-content">

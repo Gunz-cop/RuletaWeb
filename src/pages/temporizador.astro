@@ -3,10 +3,15 @@ import Layout from '../layouts/Layout.astro';
 import AdSlot from '../components/AdSlot.astro';
 import HubGrid from '../components/HubGrid.astro';
 import SeoArticle from '../components/SeoArticle.astro';
+import { getSocialImageUrl } from '../lib/heroImages';
 
 const title = 'Temporizador Aleatorio Online — Cuenta Regresiva Sorpresa | Decídelo.app';
 const description = 'Establece un rango de tiempo mínimo y máximo, y deja que el temporizador finalice en un segundo aleatorio. Ideal para juegos de mesa, retos y dinámicas de grupo.';
 const keywords = 'temporizador aleatorio, timer sorpresa, pass the bomb online, patata caliente juego, cuenta regresiva sorpresa, temporizador bomba, oraculo virtual, decidir al azar';
+
+// La imagen vive en src/assets y la optimiza Astro; el JSON-LD necesita
+// su URL absoluta ya generada, no la ruta pública que tenía antes.
+const socialImage = await getSocialImageUrl('/blog/temporizador.png');
 
 const schemaLD = {
   "@context": "https://schema.org",
@@ -27,8 +32,8 @@ const schemaLD = {
         "price": "0.00",
         "priceCurrency": "USD"
       },
-      "image": "https://decidelo.app/blog/temporizador.png",
-      "screenshot": "https://decidelo.app/blog/temporizador.png",
+      "image": socialImage,
+      "screenshot": socialImage,
       "publisher": {
         "@type": "Organization",
         "@id": "https://decidelo.app/#organization",
