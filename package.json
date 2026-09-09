@@ -9,13 +9,20 @@
     "preview": "astro preview",
     "astro": "astro",
     "index": "node scripts/google-indexing.js",
-    "index:dry": "node scripts/google-indexing.js --dry-run"
+    "index:dry": "node scripts/google-indexing.js --dry-run",
+    "preview:cf": "wrangler dev",
+    "deploy": "astro build && wrangler deploy"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Gunz-cop/RuletaWeb.git"
   },
-  "keywords": ["decidelo", "ruleta", "aleatorio", "sorteo"],
+  "keywords": [
+    "decidelo",
+    "ruleta",
+    "aleatorio",
+    "sorteo"
+  ],
   "author": "Decídelo.app",
   "license": "ISC",
   "bugs": {
@@ -23,7 +30,13 @@
   },
   "homepage": "https://github.com/Gunz-cop/RuletaWeb#readme",
   "dependencies": {
-    "@astrojs/sitemap": "^3.7.2",
-    "astro": "^6.3.7"
+    "@astrojs/sitemap": "^3.7.4",
+    "astro": "^7.3.2"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "sharp": "^0.35.4",
+    "tailwindcss": "^4.3.3",
+    "wrangler": "^4.130.0"
   }
 }

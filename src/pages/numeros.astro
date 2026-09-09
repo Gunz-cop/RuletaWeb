@@ -3,10 +3,15 @@ import Layout from '../layouts/Layout.astro';
 import AdSlot from '../components/AdSlot.astro';
 import HubGrid from '../components/HubGrid.astro';
 import SeoArticle from '../components/SeoArticle.astro';
+import { getSocialImageUrl } from '../lib/heroImages';
 
 const title = 'Generador de Números Aleatorios Online — Sorteos y Rifas | Decídelo.app';
 const description = 'Genera números aleatorios online de forma justa y transparente. Configura tu rango (mínimo/máximo), cantidad de números a generar y decide si se repiten.';
 const keywords = 'generador de numeros aleatorios, sorteador de numeros, numero al azar, rifa online, sorteo numeros, tomar decisiones, numeros aleatorios';
+
+// La imagen vive en src/assets y la optimiza Astro; el JSON-LD necesita
+// su URL absoluta ya generada, no la ruta pública que tenía antes.
+const socialImage = await getSocialImageUrl('/blog/numeros.png');
 
 const schemaLD = {
   "@context": "https://schema.org",
@@ -27,8 +32,8 @@ const schemaLD = {
         "price": "0.00",
         "priceCurrency": "USD"
       },
-      "image": "https://decidelo.app/blog/numeros.png",
-      "screenshot": "https://decidelo.app/blog/numeros.png",
+      "image": socialImage,
+      "screenshot": socialImage,
       "publisher": {
         "@type": "Organization",
         "@id": "https://decidelo.app/#organization",

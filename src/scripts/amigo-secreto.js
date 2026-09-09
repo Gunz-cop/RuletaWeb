@@ -444,21 +444,6 @@ function initAmigoSecreto() {
     }
   }
 
-  // Desencriptar el parámetro en carga si existe
-  function decryptName(encoded) {
-    try {
-      const key = 'decidelo';
-      const decodedB64 = atob(decodeURIComponent(encoded));
-      let xor = '';
-      for (let i = 0; i < decodedB64.length; i++) {
-        xor += String.fromCharCode(decodedB64.charCodeAt(i) ^ key.charCodeAt(i % key.length));
-      }
-      return decodeURIComponent(escape(xor));
-    } catch (e) {
-      return null;
-    }
-  }
-
   // Sintetizador de Web Audio para la animación mágica de revelado
   function playRevealSound() {
     try {

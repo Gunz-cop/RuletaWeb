@@ -1,0 +1,75 @@
+/* ==================================================================
+   TAILWIND 4 — CAPA DE CONVIVENCIA
+   ==================================================================
+   Este archivo integra Tailwind SIN romper el CSS existente.
+
+   Dos decisiones deliberadas:
+
+   1. NO se importa "tailwindcss/preflight.css". El preflight de Tailwind
+      es un reset agresivo que dejaría sin estilo los botones, títulos y
+      listas que global.css ya define a mano. global.css trae su propio
+      reset y manda él.
+
+   2. Las utilidades se importan SIN capa (`layer()`). El CSS que ya
+      existe no está en capas, y en la cascada cualquier regla sin capa
+      gana a una que sí la tiene. Si las utilidades fueran en capa,
+      `class="p-4"` perdería siempre contra global.css y Tailwind no
+      serviría de nada. Sin capa compiten por orden y sí ganan.
+   ================================================================== */
+
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css";
+
+/* ==================================================================
+   TOKENS DEL SITIO EXPUESTOS A TAILWIND
+   ==================================================================
+   Cada valor de aquí genera utilidades automáticas. Por ejemplo
+   --color-coral habilita bg-coral, text-coral, border-coral, etc.
+
+   Los valores replican los de :root en global.css a propósito: son un
+   único sistema de diseño con dos formas de escribirlo. Si cambias un
+   color, cámbialo en los dos sitios.
+   ================================================================== */
+
+@theme {
+  /* Fondos */
+  --color-ink: #07070a;
+  --color-surface: #0f0f15;
+  --color-surface-alt: #14141d;
+  --color-surface-hover: #1c1c27;
+  --color-elevated: #222230;
+
+  /* Acentos arcade */
+  --color-coral: #ff5e62;
+  --color-mint: #00f2fe;
+  --color-purple: #b366ff;
+  --color-peach: #ff9966;
+
+  /* Texto */
+  --color-ink-primary: #f0f0f5;
+  --color-ink-secondary: #8b8b9e;
+  --color-ink-tertiary: #5a5a6e;
+
+  /* Funcionales */
+  --color-danger: #ef4444;
+  --color-success: #39ff14;
+
+  /* Tipografías ya cargadas desde Google Fonts en Layout.astro */
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-display: "Outfit", system-ui, sans-serif;
+
+  /* -----------------------------------------------------------------
+     Radios y sombras: estos nombres YA existen en el tema por defecto
+     de Tailwind y también en :root de global.css. Se redefinen aquí
+     con los valores del sitio para que `rounded-md` y `--radius-md`
+     signifiquen exactamente lo mismo y no haya dos verdades.
+     ----------------------------------------------------------------- */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.6);
+}

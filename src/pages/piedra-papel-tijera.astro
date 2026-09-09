@@ -3,10 +3,15 @@ import Layout from '../layouts/Layout.astro';
 import AdSlot from '../components/AdSlot.astro';
 import HubGrid from '../components/HubGrid.astro';
 import SeoArticle from '../components/SeoArticle.astro';
+import { getSocialImageUrl } from '../lib/heroImages';
 
 const title = 'Piedra, Papel o Tijera Online — Juego Gratis PvP y vs IA | Decídelo.app';
 const description = 'Juega Piedra, Papel o Tijera online gratis contra la IA o en modo 2 jugadores local. Animaciones premium, modo oscuro elegante y sin distracciones. Resuelve disputas al instante.';
 const keywords = 'piedra papel tijera, piedra papel o tijera online, juego ppt, rps online, decidir al azar, juego gratis, pvp local, vs ia, decidelo';
+
+// La imagen vive en src/assets y la optimiza Astro; el JSON-LD necesita
+// su URL absoluta ya generada, no la ruta pública que tenía antes.
+const socialImage = await getSocialImageUrl('/blog/piedra-papel-tijera.png');
 
 const schemaLD = {
   "@context": "https://schema.org",
@@ -27,8 +32,8 @@ const schemaLD = {
         "price": "0.00",
         "priceCurrency": "USD"
       },
-      "image": "https://decidelo.app/blog/piedra-papel-tijera.png",
-      "screenshot": "https://decidelo.app/blog/piedra-papel-tijera.png",
+      "image": socialImage,
+      "screenshot": socialImage,
       "publisher": {
         "@type": "Organization",
         "@id": "https://decidelo.app/#organization",

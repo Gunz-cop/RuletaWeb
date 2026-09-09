@@ -3,9 +3,14 @@ import Layout from '../layouts/Layout.astro';
 import AdSlot from '../components/AdSlot.astro';
 import HubGrid from '../components/HubGrid.astro';
 import SeoArticle from '../components/SeoArticle.astro';
+import { getSocialImageUrl } from '../lib/heroImages';
 
 const title = 'Decídelo.app — Toma Decisiones Aleatorias en Segundos';
 const description = 'Herramientas gratuitas para tomar decisiones al azar: ruleta aleatoria, lanzar moneda, dados virtuales y más. Sin registro, sin dramas. ¡Dale al azar!';
+
+// La imagen vive en src/assets y la optimiza Astro; el JSON-LD necesita
+// su URL absoluta ya generada, no la ruta pública que tenía antes.
+const socialImage = await getSocialImageUrl('/blog/ruleta.png');
 
 const schemaLD = {
   "@context": "https://schema.org",
@@ -26,8 +31,8 @@ const schemaLD = {
         "price": "0.00",
         "priceCurrency": "USD"
       },
-      "image": "https://decidelo.app/blog/ruleta.png",
-      "screenshot": "https://decidelo.app/blog/ruleta.png",
+      "image": socialImage,
+      "screenshot": socialImage,
       "publisher": {
         "@type": "Organization",
         "@id": "https://decidelo.app/#organization",
@@ -209,7 +214,8 @@ const schemaLD = {
                 <!-- Se genera dinámicamente con JavaScript -->
               </div>
             </div>
-          </div>
+          </div> <!-- input-card -->
+        </div> <!-- input-column -->
       </div> <!-- app-grid -->
       </div> <!-- arcade-cabinet-frame -->
     </div> <!-- container -->

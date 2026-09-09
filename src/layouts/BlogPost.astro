@@ -3,6 +3,8 @@ import Layout from './Layout.astro';
 import HubGrid from '../components/HubGrid.astro';
 import AdSlot from '../components/AdSlot.astro';
 import { getEditorialKit, getFallbackMistakes } from '../data/adsenseEditorial';
+import { Picture, getImage } from 'astro:assets';
+import { getHeroImage } from '../lib/heroImages';
 
 interface Props {
   slug: string;
@@ -18,6 +20,14 @@ interface Props {
 }
 
 const { slug, title, description, pubDate, updatedDate, heroImage, tags, author, indexable = false, readingTime } = Astro.props;
+const heroAsset = getHeroImage(heroImage);
+// Variante fija para el structured data y redes sociales. Se genera con
+// getImage en vez de usar heroAsset.src directamente: referenciar el
+// original obligaría a Astro a emitir también el PNG sin comprimir, que
+// ningún navegador llegaría a descargar.
+const heroSocial = heroAsset
+  ? await getImage({ src: heroAsset, format: 'webp', width: 1200 })
+  : undefined;
 const editorialKit = getEditorialKit(slug);
 const fallbackMistakes = getFallbackMistakes();
 
@@ -56,7 +66,11 @@ const schemaLD = {
           "url": "https://decidelo.app/favicon.svg"
         }
       },
-      "image": heroImage ? (heroImage.startsWith('http') ? heroImage : `https://decidelo.app${heroImage}`) : "https://decidelo.app/social-share.png"
+      "image": heroSocial
+        ? new URL(heroSocial.src, 'https://decidelo.app').href
+        : heroImage?.startsWith('http')
+          ? heroImage
+          : "https://decidelo.app/social-share.png"
     },
     ...(editorialKit ? [{
       "@type": "FAQPage",
@@ -143,11 +157,24 @@ const schemaLD = {
       <div class="post-layout-grid">
         <!-- Columna Izquierda: Lectura -->
         <div class="post-reading-column">
-          {heroImage && (
+          {heroAsset ? (
             <div class="post-hero-image">
-              <img src={heroImage} alt={title} loading="lazy" />
+              <Picture
+                src={heroAsset}
+                alt={title}
+                widths={[480, 800, 1200]}
+                sizes="(max-width: 768px) 100vw, 800px"
+                formats={['avif', 'webp']}
+                fallbackFormat="webp"
+                loading="lazy"
+                decoding="async"
+              />
             </div>
-          )}
+          ) : heroImage ? (
+            <div class="post-hero-image">
+              <img src={heroImage} alt={title} loading="lazy" decoding="async" />
+            </div>
+          ) : null}
 
           <!-- Markdown Rendered Content -->
           <section class="post-content">

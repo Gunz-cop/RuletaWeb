@@ -1,5 +1,6 @@
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
+import tailwindcss from '@tailwindcss/vite';
 
 const adsenseReadyBlogUrls = new Set([
   'https://decidelo.app/blog/ruleta/ruleta-de-nombres-para-profesores',
@@ -55,6 +56,7 @@ export default defineConfig({
     inlineStylesheets: 'auto',
   },
   vite: {
+    plugins: [tailwindcss()],
     build: {
       cssMinify: true,
     },

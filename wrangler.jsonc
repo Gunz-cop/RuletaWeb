@@ -1,7 +1,10 @@
 {
+  // OJO: "name" es el Worker real en Cloudflare al que está atado el
+  // dominio decidelo.app. Renombrarlo crearía un Worker nuevo y vacío y
+  // dejaría producción apuntando al viejo. No tocar sin migrar el binding.
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "azares",
-  "compatibility_date": "2026-05-22",
+  "compatibility_date": "2026-09-09",
   "observability": {
     "enabled": true
   },

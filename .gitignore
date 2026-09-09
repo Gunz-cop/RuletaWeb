@@ -10,7 +10,6 @@ dist/
 
 # Dependencies
 node_modules/
-.sdi/
 
 # Logs
 npm-debug.log*

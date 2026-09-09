@@ -3,10 +3,15 @@ import Layout from '../layouts/Layout.astro';
 import AdSlot from '../components/AdSlot.astro';
 import HubGrid from '../components/HubGrid.astro';
 import SeoArticle from '../components/SeoArticle.astro';
+import { getSocialImageUrl } from '../lib/heroImages';
 
 const title = 'Oráculo Sí o No Online — Tomar Decisiones Rápidas | Decídelo.app';
 const description = 'Haz tu pregunta al oráculo místico de Sí o No. Escribe tu duda, presiona consultar y deja que la bola mágica tome una decisión por ti al instante.';
 const keywords = 'oraculo si o no, bola magica si o no, bola 8 magica online, tomar decisiones gratis, decidir al azar, suerte, oraculo virtual';
+
+// La imagen vive en src/assets y la optimiza Astro; el JSON-LD necesita
+// su URL absoluta ya generada, no la ruta pública que tenía antes.
+const socialImage = await getSocialImageUrl('/blog/si-o-no.png');
 
 const schemaLD = {
   "@context": "https://schema.org",
@@ -27,8 +32,8 @@ const schemaLD = {
         "price": "0.00",
         "priceCurrency": "USD"
       },
-      "image": "https://decidelo.app/blog/si-o-no.png",
-      "screenshot": "https://decidelo.app/blog/si-o-no.png",
+      "image": socialImage,
+      "screenshot": socialImage,
       "publisher": {
         "@type": "Organization",
         "@id": "https://decidelo.app/#organization",
