@@ -305,6 +305,12 @@ const schemaLD = {
 </Layout>
 
 <style>
+  /* La portada usa una cabecera de sección mayor que el resto del sitio.
+     Base compartida en global.css; aquí solo lo que cambia. */
+  .section-header { margin-bottom: 2.5rem; }
+  .section-tag { margin-bottom: 0.75rem; }
+  .section-heading { font-size: clamp(1.6rem, 4vw, 2.2rem); }
+
   /* Partículas decorativas flotantes del Hero */
   .hero {
     position: relative;
@@ -460,31 +466,6 @@ const schemaLD = {
   /* Ruleta Section */
   .roulette-section {
     padding: 2rem 0 4rem;
-  }
-
-  .section-header {
-    text-align: center;
-    margin-bottom: 2.5rem;
-  }
-
-  .section-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--accent-cyan);
-    margin-bottom: 0.75rem;
-  }
-
-  .section-heading {
-    font-family: 'Outfit', sans-serif;
-    font-size: clamp(1.6rem, 4vw, 2.2rem);
-    font-weight: 700;
-    color: #ffffff;
-    letter-spacing: -0.02em;
   }
 
   /* App Grid Layout */
