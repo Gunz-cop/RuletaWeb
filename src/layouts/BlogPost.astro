@@ -114,7 +114,7 @@ const schemaLD = {
 
 <Layout title={`${title} | Blog Decídelo.app`} description={description} robots={indexable ? 'index, follow' : 'noindex, follow'} schemaLD={schemaLD} showHomeHeader={false}>
   <main class="wrap">
-    
+
     <!-- Breadcrumb -->
     <nav class="blog-breadcrumbs slide-up delay-1" aria-label="Breadcrumb">
       <a href="/">Inicio</a>
@@ -125,27 +125,27 @@ const schemaLD = {
     </nav>
 
     <!-- Post Article -->
-    <article class="blog-post-card slide-up delay-2">
-      <header class="post-header">
-        <div class="post-tags">
+    <article class="blog-post-card bg-surface border border-[var(--card-border)] rounded-lg p-10 max-[601px]:p-6 shadow-lg w-full max-w-[1120px] relative overflow-hidden slide-up delay-2">
+      <header class="mb-8 max-[601px]:mb-6">
+        <div class="flex gap-2 mb-[0.8rem] flex-wrap">
           {tags.map(tag => (
             <span class="tag-badge">#{tag}</span>
           ))}
         </div>
         <h1 class="post-title">{title}</h1>
         <div class="post-meta">
-          <span class="post-author">Por <strong>{author}</strong></span>
-          <span class="bullet">•</span>
+          <span class="post-author">Por <strong class="text-ink-primary">{author}</strong></span>
+          <span class="text-ink-tertiary">•</span>
           <time datetime={pubDate.toISOString()}>{formattedDate}</time>
           {readingTime && (
             <>
-              <span class="bullet">•</span>
+              <span class="text-ink-tertiary">•</span>
               <span class="post-reading-time">⏱️ {readingTime} min de lectura</span>
             </>
           )}
           {updatedDate && (
             <>
-              <span class="bullet">•</span>
+              <span class="text-ink-tertiary">•</span>
               <span class="post-updated">Actualizado: {new Date(updatedDate).toLocaleDateString('es-ES')}</span>
             </>
           )}
@@ -154,11 +154,11 @@ const schemaLD = {
 
       <AdSlot position="top" />
 
-      <div class="post-layout-grid">
+      <div class="grid grid-cols-1 min-[960px]:grid-cols-[1fr_280px] gap-12 mt-8">
         <!-- Columna Izquierda: Lectura -->
-        <div class="post-reading-column">
+        <div class="min-w-0">
           {heroAsset ? (
-            <div class="post-hero-image">
+            <div class="w-full max-h-[380px] rounded-md overflow-hidden mb-10 border border-[var(--card-border)]">
               <Picture
                 src={heroAsset}
                 alt={title}
@@ -168,11 +168,12 @@ const schemaLD = {
                 fallbackFormat="webp"
                 loading="lazy"
                 decoding="async"
+                class="w-full h-full object-cover"
               />
             </div>
           ) : heroImage ? (
-            <div class="post-hero-image">
-              <img src={heroImage} alt={title} loading="lazy" decoding="async" />
+            <div class="w-full max-h-[380px] rounded-md overflow-hidden mb-10 border border-[var(--card-border)]">
+              <img src={heroImage} alt={title} loading="lazy" decoding="async" class="w-full h-full object-cover" />
             </div>
           ) : null}
 
@@ -192,7 +193,7 @@ const schemaLD = {
                 {editorialKit.steps.map((step) => <li>{step}</li>)}
               </ol>
 
-              <div class="template-box">
+              <div class="my-5 p-5 border border-[rgba(255,255,255,0.08)] rounded-sm bg-[rgba(0,0,0,0.2)]">
                 <h3>{editorialKit.templateTitle}</h3>
                 <ul>
                   {editorialKit.templateItems.map((item) => <li>{item}</li>)}
@@ -207,9 +208,9 @@ const schemaLD = {
 
               <h3>Preguntas frecuentes</h3>
               {editorialKit.faqs.map((faq) => (
-                <details class="faq-item">
-                  <summary>{faq.question}</summary>
-                  <p>{faq.answer}</p>
+                <details class="border-t border-[rgba(255,255,255,0.08)] py-3">
+                  <summary class="cursor-pointer text-white font-bold">{faq.question}</summary>
+                  <p class="mt-3 mb-0">{faq.answer}</p>
                 </details>
               ))}
 
@@ -229,7 +230,7 @@ const schemaLD = {
             </section>
           )}
 
-          <footer class="post-footer">
+          <footer class="mt-14 pt-6 border-t border-[rgba(255,255,255,0.06)]">
             <div class="post-footer-nav">
               <a href="/blog" class="btn-back-blog">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -243,12 +244,12 @@ const schemaLD = {
         </div>
 
         <!-- Columna Derecha: Sidebar de Conversión -->
-        <aside class="post-sidebar-column">
-          <div class="sticky-sidebar-card">
+        <aside class="w-full">
+          <div class="sticky top-24 bg-surface-alt border border-[var(--card-border)] rounded-md p-6 shadow-sm">
             <h3 class="sidebar-title">🎯 Decide al Azar</h3>
             <p class="sidebar-desc">¿Tienes un dilema? Resuélvelo ahora mismo con nuestras herramientas gratuitas:</p>
-            
-            <div class="sidebar-links-list">
+
+            <div class="flex flex-col gap-3">
               <a href="/#ruleta" class="sidebar-link-btn btn-coral">
                 <span class="icon">🎡</span>
                 <div class="info">
@@ -301,11 +302,18 @@ const schemaLD = {
 </Layout>
 
 <style>
+  /* El selector de elemento "main" scopeado por Astro tiene más
+     especificidad que la clase .wrap (atributo + tipo vs. solo clase), así
+     que esta regla anula a propósito el padding horizontal de .wrap y dejа
+     que sea el padding interno de .blog-post-card el que marque el margen.
+     Migrarla a una utilidad (p. ej. py-8) rompe ese empate de especificidad
+     a favor de .wrap y estrecha la columna de lectura: se queda en CSS. */
   main {
     padding: 2rem 0;
   }
 
-  /* Breadcrumbs */
+  /* Breadcrumbs: fuera de la escala de Tailwind (0.8rem/250px), regla
+     entera se queda en CSS para no partirla entre <style> y clases. */
   .blog-breadcrumbs {
     display: flex;
     align-items: center;
@@ -340,59 +348,14 @@ const schemaLD = {
     max-width: 250px;
   }
 
-  /* Post Card Layout */
-  .blog-post-card {
-    background: var(--bg-surface);
-    border: 1px solid var(--card-border);
-    border-radius: var(--radius-lg);
-    padding: 2.5rem;
-    box-shadow: var(--shadow-lg);
-    width: 100%;
-    max-width: 1120px;
-    position: relative;
-    overflow: hidden;
-  }
-
+  /* Barra superior en gradiente de la tarjeta del post. Pseudo-elemento con
+     fondo en gradiente (--accent-gradient): no migra a utilidad. */
   .blog-post-card::before {
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0;
     height: 4px;
     background: var(--accent-gradient);
-  }
-
-  /* Two Column Grid */
-  .post-layout-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 3rem;
-    margin-top: 2rem;
-  }
-
-  @media (min-width: 960px) {
-    .post-layout-grid {
-      grid-template-columns: 1fr 280px;
-    }
-  }
-
-  .post-reading-column {
-    min-width: 0; /* Prevents flex/grid blowouts */
-  }
-
-  /* Sticky Conversion Sidebar */
-  .post-sidebar-column {
-    display: block;
-    width: 100%;
-  }
-
-  .sticky-sidebar-card {
-    position: sticky;
-    top: 6rem;
-    background: var(--bg-surface-alt);
-    border: 1px solid var(--card-border);
-    border-radius: var(--radius-md);
-    padding: 1.5rem;
-    box-shadow: var(--shadow-sm);
   }
 
   .sidebar-title {
@@ -410,12 +373,10 @@ const schemaLD = {
     margin-bottom: 1.25rem;
   }
 
-  .sidebar-links-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
+  /* Specific border glow colors on hover for sidebar buttons.
+     Se queda en CSS: la curva de easing (cubic-bezier 0.175/0.885/0.32/1.15)
+     y los box-shadow de brillo por color son detalle fino, no traducible
+     a una utilidad sin partir esta regla entre CSS y clases. */
   .sidebar-link-btn {
     display: flex;
     align-items: center;
@@ -429,6 +390,24 @@ const schemaLD = {
     transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.15),
                 border-color 0.25s ease,
                 box-shadow 0.25s ease;
+  }
+
+  .sidebar-link-btn.btn-coral:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255, 94, 98, 0.35);
+    box-shadow: 0 4px 12px rgba(255, 94, 98, 0.1);
+  }
+  
+  .sidebar-link-btn.btn-mint:hover {
+    transform: translateY(-2px);
+    border-color: rgba(0, 242, 254, 0.35);
+    box-shadow: 0 4px 12px rgba(0, 242, 254, 0.1);
+  }
+
+  .sidebar-link-btn.btn-purple:hover {
+    transform: translateY(-2px);
+    border-color: rgba(179, 102, 255, 0.35);
+    box-shadow: 0 4px 12px rgba(179, 102, 255, 0.1);
   }
 
   .sidebar-link-btn .icon {
@@ -454,36 +433,6 @@ const schemaLD = {
     margin-top: 0.1rem;
   }
 
-  /* Specific border glow colors on hover for sidebar buttons */
-  .sidebar-link-btn.btn-coral:hover {
-    transform: translateY(-2px);
-    border-color: rgba(255, 94, 98, 0.35);
-    box-shadow: 0 4px 12px rgba(255, 94, 98, 0.1);
-  }
-  
-  .sidebar-link-btn.btn-mint:hover {
-    transform: translateY(-2px);
-    border-color: rgba(0, 242, 254, 0.35);
-    box-shadow: 0 4px 12px rgba(0, 242, 254, 0.1);
-  }
-
-  .sidebar-link-btn.btn-purple:hover {
-    transform: translateY(-2px);
-    border-color: rgba(179, 102, 255, 0.35);
-    box-shadow: 0 4px 12px rgba(179, 102, 255, 0.1);
-  }
-
-  .post-header {
-    margin-bottom: 2rem;
-  }
-
-  .post-tags {
-    display: flex;
-    gap: 0.5rem;
-    margin-bottom: 0.8rem;
-    flex-wrap: wrap;
-  }
-
   .tag-badge {
     font-size: 0.72rem;
     font-weight: 600;
@@ -492,16 +441,6 @@ const schemaLD = {
     border: 1px solid rgba(0, 242, 254, 0.15);
     padding: 0.2rem 0.6rem;
     border-radius: 99px;
-  }
-
-  .post-title {
-    font-family: 'Outfit', sans-serif;
-    font-size: clamp(1.8rem, 5vw, 2.6rem);
-    font-weight: 800;
-    line-height: 1.2;
-    color: #ffffff;
-    letter-spacing: -0.02em;
-    margin-bottom: 1rem;
   }
 
   .post-meta {
@@ -513,35 +452,27 @@ const schemaLD = {
     flex-wrap: wrap;
   }
 
-  .post-meta strong {
-    color: var(--text-primary);
+  /* Tipografía fina: clamp() no tiene equivalente directo como utilidad. */
+  .post-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: clamp(1.8rem, 5vw, 2.6rem);
+    font-weight: 800;
+    line-height: 1.2;
+    color: #ffffff;
+    letter-spacing: -0.02em;
+    margin-bottom: 1rem;
   }
 
-  .bullet {
-    color: var(--text-tertiary);
-  }
-
-  .post-hero-image {
-    width: 100%;
-    max-height: 380px;
-    border-radius: var(--radius-md);
-    overflow: hidden;
-    margin-bottom: 2.5rem;
-    border: 1px solid var(--card-border);
-  }
-
-  .post-hero-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  /* Custom Typography for Markdown rendering inside .post-content */
   .post-content {
     color: var(--text-secondary);
     font-size: 1.05rem;
     line-height: 1.8;
   }
+
+  /* Custom Typography for Markdown rendering inside .post-content.
+     Todo lo de aquí en adelante viene del Markdown de los 52 posts
+     (:global()), así que no se puede migrar: no hay marcado propio de
+     este layout donde poner una clase de Tailwind. */
 
   /* Drop Caps / Letra Capital */
   .post-content > :global(p:first-of-type::first-letter) {
@@ -702,13 +633,8 @@ const schemaLD = {
     background: rgba(255, 255, 255, 0.01);
   }
 
-  /* Post Footer */
-  .post-footer {
-    margin-top: 3.5rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
-  }
-
+  /* field-guide: se queda por el fondo en gradiente (linear-gradient),
+     que no tiene equivalente como utilidad sin romper la regla en dos. */
   .field-guide {
     margin-top: 2.5rem;
     padding: 1.5rem;
@@ -749,19 +675,15 @@ const schemaLD = {
     margin-bottom: 0.65rem;
   }
 
+  /* p y li de field-guide vienen de varios .map() distintos (steps,
+     mistakes, faqs, related): mover un solo line-height a seis puntos
+     de marcado no vale la pena frente al riesgo de dejar uno sin tocar. */
   .field-guide p,
   .field-guide li {
     line-height: 1.7;
   }
 
-  .template-box {
-    margin: 1.25rem 0;
-    padding: 1.25rem;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: var(--radius-sm);
-    background: rgba(0, 0, 0, 0.2);
-  }
-
+  /* tool-cta: fondo en gradiente (--accent-gradient), se queda en CSS. */
   .tool-cta {
     display: inline-flex;
     margin-top: 0.75rem;
@@ -771,22 +693,6 @@ const schemaLD = {
     color: #050506;
     font-weight: 800;
     text-decoration: none;
-  }
-
-  .faq-item {
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    padding: 0.75rem 0;
-  }
-
-  .faq-item summary {
-    cursor: pointer;
-    color: #ffffff;
-    font-weight: 700;
-  }
-
-  .faq-item p {
-    margin-top: 0.75rem;
-    margin-bottom: 0;
   }
 
   .related-links {
@@ -830,18 +736,11 @@ const schemaLD = {
     transform: translateX(-3px);
   }
 
-  /* Hub Section Header */
+  /* Mismo caso que "main": el selector de clase scopeado por Astro
+     (.hub-section + atributo) tiene más especificidad que .wrap y anula a
+     propósito su padding horizontal. Una utilidad (pt-12/pb-4) pierde ese
+     empate y deja pasar el padding de .wrap, estrechando el HubGrid. */
   .hub-section {
     padding: 3rem 0 1rem;
-  }
-
-  /* Responsive overrides */
-  @media (max-width: 600px) {
-    .blog-post-card {
-      padding: 1.5rem;
-    }
-    .post-header {
-      margin-bottom: 1.5rem;
-    }
   }
 </style>

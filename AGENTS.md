@@ -5,6 +5,11 @@ Es agnóstica de herramienta: sirve para Claude Code, Cursor, Codex, Copilot
 o cualquier otro. Si tu herramienta busca un archivo con otro nombre, ese
 archivo debe limitarse a apuntar aquí en lugar de duplicar contenido.
 
+Este archivo es la guía de trabajo: stack, comandos, arquitectura, reglas
+del proyecto. La referencia visual — tokens, escala de espaciado y
+tipografía, la estética del sitio y cómo decidir entre CSS propio y
+utilidad de Tailwind — vive en **[DESIGN.md](./DESIGN.md)**.
+
 ---
 
 ## Qué es este proyecto
@@ -162,7 +167,9 @@ resumen:
 - **Los tokens están duplicados a propósito** entre `:root` de `global.css`
   y `@theme` de `tailwind.css`, con los mismos valores. Si cambias un color
   o un radio, **cámbialo en los dos sitios** o el sistema de diseño se parte
-  en dos. Hay un test que lo comprueba (`npm run test:tokens`).
+  en dos. Hay un test que lo comprueba (`npm run test:tokens`). La tabla de
+  equivalencias completa y cómo decidir entre CSS propio y utilidad están
+  en [DESIGN.md](./DESIGN.md).
 - **`tests/` está excluido del rastreo** con `@source not`. Tailwind 4
   detecta las fuentes rastreando el proyecto salvo lo ignorado por git, y
   los snapshots contienen CSS compilado con nombres de clase dentro:
