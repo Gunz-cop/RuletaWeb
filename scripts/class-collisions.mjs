@@ -46,7 +46,10 @@ const ACEPTADAS = {
     'commit que integró Tailwind, no de la migración ' +
     'gradual. Arreglarlo cambia el aspecto actual en escritorio, así que es ' +
     'una decisión de producto: renombrar la clase propia, o asumir la escala ' +
-    'de Tailwind.',
+    'de Tailwind. Medido con `npm run test:visual` recuperando el max-width ' +
+    'propio: a 390 y 768px no cambia un solo píxel; a 1280 y 1536px cambian ' +
+    'las 13 páginas, y a 1536px el blog crece 958px de alto porque el texto ' +
+    'vuelve a su ancho de lectura.',
 };
 
 /**

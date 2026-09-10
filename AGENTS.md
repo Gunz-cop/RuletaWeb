@@ -52,6 +52,7 @@ npm run preview:cf   # previsualiza en el runtime real de Cloudflare
 npm run deploy       # build + despliegue manual con wrangler
 npm test             # build + paridad de tokens + snapshots de CSS
 npm run test:update  # reescribe la línea base de snapshots
+npm run test:visual  # compara capturas contra main (lento, dos builds)
 ```
 
 No hay linter. Los tests que hay vigilan el CSS, que es lo único que puede
@@ -82,6 +83,21 @@ engaña**: una página puede quedarse sin su `.css` y estar perfecta.
 
 Los selectores scopeados por Astro se guardan con `[S]` en lugar del hash
 `data-astro-cid-XXXX`, que cambia cada vez que se edita el archivo.
+
+`scripts/visual-diff.mjs` compara píxeles, que es lo que los otros dos no
+hacen: construye la rama de referencia en un worktree aparte, fotografía las
+13 páginas a 390, 768, 1280 y 1536px con Playwright, y señala dónde cambia
+la imagen. **No guarda capturas de referencia en el repositorio**: serían
+megabytes que caducan a cada retoque, así que la referencia se construye en
+el momento. Cuesta dos builds, por eso no está en `npm test` ni en CI; se
+lanza a mano con `npm run test:visual` antes de migrar una página.
+
+Dos cosas que hace a propósito y conviene saber. Bloquea toda la red
+externa, así que las capturas no llevan la tipografía real de Google Fonts
+ni los anuncios: la comparación es justa porque las dos versiones se
+capturan igual, pero no sirve para juzgar la tipografía. Y marca a mano los
+elementos `.reveal` con `.revealed`, porque el observador de scroll no se
+dispara en una captura de página completa.
 
 Si un cambio de CSS es intencionado, revisa el diff que imprime el test
 regla por regla y luego `npm run test:update`. Actualizar la línea base sin
