@@ -1,0 +1,14 @@
+.legal-hero{text-align:center;padding:6rem 0 3rem}
+.legal-hero h1{color:#fff;margin-bottom:.75rem;font-family:Outfit,sans-serif;font-size:clamp(2rem,5vw,3rem);font-weight:800}
+.legal-article{color:var(--text-secondary);font-size:1.05rem;line-height:1.8}
+.legal-article p{margin-bottom:1.5rem}
+.legal-article h2{color:#fff;margin-top:2.5rem;margin-bottom:1rem;font-family:Outfit,sans-serif;font-size:1.5rem;font-weight:700}
+.legal-article ul{margin-bottom:1.5rem;padding-left:1.5rem}
+.legal-article li{margin-bottom:.5rem}
+.legal-article hr{border:none;border-top:1px solid var(--card-border);margin:2.5rem 0}
+.legal-article a{color:var(--accent-mint);border-bottom:1px dashed var(--accent-mint);transition:var(--transition);text-decoration:none}
+.legal-article a:hover{color:#fff;border-bottom-style:solid}
+.legal-article code{border-radius:var(--radius-sm);background:#ffffff0d;padding:.2rem .4rem;font-size:.9em}
+.legal-hero[S]{background:linear-gradient(#ff5e6208 0%,#07070a00 100%);border-bottom:1px solid #ff5e620d}
+.legal-article[S] code[S]{color:var(--accent-coral)}
+.subtitle[S]{color:var(--text-secondary);font-size:.95rem}

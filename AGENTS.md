@@ -50,10 +50,60 @@ npm run build        # build de producción a dist/
 npm run preview      # previsualiza el build con Astro
 npm run preview:cf   # previsualiza en el runtime real de Cloudflare
 npm run deploy       # build + despliegue manual con wrangler
+npm test             # build + paridad de tokens + snapshots de CSS
+npm run test:update  # reescribe la línea base de snapshots
+npm run test:visual  # compara capturas contra main (lento, dos builds)
 ```
 
-No hay tests ni linter configurados. La verificación es `npm run build`
-limpio más una revisión de las páginas afectadas.
+No hay linter. Los tests que hay vigilan el CSS, que es lo único que puede
+romperse en silencio en un sitio sin backend, y corren en CI en cada push.
+
+### Qué comprueban los tests
+
+`scripts/token-parity.mjs` compara los tokens de `:root` en `global.css`
+con los del `@theme` de `tailwind.css`. Los nombres no coinciden entre los
+dos archivos, así que la correspondencia va escrita en el propio script. Si
+cambias un color en un sitio y no en el otro, falla.
+
+`scripts/class-collisions.mjs` avisa cuando una clase del proyecto se llama
+igual que una utilidad de Tailwind. Como las utilidades se importan sin capa
+para poder ganarle a `global.css`, en un empate de especificidad gana
+Tailwind y la clase propia deja de hacer lo que dice, sin error de build. Las
+colisiones ya revisadas están en la constante `ACEPTADAS` del script, cada
+una con su motivo. Hubo una sexta, `.container`, que no era
+inofensiva: la utilidad de Tailwind pisaba el `max-width: 1200px` del
+proyecto con su propia escala. Se resolvió renombrando la clase propia a
+`.wrap`, que es lo que hay que hacer con una colisión de verdad: quitarle
+el nombre disputado a uno de los dos, no taparla con especificidad.
+
+`scripts/css-snapshot.mjs` recoge, página por página, todas las reglas que
+el navegador va a aplicar, y las compara con `tests/css-snapshots/`. Recoge
+tanto las hojas enlazadas con `<link>` como el `<style>` que Astro inlinea:
+con `inlineStylesheets: 'auto'`, una hoja que baja de 4 KB deja de existir
+como archivo y viaja dentro del HTML. **Mirar solo `dist/_astro/*.css`
+engaña**: una página puede quedarse sin su `.css` y estar perfecta.
+
+Los selectores scopeados por Astro se guardan con `[S]` en lugar del hash
+`data-astro-cid-XXXX`, que cambia cada vez que se edita el archivo.
+
+`scripts/visual-diff.mjs` compara píxeles, que es lo que los otros dos no
+hacen: construye la rama de referencia en un worktree aparte, fotografía las
+13 páginas a 390, 768, 1280 y 1536px con Playwright, y señala dónde cambia
+la imagen. **No guarda capturas de referencia en el repositorio**: serían
+megabytes que caducan a cada retoque, así que la referencia se construye en
+el momento. Cuesta dos builds, por eso no está en `npm test` ni en CI; se
+lanza a mano con `npm run test:visual` antes de migrar una página.
+
+Dos cosas que hace a propósito y conviene saber. Bloquea toda la red
+externa, así que las capturas no llevan la tipografía real de Google Fonts
+ni los anuncios: la comparación es justa porque las dos versiones se
+capturan igual, pero no sirve para juzgar la tipografía. Y marca a mano los
+elementos `.reveal` con `.revealed`, porque el observador de scroll no se
+dispara en una captura de página completa.
+
+Si un cambio de CSS es intencionado, revisa el diff que imprime el test
+regla por regla y luego `npm run test:update`. Actualizar la línea base sin
+leerla convierte el test en decoración.
 
 ---
 
@@ -112,7 +162,12 @@ resumen:
 - **Los tokens están duplicados a propósito** entre `:root` de `global.css`
   y `@theme` de `tailwind.css`, con los mismos valores. Si cambias un color
   o un radio, **cámbialo en los dos sitios** o el sistema de diseño se parte
-  en dos.
+  en dos. Hay un test que lo comprueba (`npm run test:tokens`).
+- **`tests/` está excluido del rastreo** con `@source not`. Tailwind 4
+  detecta las fuentes rastreando el proyecto salvo lo ignorado por git, y
+  los snapshots contienen CSS compilado con nombres de clase dentro:
+  sin esa exclusión, Tailwind genera utilidades que nadie usa y el snapshot
+  acaba alimentando al build que vigila.
 
 Las páginas de herramientas siguen con su CSS propio y su bloque `<style>`.
 La migración a Tailwind es gradual, una herramienta a la vez, verificando

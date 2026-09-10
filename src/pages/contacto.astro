@@ -7,15 +7,15 @@ const description = 'Ponte en contacto con el equipo de decídelo.app. Escríben
 
 <Layout title={title} description={description}>
   <section class="contact-hero">
-    <div class="container text-center">
+    <div class="wrap text-center">
       <h1>Ponte en <span class="gradient-text">Contacto</span></h1>
       <p class="subtitle">¿Tienes sugerencias, dudas o propuestas? Queremos escucharte.</p>
     </div>
   </section>
 
   <section class="contact-content">
-    <div class="container container-narrow">
-      <div class="contact-grid">
+    <div class="wrap max-w-[1000px]">
+      <div class="grid grid-cols-[1fr_1.2fr] gap-16 items-start max-[769px]:grid-cols-1 max-[769px]:gap-12">
         <div class="contact-info">
           <h2>Hablemos</h2>
           <p>En <strong>decídelo.app</strong> estamos en constante mejora. Si tienes una idea para una nueva herramienta, has encontrado un error de funcionamiento, o quieres hablar de oportunidades de negocio, escríbenos directamente.</p>
@@ -38,7 +38,7 @@ const description = 'Ponte en contacto con el equipo de decídelo.app. Escríben
         </div>
 
         <div class="contact-form-container">
-          <form class="contact-form" action="mailto:soporte@decidelo.app" method="post" enctype="text/plain">
+          <form class="flex flex-col gap-6" action="mailto:soporte@decidelo.app" method="post" enctype="text/plain">
             <div class="form-group">
               <label for="name">Nombre</label>
               <input type="text" id="name" name="name" required placeholder="Tu nombre..." autocomplete="name" />
@@ -90,26 +90,6 @@ const description = 'Ponte en contacto con el equipo de decídelo.app. Escríben
   .contact-content {
     padding: 4.5rem 0;
     flex-grow: 1;
-  }
-
-  .container-narrow {
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 0 1.5rem;
-  }
-
-  .contact-grid {
-    display: grid;
-    grid-template-columns: 1fr 1.2fr;
-    gap: 4rem;
-    align-items: start;
-  }
-
-  @media (max-width: 768px) {
-    .contact-grid {
-      grid-template-columns: 1fr;
-      gap: 3rem;
-    }
   }
 
   .contact-info h2 {
@@ -180,12 +160,6 @@ const description = 'Ponte en contacto con el equipo de decídelo.app. Escríben
     }
   }
 
-  .contact-form {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-
   .form-group {
     display: flex;
     flex-direction: column;
@@ -193,6 +167,9 @@ const description = 'Ponte en contacto con el equipo de decídelo.app. Escríben
   }
 
   .form-group label {
+    /* La base de global.css usa Outfit; este formulario heredaba
+       la tipografía del body y debe seguir haciéndolo. */
+    font-family: inherit;
     font-size: 0.85rem;
     font-weight: 600;
     color: var(--text-primary);

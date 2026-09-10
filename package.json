@@ -7,6 +7,12 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
+    "test": "astro build && node scripts/token-parity.mjs && node scripts/class-collisions.mjs && node scripts/css-snapshot.mjs",
+    "test:css": "node scripts/css-snapshot.mjs",
+    "test:tokens": "node scripts/token-parity.mjs",
+    "test:collisions": "node scripts/class-collisions.mjs",
+    "test:update": "astro build && node scripts/css-snapshot.mjs --update",
+    "test:visual": "node scripts/visual-diff.mjs",
     "astro": "astro",
     "index": "node scripts/google-indexing.js",
     "index:dry": "node scripts/google-indexing.js --dry-run",
@@ -35,6 +41,9 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",
+    "pixelmatch": "^7.1.0",
+    "playwright": "^1.56.0",
+    "pngjs": "^7.0.0",
     "sharp": "^0.35.4",
     "tailwindcss": "^4.3.3",
     "wrangler": "^4.130.0"

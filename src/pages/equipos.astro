@@ -68,7 +68,7 @@ const schemaLD = {
 ---
 
 <Layout title={title} description={description} keywords={keywords} schemaLD={schemaLD} showHomeHeader={false}>
-  <main class="container">
+  <main class="wrap">
     
     <!-- Hero Section -->
     <section class="hero slide-up delay-1">
@@ -155,7 +155,7 @@ const schemaLD = {
 
   <AdSlot position="bottom" />
 
-  <section class="hub-section container">
+  <section class="hub-section wrap">
     <div class="section-header reveal">
       <div class="section-tag">🧰 Caja de Herramientas</div>
       <h2 class="section-heading">Prueba otras herramientas de decisión</h2>
@@ -167,6 +167,9 @@ const schemaLD = {
 </Layout>
 
 <style>
+  /* Base compartida en global.css; aquí solo lo que cambia. */
+  .form-group { flex: 1; }
+
   main {
     padding: 3rem 0;
   }
@@ -230,38 +233,6 @@ const schemaLD = {
   .form-row {
     display: flex;
     gap: 1rem;
-  }
-
-  .form-group {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-  }
-
-  .form-group label {
-    font-family: 'Outfit', sans-serif;
-    font-size: 0.88rem;
-    font-weight: 600;
-    color: var(--text-secondary);
-  }
-
-  .form-group select, .form-group input {
-    background: var(--bg-surface-alt);
-    border: 1px solid var(--card-border);
-    border-radius: var(--radius-md);
-    color: var(--text-primary);
-    padding: 0.8rem 1rem;
-    font-family: 'Inter', sans-serif;
-    font-size: 0.95rem;
-    transition: var(--transition);
-    width: 100%;
-  }
-
-  .form-group select:focus, .form-group input:focus {
-    outline: none;
-    border-color: var(--accent-cyan);
-    box-shadow: 0 0 12px rgba(0, 229, 255, 0.15);
   }
 
   /* Grid de equipos */
@@ -404,31 +375,6 @@ const schemaLD = {
   /* Hub header styling */
   .hub-section {
     padding: 3rem 0;
-  }
-
-  .section-header {
-    text-align: center;
-    margin-bottom: 2rem;
-  }
-
-  .section-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--accent-cyan);
-    margin-bottom: 0.5rem;
-  }
-
-  .section-heading {
-    font-family: 'Outfit', sans-serif;
-    font-size: clamp(1.4rem, 3.5vw, 1.8rem);
-    font-weight: 700;
-    color: #ffffff;
-    letter-spacing: -0.02em;
   }
 
   /* Responsive */

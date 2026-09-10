@@ -1,0 +1,83 @@
+/* ==================================================================
+   PÁGINAS LEGALES
+   ==================================================================
+   Estas reglas las comparten política-privacidad y terminos-condiciones,
+   y solo ellas. Viven en un archivo aparte, no en global.css, porque lo
+   que entra en global.css lo descarga TODO el sitio: medido, meterlas
+   ahí encarecía amigo-secreto en 937 bytes para ahorrar 512 en dos
+   páginas que casi nadie visita. Al importarse desde las dos páginas,
+   Vite las empaqueta en un trozo que solo ellas piden.
+
+   Lo único que las distingue es el acento —coral en privacidad, menta en
+   términos— y eso se queda en el <style> de cada una.
+
+   .subtitle se queda fuera a propósito: existe también en contacto con
+   otro tamaño, y una base común para tres diseños distintos es la clase
+   de herencia silenciosa que conviene no montar.
+   ================================================================== */
+
+.legal-hero {
+  padding: 6rem 0 3rem;
+  text-align: center;
+}
+
+.legal-hero h1 {
+  font-family: 'Outfit', sans-serif;
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 800;
+  margin-bottom: 0.75rem;
+  color: #ffffff;
+}
+
+.legal-article {
+  color: var(--text-secondary);
+  line-height: 1.8;
+  font-size: 1.05rem;
+}
+
+.legal-article p {
+  margin-bottom: 1.5rem;
+}
+
+.legal-article h2 {
+  font-family: 'Outfit', sans-serif;
+  color: #ffffff;
+  font-size: 1.5rem;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  font-weight: 700;
+}
+
+.legal-article ul {
+  margin-bottom: 1.5rem;
+  padding-left: 1.5rem;
+}
+
+.legal-article li {
+  margin-bottom: 0.5rem;
+}
+
+.legal-article hr {
+  border: none;
+  border-top: 1px solid var(--card-border);
+  margin: 2.5rem 0;
+}
+
+.legal-article a {
+  color: var(--accent-mint);
+  text-decoration: none;
+  border-bottom: 1px dashed var(--accent-mint);
+  transition: var(--transition);
+}
+
+.legal-article a:hover {
+  color: #ffffff;
+  border-bottom-style: solid;
+}
+
+.legal-article code {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.2rem 0.4rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.9em;
+}

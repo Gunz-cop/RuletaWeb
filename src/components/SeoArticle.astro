@@ -9,7 +9,7 @@ const { title, id = 'acerca', ariaLabel = 'Información detallada sobre la herra
 ---
 
 <section id={id} class="seo-section reveal" aria-label={ariaLabel}>
-  <div class="container">
+  <div class="wrap">
     <article class="seo-article">
       {title && <h2>{title}</h2>}
       <slot />
