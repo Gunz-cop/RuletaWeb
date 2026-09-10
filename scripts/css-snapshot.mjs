@@ -22,22 +22,12 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from 
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { stripComments, splitTopLevel } from './lib/css-parse.mjs';
+import { PAGINAS as PAGES } from './lib/paginas.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = join(ROOT, 'dist');
 const SNAP_DIR = join(ROOT, 'tests', 'css-snapshots');
 
-/**
- * Páginas vigiladas. Las 13 rutas propias más el índice del blog y un post
- * representativo: los 52 posts comparten BlogPost.astro, así que vigilar uno
- * cubre el layout sin meter 52 snapshots casi idénticos en el repositorio.
- */
-const PAGES = [
-  'index', 'amigo-secreto', 'dados', 'equipos', 'moneda', 'numeros',
-  'piedra-papel-tijera', 'si-o-no', 'temporizador',
-  'contacto', 'sobre', 'politica-privacidad', 'terminos-condiciones',
-  'blog', 'blog/moneda/decision-moneda',
-];
 
 const htmlPathFor = (page) =>
   page === 'index' ? join(DIST, 'index.html') : join(DIST, page, 'index.html');

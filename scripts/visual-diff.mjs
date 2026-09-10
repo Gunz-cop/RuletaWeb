@@ -27,6 +27,7 @@ import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 import { PNG } from 'pngjs';
 import pixelmatch from 'pixelmatch';
+import { RUTAS as PAGINAS } from './lib/paginas.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const TRABAJO = join(ROOT, '.visual-diff');
@@ -45,12 +46,6 @@ const ANCHOS = [
   { nombre: 'tablet', width: 768, height: 1024 },   // el borde exacto del breakpoint
   { nombre: 'escritorio', width: 1280, height: 900 },
   { nombre: 'ancho', width: 1536, height: 900 },    // donde .container se desmadra
-];
-
-const PAGINAS = [
-  '/', '/amigo-secreto', '/dados', '/equipos', '/moneda', '/numeros',
-  '/piedra-papel-tijera', '/si-o-no', '/temporizador',
-  '/contacto', '/sobre', '/blog', '/blog/moneda/decision-moneda',
 ];
 
 const MIME = {

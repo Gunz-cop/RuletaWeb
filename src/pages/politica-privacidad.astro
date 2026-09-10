@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import '../styles/legal.css';
 
 const title = 'Política de Privacidad — Decídelo.app';
 const description = 'Conoce nuestra política de privacidad. Transparencia sobre el uso de datos, almacenamiento local y cookies en decídelo.app.';
@@ -13,8 +14,8 @@ const description = 'Conoce nuestra política de privacidad. Transparencia sobre
     </div>
   </section>
 
-  <section class="legal-content">
-    <div class="wrap wrap-narrow">
+  <section class="py-16 flex-grow">
+    <div class="wrap max-w-[800px]">
       <article class="legal-article">
         <p>En <strong>decídelo.app</strong>, accesible desde <code>https://decidelo.app</code>, una de nuestras principales prioridades es la privacidad de nuestros visitantes. Este documento de política de privacidad contiene los tipos de información que recopilamos y registramos, y cómo la utilizamos.</p>
         <p>Si tienes preguntas adicionales o necesitas más información sobre nuestra Política de Privacidad, no dudes en ponerte en contacto con nosotros.</p>
@@ -61,88 +62,18 @@ const description = 'Conoce nuestra política de privacidad. Transparencia sobre
 </Layout>
 
 <style>
+  /* Lo único que distingue a esta página de la otra legal.
+     El resto de .legal-* vive en global.css. */
   .legal-hero {
-    padding: 6rem 0 3rem;
-    text-align: center;
     background: linear-gradient(180deg, rgba(255, 94, 98, 0.03) 0%, rgba(7, 7, 10, 0) 100%);
     border-bottom: 1px solid rgba(255, 94, 98, 0.05);
   }
 
-  .legal-hero h1 {
-    font-family: 'Outfit', sans-serif;
-    font-size: clamp(2rem, 5vw, 3rem);
-    font-weight: 800;
-    margin-bottom: 0.75rem;
-    color: #ffffff;
-  }
+  .legal-article code { color: var(--accent-coral); }
 
   .subtitle {
     color: var(--text-secondary);
     font-size: 0.95rem;
   }
 
-  .legal-content {
-    padding: 4rem 0;
-    flex-grow: 1;
-  }
-
-  .wrap-narrow {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 0 1.5rem;
-  }
-
-  .legal-article {
-    color: var(--text-secondary);
-    line-height: 1.8;
-    font-size: 1.05rem;
-  }
-
-  .legal-article p {
-    margin-bottom: 1.5rem;
-  }
-
-  .legal-article h2 {
-    font-family: 'Outfit', sans-serif;
-    color: #ffffff;
-    font-size: 1.5rem;
-    margin-top: 2.5rem;
-    margin-bottom: 1rem;
-    font-weight: 700;
-  }
-
-  .legal-article ul {
-    margin-bottom: 1.5rem;
-    padding-left: 1.5rem;
-  }
-
-  .legal-article li {
-    margin-bottom: 0.5rem;
-  }
-
-  .legal-article hr {
-    border: none;
-    border-top: 1px solid var(--card-border);
-    margin: 2.5rem 0;
-  }
-
-  .legal-article a {
-    color: var(--accent-mint);
-    text-decoration: none;
-    border-bottom: 1px dashed var(--accent-mint);
-    transition: var(--transition);
-  }
-
-  .legal-article a:hover {
-    color: #ffffff;
-    border-bottom-style: solid;
-  }
-
-  .legal-article code {
-    background: rgba(255, 255, 255, 0.05);
-    padding: 0.2rem 0.4rem;
-    border-radius: var(--radius-sm);
-    font-size: 0.9em;
-    color: var(--accent-coral);
-  }
 </style>
