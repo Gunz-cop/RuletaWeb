@@ -11,6 +11,10 @@ on:
 
 # Un push nuevo sobre la misma rama cancela el build anterior: el build tarda
 # más de un minuto por el procesado de imágenes y no interesa acumular colas.
+# El workflow solo lee el repositorio: no publica, no comenta, no despliega.
+permissions:
+  contents: read
+
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true

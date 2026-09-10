@@ -21,6 +21,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { stripComments, splitTopLevel } from './lib/css-parse.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = join(ROOT, 'dist');
@@ -50,24 +51,11 @@ const htmlPathFor = (page) =>
  */
 const normalize = (css) => css.replace(/\[data-astro-cid-[a-z0-9]+\]/g, '[S]');
 
-/** Trocea una hoja en reglas de primer nivel, respetando @media y anidados. */
-function splitRules(css) {
-  const rules = [];
-  let depth = 0, start = 0;
-  for (let i = 0; i < css.length; i++) {
-    const c = css[i];
-    if (c === '{') depth++;
-    else if (c === '}') {
-      depth--;
-      if (depth === 0) {
-        const rule = css.slice(start, i + 1).trim();
-        if (rule) rules.push(rule);
-        start = i + 1;
-      }
-    }
-  }
-  return rules;
-}
+/**
+ * Trocea una hoja en reglas de primer nivel. El troceo vive en lib/css-parse
+ * porque contar llaves a pelo se rompe con `content: "}"`, que es CSS válido.
+ */
+const splitRules = (css) => splitTopLevel(stripComments(css)).map((b) => b.raw);
 
 /**
  * Devuelve el CSS de una página separado en dos:

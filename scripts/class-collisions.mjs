@@ -16,6 +16,7 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { stripComments, flatRules } from './lib/css-parse.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -38,43 +39,15 @@ const ACEPTADAS = {
   'container':
     'PENDIENTE DE DECISIÓN, NO ES INOFENSIVA. El proyecto define ' +
     'max-width:1200px y la utilidad .container de Tailwind la sobrescribe con ' +
-    'su escala (40/48/64/80/96rem). En pantallas de 1024 a 1200px el ' +
-    'contenedor sale más estrecho de lo diseñado y a partir de 1280px más ' +
-    'ancho. Viene del commit que integró Tailwind, no de la migración ' +
+    'su escala (40/48/64/80/96rem). Medido: de 1024 a 1279px el contenedor ' +
+    'queda en 1024px, hasta 176px más estrecho de lo diseñado; de 1280 a ' +
+    '1535px pasa a 1280px; y a partir de 1536px se queda en 1536px, hasta ' +
+    '336px más ancho, para cualquier pantalla por grande que sea. Viene del ' +
+    'commit que integró Tailwind, no de la migración ' +
     'gradual. Arreglarlo cambia el aspecto actual en escritorio, así que es ' +
     'una decisión de producto: renombrar la clase propia, o asumir la escala ' +
     'de Tailwind.',
 };
-
-/** Quita los comentarios: en el CSS fuente van pegados al selector que sigue,
- *  y en el bundle minificado no existen. Sin esto, `.container` en el fuente
- *  se lee como "/* CONTENEDORES *\/ .container" y no casa con nada. */
-const sinComentarios = (css) => css.replace(/\/\*[\s\S]*?\*\//g, '');
-
-/** Trocea CSS en reglas de primer nivel conservando el contexto @media. */
-function rules(css, media = null, out = []) {
-  let depth = 0, start = 0;
-  for (let i = 0; i < css.length; i++) {
-    if (css[i] === '{') depth++;
-    else if (css[i] === '}') {
-      depth--;
-      if (depth === 0) {
-        const chunk = css.slice(start, i + 1).trim();
-        start = i + 1;
-        if (!chunk) continue;
-        const open = chunk.indexOf('{');
-        const head = chunk.slice(0, open).trim();
-        const body = chunk.slice(open + 1, -1);
-        if (head.startsWith('@media') || head.startsWith('@supports')) {
-          rules(body, (media ? media + ' & ' : '') + head, out);
-        } else if (!head.startsWith('@')) {
-          out.push({ media, selector: head, body: body.trim() });
-        }
-      }
-    }
-  }
-  return out;
-}
 
 /**
  * Cuenta, por nombre de clase suelta, cuántas reglas la declaran. Compara
@@ -85,7 +58,7 @@ function rules(css, media = null, out = []) {
  */
 function contarClases(css) {
   const cuenta = new Map();
-  for (const { selector } of rules(sinComentarios(css))) {
+  for (const { selector } of flatRules(stripComments(css))) {
     for (const parte of selector.split(',')) {
       // Solo clases sueltas: una utilidad nunca choca con un selector compuesto.
       const m = parte.trim().match(/^\.([a-z][a-z0-9-]*)(?::{1,2}[a-z-]+)?$/);
