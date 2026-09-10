@@ -2,7 +2,7 @@
 .legal-hero[S] h1[S]{color:#fff;margin-bottom:.75rem;font-family:Outfit,sans-serif;font-size:clamp(2rem,5vw,3rem);font-weight:800}
 .subtitle[S]{color:var(--text-secondary);font-size:.95rem}
 .legal-content[S]{flex-grow:1;padding:4rem 0}
-.container-narrow[S]{max-width:800px;margin:0 auto;padding:0 1.5rem}
+.wrap-narrow[S]{max-width:800px;margin:0 auto;padding:0 1.5rem}
 .legal-article[S]{color:var(--text-secondary);font-size:1.05rem;line-height:1.8}
 .legal-article[S] p[S]{margin-bottom:1.5rem}
 .legal-article[S] h2[S]{color:#fff;margin-top:2.5rem;margin-bottom:1rem;font-family:Outfit,sans-serif;font-size:1.5rem;font-weight:700}

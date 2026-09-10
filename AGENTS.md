@@ -70,9 +70,11 @@ igual que una utilidad de Tailwind. Como las utilidades se importan sin capa
 para poder ganarle a `global.css`, en un empate de especificidad gana
 Tailwind y la clase propia deja de hacer lo que dice, sin error de build. Las
 colisiones ya revisadas están en la constante `ACEPTADAS` del script, cada
-una con su motivo. **`.container` está ahí como pendiente de decisión, no
-como inofensiva**: la utilidad de Tailwind pisa el `max-width: 1200px` del
-proyecto con su propia escala.
+una con su motivo. Hubo una sexta, `.container`, que no era
+inofensiva: la utilidad de Tailwind pisaba el `max-width: 1200px` del
+proyecto con su propia escala. Se resolvió renombrando la clase propia a
+`.wrap`, que es lo que hay que hacer con una colisión de verdad: quitarle
+el nombre disputado a uno de los dos, no taparla con especificidad.
 
 `scripts/css-snapshot.mjs` recoge, página por página, todas las reglas que
 el navegador va a aplicar, y las compara con `tests/css-snapshots/`. Recoge

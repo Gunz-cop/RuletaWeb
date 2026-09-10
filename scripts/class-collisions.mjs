@@ -25,6 +25,9 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
  * motivo: si no se sabe por qué es inofensiva, no lo es.
  */
 const ACEPTADAS = {
+  // .container estuvo aquí: la utilidad de Tailwind pisaba el max-width del
+  // proyecto. Se resolvió renombrando la clase propia a .wrap, así que ya no
+  // hay dos dueños del mismo nombre y Tailwind deja de generar la utilidad.
   'sr-only':
     'Tailwind gana, pero su versión oculta igual de bien (clip-path en vez de ' +
     'clip). Misma función, implementación más moderna.',
@@ -36,20 +39,6 @@ const ACEPTADAS = {
     'usa transition, se escalona con .reveal-delay-N, que Tailwind no genera.',
   'delay-3': 'Ver delay-2.',
   'delay-4': 'Ver delay-2.',
-  'container':
-    'PENDIENTE DE DECISIÓN, NO ES INOFENSIVA. El proyecto define ' +
-    'max-width:1200px y la utilidad .container de Tailwind la sobrescribe con ' +
-    'su escala (40/48/64/80/96rem). Medido: de 1024 a 1279px el contenedor ' +
-    'queda en 1024px, hasta 176px más estrecho de lo diseñado; de 1280 a ' +
-    '1535px pasa a 1280px; y a partir de 1536px se queda en 1536px, hasta ' +
-    '336px más ancho, para cualquier pantalla por grande que sea. Viene del ' +
-    'commit que integró Tailwind, no de la migración ' +
-    'gradual. Arreglarlo cambia el aspecto actual en escritorio, así que es ' +
-    'una decisión de producto: renombrar la clase propia, o asumir la escala ' +
-    'de Tailwind. Medido con `npm run test:visual` recuperando el max-width ' +
-    'propio: a 390 y 768px no cambia un solo píxel; a 1280 y 1536px cambian ' +
-    'las 13 páginas, y a 1536px el blog crece 958px de alto porque el texto ' +
-    'vuelve a su ancho de lectura.',
 };
 
 /**

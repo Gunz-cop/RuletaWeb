@@ -81,7 +81,7 @@ body.focus-mode-active header{background:0 0;border-bottom:none}
 body.focus-mode-active .logo-link,body.focus-mode-active .hero[S],body.focus-mode-active .hub-section[S],body.focus-mode-active .seo-section,body.focus-mode-active .ad-placeholder,body.focus-mode-active footer,body.focus-mode-active .nav-link{display:none!important}
 body.focus-mode-active .header-inner{justify-content:flex-end}
 body.focus-mode-active .roulette-section[S]{align-items:center;min-height:calc(100vh - 80px);padding:0;display:flex}
-body.focus-mode-active .roulette-section[S]>.container[S]{width:100%}
+body.focus-mode-active .roulette-section[S]>.wrap[S]{width:100%}
 body.focus-mode-active .roulette-section[S] .section-header[S]{display:none}
 body.focus-mode-active .app-grid[S]{align-items:center}
 @media (width>=860px){body.focus-mode-active .app-grid[S]{max-width:950px;margin:0 auto}}
