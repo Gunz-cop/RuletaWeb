@@ -1,0 +1,35 @@
+---
+/**
+ * Cinta de preguntas que recorre la parte alta de la home.
+ *
+ * Solo marcado: sus reglas (.marquee-container, .marquee-content,
+ * .marquee-item) viven en global.css, no aquí, así que este componente no
+ * lleva <style> y no cambia nada de la cascada.
+ *
+ * Es decorativa —va con aria-hidden— y su animación es infinita, razón por
+ * la que las comprobaciones de estado no la fotografían. Ver
+ * scripts/lib/estados.mjs.
+ */
+---
+
+<div class="marquee-container" aria-hidden="true">
+  <div class="marquee-content">
+    <span class="marquee-item"><span class="dot">✦</span> ¿Pizza o hamburguesa? 🍕</span>
+    <span class="marquee-item"><span class="dot">✦</span> ¿Quién saca al perro? 🦮</span>
+    <span class="marquee-item"><span class="dot">✦</span> ¿Netflix o leer un libro? 📚</span>
+    <span class="marquee-item"><span class="dot">✦</span> ¿Verdad o Reto? 😈</span>
+    <span class="marquee-item"><span class="dot">✦</span> ¿Quién paga la cena? 💸</span>
+    <span class="marquee-item"><span class="dot">✦</span> ¿Gimnasio o pereza? 💪</span>
+    <span class="marquee-item"><span class="dot">✦</span> ¿Qué serie ver hoy? 🎬</span>
+    <span class="marquee-item"><span class="dot">✦</span> ¿Estudiar o jugar? 🎮</span>
+    <!-- Bucle duplicado -->
+    <span class="marquee-item"><span class="dot">✦</span> ¿Pizza o hamburguesa? 🍕</span>
+    <span class="marquee-item"><span class="dot">✦</span> ¿Quién saca al perro? 🦮</span>
+    <span class="marquee-item"><span class="dot">✦</span> ¿Netflix o leer un libro? 📚</span>
+    <span class="marquee-item"><span class="dot">✦</span> ¿Verdad o Reto? 😈</span>
+    <span class="marquee-item"><span class="dot">✦</span> ¿Quién paga la cena? 💸</span>
+    <span class="marquee-item"><span class="dot">✦</span> ¿Gimnasio o pereza? 💪</span>
+    <span class="marquee-item"><span class="dot">✦</span> ¿Qué serie ver hoy? 🎬</span>
+    <span class="marquee-item"><span class="dot">✦</span> ¿Estudiar o jugar? 🎮</span>
+  </div>
+</div>
