@@ -63,9 +63,20 @@ async function medir() {
       new URL(r.request().url()).hostname === '127.0.0.1' ? r.continue() : r.abort());
     const pagina = await ctx.newPage();
     await pagina.goto(`http://127.0.0.1:${p}${est.ruta}`, { waitUntil: 'load' });
-    for (const sel of est.clics) await pagina.click(sel);
-    if (est.esperarSelector) {
-      await pagina.waitForSelector(est.esperarSelector, { timeout: 20000 });
+    // Si el estado no llega a producirse, eso ya es el fallo: se anota y se
+    // sigue, en vez de reventar el proceso con una excepción de Playwright
+    // que no dice qué estado era ni deja correr los demás.
+    try {
+      for (const sel of est.clics) await pagina.click(sel);
+      if (est.esperarSelector) {
+        await pagina.waitForSelector(est.esperarSelector, { timeout: 20000 });
+      }
+    } catch (e) {
+      salida[`${est.ruta} [${est.nombre}]`] =
+        `EL ESTADO NO SE PRODUJO: ${String(e.message).split('\n')[0]}`;
+      await pagina.close();
+      await ctx.close();
+      continue;
     }
     if (est.clics.length) await pagina.waitForTimeout(est.espera ?? 250);
 

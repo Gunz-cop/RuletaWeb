@@ -82,4 +82,44 @@ export const ESTADOS = [
       { sel: '.hub-section .section-header', props: ['marginBottom'] },
     ],
   },
+  // --- Dados -------------------------------------------------------------
+  // Los dados, sus caras y sus puntos los construye dados.js al lanzar, así
+  // que en reposo no existen y las capturas no los ven. Estas tres entradas
+  // cubren las tres variantes visuales, que es donde vive la mayor parte
+  // del CSS de la página.
+  {
+    ruta: '/dados',
+    nombre: 'lanzado-casino',
+    clics: ['[data-theme="casino"]', '#btn-spin'],
+    esperarSelector: '#dice-container .casino-face',
+    espera: 2500,
+    comprobar: [
+      { sel: '.dice-cube', props: ['transformStyle', 'width', 'height', 'position'] },
+      { sel: '.casino-face', props: ['backgroundColor', 'borderRadius', 'display'] },
+      { sel: '.casino-dot', props: ['backgroundColor', 'borderRadius'] },
+      { sel: '#result-display', props: ['display', 'fontFamily'] },
+    ],
+  },
+  {
+    ruta: '/dados',
+    nombre: 'lanzado-yugioh',
+    clics: ['[data-theme="yugioh"]', '#btn-spin'],
+    esperarSelector: '#dice-container .yugioh-face',
+    espera: 2500,
+    comprobar: [
+      { sel: '.yugioh-face', props: ['backgroundColor', 'borderRadius', 'display'] },
+      { sel: '.yugioh-dot', props: ['backgroundColor'] },
+    ],
+  },
+  {
+    ruta: '/dados',
+    nombre: 'lanzado-dnd',
+    clics: ['[data-theme="dnd"]', '#btn-spin'],
+    esperarSelector: '#dice-container .d20-wrapper',
+    espera: 2500,
+    comprobar: [
+      { sel: '.d20-wrapper', props: ['display', 'position', 'width', 'height'] },
+      { sel: '.d20-number', props: ['position', 'fontFamily', 'color'] },
+    ],
+  },
 ];
