@@ -9,11 +9,11 @@ const { showHomeHeader = false } = Astro.props;
 <header>
   <div class="wrap header-inner flex items-center justify-between">
     {showHomeHeader ? (
-      <a href="/" class="logo-link flex items-center gap-[0.6rem] no-underline" aria-label="Inicio de decídelo.app">
+      <a href="/" class="logo-link" aria-label="Inicio de decídelo.app">
         <span class="logo-icon" aria-hidden="true">🎯</span>
         <span class="logo-text">decídelo.app</span>
       </a>
-      <nav class="flex items-center gap-[0.35rem]" aria-label="Navegación principal">
+      <nav class="header-nav" aria-label="Navegación principal">
         <a href="/#ruleta" class="nav-link">Ruleta</a>
         <a href="/#herramientas" class="nav-link">Herramientas</a>
         <a href="/blog" class="nav-link">Blog</a>
@@ -43,11 +43,27 @@ const { showHomeHeader = false } = Astro.props;
 </header>
 
 <style>
-  /* header-inner y logo-link no tienen reglas aquí: su layout lo dan
-     utilidades en el marcado. Las clases siguen puestas porque el modo
-     foco de index.astro las usa como enganche con :global() — quitarlas
-     dejaría esas reglas apuntando a nada, y ningún test lo detectaría
-     porque la regla se seguiría emitiendo. */
+  /* .logo-link y .header-nav se quedan en CSS: sus gaps (0.6rem y 0.35rem)
+     no están en la escala de 0.25rem de Tailwind, y como utilidades
+     arbitrarias añaden reglas nuevas a la hoja compartida que, medido en
+     gzip, pesan más de lo que ahorran. Ver DESIGN.md, escala de espaciado. */
+  .logo-link {
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .header-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  /* header-inner sigue en el marcado aunque no tenga reglas propias: su
+     layout lo dan utilidades, pero el modo foco de index.astro la usa como
+     enganche con :global(). Quitarla dejaría esa regla apuntando a nada, y
+     ningún test lo detectaría porque la regla se sigue emitiendo. */
 
   /* Home header styles */
   .logo-icon {
