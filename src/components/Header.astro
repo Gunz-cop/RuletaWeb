@@ -7,7 +7,7 @@ const { showHomeHeader = false } = Astro.props;
 ---
 
 <header>
-  <div class="wrap header-inner">
+  <div class="wrap header-inner flex items-center justify-between">
     {showHomeHeader ? (
       <a href="/" class="logo-link" aria-label="Inicio de decídelo.app">
         <span class="logo-icon" aria-hidden="true">🎯</span>
@@ -43,13 +43,10 @@ const { showHomeHeader = false } = Astro.props;
 </header>
 
 <style>
-  /* Home header styles */
-  .header-inner {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
+  /* .logo-link y .header-nav se quedan en CSS: sus gaps (0.6rem y 0.35rem)
+     no están en la escala de 0.25rem de Tailwind, y como utilidades
+     arbitrarias añaden reglas nuevas a la hoja compartida que, medido en
+     gzip, pesan más de lo que ahorran. Ver DESIGN.md, escala de espaciado. */
   .logo-link {
     text-decoration: none;
     display: flex;
@@ -57,6 +54,18 @@ const { showHomeHeader = false } = Astro.props;
     gap: 0.6rem;
   }
 
+  .header-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  /* header-inner sigue en el marcado aunque no tenga reglas propias: su
+     layout lo dan utilidades, pero el modo foco de index.astro la usa como
+     enganche con :global(). Quitarla dejaría esa regla apuntando a nada, y
+     ningún test lo detectaría porque la regla se sigue emitiendo. */
+
+  /* Home header styles */
   .logo-icon {
     font-size: 1.6rem;
     display: inline-block;
@@ -77,12 +86,6 @@ const { showHomeHeader = false } = Astro.props;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-  }
-
-  .header-nav {
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
   }
 
   .nav-link {
@@ -185,10 +188,4 @@ const { showHomeHeader = false } = Astro.props;
     transform: translateX(-3px);
   }
 
-  /* Header nav for tool pages uses simpler layout */
-  .header-inner:has(.logo) {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
 </style>
