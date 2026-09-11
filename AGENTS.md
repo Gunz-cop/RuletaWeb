@@ -110,6 +110,12 @@ diferían en miles de píxeles. Los estilos computados sí son estables. Y cada
 estado necesita su propio contexto de navegador: el modo foco se recuerda, y
 compartir contexto lo filtraba al estado siguiente.
 
+Cubre también los dados: sus caras, sus puntos y las tres variantes
+visuales las construye `dados.js` al lanzar, así que en reposo no existen y
+ninguna captura las ve. Si un estado no llega a producirse —porque el CSS
+que lo hace visible dejó de llegar, por ejemplo— eso se anota como fallo de
+ese estado y los demás siguen corriendo, en vez de reventar el proceso.
+
 `scripts/visual-diff.mjs` compara píxeles, que es lo que los otros dos no
 hacen: construye la rama de referencia en un worktree aparte, fotografía las
 13 páginas a 390, 768, 1280 y 1536px con Playwright, y señala dónde cambia
