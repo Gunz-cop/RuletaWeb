@@ -1,0 +1,60 @@
+{
+  "/ [modo-foco]": {
+    ".hero": {
+      "display": "none"
+    },
+    ".hub-section": {
+      "display": "none"
+    },
+    "footer": {
+      "display": "none"
+    },
+    ".nav-link": {
+      "display": "none"
+    },
+    ".logo-link": {
+      "display": "none"
+    },
+    ".header-inner": {
+      "justifyContent": "flex-end"
+    },
+    ".roulette-section": {
+      "display": "flex",
+      "alignItems": "center",
+      "padding": "0px",
+      "minHeight": "820px"
+    },
+    ".app-grid": {
+      "gridTemplateColumns": "500.5px 409.5px"
+    },
+    "body": {
+      "backgroundColor": "rgb(6, 6, 8)"
+    }
+  },
+  "/ [pestana-gestionar]": {
+    "#tab-manage-content": {
+      "display": "flex"
+    },
+    "#tab-edit-content": {
+      "display": "none"
+    },
+    "#tab-manage": {
+      "color": "rgb(2, 240, 252)",
+      "backgroundColor": "rgba(0, 0, 0, 0)"
+    }
+  },
+  "/ [reposo]": {
+    ".hero": {
+      "display": "block"
+    },
+    ".hub-section": {
+      "display": "block"
+    },
+    ".header-inner": {
+      "justifyContent": "space-between"
+    },
+    "#tab-manage-content": {
+      "display": "none"
+    }
+  }
+}

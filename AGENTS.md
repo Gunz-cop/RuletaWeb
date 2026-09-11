@@ -58,6 +58,7 @@ npm run deploy       # build + despliegue manual con wrangler
 npm test             # build + paridad de tokens + snapshots de CSS
 npm run test:update  # reescribe la línea base de snapshots
 npm run test:visual  # compara capturas contra main (lento, dos builds)
+npm run test:estado  # estilos computados tras pulsar (modo foco, pestañas)
 ```
 
 No hay linter. Los tests que hay vigilan el CSS, que es lo único que puede
@@ -90,6 +91,21 @@ engaña**: una página puede quedarse sin su `.css` y estar perfecta.
 
 Los selectores scopeados por Astro se guardan con `[S]` en lugar del hash
 `data-astro-cid-XXXX`, que cambia cada vez que se edita el archivo.
+
+`scripts/estado-dom.mjs` es el único que mira estados que hay que provocar:
+pulsa el botón de modo foco y la pestaña de gestionar, y compara los estilos
+computados con `tests/estado-dom.json`. Cubre el fallo que ningún otro test
+ve: cuando una regla deja de encontrar su elemento —por ejemplo al mover una
+sección a un componente, que le cambia el hash de scope de Astro— el CSS se
+sigue emitiendo igual, así que los snapshots no notan nada, pero el elemento
+deja de recibir la regla. Corre en CI.
+
+**No uses capturas de píxeles para estados de la home.** Se intentó: la
+marquesina y el logo tienen animaciones infinitas y la ruleta es un canvas
+cuyo ángulo depende del momento, así que dos capturas del mismo commit
+diferían en miles de píxeles. Los estilos computados sí son estables. Y cada
+estado necesita su propio contexto de navegador: el modo foco se recuerda, y
+compartir contexto lo filtraba al estado siguiente.
 
 `scripts/visual-diff.mjs` compara píxeles, que es lo que los otros dos no
 hacen: construye la rama de referencia en un worktree aparte, fotografía las
