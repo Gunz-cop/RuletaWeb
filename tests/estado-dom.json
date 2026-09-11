@@ -39,8 +39,33 @@
       "display": "none"
     },
     "#tab-manage": {
-      "color": "rgb(2, 240, 252)",
+      "color": "rgb(0, 242, 254)",
       "backgroundColor": "rgba(0, 0, 0, 0)"
+    }
+  },
+  "/ [modal-ganador]": {
+    "#winner-modal": {
+      "display": "flex",
+      "opacity": "1",
+      "visibility": "visible",
+      "position": "fixed"
+    },
+    ".modal-card": {
+      "transform": "matrix(1, 0, 0, 1, 0, 0)",
+      "backgroundColor": "rgb(15, 15, 21)",
+      "borderRadius": "24px"
+    },
+    ".modal-title": {
+      "fontFamily": "Outfit, sans-serif",
+      "color": "rgb(139, 139, 158)"
+    },
+    ".winner-name-text": {
+      "fontSize": "32px",
+      "fontWeight": "800"
+    },
+    ".celebration-emoji": {
+      "display": "block",
+      "fontSize": "56px"
     }
   },
   "/ [reposo]": {
@@ -55,6 +80,11 @@
     },
     "#tab-manage-content": {
       "display": "none"
+    },
+    "#winner-modal": {
+      "display": "flex",
+      "opacity": "0",
+      "visibility": "visible"
     }
   }
 }

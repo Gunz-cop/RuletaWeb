@@ -64,9 +64,12 @@ async function medir() {
     const pagina = await ctx.newPage();
     await pagina.goto(`http://127.0.0.1:${p}${est.ruta}`, { waitUntil: 'load' });
     for (const sel of est.clics) await pagina.click(sel);
+    if (est.esperarSelector) {
+      await pagina.waitForSelector(est.esperarSelector, { timeout: 20000 });
+    }
     if (est.clics.length) await pagina.waitForTimeout(est.espera ?? 250);
 
-    salida[`${est.ruta} [${est.nombre}]`] = await pagina.evaluate((comprobar) => {
+    const leer = () => pagina.evaluate((comprobar) => {
       const r = {};
       for (const { sel, props } of comprobar) {
         const el = document.querySelector(sel);
@@ -76,6 +79,19 @@ async function medir() {
       }
       return r;
     }, est.comprobar);
+
+    // Espera a que los valores dejen de moverse en vez de a un reloj fijo.
+    // Una transición a medias da opacity: 0.998 y el test parpadea; esto lo
+    // vimos con el modal del ganador, que aparece con un fundido.
+    let previo = JSON.stringify(await leer());
+    let medida = previo;
+    for (let intento = 0; intento < 20; intento++) {
+      await pagina.waitForTimeout(150);
+      medida = JSON.stringify(await leer());
+      if (medida === previo) break;
+      previo = medida;
+    }
+    salida[`${est.ruta} [${est.nombre}]`] = JSON.parse(medida);
 
     await pagina.close();
     await ctx.close();

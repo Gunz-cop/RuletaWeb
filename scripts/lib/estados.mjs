@@ -46,6 +46,22 @@ export const ESTADOS = [
   },
   {
     ruta: '/',
+    nombre: 'modal-ganador',
+    clics: ['#spin-button'],
+    // El giro no dura un tiempo fijo: se frena por rozamiento, así que se
+    // espera al modal en vez de a un reloj.
+    esperarSelector: '#winner-modal.active',
+    espera: 300,
+    comprobar: [
+      { sel: '#winner-modal', props: ['display', 'opacity', 'visibility', 'position'] },
+      { sel: '.modal-card', props: ['transform', 'backgroundColor', 'borderRadius'] },
+      { sel: '.modal-title', props: ['fontFamily', 'color'] },
+      { sel: '.winner-name-text', props: ['fontSize', 'fontWeight'] },
+      { sel: '.celebration-emoji', props: ['display', 'fontSize'] },
+    ],
+  },
+  {
+    ruta: '/',
     nombre: 'reposo',
     clics: [],
     comprobar: [
@@ -54,6 +70,8 @@ export const ESTADOS = [
       { sel: '.hub-section', props: ['display'] },
       { sel: '.header-inner', props: ['justifyContent'] },
       { sel: '#tab-manage-content', props: ['display'] },
+      // Contraste con modal-ganador: sin girar, el modal está oculto.
+      { sel: '#winner-modal', props: ['display', 'opacity', 'visibility'] },
     ],
   },
 ];
