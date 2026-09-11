@@ -2,6 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import Marquee from '../components/Marquee.astro';
 import HomeHero from '../components/HomeHero.astro';
+import RouletteMachine from '../components/RouletteMachine.astro';
 import HomeToolsSection from '../components/HomeToolsSection.astro';
 import WinnerModal from '../components/WinnerModal.astro';
 import AdSlot from '../components/AdSlot.astro';
@@ -91,97 +92,7 @@ const schemaLD = {
   <!-- ====================================================================
        SECCIÓN DE LA RULETA — Herramienta Principal
        ==================================================================== -->
-  <section class="roulette-section reveal" id="ruleta" aria-label="Ruleta de Decisión Aleatoria">
-    <div class="wrap">
-      <div class="arcade-cabinet-frame">
-        <!-- Cabecera de la Cabina Arcade -->
-        <div class="arcade-header">
-          <div class="arcade-title">
-            <span class="arcade-badge">DECI-BOARD V2.0</span>
-            <div class="arcade-leds">
-              <span class="led led-coral"></span>
-              <span class="led led-mint"></span>
-              <span class="led led-purple"></span>
-            </div>
-          </div>
-          <div class="section-tag" style="margin-bottom: 0;">🎡 Máquina Principal</div>
-        </div>
-
-        <div class="app-grid">
-        <!-- Columna Izquierda: La Ruleta -->
-        <div class="wheel-column">
-          <div class="wheel-title-container">
-            <h3 id="wheel-title-text" title="Haz clic para editar el título">Ruleta de Opciones</h3>
-            <button id="edit-title-btn" class="edit-title-btn" title="Editar título" aria-label="Editar título de la ruleta">
-              <span aria-hidden="true">✏️</span>
-            </button>
-          </div>
-          <div class="wheel-card">
-            <div class="wheel-outer-wrapper">
-              <!-- Indicador visual superior -->
-              <div class="pointer" id="wheel-pointer">
-                <svg width="34" height="34" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M15 30L3 7.5L27 7.5L15 30Z" fill="url(#pointer-grad)"/>
-                  <path d="M15 25L6.5 9L23.5 9L15 25Z" fill="#00e5ff"/>
-                  <defs>
-                    <linearGradient id="pointer-grad" x1="15" y1="0" x2="15" y2="30" gradientUnits="userSpaceOnUse">
-                      <stop stop-color="#66f0ff"/>
-                      <stop offset="1" stop-color="#00e5ff"/>
-                    </linearGradient>
-                  </defs>
-                </svg>
-              </div>
-              <!-- Canvas de la ruleta -->
-              <canvas id="roulette-canvas"></canvas>
-              <!-- Botón central GIRAR -->
-              <button id="spin-button" class="spin-center-button" aria-label="Girar la rueda aleatoria">GIRAR</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Columna Derecha: Entrada de Datos -->
-        <div class="input-column">
-          <div class="input-card">
-            <h3 id="input-title" class="section-title">Opciones de la Ruleta</h3>
-            <p class="section-desc">Escribe tus opciones o contrólalas de forma individual.</p>
-
-            <!-- Pestañas -->
-            <div class="card-tabs" role="tablist">
-              <button id="tab-edit" class="tab-btn active" role="tab" aria-selected="true" aria-controls="tab-edit-content">📝 Texto</button>
-              <button id="tab-manage" class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-manage-content">👁️ Ocultar/Activar (<span id="active-count">0</span>/<span id="total-count">0</span>)</button>
-            </div>
-
-            <!-- Pestaña 1: Editor de texto -->
-            <div id="tab-edit-content" class="tab-content-pane" role="tabpanel" aria-labelledby="tab-edit">
-              <textarea id="options-input" autocomplete="off" spellcheck="false" placeholder="Ingresa tus opciones aquí, una por línea..." aria-label="Escribe las opciones de la ruleta una por línea"></textarea>
-              <div class="btn-group">
-                <button id="shuffle-btn" class="secondary-btn" title="Mezclar aleatoriamente el orden">
-                  <span class="btn-icon" aria-hidden="true">🔀</span> Mezclar
-                </button>
-                <button id="clear-btn" class="danger-btn" title="Vaciar la lista completa">
-                  <span class="btn-icon" aria-hidden="true">🗑️</span> Limpiar
-                </button>
-              </div>
-            </div>
-
-            <!-- Pestaña 2: Lista de descarte -->
-            <div id="tab-manage-content" class="tab-content-pane hidden" role="tabpanel" aria-labelledby="tab-manage">
-              <div class="manage-header-flex">
-                <p class="manage-instruction">Desmarca las casillas para ocultar opciones de la ruleta temporalmente sin borrarlas.</p>
-                <button id="activate-all-btn" class="secondary-btn btn-sm" title="Activar todas las opciones">
-                  <span class="btn-icon" aria-hidden="true">✅</span> Activar Todas
-                </button>
-              </div>
-              <div id="options-checklist-container" class="options-checklist-container">
-                <!-- Se genera dinámicamente con JavaScript -->
-              </div>
-            </div>
-          </div> <!-- input-card -->
-        </div> <!-- input-column -->
-      </div> <!-- app-grid -->
-      </div> <!-- arcade-cabinet-frame -->
-    </div> <!-- wrap -->
-  </section>
+  <RouletteMachine />
 
   <!-- ====================================================================
        HUB DE HERRAMIENTAS
@@ -259,356 +170,6 @@ const schemaLD = {
   :global(.section-tag) { margin-bottom: 0.75rem; }
   :global(.section-heading) { font-size: clamp(1.6rem, 4vw, 2.2rem); }
 
-  /* Partículas decorativas flotantes del Hero */
-  /* Ruleta Section */
-  .roulette-section {
-    padding: 2rem 0 4rem;
-  }
-
-  /* App Grid Layout */
-  .app-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 2rem;
-  }
-
-  @media (min-width: 860px) {
-    .app-grid {
-      grid-template-columns: 1.1fr 0.9fr;
-      align-items: stretch;
-      gap: 2.5rem;
-    }
-  }
-
-  /* Wheel Styling */
-  .wheel-column {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .wheel-title-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    margin-bottom: 1.25rem;
-    width: 100%;
-    max-width: 520px;
-  }
-
-  #wheel-title-text {
-    font-family: 'Outfit', sans-serif;
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #ffffff;
-    text-align: center;
-    word-break: break-word;
-    cursor: pointer;
-    transition: var(--transition);
-    user-select: none;
-  }
-
-  #wheel-title-text:hover {
-    color: var(--accent-cyan);
-    text-decoration: underline;
-    text-decoration-style: dashed;
-    text-underline-offset: 4px;
-  }
-
-  .edit-title-btn {
-    background: transparent;
-    border: none;
-    color: var(--text-tertiary);
-    cursor: pointer;
-    font-size: 1.1rem;
-    padding: 0.25rem;
-    display: flex;
-    align-items: center;
-    transition: var(--transition);
-    opacity: 0.5;
-  }
-
-  .edit-title-btn:hover {
-    color: var(--accent-cyan);
-    opacity: 1;
-    transform: scale(1.15);
-  }
-
-  .wheel-card {
-    background: var(--bg-surface);
-    border: 1px solid var(--card-border);
-    border-radius: var(--radius-lg);
-    padding: 1.5rem;
-    box-shadow: var(--shadow-lg);
-    width: 100%;
-    max-width: 520px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-  }
-
-  .wheel-outer-wrapper {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  #roulette-canvas {
-    width: 100%;
-    height: 100%;
-    display: block;
-    border-radius: 50%;
-  }
-
-  .pointer {
-    position: absolute;
-    top: -4px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 10;
-    transform-origin: top center;
-    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4));
-    pointer-events: none;
-  }
-
-  .spin-center-button {
-    position: absolute;
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    background: radial-gradient(circle, #151518 0%, #0a0a0a 100%);
-    border: 3px solid var(--accent-cyan);
-    color: #ffffff;
-    font-family: 'Outfit', sans-serif;
-    font-weight: 800;
-    font-size: 0.95rem;
-    letter-spacing: 0.06em;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.6), 0 0 0 0px var(--accent-glow-cyan);
-    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-                box-shadow 0.3s ease,
-                border-color 0.3s ease;
-    user-select: none;
-    z-index: 20;
-    animation: neon-pulse 2.5s ease-in-out infinite;
-  }
-
-  @keyframes neon-pulse {
-    0%, 100% {
-      box-shadow: 0 4px 15px rgba(0,0,0,0.6),
-                  0 0 15px rgba(0, 229, 255, 0.15),
-                  0 0 30px rgba(0, 229, 255, 0.05);
-    }
-    50% {
-      box-shadow: 0 4px 15px rgba(0,0,0,0.6),
-                  0 0 20px rgba(0, 229, 255, 0.3),
-                  0 0 50px rgba(0, 229, 255, 0.12),
-                  0 0 80px rgba(0, 229, 255, 0.05);
-    }
-  }
-
-  .spin-center-button:hover {
-    transform: scale(1.08);
-    border-color: var(--accent-purple);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.7),
-                0 0 25px var(--accent-glow-purple);
-    animation: none;
-  }
-
-  .spin-center-button:active {
-    transform: scale(0.94);
-  }
-
-  .spin-center-button:disabled {
-    cursor: not-allowed;
-    border-color: rgba(255,255,255,0.1);
-    color: var(--text-tertiary);
-    background: #111113;
-    box-shadow: none;
-    transform: scale(1);
-    animation: none;
-  }
-
-  /* Input Column Styling */
-  .input-column {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .input-card {
-    background: var(--bg-surface);
-    border: 1px solid var(--card-border);
-    border-radius: var(--radius-lg);
-    padding: 1.5rem;
-    box-shadow: var(--shadow-lg);
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-  }
-
-  .section-title {
-    font-family: 'Outfit', sans-serif;
-    font-size: 1.3rem;
-    font-weight: 700;
-    color: #ffffff;
-    margin-bottom: 0.25rem;
-  }
-
-  .section-desc {
-    color: var(--text-secondary);
-    font-size: 0.85rem;
-    margin-bottom: 1rem;
-  }
-
-  .card-tabs {
-    display: flex;
-    border-bottom: 1px solid var(--card-border);
-    margin-bottom: 1.25rem;
-    gap: 0.25rem;
-  }
-
-  .tab-btn {
-    background: transparent;
-    border: none;
-    border-bottom: 2px solid transparent;
-    color: var(--text-secondary);
-    font-family: inherit;
-    font-size: 0.88rem;
-    font-weight: 600;
-    padding: 0.6rem 0.9rem;
-    cursor: pointer;
-    transition: var(--transition);
-  }
-
-  .tab-btn:hover { color: var(--text-primary); }
-
-  .tab-btn.active {
-    color: var(--accent-cyan);
-    border-bottom-color: var(--accent-cyan);
-  }
-
-  .tab-content-pane {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-  }
-
-  .tab-content-pane.hidden { display: none !important; }
-
-  #options-input {
-    width: 100%;
-    height: 250px;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid var(--card-border);
-    border-radius: 12px;
-    padding: 1rem;
-    color: var(--text-primary);
-    font-family: inherit;
-    font-size: 0.95rem;
-    line-height: 1.5;
-    resize: none;
-    outline: none;
-    transition: border-color 0.25s ease, box-shadow 0.25s ease;
-  }
-
-  #options-input:focus {
-    border-color: var(--accent-cyan);
-    box-shadow: 0 0 0 3px var(--accent-glow-cyan);
-  }
-
-  .btn-group {
-    display: flex;
-    gap: 0.75rem;
-    margin-top: 1rem;
-  }
-
-  .manage-header-flex {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 0.5rem;
-    margin-bottom: 0.75rem;
-  }
-
-  .manage-instruction {
-    color: var(--text-secondary);
-    font-size: 0.8rem;
-    line-height: 1.4;
-    margin: 0;
-  }
-
-  .btn-sm {
-    padding: 0.4rem 0.6rem;
-    font-size: 0.75rem;
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-
-  .options-checklist-container {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    max-height: 250px;
-    overflow-y: auto;
-    padding-right: 0.25rem;
-  }
-
-  .options-checklist-container::-webkit-scrollbar { width: 5px; }
-  .options-checklist-container::-webkit-scrollbar-track { background: rgba(0,0,0,0.15); border-radius: 4px; }
-  .options-checklist-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.07); border-radius: 4px; }
-  .options-checklist-container::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.14); }
-
-  :global(.checklist-item) {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    background: rgba(0, 0, 0, 0.2);
-    border: 1px solid var(--card-border);
-    border-radius: 10px;
-    padding: 0.6rem 0.85rem;
-    cursor: pointer;
-    user-select: none;
-    transition: var(--transition);
-  }
-
-  :global(.checklist-item:hover) {
-    background: rgba(255, 255, 255, 0.02);
-    border-color: var(--card-border-hover);
-  }
-
-  :global(.checklist-item input[type="checkbox"]) {
-    accent-color: var(--accent-cyan);
-    width: 17px; height: 17px;
-    cursor: pointer;
-  }
-
-  :global(.checklist-item span) {
-    font-size: 0.9rem;
-    color: var(--text-primary);
-    word-break: break-all;
-    transition: var(--transition);
-  }
-
-  :global(.checklist-item.disabled) {
-    opacity: 0.4;
-    background: rgba(0, 0, 0, 0.08);
-  }
-
-  :global(.checklist-item.disabled span) {
-    text-decoration: line-through;
-    color: var(--text-tertiary);
-  }
-
-  /* Winner Modal */
   #confetti-canvas {
     position: fixed;
     top: 0; left: 0;
@@ -617,7 +178,6 @@ const schemaLD = {
     z-index: 99;
   }
 
-  /* Hub grid margins */
   /* Focus Mode Styles */
   /* .hero y .hub-section van con :global() porque su marcado vive ahora en
      HomeHero.astro y HomeToolsSection.astro: con el scope de esta página ya
@@ -646,39 +206,30 @@ const schemaLD = {
     justify-content: flex-end;
   }
 
-  body.focus-mode-active .roulette-section {
+  body.focus-mode-active :global(.roulette-section) {
     min-height: calc(100vh - 80px);
     display: flex;
     align-items: center;
     padding: 0;
   }
 
-  body.focus-mode-active .roulette-section > .wrap {
+  body.focus-mode-active :global(.roulette-section > .wrap) {
     width: 100%;
   }
 
-  body.focus-mode-active .roulette-section .section-header {
+  body.focus-mode-active :global(.roulette-section .section-header) {
     display: none;
   }
 
-  body.focus-mode-active .app-grid {
+  body.focus-mode-active :global(.app-grid) {
     align-items: center;
   }
 
   @media (min-width: 860px) {
-    body.focus-mode-active .app-grid {
+    body.focus-mode-active :global(.app-grid) {
       max-width: 950px;
       margin: 0 auto;
     }
   }
 
-  @media (max-width: 480px) {
-    .roulette-section .section-header {
-      margin-bottom: 1.5rem;
-    }
-
-    .wheel-card {
-      padding: 1rem;
-    }
-  }
 </style>
