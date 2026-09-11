@@ -110,7 +110,8 @@ diferían en miles de píxeles. Los estilos computados sí son estables. Y cada
 estado necesita su propio contexto de navegador: el modo foco se recuerda, y
 compartir contexto lo filtraba al estado siguiente.
 
-Cubre también los dados: sus caras, sus puntos y las tres variantes
+Cubre amigo secreto —introduce participantes, hace el sorteo y comprueba
+las filas de enlaces, en escritorio y a 390px— y también los dados: sus caras, sus puntos y las tres variantes
 visuales las construye `dados.js` al lanzar, así que en reposo no existen y
 ninguna captura las ve. Si un estado no llega a producirse —porque el CSS
 que lo hace visible dejó de llegar, por ejemplo— eso se anota como fallo de

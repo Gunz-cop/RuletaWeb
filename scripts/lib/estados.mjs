@@ -122,4 +122,39 @@ export const ESTADOS = [
       { sel: '.d20-number', props: ['position', 'fontFamily', 'color'] },
     ],
   },
+  // --- Amigo secreto -----------------------------------------------------
+  // Las etiquetas de participante, las filas de enlaces y sus botones los
+  // construye amigo-secreto.js con lo que escribe el visitante: en reposo no
+  // existen, así que ninguna captura los ve. Es la herramienta con tráfico
+  // real del sitio, de modo que conviene cubrirla de verdad.
+  {
+    ruta: '/amigo-secreto',
+    nombre: 'sorteo-hecho',
+    escribir: [{ sel: '#participants-textarea', texto: 'Ana\nBruno\nCarla\nDiego' }],
+    clics: ['#btn-draw'],
+    esperarSelector: '#links-list-container .link-row',
+    comprobar: [
+      { sel: '.participant-tag', props: ['display', 'backgroundColor', 'borderRadius'] },
+      { sel: '.link-row', props: ['display', 'flexDirection', 'alignItems', 'backgroundColor'] },
+      { sel: '.row-name', props: ['fontFamily', 'fontWeight', 'color'] },
+      { sel: '.row-actions', props: ['display', 'gap'] },
+      { sel: '.btn-action', props: ['display', 'borderRadius', 'cursor'] },
+      { sel: '#results-section', props: ['display'] },
+      { sel: '#matrix-tbody tr', props: ['display'] },
+    ],
+  },
+  {
+    // El mismo sorteo a 390px: aquí viven las dos reglas que estaban dentro
+    // de la media query y que era fácil dejarse atrás al extraer el CSS.
+    ruta: '/amigo-secreto',
+    nombre: 'sorteo-hecho-movil',
+    viewport: { width: 390, height: 844 },
+    escribir: [{ sel: '#participants-textarea', texto: 'Ana\nBruno\nCarla\nDiego' }],
+    clics: ['#btn-draw'],
+    esperarSelector: '#links-list-container .link-row',
+    comprobar: [
+      { sel: '.link-row', props: ['flexDirection', 'alignItems'] },
+      { sel: '.row-actions', props: ['width', 'justifyContent'] },
+    ],
+  },
 ];
