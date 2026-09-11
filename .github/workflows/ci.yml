@@ -33,8 +33,15 @@ jobs:
 
       - run: npm ci
 
-      # Ejecuta build + paridad de tokens + snapshots. Ver AGENTS.md.
+      # Ejecuta build + paridad de tokens + colisiones + snapshots. Ver AGENTS.md.
       - run: npm test
+
+      # Los tres tests anteriores miran la página en reposo. Este pulsa
+      # botones y comprueba los estilos computados después: es lo único que
+      # detecta que una regla ha dejado de encontrar su elemento, porque el
+      # CSS se sigue emitiendo igual aunque ya no se aplique a nadie.
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:estado
 
       # Si los snapshots fallan, el diff de arriba dice qué reglas cambiaron.
       # Esto deja además el dist/ construido a mano para poder inspeccionarlo.

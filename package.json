@@ -11,6 +11,8 @@
     "test:css": "node scripts/css-snapshot.mjs",
     "test:tokens": "node scripts/token-parity.mjs",
     "test:collisions": "node scripts/class-collisions.mjs",
+    "test:estado": "node scripts/estado-dom.mjs",
+    "test:estado:update": "node scripts/estado-dom.mjs --update",
     "test:update": "astro build && node scripts/css-snapshot.mjs --update",
     "test:visual": "node scripts/visual-diff.mjs",
     "astro": "astro",
