@@ -14,6 +14,10 @@ export const PAGINAS = [
   'piedra-papel-tijera', 'si-o-no', 'temporizador',
   'contacto', 'sobre', 'politica-privacidad', 'terminos-condiciones',
   'blog', 'blog/moneda/decision-moneda',
+  'blog/amigo-secreto/amigo-secreto-online-guia',
+  'blog/equipos/dinamicas-de-grupo-aleatoriedad-equipos',
+  'blog/temporizador/metodo-pomodoro-tdah-temporizador',
+  'blog/si-o-no/desbloqueo-oraculo',
 ];
 
 /** La misma lista como rutas del sitio: 'index' es '/'. */
