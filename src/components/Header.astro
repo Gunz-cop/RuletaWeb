@@ -7,13 +7,13 @@ const { showHomeHeader = false } = Astro.props;
 ---
 
 <header>
-  <div class="wrap header-inner">
+  <div class="wrap header-inner flex items-center justify-between">
     {showHomeHeader ? (
-      <a href="/" class="logo-link" aria-label="Inicio de decídelo.app">
+      <a href="/" class="logo-link flex items-center gap-[0.6rem] no-underline" aria-label="Inicio de decídelo.app">
         <span class="logo-icon" aria-hidden="true">🎯</span>
         <span class="logo-text">decídelo.app</span>
       </a>
-      <nav class="header-nav" aria-label="Navegación principal">
+      <nav class="flex items-center gap-[0.35rem]" aria-label="Navegación principal">
         <a href="/#ruleta" class="nav-link">Ruleta</a>
         <a href="/#herramientas" class="nav-link">Herramientas</a>
         <a href="/blog" class="nav-link">Blog</a>
@@ -43,20 +43,13 @@ const { showHomeHeader = false } = Astro.props;
 </header>
 
 <style>
+  /* header-inner y logo-link no tienen reglas aquí: su layout lo dan
+     utilidades en el marcado. Las clases siguen puestas porque el modo
+     foco de index.astro las usa como enganche con :global() — quitarlas
+     dejaría esas reglas apuntando a nada, y ningún test lo detectaría
+     porque la regla se seguiría emitiendo. */
+
   /* Home header styles */
-  .header-inner {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .logo-link {
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-  }
-
   .logo-icon {
     font-size: 1.6rem;
     display: inline-block;
@@ -77,12 +70,6 @@ const { showHomeHeader = false } = Astro.props;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-  }
-
-  .header-nav {
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
   }
 
   .nav-link {
@@ -185,10 +172,4 @@ const { showHomeHeader = false } = Astro.props;
     transform: translateX(-3px);
   }
 
-  /* Header nav for tool pages uses simpler layout */
-  .header-inner:has(.logo) {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
 </style>
