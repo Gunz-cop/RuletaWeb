@@ -56,7 +56,7 @@ async function medir() {
     // Un contexto nuevo por estado. El modo foco se recuerda en el navegador,
     // así que compartir contexto lo filtraba al estado siguiente y la línea
     // base acababa grabando un "reposo" con el hero ya oculto.
-    const ctx = await nav.newContext({ viewport: { width: 1280, height: 900 } });
+    const ctx = await nav.newContext({ viewport: est.viewport ?? { width: 1280, height: 900 } });
     // Sin red externa: las fuentes y los anuncios no cambian estas propiedades
     // y sí harían el resultado dependiente de la conexión.
     await ctx.route('**/*', (r) =>
@@ -67,6 +67,7 @@ async function medir() {
     // sigue, en vez de reventar el proceso con una excepción de Playwright
     // que no dice qué estado era ni deja correr los demás.
     try {
+      for (const { sel, texto } of est.escribir ?? []) await pagina.fill(sel, texto);
       for (const sel of est.clics) await pagina.click(sel);
       if (est.esperarSelector) {
         await pagina.waitForSelector(est.esperarSelector, { timeout: 20000 });

@@ -139,5 +139,48 @@
       "fontFamily": "Outfit, sans-serif",
       "color": "rgb(240, 240, 245)"
     }
+  },
+  "/amigo-secreto [sorteo-hecho]": {
+    ".participant-tag": {
+      "display": "flex",
+      "backgroundColor": "rgb(20, 20, 29)",
+      "borderRadius": "999px"
+    },
+    ".link-row": {
+      "display": "flex",
+      "flexDirection": "row",
+      "alignItems": "center",
+      "backgroundColor": "rgb(20, 20, 29)"
+    },
+    ".row-name": {
+      "fontFamily": "Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif",
+      "fontWeight": "600",
+      "color": "rgb(255, 255, 255)"
+    },
+    ".row-actions": {
+      "display": "flex",
+      "gap": "8px"
+    },
+    ".btn-action": {
+      "display": "flex",
+      "borderRadius": "6px",
+      "cursor": "pointer"
+    },
+    "#results-section": {
+      "display": "block"
+    },
+    "#matrix-tbody tr": {
+      "display": "table-row"
+    }
+  },
+  "/amigo-secreto [sorteo-hecho-movil]": {
+    ".link-row": {
+      "flexDirection": "column",
+      "alignItems": "flex-start"
+    },
+    ".row-actions": {
+      "width": "290px",
+      "justifyContent": "flex-end"
+    }
   }
 }
