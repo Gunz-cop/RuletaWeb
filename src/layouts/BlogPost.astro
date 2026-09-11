@@ -2,9 +2,12 @@
 import Layout from './Layout.astro';
 import HubGrid from '../components/HubGrid.astro';
 import AdSlot from '../components/AdSlot.astro';
+import BlogSidebar from '../components/BlogSidebar.astro';
 import { getEditorialKit, getFallbackMistakes } from '../data/adsenseEditorial';
 import { Picture, getImage } from 'astro:assets';
 import { getHeroImage } from '../lib/heroImages';
+import { buildBlogSchema } from '../lib/blogSchema';
+import '../styles/blog-content.css';
 
 interface Props {
   slug: string;
@@ -39,77 +42,10 @@ const formattedDate = new Date(pubDate).toLocaleDateString('es-ES', {
 
 const postUrl = new URL(Astro.url.pathname, 'https://decidelo.app').href;
 
-const schemaLD = {
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "BlogPosting",
-      "@id": `${postUrl}#blogposting`,
-      "mainEntityOfPage": postUrl,
-      "headline": title,
-      "description": description,
-      "datePublished": pubDate instanceof Date ? pubDate.toISOString() : new Date(pubDate).toISOString(),
-      ...(updatedDate && { "dateModified": updatedDate instanceof Date ? updatedDate.toISOString() : new Date(updatedDate).toISOString() }),
-      "inLanguage": "es-ES",
-      "author": {
-        "@type": "Person",
-        "name": author,
-        "url": "https://decidelo.app/"
-      },
-      "publisher": {
-        "@type": "Organization",
-        "@id": "https://decidelo.app/#organization",
-        "name": "Decídelo.app",
-        "url": "https://decidelo.app/",
-        "logo": {
-          "@type": "ImageObject",
-          "url": "https://decidelo.app/favicon.svg"
-        }
-      },
-      "image": heroSocial
-        ? new URL(heroSocial.src, 'https://decidelo.app').href
-        : heroImage?.startsWith('http')
-          ? heroImage
-          : "https://decidelo.app/social-share.png"
-    },
-    ...(editorialKit ? [{
-      "@type": "FAQPage",
-      "@id": `${postUrl}#faq`,
-      "mainEntity": editorialKit.faqs.map((faq) => ({
-        "@type": "Question",
-        "name": faq.question,
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": faq.answer
-        }
-      }))
-    }] : []),
-    {
-      "@type": "BreadcrumbList",
-      "@id": `${postUrl}#breadcrumb`,
-      "itemListElement": [
-        {
-          "@type": "ListItem",
-          "position": 1,
-          "name": "Inicio",
-          "item": "https://decidelo.app/"
-        },
-        {
-          "@type": "ListItem",
-          "position": 2,
-          "name": "Blog",
-          "item": "https://decidelo.app/blog"
-        },
-        {
-          "@type": "ListItem",
-          "position": 3,
-          "name": title,
-          "item": postUrl
-        }
-      ]
-    }
-  ]
-};
+const schemaLD = buildBlogSchema({
+  title, description, pubDate, updatedDate, author, postUrl,
+  heroSocial, heroImage, editorialKit,
+});
 ---
 
 <Layout title={`${title} | Blog Decídelo.app`} description={description} robots={indexable ? 'index, follow' : 'noindex, follow'} schemaLD={schemaLD} showHomeHeader={false}>
@@ -244,46 +180,7 @@ const schemaLD = {
         </div>
 
         <!-- Columna Derecha: Sidebar de Conversión -->
-        <aside class="w-full">
-          <div class="sticky top-24 bg-surface-alt border border-[var(--card-border)] rounded-md p-6 shadow-sm">
-            <h3 class="sidebar-title">🎯 Decide al Azar</h3>
-            <p class="sidebar-desc">¿Tienes un dilema? Resuélvelo ahora mismo con nuestras herramientas gratuitas:</p>
-
-            <div class="flex flex-col gap-3">
-              <a href="/#ruleta" class="sidebar-link-btn btn-coral">
-                <span class="icon">🎡</span>
-                <div class="info">
-                  <span class="name">Ruleta de Opciones</span>
-                  <span class="sub">Personaliza y gira</span>
-                </div>
-              </a>
-              <a href="/dados" class="sidebar-link-btn btn-mint">
-                <span class="icon">🎲</span>
-                <div class="info">
-                  <span class="name">Dados Virtuales</span>
-                  <span class="sub">Tiradas en 3D</span>
-                </div>
-              </a>
-              <a href="/moneda" class="sidebar-link-btn btn-purple">
-                <span class="icon">🪙</span>
-                <div class="info">
-                  <span class="name">Lanzar Moneda</span>
-                  <span class="sub">Cara o cruz al instante</span>
-                </div>
-              </a>
-              <a href="/amigo-secreto" class="sidebar-link-btn btn-coral">
-                <span class="icon">🎁</span>
-                <div class="info">
-                  <span class="name">Amigo Secreto</span>
-                  <span class="sub">Sorteo privado de regalos</span>
-                </div>
-              </a>
-            </div>
-
-            <!-- Espacio para Banner de AdSense en Sidebar -->
-            <AdSlot position="sidebar" />
-          </div>
-        </aside>
+        <BlogSidebar />
       </div>
     </article>
 
@@ -358,81 +255,6 @@ const schemaLD = {
     background: var(--accent-gradient);
   }
 
-  .sidebar-title {
-    font-family: 'Outfit', sans-serif;
-    font-size: 1.15rem;
-    font-weight: 700;
-    color: #ffffff;
-    margin-bottom: 0.5rem;
-  }
-
-  .sidebar-desc {
-    font-size: 0.82rem;
-    color: var(--text-secondary);
-    line-height: 1.5;
-    margin-bottom: 1.25rem;
-  }
-
-  /* Specific border glow colors on hover for sidebar buttons.
-     Se queda en CSS: la curva de easing (cubic-bezier 0.175/0.885/0.32/1.15)
-     y los box-shadow de brillo por color son detalle fino, no traducible
-     a una utilidad sin partir esta regla entre CSS y clases. */
-  .sidebar-link-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem 1rem;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid var(--card-border);
-    border-radius: var(--radius-sm);
-    text-decoration: none;
-    color: inherit;
-    transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.15),
-                border-color 0.25s ease,
-                box-shadow 0.25s ease;
-  }
-
-  .sidebar-link-btn.btn-coral:hover {
-    transform: translateY(-2px);
-    border-color: rgba(255, 94, 98, 0.35);
-    box-shadow: 0 4px 12px rgba(255, 94, 98, 0.1);
-  }
-  
-  .sidebar-link-btn.btn-mint:hover {
-    transform: translateY(-2px);
-    border-color: rgba(0, 242, 254, 0.35);
-    box-shadow: 0 4px 12px rgba(0, 242, 254, 0.1);
-  }
-
-  .sidebar-link-btn.btn-purple:hover {
-    transform: translateY(-2px);
-    border-color: rgba(179, 102, 255, 0.35);
-    box-shadow: 0 4px 12px rgba(179, 102, 255, 0.1);
-  }
-
-  .sidebar-link-btn .icon {
-    font-size: 1.3rem;
-  }
-
-  .sidebar-link-btn .info {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .sidebar-link-btn .name {
-    font-family: 'Outfit', sans-serif;
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: #ffffff;
-    line-height: 1.2;
-  }
-
-  .sidebar-link-btn .sub {
-    font-size: 0.72rem;
-    color: var(--text-secondary);
-    margin-top: 0.1rem;
-  }
-
   .tag-badge {
     font-size: 0.72rem;
     font-weight: 600;
@@ -469,172 +291,9 @@ const schemaLD = {
     line-height: 1.8;
   }
 
-  /* Custom Typography for Markdown rendering inside .post-content.
-     Todo lo de aquí en adelante viene del Markdown de los 52 posts
-     (:global()), así que no se puede migrar: no hay marcado propio de
-     este layout donde poner una clase de Tailwind. */
+  /* La tipografía del contenido Markdown vive en src/styles/blog-content.css:
+     no está scopeada (viene del Markdown), así que no pinta nada aquí. */
 
-  /* Drop Caps / Letra Capital */
-  .post-content > :global(p:first-of-type::first-letter) {
-    font-family: 'Outfit', sans-serif;
-    float: left;
-    font-size: 3.5rem;
-    line-height: 0.85;
-    font-weight: 800;
-    margin-right: 0.6rem;
-    margin-top: 0.15rem;
-    background: var(--accent-gradient);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .post-content :global(h2),
-  .post-content :global(h3) {
-    color: #ffffff;
-    font-family: 'Outfit', sans-serif;
-    font-weight: 700;
-    letter-spacing: -0.01em;
-  }
-
-  .post-content :global(h2) {
-    font-size: 1.6rem;
-    margin-top: 2.5rem;
-    margin-bottom: 0.8rem;
-    padding-bottom: 0.4rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  }
-
-  .post-content :global(h3) {
-    font-size: 1.25rem;
-    margin-top: 1.8rem;
-    margin-bottom: 0.6rem;
-  }
-
-  .post-content :global(p) {
-    margin-bottom: 1.5rem;
-  }
-
-  .post-content :global(strong) {
-    color: #ffffff;
-  }
-
-  .post-content :global(ul),
-  .post-content :global(ol) {
-    margin-bottom: 1.8rem;
-    padding-left: 1.5rem;
-  }
-
-  .post-content :global(ul) {
-    list-style: none;
-  }
-
-  .post-content :global(ul li) {
-    margin-bottom: 0.6rem;
-    position: relative;
-    padding-left: 1.2rem;
-  }
-
-  .post-content :global(ul li::before) {
-    content: '▸';
-    color: var(--accent-mint);
-    position: absolute;
-    left: 0;
-    font-weight: bold;
-  }
-
-  .post-content :global(ol) {
-    list-style: decimal;
-  }
-
-  .post-content :global(ol li) {
-    margin-bottom: 0.6rem;
-    padding-left: 0.4rem;
-  }
-
-  .post-content :global(blockquote) {
-    border-left: 4px solid var(--accent-coral);
-    background: rgba(255, 94, 98, 0.03);
-    padding: 1.25rem 1.75rem;
-    border-radius: 0 var(--radius-md) var(--radius-md) 0;
-    margin: 2rem 0;
-    font-style: italic;
-    color: var(--text-primary);
-    box-shadow: inset 5px 0 0 -1px rgba(255, 94, 98, 0.1);
-  }
-
-  .post-content :global(blockquote p) {
-    margin-bottom: 0;
-    line-height: 1.7;
-  }
-
-  .post-content :global(a) {
-    color: var(--accent-mint);
-    text-decoration: none;
-    transition: var(--transition);
-    border-bottom: 1px dashed rgba(0, 242, 254, 0.4);
-  }
-
-  .post-content :global(a:hover) {
-    color: #ffffff;
-    border-bottom-color: #ffffff;
-  }
-
-  .post-content :global(pre) {
-    background: var(--bg-surface-alt);
-    border: 1px solid var(--card-border);
-    padding: 1rem 1.25rem;
-    border-radius: var(--radius-sm);
-    overflow-x: auto;
-    margin: 1.5rem 0;
-    font-family: monospace;
-    font-size: 0.9rem;
-  }
-
-  .post-content :global(code) {
-    background: rgba(0, 229, 255, 0.08);
-    padding: 0.15rem 0.4rem;
-    border-radius: 4px;
-    font-size: 0.9rem;
-    font-family: monospace;
-    color: var(--accent-mint);
-  }
-
-  .post-content :global(pre code) {
-    background: transparent;
-    padding: 0;
-    border-radius: 0;
-    color: inherit;
-    font-size: inherit;
-  }
-
-  /* Table styling */
-  .post-content :global(table) {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 1.8rem 0;
-    font-size: 0.95rem;
-  }
-
-  .post-content :global(th),
-  .post-content :global(td) {
-    padding: 0.75rem 1rem;
-    border-bottom: 1px solid var(--card-border);
-    text-align: left;
-  }
-
-  .post-content :global(th) {
-    color: #ffffff;
-    font-weight: 600;
-    background: rgba(255, 255, 255, 0.02);
-  }
-
-  .post-content :global(tr:hover) {
-    background: rgba(255, 255, 255, 0.01);
-  }
-
-  /* field-guide: se queda por el fondo en gradiente (linear-gradient),
-     que no tiene equivalente como utilidad sin romper la regla en dos. */
   .field-guide {
     margin-top: 2.5rem;
     padding: 1.5rem;

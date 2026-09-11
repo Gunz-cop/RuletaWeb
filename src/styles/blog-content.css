@@ -1,0 +1,180 @@
+/* ==================================================================
+   TIPOGRAFÍA DEL CONTENIDO MARKDOWN DEL BLOG
+   ==================================================================
+   Estas reglas dan estilo al HTML que Astro genera desde el Markdown de
+   los 52 posts. Vivían en el <style> de BlogPost.astro envueltas en
+   :global(), porque el marcado no es del layout: lo produce el
+   contenido. Al no estar scopeadas nunca, sacarlas a un archivo no
+   cambia lo que hacen, solo deja de mezclarlas con el layout.
+
+   Va aparte y no en global.css a propósito: solo lo importa
+   BlogPost.astro, así que Vite lo empaqueta en el trozo del blog y las
+   páginas de herramienta no lo descargan.
+   ================================================================== */
+
+/* Custom Typography for Markdown rendering inside .post-content.
+   Todo lo de aquí en adelante viene del Markdown de los 52 posts
+   (), así que no se puede migrar: no hay marcado propio de
+   este layout donde poner una clase de Tailwind. */
+
+/* Drop Caps / Letra Capital */
+.post-content > p:first-of-type::first-letter {
+  font-family: 'Outfit', sans-serif;
+  float: left;
+  font-size: 3.5rem;
+  line-height: 0.85;
+  font-weight: 800;
+  margin-right: 0.6rem;
+  margin-top: 0.15rem;
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.post-content h2,
+.post-content h3 {
+  color: #ffffff;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.post-content h2 {
+  font-size: 1.6rem;
+  margin-top: 2.5rem;
+  margin-bottom: 0.8rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.post-content h3 {
+  font-size: 1.25rem;
+  margin-top: 1.8rem;
+  margin-bottom: 0.6rem;
+}
+
+.post-content p {
+  margin-bottom: 1.5rem;
+}
+
+.post-content strong {
+  color: #ffffff;
+}
+
+.post-content ul,
+.post-content ol {
+  margin-bottom: 1.8rem;
+  padding-left: 1.5rem;
+}
+
+.post-content ul {
+  list-style: none;
+}
+
+.post-content ul li {
+  margin-bottom: 0.6rem;
+  position: relative;
+  padding-left: 1.2rem;
+}
+
+.post-content ul li::before {
+  content: '▸';
+  color: var(--accent-mint);
+  position: absolute;
+  left: 0;
+  font-weight: bold;
+}
+
+.post-content ol {
+  list-style: decimal;
+}
+
+.post-content ol li {
+  margin-bottom: 0.6rem;
+  padding-left: 0.4rem;
+}
+
+.post-content blockquote {
+  border-left: 4px solid var(--accent-coral);
+  background: rgba(255, 94, 98, 0.03);
+  padding: 1.25rem 1.75rem;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  margin: 2rem 0;
+  font-style: italic;
+  color: var(--text-primary);
+  box-shadow: inset 5px 0 0 -1px rgba(255, 94, 98, 0.1);
+}
+
+.post-content blockquote p {
+  margin-bottom: 0;
+  line-height: 1.7;
+}
+
+.post-content a {
+  color: var(--accent-mint);
+  text-decoration: none;
+  transition: var(--transition);
+  border-bottom: 1px dashed rgba(0, 242, 254, 0.4);
+}
+
+.post-content a:hover {
+  color: #ffffff;
+  border-bottom-color: #ffffff;
+}
+
+.post-content pre {
+  background: var(--bg-surface-alt);
+  border: 1px solid var(--card-border);
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius-sm);
+  overflow-x: auto;
+  margin: 1.5rem 0;
+  font-family: monospace;
+  font-size: 0.9rem;
+}
+
+.post-content code {
+  background: rgba(0, 229, 255, 0.08);
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-family: monospace;
+  color: var(--accent-mint);
+}
+
+.post-content pre code {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  color: inherit;
+  font-size: inherit;
+}
+
+/* Table styling */
+.post-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.8rem 0;
+  font-size: 0.95rem;
+}
+
+.post-content th,
+.post-content td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--card-border);
+  text-align: left;
+}
+
+.post-content th {
+  color: #ffffff;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.post-content tr:hover {
+  background: rgba(255, 255, 255, 0.01);
+}
+
+/* field-guide: se queda por el fondo en gradiente (linear-gradient),
+   que no tiene equivalente como utilidad sin romper la regla en dos. */

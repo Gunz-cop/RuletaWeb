@@ -1,0 +1,127 @@
+---
+/**
+ * Barra lateral de los posts del blog: el bloque pegajoso con los atajos a
+ * las herramientas. Vivía dentro de BlogPost.astro, que rondaba las 750
+ * líneas; aquí el marcado y sus reglas viajan juntos, así que el scope de
+ * Astro sigue aplicando igual y no cambia ni un píxel.
+ */
+import AdSlot from './AdSlot.astro';
+---
+
+    <aside class="w-full">
+      <div class="sticky top-24 bg-surface-alt border border-[var(--card-border)] rounded-md p-6 shadow-sm">
+        <h3 class="sidebar-title">🎯 Decide al Azar</h3>
+        <p class="sidebar-desc">¿Tienes un dilema? Resuélvelo ahora mismo con nuestras herramientas gratuitas:</p>
+
+        <div class="flex flex-col gap-3">
+          <a href="/#ruleta" class="sidebar-link-btn btn-coral">
+            <span class="icon">🎡</span>
+            <div class="info">
+              <span class="name">Ruleta de Opciones</span>
+              <span class="sub">Personaliza y gira</span>
+            </div>
+          </a>
+          <a href="/dados" class="sidebar-link-btn btn-mint">
+            <span class="icon">🎲</span>
+            <div class="info">
+              <span class="name">Dados Virtuales</span>
+              <span class="sub">Tiradas en 3D</span>
+            </div>
+          </a>
+          <a href="/moneda" class="sidebar-link-btn btn-purple">
+            <span class="icon">🪙</span>
+            <div class="info">
+              <span class="name">Lanzar Moneda</span>
+              <span class="sub">Cara o cruz al instante</span>
+            </div>
+          </a>
+          <a href="/amigo-secreto" class="sidebar-link-btn btn-coral">
+            <span class="icon">🎁</span>
+            <div class="info">
+              <span class="name">Amigo Secreto</span>
+              <span class="sub">Sorteo privado de regalos</span>
+            </div>
+          </a>
+        </div>
+
+        <!-- Espacio para Banner de AdSense en Sidebar -->
+        <AdSlot position="sidebar" />
+      </div>
+    </aside>
+
+<style>
+  .sidebar-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 0.5rem;
+  }
+
+  .sidebar-desc {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-bottom: 1.25rem;
+  }
+
+  /* Specific border glow colors on hover for sidebar buttons.
+     Se queda en CSS: la curva de easing (cubic-bezier 0.175/0.885/0.32/1.15)
+     y los box-shadow de brillo por color son detalle fino, no traducible
+     a una utilidad sin partir esta regla entre CSS y clases. */
+  .sidebar-link-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.15),
+                border-color 0.25s ease,
+                box-shadow 0.25s ease;
+  }
+
+  .sidebar-link-btn.btn-coral:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255, 94, 98, 0.35);
+    box-shadow: 0 4px 12px rgba(255, 94, 98, 0.1);
+  }
+  
+  .sidebar-link-btn.btn-mint:hover {
+    transform: translateY(-2px);
+    border-color: rgba(0, 242, 254, 0.35);
+    box-shadow: 0 4px 12px rgba(0, 242, 254, 0.1);
+  }
+
+  .sidebar-link-btn.btn-purple:hover {
+    transform: translateY(-2px);
+    border-color: rgba(179, 102, 255, 0.35);
+    box-shadow: 0 4px 12px rgba(179, 102, 255, 0.1);
+  }
+
+  .sidebar-link-btn .icon {
+    font-size: 1.3rem;
+  }
+
+  .sidebar-link-btn .info {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sidebar-link-btn .name {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #ffffff;
+    line-height: 1.2;
+  }
+
+  .sidebar-link-btn .sub {
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    margin-top: 0.1rem;
+  }
+</style>
