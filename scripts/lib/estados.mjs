@@ -72,6 +72,14 @@ export const ESTADOS = [
       { sel: '#tab-manage-content', props: ['display'] },
       // Contraste con modal-ganador: sin girar, el modal está oculto.
       { sel: '#winner-modal', props: ['display', 'opacity', 'visibility'] },
+      // La home agranda las cabeceras de sección respecto al resto del
+      // sitio. Al sacar la sección de herramientas a un componente, esos
+      // overrides dejaron de alcanzarla y el titular volvió al tamaño
+      // pequeño: la home encogía 50px en móvil. Lo cazó el comparador
+      // visual, que es manual; esto lo deja cubierto en CI.
+      { sel: '.hub-section .section-heading', props: ['fontSize'] },
+      { sel: '.hub-section .section-tag', props: ['marginBottom'] },
+      { sel: '.hub-section .section-header', props: ['marginBottom'] },
     ],
   },
 ];

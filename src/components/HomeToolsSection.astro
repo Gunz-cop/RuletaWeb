@@ -1,0 +1,35 @@
+---
+/**
+ * Sección "más herramientas" de la home: la cabecera de sección y la
+ * rejilla de tarjetas.
+ *
+ * Como el hero, se oculta en modo foco mediante una regla que se queda en
+ * index.astro y que por eso va con :global(.hub-section).
+ */
+import HubGrid from './HubGrid.astro';
+---
+
+<section class="hub-section" id="herramientas" aria-label="Más herramientas de decisión">
+  <div class="wrap">
+    <div class="section-header reveal">
+      <div class="section-tag">🧰 Caja de Herramientas</div>
+      <h2 class="section-heading">Más herramientas para decidir</h2>
+      <p class="section-subtitle">Explora nuestro arsenal completo de herramientas aleatorias. Nuevas opciones llegarán muy pronto.</p>
+    </div>
+
+    <HubGrid activeToolId="ruleta" />
+  </div>
+</section>
+<style>
+  .hub-section .section-header {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+
+  .hub-section .section-subtitle {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    max-width: 500px;
+    margin: 0.75rem auto 0;
+  }
+</style>

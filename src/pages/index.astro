@@ -1,6 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Marquee from '../components/Marquee.astro';
+import HomeHero from '../components/HomeHero.astro';
+import HomeToolsSection from '../components/HomeToolsSection.astro';
 import WinnerModal from '../components/WinnerModal.astro';
 import AdSlot from '../components/AdSlot.astro';
 import HubGrid from '../components/HubGrid.astro';
@@ -81,29 +83,7 @@ const schemaLD = {
   <!-- ====================================================================
        HERO SECTION
        ==================================================================== -->
-  <section class="hero reveal" id="hero">
-    <div class="hero-particles" aria-hidden="true">
-      <div class="particle particle-1"></div>
-      <div class="particle particle-2"></div>
-      <div class="particle particle-3"></div>
-      <div class="particle particle-4"></div>
-    </div>
-
-    <div class="wrap hero-content">
-      <div class="hero-badge">
-        <span>✨</span> 100% Gratis · Sin Registro
-      </div>
-      <h1>Decisiones sin dramas, <span class="gradient-text">dejadas al azar</span></h1>
-      <p class="hero-subtitle">La forma más fácil, rápida y divertida de resolver tus dilemas. Sin registro, sin dramas. ¡Dale al azar!</p>
-      <a href="#ruleta" class="hero-cta arcade-button-glow" id="hero-cta-btn">
-        Girar la Ruleta
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="12" y1="5" x2="12" y2="19"></line>
-          <polyline points="19 12 12 19 5 12"></polyline>
-        </svg>
-      </a>
-    </div>
-  </section>
+  <HomeHero />
 
   <!-- Espacio Publicitario Superior -->
   <AdSlot position="top" />
@@ -206,17 +186,7 @@ const schemaLD = {
   <!-- ====================================================================
        HUB DE HERRAMIENTAS
        ==================================================================== -->
-  <section class="hub-section" id="herramientas" aria-label="Más herramientas de decisión">
-    <div class="wrap">
-      <div class="section-header reveal">
-        <div class="section-tag">🧰 Caja de Herramientas</div>
-        <h2 class="section-heading">Más herramientas para decidir</h2>
-        <p class="section-subtitle">Explora nuestro arsenal completo de herramientas aleatorias. Nuevas opciones llegarán muy pronto.</p>
-      </div>
-
-      <HubGrid activeToolId="ruleta" />
-    </div>
-  </section>
+  <HomeToolsSection />
 
   <!-- ====================================================================
        SECCIÓN DE ARTÍCULO SEO
@@ -279,163 +249,17 @@ const schemaLD = {
 
 <style>
   /* La portada usa una cabecera de sección mayor que el resto del sitio.
-     Base compartida en global.css; aquí solo lo que cambia. */
-  .section-header { margin-bottom: 2.5rem; }
-  .section-tag { margin-bottom: 0.75rem; }
-  .section-heading { font-size: clamp(1.6rem, 4vw, 2.2rem); }
+     Base compartida en global.css; aquí solo lo que cambia.
+
+     Van con :global() porque la cabecera de la sección de herramientas vive
+     ahora en HomeToolsSection.astro, y el scope de esta página ya no la
+     alcanza. Sin esto el titular volvía al tamaño pequeño y la home encogía
+     50px en móvil. Solo la home carga este CSS, así que no se filtran. */
+  :global(.section-header) { margin-bottom: 2.5rem; }
+  :global(.section-tag) { margin-bottom: 0.75rem; }
+  :global(.section-heading) { font-size: clamp(1.6rem, 4vw, 2.2rem); }
 
   /* Partículas decorativas flotantes del Hero */
-  .hero {
-    position: relative;
-    padding: 6rem 0 4rem;
-    text-align: center;
-    overflow: hidden;
-  }
-
-  .hero-particles {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    overflow: hidden;
-  }
-
-  .particle {
-    position: absolute;
-    border-radius: 50%;
-    opacity: 0.08;
-    animation: particle-float linear infinite;
-  }
-
-  .particle-1 {
-    width: 300px; height: 300px;
-    background: var(--accent-cyan);
-    top: -80px; left: -100px;
-    animation-duration: 18s;
-    filter: blur(80px);
-  }
-
-  .particle-2 {
-    width: 250px; height: 250px;
-    background: var(--accent-purple);
-    top: 40%; right: -80px;
-    animation-duration: 22s;
-    animation-delay: -5s;
-    filter: blur(70px);
-  }
-
-  .particle-3 {
-    width: 180px; height: 180px;
-    background: var(--accent-cyan);
-    bottom: -60px; left: 40%;
-    animation-duration: 15s;
-    animation-delay: -8s;
-    filter: blur(60px);
-    opacity: 0.06;
-  }
-
-  .particle-4 {
-    width: 120px; height: 120px;
-    background: var(--accent-purple);
-    top: 20%; left: 25%;
-    animation-duration: 20s;
-    animation-delay: -3s;
-    filter: blur(50px);
-    opacity: 0.05;
-  }
-
-  @keyframes particle-float {
-    0% { transform: translate(0, 0) rotate(0deg); }
-    25% { transform: translate(30px, -40px) rotate(90deg); }
-    50% { transform: translate(-20px, -70px) rotate(180deg); }
-    75% { transform: translate(40px, -30px) rotate(270deg); }
-    100% { transform: translate(0, 0) rotate(360deg); }
-  }
-
-  .hero-content {
-    position: relative;
-    z-index: 2;
-    max-width: 720px;
-    margin: 0 auto;
-  }
-
-  .hero-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.4rem 1rem;
-    border-radius: 999px;
-    background: rgba(0, 229, 255, 0.08);
-    border: 1px solid rgba(0, 229, 255, 0.2);
-    color: var(--accent-cyan);
-    font-size: 0.78rem;
-    font-weight: 600;
-    letter-spacing: 0.03em;
-    margin-bottom: 1.5rem;
-    text-transform: uppercase;
-  }
-
-  .hero h1 {
-    font-family: 'Outfit', sans-serif;
-    font-size: clamp(2rem, 5.5vw, 3.4rem);
-    font-weight: 800;
-    line-height: 1.12;
-    letter-spacing: -0.03em;
-    color: #ffffff;
-    margin-bottom: 1.25rem;
-  }
-
-  .hero h1 .gradient-text {
-    background: var(--accent-gradient);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .hero-subtitle {
-    font-size: clamp(1rem, 2.2vw, 1.2rem);
-    color: var(--text-secondary);
-    line-height: 1.7;
-    max-width: 560px;
-    margin: 0 auto 2.5rem;
-    font-weight: 400;
-  }
-
-  .hero-cta {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.6rem;
-    padding: 0.9rem 2.2rem;
-    border-radius: 999px;
-    background: var(--accent-gradient);
-    color: #000000;
-    font-family: 'Outfit', sans-serif;
-    font-size: 1rem;
-    font-weight: 700;
-    text-decoration: none;
-    border: none;
-    cursor: pointer;
-    transition: var(--transition);
-    box-shadow: 0 4px 20px rgba(0, 229, 255, 0.25), 0 0 40px rgba(0, 229, 255, 0.1);
-  }
-
-  .hero-cta:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 30px rgba(0, 229, 255, 0.35), 0 0 60px rgba(0, 229, 255, 0.15);
-  }
-
-  .hero-cta:active {
-    transform: translateY(0);
-  }
-
-  .hero-cta svg {
-    width: 18px; height: 18px;
-    transition: transform 0.3s ease;
-  }
-
-  .hero-cta:hover svg {
-    transform: translateY(2px);
-  }
-
   /* Ruleta Section */
   .roulette-section {
     padding: 2rem 0 4rem;
@@ -794,19 +618,11 @@ const schemaLD = {
   }
 
   /* Hub grid margins */
-  .hub-section .section-header {
-    text-align: center;
-    margin-bottom: 3rem;
-  }
-
-  .hub-section .section-subtitle {
-    color: var(--text-secondary);
-    font-size: 1rem;
-    max-width: 500px;
-    margin: 0.75rem auto 0;
-  }
-
   /* Focus Mode Styles */
+  /* .hero y .hub-section van con :global() porque su marcado vive ahora en
+     HomeHero.astro y HomeToolsSection.astro: con el scope de esta página ya
+     no los alcanzaría. El test de estados comprueba que siguen ocultándose
+     (npm run test:estado). */
   body.focus-mode-active {
     background-color: #060608;
   }
@@ -817,8 +633,8 @@ const schemaLD = {
   }
 
   body.focus-mode-active :global(.logo-link),
-  body.focus-mode-active .hero,
-  body.focus-mode-active .hub-section,
+  body.focus-mode-active :global(.hero),
+  body.focus-mode-active :global(.hub-section),
   body.focus-mode-active :global(.seo-section),
   body.focus-mode-active :global(.ad-placeholder),
   body.focus-mode-active :global(footer),
