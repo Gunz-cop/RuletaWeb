@@ -85,6 +85,15 @@
       "display": "flex",
       "opacity": "0",
       "visibility": "visible"
+    },
+    ".hub-section .section-heading": {
+      "fontSize": "35.2px"
+    },
+    ".hub-section .section-tag": {
+      "marginBottom": "12px"
+    },
+    ".hub-section .section-header": {
+      "marginBottom": "48px"
     }
   }
 }
