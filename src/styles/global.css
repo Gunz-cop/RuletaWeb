@@ -626,52 +626,6 @@ footer a:hover {
 /* ==================================================================
    RETRO-MODERN ARCADE ADDITIONS
    ================================================================== */
-.marquee-container {
-  width: 100%;
-  overflow: hidden;
-  background: rgba(255, 94, 98, 0.02);
-  border-top: 1px solid rgba(255, 94, 98, 0.08);
-  border-bottom: 1px solid rgba(255, 94, 98, 0.08);
-  padding: 0.85rem 0;
-  margin: 1.5rem 0;
-  user-select: none;
-}
-
-.marquee-content {
-  display: flex;
-  white-space: nowrap;
-  animation: marquee-roll 30s linear infinite;
-}
-
-.marquee-item {
-  font-family: 'Outfit', sans-serif;
-  font-size: 0.9rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-secondary);
-  margin-right: 4rem;
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-}
-
-.marquee-item .dot {
-  color: var(--accent-coral);
-  font-size: 1.3rem;
-  animation: pulse-coral 1.5s infinite alternate;
-}
-
-@keyframes marquee-roll {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
-
-@keyframes pulse-coral {
-  0% { transform: scale(0.8); opacity: 0.6; }
-  100% { transform: scale(1.2); opacity: 1; }
-}
-
 .arcade-cabinet-frame {
   position: relative;
   background: linear-gradient(180deg, #101017 0%, #07070a 100%);

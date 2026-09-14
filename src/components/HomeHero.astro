@@ -10,10 +10,13 @@
  * (860px, el mismo breakpoint que ya usa el resto del sitio) reacomoda a
  * scrim lateral + texto a la izquierda, imagen respirando a la derecha.
  *
- * La imagen vive en public/images/hero/hero-amigos.webp (no pasa por
- * astro:assets: es una ruta pública directa, `background-image` no admite
- * `<Image>`). Queda además hero-oficina.webp sin usar en la misma carpeta,
- * por si se quiere swapear el mood más adelante — ver
+ * Dos recortes de la misma foto, no una sola imagen escalada: mobile usa
+ * hero-amigos-mobile.webp (recortado a mano con sharp para que el grupo y
+ * la tablet entren en un marco angosto) y desktop, a partir de 860px, pasa
+ * a hero-amigos.webp (la panorámica original, hay ancho de sobra). Ninguna
+ * pasa por astro:assets: son rutas públicas directas, `background-image`
+ * no admite `<Image>`. Queda además hero-oficina.webp sin usar en la misma
+ * carpeta, por si se quiere swapear el mood más adelante — ver
  * public/images/hero/README.md.
  *
  * El marcado y sus reglas viajan juntos, así que el scope de Astro sigue
@@ -51,9 +54,14 @@
     width: 100%;
     overflow: hidden;
     background-color: var(--bg-body); /* respaldo si la imagen no carga */
-    background-image: url('/images/hero/hero-amigos.webp');
+    /* Recorte propio para mobile (hero-amigos-mobile.webp): el original es
+       panorámico (1672x941) y en una pantalla angosta "cover" terminaba
+       mostrando solo una cara, con el grupo y la tablet afuera de cuadro.
+       Este recorte ya centra al grupo + la tablet, así casi no hace falta
+       que cover recorte de más. */
+    background-image: url('/images/hero/hero-amigos-mobile.webp');
     background-size: cover;
-    background-position: 65% 30%;
+    background-position: center 15%;
     background-repeat: no-repeat;
   }
 
@@ -154,6 +162,9 @@
   @media (min-width: 860px) {
     .hero {
       align-items: center;
+      /* La panorámica original: hay ancho de sobra para mostrarla completa
+         en vez del recorte que arma el mobile-first de arriba. */
+      background-image: url('/images/hero/hero-amigos.webp');
       background-position: right center;
     }
 

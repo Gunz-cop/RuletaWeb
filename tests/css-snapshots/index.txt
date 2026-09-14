@@ -1,4 +1,4 @@
-.hero[S]{background-color:var(--bg-body);background-image:url(/images/hero/hero-amigos.webp);background-position:65% 30%;background-repeat:no-repeat;background-size:cover;align-items:flex-end;width:100%;min-height:100svh;display:flex;position:relative;overflow:hidden}
+.hero[S]{background-color:var(--bg-body);background-image:url(/images/hero/hero-amigos-mobile.webp);background-position:50% 15%;background-repeat:no-repeat;background-size:cover;align-items:flex-end;width:100%;min-height:100svh;display:flex;position:relative;overflow:hidden}
 .hero-scrim[S]{background:linear-gradient(#07070a0d 0%,#07070a59 40%,#07070ad1 70%,#07070af5 100%);position:absolute;inset:0}
 .hero-inner[S]{z-index:1;width:100%;max-width:640px;padding:0 1.25rem 2.75rem;position:relative}
 .hero[S] h1[S]{letter-spacing:-.02em;color:#fff;margin-bottom:1.25rem;font-family:Outfit,sans-serif;font-size:clamp(2.2rem,8vw,4.4rem);font-weight:700;line-height:1.04}
@@ -10,7 +10,7 @@
 @media (hover:hover) and (pointer:fine){.hero-cta[S]:hover svg[S]{transform:translate(3px)}}
 .hero-facts[S]{flex-wrap:wrap;gap:1.5rem;margin-top:2.25rem;display:flex}
 .hero-facts[S] span[S]{letter-spacing:.06em;text-transform:uppercase;color:#f0f0f599;font-size:.68rem}
-@media (width>=860px){.hero[S]{background-position:100%;align-items:center}.hero-scrim[S]{background:linear-gradient(90deg,#07070af5 0%,#07070ad9 32%,#07070a66 58%,#07070a0d 80%)}.hero-inner[S]{max-width:620px;padding:0 4rem}.hero-subtitle[S]{max-width:480px}.hero-facts[S]{gap:1.75rem;margin-top:3rem}.hero-facts[S] span[S]{font-size:.72rem}}
+@media (width>=860px){.hero[S]{background-image:url(/images/hero/hero-amigos.webp);background-position:100%;align-items:center}.hero-scrim[S]{background:linear-gradient(90deg,#07070af5 0%,#07070ad9 32%,#07070a66 58%,#07070a0d 80%)}.hero-inner[S]{max-width:620px;padding:0 4rem}.hero-subtitle[S]{max-width:480px}.hero-facts[S]{gap:1.75rem;margin-top:3rem}.hero-facts[S] span[S]{font-size:.72rem}}
 .how-it-works[S]{border-bottom:1px solid var(--divider-line);padding:4rem 0}
 .how-header[S]{flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:1rem;margin-bottom:3rem;display:flex}
 .how-tag[S]{letter-spacing:.06em;text-transform:uppercase;color:var(--text-secondary);font-size:.78rem}

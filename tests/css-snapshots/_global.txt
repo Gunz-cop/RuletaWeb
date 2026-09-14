@@ -92,12 +92,6 @@ footer a:hover{color:var(--accent-coral)}
 .toast{background:var(--bg-elevated);color:var(--text-primary);border:1px solid var(--card-border);border-radius:var(--radius-md);box-shadow:var(--shadow-lg);z-index:200;opacity:0;pointer-events:none;padding:.75rem 1.5rem;font-size:.85rem;font-weight:500;transition:opacity .3s,transform .3s;position:fixed;bottom:2rem;left:50%;transform:translate(-50%)translateY(20px)}
 .toast.visible{opacity:1;transform:translate(-50%)translateY(0)}
 @media (width<=480px){.hero h1{font-size:1.5rem}.game-board{padding:1.25rem}.btn-spin{padding:.85rem;font-size:1rem}}
-.marquee-container{user-select:none;background:#ff5e6205;border-top:1px solid #ff5e6214;border-bottom:1px solid #ff5e6214;width:100%;margin:1.5rem 0;padding:.85rem 0;overflow:hidden}
-.marquee-content{white-space:nowrap;animation:30s linear infinite marquee-roll;display:flex}
-.marquee-item{text-transform:uppercase;letter-spacing:.06em;color:var(--text-secondary);align-items:center;gap:.6rem;margin-right:4rem;font-family:Outfit,sans-serif;font-size:.9rem;font-weight:700;display:flex}
-.marquee-item .dot{color:var(--accent-coral);font-size:1.3rem;animation:1.5s infinite alternate pulse-coral}
-@keyframes marquee-roll{0%{transform:translate(0)}to{transform:translate(-50%)}}
-@keyframes pulse-coral{0%{opacity:.6;transform:scale(.8)}to{opacity:1;transform:scale(1.2)}}
 .arcade-cabinet-frame{border-radius:var(--radius-xl);background:linear-gradient(#101017 0%,#07070a 100%);border:1.5px solid #ff5e621f;margin-top:1.5rem;padding:1.75rem;position:relative;box-shadow:0 20px 60px #000000a6,inset 0 1px #ffffff0a,0 0 40px #ff5e6205}
 @media (width>=768px){.arcade-cabinet-frame{padding:2.75rem}}
 .arcade-cabinet-frame:before{content:"";border-radius:var(--radius-xl);pointer-events:none;background:radial-gradient(circle at 0 0,#ff5e6208 0%,#0000 40%),radial-gradient(circle at 100% 100%,#00f2fe08 0%,#0000 40%);position:absolute;inset:0}
