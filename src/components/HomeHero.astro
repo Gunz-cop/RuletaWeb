@@ -80,15 +80,23 @@
     border: none;
     border-bottom: 1px solid #ffffff;
     cursor: pointer;
+    transition: transform 160ms var(--ease-out);
+  }
+
+  /* Feedback de presión: confirma que la interfaz escuchó al usuario. */
+  .hero-cta:active {
+    transform: scale(0.97);
   }
 
   .hero-cta svg {
     width: 18px; height: 18px;
-    transition: transform 0.25s ease;
+    transition: transform 200ms var(--ease-out);
   }
 
-  .hero-cta:hover svg {
-    transform: translateX(3px);
+  @media (hover: hover) and (pointer: fine) {
+    .hero-cta:hover svg {
+      transform: translateX(3px);
+    }
   }
 
   .hero-facts {

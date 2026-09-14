@@ -32,8 +32,8 @@ const steps = [
       <h2 class="how-heading">Elegir. Girar. <em>Decidir.</em></h2>
     </div>
     <div class="how-rail">
-      {steps.map((step) => (
-        <div class="how-step">
+      {steps.map((step, index) => (
+        <div class={`how-step reveal reveal-delay-${index + 1}`}>
           <span class="how-step-n">{step.n}</span>
           <div>
             <h3>{step.title}</h3>

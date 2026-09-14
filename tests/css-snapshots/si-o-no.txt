@@ -37,8 +37,8 @@ main[S]{padding:3rem 0}
 .hub-section[S]{padding:3rem 0}
 @media (width<=600px){.oracle-ball[S]{width:220px;height:220px}.oracle-window[S]{width:105px;height:105px}.oracle-answer-container[S]{width:90px;height:90px}.answer-inner[S]{max-width:50px;padding-top:10px;font-size:.62rem}.ball-shadow[S]{width:160px}.history-item-row.oracle-row{flex-direction:column;align-items:flex-start;gap:.5rem}.history-value{align-self:flex-end}}
 .hub-list[S]{border-top:1px solid var(--divider-line);flex-direction:column;width:100%;display:flex}
-.hub-row[S]{border-bottom:1px solid var(--divider-line);align-items:center;gap:1.5rem;padding:1.4rem 0;text-decoration:none;transition:gap .25s;display:flex}
-.hub-row[S]:hover{gap:1.75rem}
+.hub-row[S]{border-bottom:1px solid var(--divider-line);transition:transform .16s var(--ease-out);align-items:center;gap:1.5rem;padding:1.4rem 0;text-decoration:none;display:flex}
+.hub-row[S]:active{transform:scale(.99)}
 .hub-row[S].current-active{pointer-events:none}
 .hub-row-index[S]{color:var(--text-tertiary);font-variant-numeric:tabular-nums;flex-shrink:0;width:1.6rem;font-size:.85rem}
 .hub-row-icon[S]{background:rgba(var(--tool-rgb), .12);border-radius:12px;flex-shrink:0;justify-content:center;align-items:center;width:44px;height:44px;display:flex}
@@ -48,8 +48,8 @@ main[S]{padding:3rem 0}
 .hub-row[S] p[S]{color:var(--text-secondary);margin:0;font-size:.85rem;line-height:1.4}
 .hub-row-status[S]{color:var(--text-tertiary);letter-spacing:.06em;text-transform:uppercase;flex-shrink:0;font-size:.72rem;font-weight:600;display:none}
 .hub-row[S].current-active .hub-row-status[S]{color:rgb(var(--tool-rgb))}
-.hub-row-arrow[S]{width:18px;height:18px;color:var(--text-tertiary);flex-shrink:0;transition:transform .25s,color .25s}
-.hub-row[S]:hover .hub-row-arrow[S]{color:rgb(var(--tool-rgb));transform:translate(3px)}
+.hub-row-arrow[S]{width:18px;height:18px;color:var(--text-tertiary);transition:transform .18s var(--ease-out), color .18s var(--ease-out);flex-shrink:0}
+@media (hover:hover) and (pointer:fine){.hub-row[S]:hover .hub-row-arrow[S]{color:rgb(var(--tool-rgb));transform:translate(3px)}}
 .hub-row[S].current-active .hub-row-arrow[S]{display:none}
 @media (width>=560px){.hub-row-status[S]{display:block}}
 @media (width<=559px){.hub-row-text[S] p[S]{display:none}}

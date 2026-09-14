@@ -115,7 +115,7 @@ const tools: Tool[] = [
     return (
       <a
         href={tool.status === 'active' ? tool.href : '#'}
-        class={`hub-row reveal ${isCurrent ? 'current-active' : ''}`}
+        class={`hub-row reveal reveal-delay-${(index % 9) + 1} ${isCurrent ? 'current-active' : ''}`}
         id={`card-${tool.id}`}
         style={`--tool-rgb: ${tool.color};${tool.status !== 'active' ? ' cursor: not-allowed; opacity: 0.5;' : ''}`}
       >
@@ -224,11 +224,12 @@ const tools: Tool[] = [
     padding: 1.4rem 0;
     border-bottom: 1px solid var(--divider-line);
     text-decoration: none;
-    transition: gap 0.25s ease;
+    transition: transform 160ms var(--ease-out);
   }
 
-  .hub-row:hover {
-    gap: 1.75rem;
+  /* Feedback de presión en toda la fila (es un link de ancho completo). */
+  .hub-row:active {
+    transform: scale(0.99);
   }
 
   .hub-row.current-active {
@@ -299,12 +300,14 @@ const tools: Tool[] = [
     width: 18px; height: 18px;
     color: var(--text-tertiary);
     flex-shrink: 0;
-    transition: transform 0.25s ease, color 0.25s ease;
+    transition: transform 180ms var(--ease-out), color 180ms var(--ease-out);
   }
 
-  .hub-row:hover .hub-row-arrow {
-    color: rgb(var(--tool-rgb));
-    transform: translateX(3px);
+  @media (hover: hover) and (pointer: fine) {
+    .hub-row:hover .hub-row-arrow {
+      color: rgb(var(--tool-rgb));
+      transform: translateX(3px);
+    }
   }
 
   .hub-row.current-active .hub-row-arrow {
