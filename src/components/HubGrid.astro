@@ -6,6 +6,10 @@ interface Tool {
   href: string;
   status: 'active' | 'coming-soon';
   icon: 'wheel' | 'coin' | 'dice' | 'rps' | 'secret-friend' | 'numbers' | 'teams' | 'oracle' | 'timer';
+  /** Un color por herramienta, no un solo acento: mismo criterio de luminosidad
+   * y saturación moderada (nada de neón), hue distinto por categoría. Codifica
+   * "son actividades distintas", no decoración — ver DESIGN.md. */
+  color: string;
 }
 
 interface Props {
@@ -21,7 +25,8 @@ const tools: Tool[] = [
     desc: 'Crea tu propia ruleta personalizada con opciones, gírala y deja que el azar elija por ti de forma divertida y rápida.',
     href: '/#ruleta',
     status: 'active',
-    icon: 'wheel'
+    icon: 'wheel',
+    color: '226,144,90',
   },
   {
     id: 'moneda',
@@ -29,7 +34,8 @@ const tools: Tool[] = [
     desc: 'Cara o cruz al instante con físicas en 3D. Elige entre moneda clásica, pirata o forajida con un agujero de bala real.',
     href: '/moneda',
     status: 'active',
-    icon: 'coin'
+    icon: 'coin',
+    color: '212,165,63',
   },
   {
     id: 'dados',
@@ -37,7 +43,8 @@ const tools: Tool[] = [
     desc: 'Lanza 1, 2 o 3 dados a la vez. Elige entre las temáticas Casino de Las Vegas, Calabozos y Dragones (D20) o Yu-Gi-Oh.',
     href: '/dados',
     status: 'active',
-    icon: 'dice'
+    icon: 'dice',
+    color: '199,123,143',
   },
   {
     id: 'piedra-papel-tijera',
@@ -45,7 +52,8 @@ const tools: Tool[] = [
     desc: 'El clásico juego de manos contra la IA o un amigo. Animaciones dinámicas, contador de victorias y dos modos de juego.',
     href: '/piedra-papel-tijera',
     status: 'active',
-    icon: 'rps'
+    icon: 'rps',
+    color: '127,176,163',
   },
   {
     id: 'amigo-secreto',
@@ -53,7 +61,8 @@ const tools: Tool[] = [
     desc: 'Organiza tu sorteo de regalos sin papelitos y 100% privado. Genera enlaces instantáneos para compartir.',
     href: '/amigo-secreto',
     status: 'active',
-    icon: 'secret-friend'
+    icon: 'secret-friend',
+    color: '212,106,106',
   },
   {
     id: 'numeros',
@@ -61,7 +70,8 @@ const tools: Tool[] = [
     desc: 'Genera uno o varios números aleatorios en un rango personalizado, con opción de evitar duplicados.',
     href: '/numeros',
     status: 'active',
-    icon: 'numbers'
+    icon: 'numbers',
+    color: '138,160,212',
   },
   {
     id: 'equipos',
@@ -69,7 +79,8 @@ const tools: Tool[] = [
     desc: 'Divide una lista de nombres de manera equilibrada en múltiples equipos aleatorios de forma instantánea.',
     href: '/equipos',
     status: 'active',
-    icon: 'teams'
+    icon: 'teams',
+    color: '111,184,138',
   },
   {
     id: 'si-o-no',
@@ -77,7 +88,8 @@ const tools: Tool[] = [
     desc: 'Pregunta al oráculo místico y obtén una respuesta binaria directa acompañada de una animación de bola 8.',
     href: '/si-o-no',
     status: 'active',
-    icon: 'oracle'
+    icon: 'oracle',
+    color: '176,136,201',
   },
   {
     id: 'temporizador',
@@ -85,7 +97,8 @@ const tools: Tool[] = [
     desc: 'Establece un rango de tiempo y deja que termine en un segundo aleatorio. Ideal para juegos y retos.',
     href: '/temporizador',
     status: 'active',
-    icon: 'timer'
+    icon: 'timer',
+    color: '91,163,176',
   }
 ];
 
@@ -104,7 +117,7 @@ const tools: Tool[] = [
         href={tool.status === 'active' ? tool.href : '#'}
         class={`hub-row reveal ${isCurrent ? 'current-active' : ''}`}
         id={`card-${tool.id}`}
-        style={tool.status !== 'active' ? 'cursor: not-allowed; opacity: 0.5;' : ''}
+        style={`--tool-rgb: ${tool.color};${tool.status !== 'active' ? ' cursor: not-allowed; opacity: 0.5;' : ''}`}
       >
         <span class="hub-row-index">{n}</span>
         <div class="hub-row-icon">
@@ -237,13 +250,13 @@ const tools: Tool[] = [
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(226, 144, 90, 0.08);
+    background: rgba(var(--tool-rgb), 0.12);
     flex-shrink: 0;
   }
 
   .hub-row-icon svg {
     width: 22px; height: 22px;
-    stroke: var(--accent-warm);
+    stroke: rgb(var(--tool-rgb));
     stroke-width: 1.8;
     fill: none;
   }
@@ -279,7 +292,7 @@ const tools: Tool[] = [
   }
 
   .hub-row.current-active .hub-row-status {
-    color: var(--accent-warm);
+    color: rgb(var(--tool-rgb));
   }
 
   .hub-row-arrow {
@@ -290,7 +303,7 @@ const tools: Tool[] = [
   }
 
   .hub-row:hover .hub-row-arrow {
-    color: var(--accent-warm);
+    color: rgb(var(--tool-rgb));
     transform: translateX(3px);
   }
 
