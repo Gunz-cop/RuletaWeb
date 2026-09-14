@@ -70,7 +70,7 @@
   },
   "/ [reposo]": {
     ".hero": {
-      "display": "block"
+      "display": "flex"
     },
     ".hub-section": {
       "display": "block"
