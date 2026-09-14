@@ -24,7 +24,10 @@ export class ConfettiManager {
     // Paleta de colores festivos acorde a la marca
     const colors = ['#00e5ff', '#b366ff', '#f43f5e', '#fb7185', '#34d399', '#fbbf24', '#a78bfa', '#66f0ff'];
 
-    // Crear partículas
+    // Math.random() aquí a propósito, no crypto.getRandomValues: esto es
+    // puro adorno visual (posición/tamaño/color de cada partícula), no un
+    // sorteo, así que no necesita la aleatoriedad "de mejor calidad" que sí
+    // justifica su uso en random.js para el giro. No lo migres sin razón.
     const particleCount = 140;
     for (let i = 0; i < particleCount; i++) {
       this.particles.push({

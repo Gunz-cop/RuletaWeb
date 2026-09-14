@@ -10,16 +10,39 @@ export class RouletteAudio {
     this.enabled = true;
   }
 
-  // Los navegadores exigen crear/():reanudar el AudioContext dentro de un
+  // Los navegadores exigen crear/reanudar el AudioContext dentro de un
   // gesto del usuario, así que se crea perezosamente en el primer click.
+  // Protegido con try/catch porque Chrome limita a ~6 AudioContext vivos
+  // por documento: si `close()` no se llama al limpiar una instancia (ver
+  // `close()` más abajo y el cleanup en roulette.js), navegar varias veces
+  // con view transitions agota el cupo y `new AudioContext()` lanza. Sin
+  // este try/catch, ese throw -que antes se propagaba fuera de este
+  // método- dejaba `startSpin` a medio ejecutar y el botón GIRAR sin
+  // reaccionar más.
   ensureContext() {
-    if (!this.ctx) {
-      this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    try {
+      if (!this.ctx) {
+        this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (this.ctx.state === 'suspended') {
+        this.ctx.resume();
+      }
+      return this.ctx;
+    } catch (err) {
+      console.warn('No se pudo crear/reanudar el AudioContext:', err);
+      return null;
     }
-    if (this.ctx.state === 'suspended') {
-      this.ctx.resume();
+  }
+
+  // Cierra el AudioContext, si existe. Se llama al limpiar la instancia de
+  // la ruleta (view transitions) para devolver el cupo de contextos del
+  // navegador; sin esto cada navegación de ida y vuelta a la home dejaba un
+  // AudioContext abierto y sin usar.
+  close() {
+    if (this.ctx && this.ctx.state !== 'closed') {
+      this.ctx.close().catch(() => {});
     }
-    return this.ctx;
+    this.ctx = null;
   }
 
   // Sonido de "tick" físico. spinVelocity ajusta el tono para simular inercia.

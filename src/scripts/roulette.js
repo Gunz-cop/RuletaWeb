@@ -85,6 +85,10 @@ function initRoulette() {
   let lastTickSegmentIndex = -1;
   let pointerTilt = 0; // Inclinación física del puntero
   let spinRafId = null;
+  // Marca que updateFromTextarea() quiso repintar/renderizar el checklist
+  // mientras había un giro en curso; se aplica en cuanto termina (ver
+  // updateSpin).
+  let pendingResync = false;
 
   // Sonido y Foco (Persistidos en localStorage)
   let soundEnabled = readStorage('ruleta_sound') !== 'false';
@@ -126,18 +130,30 @@ function initRoulette() {
   }
 
   // Ajustar resolución del Canvas para pantallas Retina
-  function resizeCanvas() {
+  // `explicitWidth` llega del ResizeObserver (su `entry.contentRect.width`)
+  // cuando lo dispara él; se omite en las llamadas directas (carga inicial,
+  // toggle de modo foco), que sí necesitan medir el contenedor a mano.
+  function resizeCanvas(explicitWidth) {
     const parent = canvas.parentElement;
     if (!parent) return;
 
-    // Limpiar estilos inline antes de medir: si no, el ancho en px que dejó
-    // el resize anterior puede impedir que el contenedor se encoja (p. ej.
-    // al activar el modo foco), y mediríamos un valor que ya no corresponde
-    // al layout real.
-    canvas.style.width = '';
-    canvas.style.height = '';
-
-    const size = Math.floor(parent.getBoundingClientRect().width);
+    let size;
+    if (typeof explicitWidth === 'number') {
+      // El observer ya trae el ancho del propio contenedor observado
+      // (`contentRect`, sin bordes/padding): no hace falta tocar el estilo
+      // del canvas ni volver a medir, que es justo el patrón (leer layout
+      // -> escribir estilo -> layout cambia) que puede producir un aviso de
+      // "ResizeObserver loop completed with undelivered notifications".
+      size = Math.floor(explicitWidth);
+    } else {
+      // Limpiar estilos inline antes de medir: si no, el ancho en px que
+      // dejó el resize anterior puede impedir que el contenedor se encoja
+      // (p. ej. al activar el modo foco), y mediríamos un valor que ya no
+      // corresponde al layout real.
+      canvas.style.width = '';
+      canvas.style.height = '';
+      size = Math.floor(parent.getBoundingClientRect().width);
+    }
     if (size <= 0) return;
     const dpr = window.devicePixelRatio || 1;
 
@@ -212,18 +228,55 @@ function initRoulette() {
       .map((opt) => opt.trim())
       .filter((opt) => opt.length > 0);
 
-    // Reasignar qué índices siguen ocultos: si la línea en esa posición no
-    // cambió de texto, conserva su estado; si cambió (se insertó/borró una
-    // línea encima), no hay forma de saber qué quiso decir la persona y se
-    // asume visible, que es el comportamiento más seguro por defecto.
+    // Reasignar qué índices siguen ocultos. Primero se intenta la misma
+    // posición (rápido y es el caso común: escribir en medio del texto sin
+    // reordenar). Si la línea cambió de texto en esa posición -se insertó o
+    // borró una línea por encima-, se busca ese mismo texto en la lista
+    // nueva y se le traslada el estado oculto ahí: es lo que da identidad
+    // estable por texto mientras se reordena, sin volver al bug original
+    // (un Set de strings) porque cada índice viejo se empareja como mucho
+    // con un índice nuevo -nunca se reusa uno ya asignado-, así que dos
+    // opciones ocultas con el mismo texto no colapsan en una sola entrada.
+    // Se procesa en orden ascendente de índice viejo para que el resultado
+    // sea determinista con duplicados: el primero oculto se empareja con la
+    // primera aparición libre, el segundo con la siguiente, etc.
+    const usedNewIndices = new Set();
     disabledIndices = new Set();
-    previousDisabled.forEach((i) => {
-      if (previousAllOptions[i] !== undefined && previousAllOptions[i] === allOptions[i]) {
-        disabledIndices.add(i);
-      }
-    });
+    [...previousDisabled]
+      .sort((a, b) => a - b)
+      .forEach((oldIndex) => {
+        const text = previousAllOptions[oldIndex];
+        if (text === undefined) return;
+
+        if (allOptions[oldIndex] === text && !usedNewIndices.has(oldIndex)) {
+          disabledIndices.add(oldIndex);
+          usedNewIndices.add(oldIndex);
+          return;
+        }
+
+        const matchIndex = allOptions.findIndex((opt, idx) => opt === text && !usedNewIndices.has(idx));
+        if (matchIndex !== -1) {
+          disabledIndices.add(matchIndex);
+          usedNewIndices.add(matchIndex);
+        }
+        // Si no hay ninguna aparición libre de ese texto, la opción
+        // desapareció de la lista (se borró la línea) y simplemente se
+        // deja de rastrear: no hay a dónde trasladar el estado oculto.
+      });
 
     persistOptionsState(val);
+
+    // Durante un giro, `options` tiene que quedarse congelado en lo que
+    // estaba cuando arrancó: syncWheelState() reasigna `options` y vuelve a
+    // habilitar `spinButton` a mitad de rotación, y el cálculo del ganador
+    // (getSegmentIndexAtPointer) usa ese mismo array, así que cambiarlo bajo
+    // los pies del giro puede hacer que el ganador anunciado ni siquiera
+    // esté en la lista nueva. El texto se sigue guardando (líneas arriba);
+    // solo se difiere repintar la rueda y el checklist hasta que termine.
+    if (isSpinning) {
+      pendingResync = true;
+      return;
+    }
     syncWheelState();
     renderChecklist();
   }
@@ -258,17 +311,19 @@ function initRoulette() {
       item.appendChild(checkbox);
       item.appendChild(label);
 
-      item.addEventListener(
-        'click',
-        (e) => {
-          if (e.target === checkbox) return;
-          checkbox.checked = !checkbox.checked;
-          toggleOption(index, checkbox.checked, item);
-        },
-        { signal }
-      );
+      // Sin `{ signal }` a propósito: `checklistContainer.innerHTML = ''`
+      // al inicio de renderChecklist() destruye estos elementos (y sus
+      // listeners) en cada tecla del textarea al vaciar el contenedor, así
+      // que atarlos al AbortController de la instancia entera solo
+      // acumularía "abort algorithms" registrados en un signal que no se
+      // aborta hasta salir de la página.
+      item.addEventListener('click', (e) => {
+        if (e.target === checkbox) return;
+        checkbox.checked = !checkbox.checked;
+        toggleOption(index, checkbox.checked, item);
+      });
 
-      checkbox.addEventListener('change', () => toggleOption(index, checkbox.checked, item), { signal });
+      checkbox.addEventListener('change', () => toggleOption(index, checkbox.checked, item));
 
       checklistContainer.appendChild(item);
     });
@@ -347,6 +402,15 @@ function initRoulette() {
 
       wheelPointer.style.transform = `translateX(-50%) translateY(0) rotate(0deg)`;
       announceWinner();
+
+      // Aplicar ahora el texto que se escribió mientras giraba: recién
+      // termina el cálculo del ganador, así que ya no importa que
+      // `options` cambie.
+      if (pendingResync) {
+        pendingResync = false;
+        syncWheelState();
+        renderChecklist();
+      }
     } else {
       spinRafId = requestAnimationFrame(updateSpin);
     }
@@ -560,7 +624,10 @@ function initRoulette() {
   const canvasContainer = canvas.parentElement;
   let resizeObserver = null;
   if (canvasContainer && typeof ResizeObserver !== 'undefined') {
-    resizeObserver = new ResizeObserver(() => resizeCanvas());
+    resizeObserver = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      resizeCanvas(entry?.contentRect.width);
+    });
     resizeObserver.observe(canvasContainer);
   }
   // El confeti sigue el tamaño de la ventana completa (se pinta sobre
@@ -612,6 +679,7 @@ function initRoulette() {
     resizeObserver?.disconnect();
     if (spinRafId !== null) cancelAnimationFrame(spinRafId);
     confetti.stop();
+    audio.close();
   };
 }
 
