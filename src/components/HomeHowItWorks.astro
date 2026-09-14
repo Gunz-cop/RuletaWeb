@@ -28,8 +28,8 @@ const steps = [
 <section class="how-it-works reveal" aria-label="Cómo funciona decídelo.app">
   <div class="wrap">
     <div class="how-header">
-      <div class="how-tag">Cómo funciona</div>
-      <h2 class="how-heading">Elegir. Girar. <em>Decidir.</em></h2>
+      <div class="section-tag">Cómo funciona</div>
+      <h2 class="section-heading how-heading">Elegir. Girar. <em>Decidir.</em></h2>
     </div>
     <div class="how-rail">
       {steps.map((step, index) => (
@@ -59,18 +59,12 @@ const steps = [
     margin-bottom: 3rem;
   }
 
-  .how-tag {
-    font-size: 0.78rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--text-secondary);
-  }
-
+  /* Tipografía y color del kicker y el h2 vienen de .section-tag /
+     .section-heading (global.css, con el tamaño de sección de la home
+     sobrescrito en index.astro) — mismo tratamiento que la cabecera del
+     índice de herramientas, para que las dos secciones lean como partes
+     del mismo sistema en vez de dos escalas ajustadas por separado. */
   .how-heading {
-    font-family: 'Outfit', sans-serif;
-    font-size: clamp(1.5rem, 3vw, 2.1rem);
-    font-weight: 700;
-    color: #ffffff;
     margin: 0;
   }
 
@@ -113,7 +107,9 @@ const steps = [
     font-family: 'Newsreader', serif;
     font-style: italic;
     font-weight: 400;
-    font-size: clamp(1.6rem, 3vw, 2.1rem);
+    /* Claramente por debajo del h2 de la sección (clamp de .section-heading
+       en index.astro): es la etiqueta de un paso, no un segundo titular. */
+    font-size: clamp(1.25rem, 2.4vw, 1.5rem);
     color: #ffffff;
     margin: 0 0 0.6rem;
   }
