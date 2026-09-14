@@ -1,86 +1,30 @@
 // ==========================================================
-// SISTEMA DE CONFETTI NATIVO EN CANVAS
+// CONTROLADOR DE LA RULETA
 // ==========================================================
-class ConfettiManager {
-  constructor(canvas) {
-    this.canvas = canvas;
-    this.ctx = canvas.getContext('2d');
-    this.particles = [];
-    this.active = false;
-    this.animationId = null;
-  }
+// Este archivo es el punto de entrada que referencia index.astro
+// (`<script src="../scripts/roulette.js">`). Astro procesa los <script>
+// locales como módulos y los agrupa en el build, así que separar la lógica
+// en src/scripts/roulette/*.js no añade peticiones de red: sigue siendo un
+// único archivo JS en producción, solo que la fuente queda organizada por
+// responsabilidad en vez de un archivo de 750 líneas.
+import { ConfettiManager } from './roulette/confetti.js';
+import { RouletteAudio } from './roulette/audio.js';
+import { WheelRenderer } from './roulette/wheel-canvas.js';
+import { readStorage, writeStorage } from './roulette/storage.js';
+import { randomFloat, shuffleInPlace } from './roulette/random.js';
 
-  start() {
-    this.active = true;
-    this.particles = [];
-    this.resize();
-
-    // Paleta de colores festivos acorde a la marca
-    const colors = ['#00e5ff', '#b366ff', '#f43f5e', '#fb7185', '#34d399', '#fbbf24', '#a78bfa', '#66f0ff'];
-
-    // Crear partículas
-    const particleCount = 140;
-    for (let i = 0; i < particleCount; i++) {
-      this.particles.push({
-        x: Math.random() * this.canvas.width,
-        y: Math.random() * this.canvas.height - this.canvas.height,
-        size: Math.random() * 6 + 5,
-        color: colors[Math.floor(Math.random() * colors.length)],
-        tilt: Math.random() * 10 - 5,
-        tiltAngleIncremental: Math.random() * 0.08 + 0.03,
-        tiltAngle: 0,
-        speed: Math.random() * 2.5 + 2
-      });
-    }
-
-    if (this.animationId) cancelAnimationFrame(this.animationId);
-    this.animate();
-  }
-
-  resize() {
-    this.canvas.width = window.innerWidth;
-    this.canvas.height = window.innerHeight;
-  }
-
-  animate() {
-    if (!this.active) return;
-
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    let activeParticles = false;
-
-    for (let i = 0; i < this.particles.length; i++) {
-      const p = this.particles[i];
-      p.tiltAngle += p.tiltAngleIncremental;
-      p.y += p.speed;
-      p.x += Math.sin(p.tiltAngle) * 0.5;
-      p.tilt = Math.sin(p.tiltAngle - i / 3) * 12;
-
-      if (p.y < this.canvas.height) {
-        activeParticles = true;
-        this.ctx.beginPath();
-        this.ctx.lineWidth = p.size;
-        this.ctx.strokeStyle = p.color;
-        this.ctx.moveTo(p.x + p.tilt + p.size / 2, p.y);
-        this.ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.size / 2);
-        this.ctx.stroke();
-      }
-    }
-
-    if (activeParticles) {
-      this.animationId = requestAnimationFrame(() => this.animate());
-    } else {
-      this.active = false;
-    }
-  }
-
-  stop() {
-    this.active = false;
-    if (this.animationId) cancelAnimationFrame(this.animationId);
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-  }
-}
+// Con View Transitions, Astro navega sin recargar el documento y dispara
+// `astro:page-load` en cada llegada. Si initRoulette solo añadiera
+// listeners sin quitar los de la vez anterior, cada navegación de ida y
+// vuelta a la home duplicaría todos los handlers (dos ticks de sonido por
+// giro, dos aperturas de modal, etc.). Guardamos la función de limpieza de
+// la instancia anterior a nivel de módulo y la ejecutamos antes de crear
+// la siguiente.
+let cleanupPreviousInstance = null;
 
 function initRoulette() {
+  cleanupPreviousInstance?.();
+
   // Elementos del DOM
   const canvas = document.getElementById('roulette-canvas');
   if (!canvas) return;
@@ -113,107 +57,43 @@ function initRoulette() {
 
   if (!textarea || !spinButton || !wheelPointer || !winnerModal) return;
 
-  // Instancia del gestor de confeti
+  // AbortController: una señal para todos los listeners de esta instancia.
+  // Abortarla los quita todos de una vez, sin tener que llevar la cuenta de
+  // cada `removeEventListener` a mano.
+  const abortController = new AbortController();
+  const { signal } = abortController;
+
   const confetti = new ConfettiManager(confettiCanvas);
+  const audio = new RouletteAudio();
+  const wheel = new WheelRenderer(ctx);
 
   // Opciones por defecto si no existen en localStorage
-  const DEFAULT_OPTIONS = [
-    "Pizza 🍕",
-    "Tacos 🌮",
-    "Sushi 🍣",
-    "Hamburguesa 🍔",
-    "Ensalada 🥗",
-    "Pasta 🍝"
-  ];
+  const DEFAULT_OPTIONS = ['Pizza 🍕', 'Tacos 🌮', 'Sushi 🍣', 'Hamburguesa 🍔', 'Ensalada 🥗', 'Pasta 🍝'];
 
   // Variables de Estado
   let allOptions = [];
-  let disabledOptions = new Set();
+  // Identidad por ÍNDICE dentro de allOptions, no por texto: con un Set de
+  // strings, dos opciones escritas igual ("Sí" y "Sí") se desactivaban
+  // juntas y los contadores de activas/total mentían. El índice distingue
+  // cada línea aunque el texto se repita.
+  let disabledIndices = new Set();
   let options = [];
   let colors = [];
-  let currentAngle = 0;   // Ángulo actual en radianes
-  let spinVelocity = 0;   // Velocidad angular por frame
+  let currentAngle = 0; // Ángulo actual en radianes
+  let spinVelocity = 0; // Velocidad angular por frame
   let isSpinning = false;
   let lastTickSegmentIndex = -1;
-  let pointerTilt = 0;    // Inclinación física del puntero
+  let pointerTilt = 0; // Inclinación física del puntero
+  let spinRafId = null;
+  // Marca que updateFromTextarea() quiso repintar/renderizar el checklist
+  // mientras había un giro en curso; se aplica en cuanto termina (ver
+  // updateSpin).
+  let pendingResync = false;
 
   // Sonido y Foco (Persistidos en localStorage)
-  let soundEnabled = localStorage.getItem('ruleta_sound') !== 'false';
-  let focusModeEnabled = localStorage.getItem('ruleta_focus') === 'true';
-
-  // Audio Context perezoso (requisito de los navegadores modernos)
-  let audioCtx = null;
-
-  function initAudio() {
-    if (!audioCtx) {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    if (audioCtx.state === 'suspended') {
-      audioCtx.resume();
-    }
-  }
-
-  // Sonido de "tick" físico sintetizado con Web Audio API
-  function playTickSound() {
-    if (!soundEnabled) return;
-    initAudio();
-    if (!audioCtx) return;
-
-    try {
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-
-      osc.type = 'triangle';
-
-      // Pitch dinámico: los tics son más graves a menor velocidad (simula inercia)
-      const speedFactor = Math.min(spinVelocity / 0.4, 1);
-      const frequency = 250 + speedFactor * 320;
-
-      osc.frequency.setValueAtTime(frequency, audioCtx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(60, audioCtx.currentTime + 0.035);
-
-      gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.035);
-
-      osc.start();
-      osc.stop(audioCtx.currentTime + 0.035);
-    } catch (err) {
-      console.warn('AudioContext bloqueado o no soportado:', err);
-    }
-  }
-
-  // Arpegio de victoria sintético
-  function playWinnerSound() {
-    if (!soundEnabled) return;
-    initAudio();
-    if (!audioCtx) return;
-
-    try {
-      const now = audioCtx.currentTime;
-      const notes = [261.63, 329.63, 392.00, 523.25]; // Do Mayor
-
-      notes.forEach((freq, index) => {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, now + index * 0.09);
-
-        gain.gain.setValueAtTime(0, now + index * 0.09);
-        gain.gain.linearRampToValueAtTime(0.08, now + index * 0.09 + 0.04);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + index * 0.09 + 0.25);
-
-        osc.start(now + index * 0.09);
-        osc.stop(now + index * 0.09 + 0.3);
-      });
-    } catch (err) {
-      console.warn('Error al reproducir sonido de victoria:', err);
-    }
-  }
+  let soundEnabled = readStorage('ruleta_sound') !== 'false';
+  let focusModeEnabled = readStorage('ruleta_focus') === 'true';
+  audio.enabled = soundEnabled;
 
   // Generar paleta de colores HSL con ángulo áureo (distribución óptima)
   function generateContrastColors(count) {
@@ -224,131 +104,79 @@ function initRoulette() {
     }
   }
 
-  // Truncar textos largos para no colisionar con el botón central
-  function truncateText(text, maxWidth, canvasCtx) {
-    let width = canvasCtx.measureText(text).width;
-    if (width <= maxWidth) return text;
-
-    const ellipsis = '...';
-    let len = text.length;
-    while (width > maxWidth && len > 0) {
-      len--;
-      text = text.substring(0, len);
-      width = canvasCtx.measureText(text + ellipsis).width;
-    }
-    return text + ellipsis;
-  }
-
-  // Dibujar la ruleta completa en el Canvas
   function drawRoulette() {
     const dpr = window.devicePixelRatio || 1;
     const size = canvas.width / dpr;
-    const centerX = size / 2;
-    const centerY = size / 2;
-    const radius = size / 2 - 12;
+    wheel.render(size, dpr, options, colors, currentAngle);
+  }
 
-    ctx.clearRect(0, 0, size, size);
+  // Único punto que recalcula "opciones activas + colores + repintado +
+  // estado del botón" tras cualquier cambio de datos (texto, checklist o
+  // "activar todas"). Antes este mismo bloque de cuatro líneas estaba
+  // copiado tres veces y podía divergir con el tiempo.
+  function syncWheelState() {
+    options = allOptions.filter((_, i) => !disabledIndices.has(i));
+    if (activeCountSpan) activeCountSpan.textContent = String(options.length);
+    if (totalCountSpan) totalCountSpan.textContent = String(allOptions.length);
+    generateContrastColors(options.length);
+    drawRoulette();
+    spinButton.disabled = options.length === 0;
+  }
 
-    if (options.length === 0) {
-      // Estado vacío: círculo base
-      ctx.beginPath();
-      ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-      ctx.fillStyle = '#151518';
-      ctx.fill();
-      ctx.strokeStyle = 'rgba(255,255,255,0.05)';
-      ctx.lineWidth = 4;
-      ctx.stroke();
-
-      ctx.fillStyle = '#5a5a6e';
-      ctx.font = '15px Inter, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('Añade opciones para comenzar', centerX, centerY);
-      return;
-    }
-
-    const arc = (2 * Math.PI) / options.length;
-
-    for (let i = 0; i < options.length; i++) {
-      const startAngle = currentAngle + i * arc;
-      const endAngle = startAngle + arc;
-
-      // Dibujar segmento
-      ctx.beginPath();
-      ctx.moveTo(centerX, centerY);
-      ctx.arc(centerX, centerY, radius, startAngle, endAngle);
-      ctx.closePath();
-
-      ctx.fillStyle = colors[i];
-      ctx.fill();
-
-      // Línea divisoria
-      ctx.strokeStyle = '#111113';
-      ctx.lineWidth = options.length > 30 ? 1 : 2.5;
-      ctx.stroke();
-
-      // Texto radial
-      ctx.save();
-      ctx.translate(centerX, centerY);
-      ctx.rotate(startAngle + arc / 2);
-      ctx.textAlign = 'right';
-      ctx.textBaseline = 'middle';
-      ctx.fillStyle = '#ffffff';
-
-      // Escalar fuente dinámicamente
-      let fontSize = 16;
-      if (options.length > 25) fontSize = 9;
-      else if (options.length > 18) fontSize = 11;
-      else if (options.length > 10) fontSize = 13;
-
-      ctx.font = `bold ${fontSize}px Outfit, sans-serif`;
-
-      const availableWidth = radius - 70;
-      const text = truncateText(options[i], availableWidth, ctx);
-
-      ctx.fillText(text, radius - 18, 0);
-      ctx.restore();
-    }
-
-    // Borde externo decorativo
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.06)';
-    ctx.lineWidth = 6;
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, radius + 2, 0, 2 * Math.PI);
-    ctx.strokeStyle = '#1f1f25';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-
-    // Círculo interno detrás del botón central
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, 43, 0, 2 * Math.PI);
-    ctx.fillStyle = '#111113';
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
-    ctx.lineWidth = 2;
-    ctx.stroke();
+  function persistOptionsState(rawTextareaValue) {
+    writeStorage('ruleta_opciones', rawTextareaValue);
+    // Formato v2: array de índices, no de strings — ver migración al cargar.
+    writeStorage('ruleta_ocultas', JSON.stringify({ v: 2, indices: [...disabledIndices] }));
   }
 
   // Ajustar resolución del Canvas para pantallas Retina
-  function resizeCanvas() {
+  // `explicitWidth` llega del ResizeObserver (su `entry.contentRect.width`)
+  // cuando lo dispara él; se omite en las llamadas directas (carga inicial,
+  // toggle de modo foco), que sí necesitan medir el contenedor a mano.
+  function resizeCanvas(explicitWidth) {
     const parent = canvas.parentElement;
     if (!parent) return;
-    
-    // Limpiar estilos inline para permitir que el contenedor se encoja fluidamente
-    canvas.style.width = '';
-    canvas.style.height = '';
 
-    const size = Math.floor(parent.getBoundingClientRect().width);
+    let size;
+    if (typeof explicitWidth === 'number') {
+      // El observer ya trae el ancho del propio contenedor observado
+      // (`contentRect`, sin bordes/padding): no hace falta tocar el estilo
+      // del canvas ni volver a medir, que es justo el patrón (leer layout
+      // -> escribir estilo -> layout cambia) que puede producir un aviso de
+      // "ResizeObserver loop completed with undelivered notifications".
+      size = Math.floor(explicitWidth);
+    } else {
+      // Limpiar estilos inline antes de medir: si no, el ancho en px que
+      // dejó el resize anterior puede impedir que el contenedor se encoja
+      // (p. ej. al activar el modo foco), y mediríamos un valor que ya no
+      // corresponde al layout real.
+      canvas.style.width = '';
+      canvas.style.height = '';
+      size = Math.floor(parent.getBoundingClientRect().width);
+    }
+    if (size <= 0) return;
     const dpr = window.devicePixelRatio || 1;
 
-    canvas.width = size * dpr;
-    canvas.height = size * dpr;
+    const pixelSize = Math.round(size * dpr);
+
+    // Restaurar el tamaño en CSS siempre, incluso si el bitmap no cambia:
+    // lo limpiamos arriba solo para medir el contenedor sin que el propio
+    // canvas influyera en esa medición.
     canvas.style.width = `${size}px`;
     canvas.style.height = `${size}px`;
+
+    // Evita redimensionar (y por lo tanto borrar) el bitmap del canvas si
+    // el tamaño efectivo no cambió: un ResizeObserver puede disparar por
+    // cambios que no alteran el ancho final (p. ej. reflow del propio
+    // contenido), y limpiar el bitmap sin necesidad perdía el dibujo actual
+    // a mitad de un giro.
+    if (canvas.width === pixelSize && canvas.height === pixelSize && canvas.dataset.dpr === String(dpr)) {
+      return;
+    }
+    canvas.dataset.dpr = String(dpr);
+
+    canvas.width = pixelSize;
+    canvas.height = pixelSize;
 
     ctx.resetTransform();
     ctx.scale(dpr, dpr);
@@ -356,39 +184,100 @@ function initRoulette() {
     drawRoulette();
   }
 
+  // Migra `ruleta_ocultas` de la forma antigua (array de strings, una por
+  // texto oculto) a la nueva (array de índices). No podemos saber cuál de
+  // varias líneas duplicadas quería ocultar la persona originalmente, así
+  // que el único comportamiento que no le rompe la lista es desactivar
+  // TODAS las líneas cuyo texto coincida con algo que ya tenía oculto —
+  // exactamente lo que hacía el código viejo — y a partir de ahí cada
+  // índice queda desacoplado del texto.
+  function loadDisabledIndices(currentAllOptions) {
+    const stored = readStorage('ruleta_ocultas');
+    if (stored === null) return new Set();
+
+    try {
+      const parsed = JSON.parse(stored);
+
+      if (parsed && typeof parsed === 'object' && parsed.v === 2 && Array.isArray(parsed.indices)) {
+        return new Set(parsed.indices.filter((i) => Number.isInteger(i)));
+      }
+
+      if (Array.isArray(parsed)) {
+        // Formato v1: strings ocultos.
+        const hiddenTexts = new Set(parsed);
+        const migrated = new Set();
+        currentAllOptions.forEach((opt, i) => {
+          if (hiddenTexts.has(opt)) migrated.add(i);
+        });
+        return migrated;
+      }
+    } catch (err) {
+      console.error('Error al parsear ruleta_ocultas:', err);
+    }
+    return new Set();
+  }
+
   // Sincronizar datos del textarea con el estado
   function updateFromTextarea() {
     const val = textarea.value;
+    const previousAllOptions = allOptions;
+    const previousDisabled = disabledIndices;
 
-    allOptions = val.split('\n')
-                    .map(opt => opt.trim())
-                    .filter(opt => opt.length > 0);
+    allOptions = val
+      .split('\n')
+      .map((opt) => opt.trim())
+      .filter((opt) => opt.length > 0);
 
-    // Limpiar opciones ocultas que ya no existen
-    const currentAllOptionsSet = new Set(allOptions);
-    for (const opt of disabledOptions) {
-      if (!currentAllOptionsSet.has(opt)) {
-        disabledOptions.delete(opt);
-      }
+    // Reasignar qué índices siguen ocultos. Primero se intenta la misma
+    // posición (rápido y es el caso común: escribir en medio del texto sin
+    // reordenar). Si la línea cambió de texto en esa posición -se insertó o
+    // borró una línea por encima-, se busca ese mismo texto en la lista
+    // nueva y se le traslada el estado oculto ahí: es lo que da identidad
+    // estable por texto mientras se reordena, sin volver al bug original
+    // (un Set de strings) porque cada índice viejo se empareja como mucho
+    // con un índice nuevo -nunca se reusa uno ya asignado-, así que dos
+    // opciones ocultas con el mismo texto no colapsan en una sola entrada.
+    // Se procesa en orden ascendente de índice viejo para que el resultado
+    // sea determinista con duplicados: el primero oculto se empareja con la
+    // primera aparición libre, el segundo con la siguiente, etc.
+    const usedNewIndices = new Set();
+    disabledIndices = new Set();
+    [...previousDisabled]
+      .sort((a, b) => a - b)
+      .forEach((oldIndex) => {
+        const text = previousAllOptions[oldIndex];
+        if (text === undefined) return;
+
+        if (allOptions[oldIndex] === text && !usedNewIndices.has(oldIndex)) {
+          disabledIndices.add(oldIndex);
+          usedNewIndices.add(oldIndex);
+          return;
+        }
+
+        const matchIndex = allOptions.findIndex((opt, idx) => opt === text && !usedNewIndices.has(idx));
+        if (matchIndex !== -1) {
+          disabledIndices.add(matchIndex);
+          usedNewIndices.add(matchIndex);
+        }
+        // Si no hay ninguna aparición libre de ese texto, la opción
+        // desapareció de la lista (se borró la línea) y simplemente se
+        // deja de rastrear: no hay a dónde trasladar el estado oculto.
+      });
+
+    persistOptionsState(val);
+
+    // Durante un giro, `options` tiene que quedarse congelado en lo que
+    // estaba cuando arrancó: syncWheelState() reasigna `options` y vuelve a
+    // habilitar `spinButton` a mitad de rotación, y el cálculo del ganador
+    // (getSegmentIndexAtPointer) usa ese mismo array, así que cambiarlo bajo
+    // los pies del giro puede hacer que el ganador anunciado ni siquiera
+    // esté en la lista nueva. El texto se sigue guardando (líneas arriba);
+    // solo se difiere repintar la rueda y el checklist hasta que termine.
+    if (isSpinning) {
+      pendingResync = true;
+      return;
     }
-
-    // Filtrar opciones activas
-    options = allOptions.filter(opt => !disabledOptions.has(opt));
-
-    // Persistir en localStorage
-    localStorage.setItem('ruleta_opciones', val);
-    localStorage.setItem('ruleta_ocultas', JSON.stringify([...disabledOptions]));
-
-    // Actualizar contadores
-    if (activeCountSpan && totalCountSpan) {
-      activeCountSpan.textContent = options.length;
-      totalCountSpan.textContent = allOptions.length;
-    }
-
-    // Redibujar
-    generateContrastColors(options.length);
-    drawRoulette();
-    spinButton.disabled = options.length === 0;
+    syncWheelState();
     renderChecklist();
   }
 
@@ -405,8 +294,8 @@ function initRoulette() {
       return;
     }
 
-    allOptions.forEach((opt) => {
-      const isEnabled = !disabledOptions.has(opt);
+    allOptions.forEach((opt, index) => {
+      const isEnabled = !disabledIndices.has(index);
 
       const item = document.createElement('div');
       item.className = `checklist-item${isEnabled ? '' : ' disabled'}`;
@@ -422,51 +311,62 @@ function initRoulette() {
       item.appendChild(checkbox);
       item.appendChild(label);
 
+      // Sin `{ signal }` a propósito: `checklistContainer.innerHTML = ''`
+      // al inicio de renderChecklist() destruye estos elementos (y sus
+      // listeners) en cada tecla del textarea al vaciar el contenedor, así
+      // que atarlos al AbortController de la instancia entera solo
+      // acumularía "abort algorithms" registrados en un signal que no se
+      // aborta hasta salir de la página.
       item.addEventListener('click', (e) => {
         if (e.target === checkbox) return;
         checkbox.checked = !checkbox.checked;
-        toggleOption(opt, checkbox.checked, item);
+        toggleOption(index, checkbox.checked, item);
       });
 
-      checkbox.addEventListener('change', () => {
-        toggleOption(opt, checkbox.checked, item);
-      });
+      checkbox.addEventListener('change', () => toggleOption(index, checkbox.checked, item));
 
       checklistContainer.appendChild(item);
     });
   }
 
-  // Activar o desactivar una opción específica
-  function toggleOption(opt, isEnabled, itemElement) {
+  // Activar o desactivar una opción específica, por índice.
+  function toggleOption(index, isEnabled, itemElement) {
     if (isEnabled) {
-      disabledOptions.delete(opt);
+      disabledIndices.delete(index);
       itemElement.classList.remove('disabled');
     } else {
-      disabledOptions.add(opt);
+      disabledIndices.add(index);
       itemElement.classList.add('disabled');
     }
 
-    options = allOptions.filter(o => !disabledOptions.has(o));
-    localStorage.setItem('ruleta_ocultas', JSON.stringify([...disabledOptions]));
-
-    if (activeCountSpan) activeCountSpan.textContent = options.length;
-
-    generateContrastColors(options.length);
-    drawRoulette();
-    spinButton.disabled = options.length === 0;
+    persistOptionsState(textarea.value);
+    syncWheelState();
   }
 
   // Edición interactiva del título de la ruleta
   function editTitle() {
     if (isSpinning) return;
     const currentTitle = wheelTitleText.textContent.trim();
-    const newTitle = prompt("Ingrese el nuevo título de la ruleta:", currentTitle);
+    const newTitle = prompt('Ingrese el nuevo título de la ruleta:', currentTitle);
     if (newTitle !== null) {
       const trimmedTitle = newTitle.trim();
-      const finalTitle = trimmedTitle || "Ruleta de Opciones";
+      const finalTitle = trimmedTitle || 'Ruleta de Opciones';
       wheelTitleText.textContent = finalTitle;
-      localStorage.setItem('ruleta_titulo', finalTitle);
+      writeStorage('ruleta_titulo', finalTitle);
     }
+  }
+
+  // Calcula, a partir del ángulo actual, qué segmento queda bajo el
+  // puntero. Antes este cálculo estaba duplicado en updateSpin (para el
+  // tick) y en announceWinner (para el resultado); ahora es la única
+  // fuente de verdad para ambos.
+  function getSegmentIndexAtPointer(angle) {
+    const arc = (2 * Math.PI) / options.length;
+    const pointerAngle = 1.5 * Math.PI;
+
+    const normalizedAngle = ((angle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+    const wheelAngleAtPointer = (pointerAngle - normalizedAngle + 4 * Math.PI) % (2 * Math.PI);
+    return Math.floor(wheelAngleAtPointer / arc);
   }
 
   // Bucle de física de fricción para giro suave (60fps)
@@ -479,15 +379,10 @@ function initRoulette() {
 
     // Detectar cambio de segmento para tick
     if (options.length > 0) {
-      const arc = (2 * Math.PI) / options.length;
-      const pointerAngle = 1.5 * Math.PI;
-
-      const normalizedAngle = (currentAngle % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
-      const wheelAngleAtPointer = (pointerAngle - normalizedAngle + 4 * Math.PI) % (2 * Math.PI);
-      const currentSegmentIndex = Math.floor(wheelAngleAtPointer / arc);
+      const currentSegmentIndex = getSegmentIndexAtPointer(currentAngle);
 
       if (currentSegmentIndex !== lastTickSegmentIndex) {
-        playTickSound();
+        audio.playTick(spinVelocity);
         pointerTilt = -18;
         lastTickSegmentIndex = currentSegmentIndex;
       }
@@ -507,8 +402,17 @@ function initRoulette() {
 
       wheelPointer.style.transform = `translateX(-50%) translateY(0) rotate(0deg)`;
       announceWinner();
+
+      // Aplicar ahora el texto que se escribió mientras giraba: recién
+      // termina el cálculo del ganador, así que ya no importa que
+      // `options` cambie.
+      if (pendingResync) {
+        pendingResync = false;
+        syncWheelState();
+        renderChecklist();
+      }
     } else {
-      requestAnimationFrame(updateSpin);
+      spinRafId = requestAnimationFrame(updateSpin);
     }
   }
 
@@ -516,11 +420,11 @@ function initRoulette() {
   function startSpin() {
     if (isSpinning || options.length === 0) return;
 
-    initAudio();
+    audio.ensureContext();
 
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReducedMotion) {
-      currentAngle = Math.random() * 2 * Math.PI;
+      currentAngle = randomFloat() * 2 * Math.PI;
       drawRoulette();
       announceWinner();
       return;
@@ -530,23 +434,17 @@ function initRoulette() {
     spinButton.disabled = true;
     spinButton.textContent = 'GIRANDO';
 
-    spinVelocity = 0.35 + Math.random() * 0.25;
+    spinVelocity = 0.35 + randomFloat() * 0.25;
     lastTickSegmentIndex = -1;
 
-    requestAnimationFrame(updateSpin);
+    spinRafId = requestAnimationFrame(updateSpin);
   }
 
   // Procesar y mostrar al ganador
   function announceWinner() {
     if (options.length === 0) return;
 
-    const arc = (2 * Math.PI) / options.length;
-    const pointerAngle = 1.5 * Math.PI;
-
-    const normalizedAngle = (currentAngle % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
-    const wheelAngleAtPointer = (pointerAngle - normalizedAngle + 4 * Math.PI) % (2 * Math.PI);
-    const winnerIndex = Math.floor(wheelAngleAtPointer / arc);
-
+    const winnerIndex = getSegmentIndexAtPointer(currentAngle);
     const winner = options[winnerIndex];
 
     srAnnouncer.textContent = `Resultado del sorteo: ${winner}`;
@@ -556,7 +454,7 @@ function initRoulette() {
     winnerModal.setAttribute('aria-hidden', 'false');
 
     confetti.start();
-    playWinnerSound();
+    audio.playWinner();
     modalCloseBtn.focus();
   }
 
@@ -571,16 +469,13 @@ function initRoulette() {
   // Mezclar opciones (Fisher-Yates)
   function shuffleOptions() {
     if (isSpinning) return;
-    const lines = textarea.value.split('\n').filter(opt => opt.trim().length > 0);
+    const lines = textarea.value.split('\n').filter((opt) => opt.trim().length > 0);
 
-    for (let i = lines.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [lines[i], lines[j]] = [lines[j], lines[i]];
-    }
+    shuffleInPlace(lines);
 
     textarea.value = lines.join('\n');
     updateFromTextarea();
-    playTickSound();
+    audio.playTick(spinVelocity);
   }
 
   // Limpiar toda la lista
@@ -621,128 +516,178 @@ function initRoulette() {
   }
 
   // Toggle de Sonido
-  soundToggleBtn.addEventListener('click', () => {
-    soundEnabled = !soundEnabled;
-    localStorage.setItem('ruleta_sound', soundEnabled);
-    initUIState();
-    if (soundEnabled) playTickSound();
-  });
+  soundToggleBtn.addEventListener(
+    'click',
+    () => {
+      soundEnabled = !soundEnabled;
+      audio.enabled = soundEnabled;
+      writeStorage('ruleta_sound', String(soundEnabled));
+      initUIState();
+      if (soundEnabled) audio.playTick(spinVelocity);
+    },
+    { signal }
+  );
 
   // Toggle de Modo Foco
-  focusToggleBtn.addEventListener('click', () => {
-    focusModeEnabled = !focusModeEnabled;
-    localStorage.setItem('ruleta_focus', focusModeEnabled);
-    initUIState();
-    resizeCanvas();
-  });
+  focusToggleBtn.addEventListener(
+    'click',
+    () => {
+      focusModeEnabled = !focusModeEnabled;
+      writeStorage('ruleta_focus', String(focusModeEnabled));
+      initUIState();
+      resizeCanvas();
+    },
+    { signal }
+  );
 
   // Cambio de pestañas
-  tabEdit.addEventListener('click', () => {
-    if (isSpinning) return;
-    tabEdit.classList.add('active');
-    tabEdit.setAttribute('aria-selected', 'true');
-    tabManage.classList.remove('active');
-    tabManage.setAttribute('aria-selected', 'false');
-    tabEditContent.classList.remove('hidden');
-    tabManageContent.classList.add('hidden');
-  });
+  tabEdit.addEventListener(
+    'click',
+    () => {
+      if (isSpinning) return;
+      tabEdit.classList.add('active');
+      tabEdit.setAttribute('aria-selected', 'true');
+      tabManage.classList.remove('active');
+      tabManage.setAttribute('aria-selected', 'false');
+      tabEditContent.classList.remove('hidden');
+      tabManageContent.classList.add('hidden');
+    },
+    { signal }
+  );
 
-  tabManage.addEventListener('click', () => {
-    if (isSpinning) return;
-    tabManage.classList.add('active');
-    tabManage.setAttribute('aria-selected', 'true');
-    tabEdit.classList.remove('active');
-    tabEdit.setAttribute('aria-selected', 'false');
-    tabManageContent.classList.remove('hidden');
-    tabEditContent.classList.add('hidden');
-    renderChecklist();
-  });
+  tabManage.addEventListener(
+    'click',
+    () => {
+      if (isSpinning) return;
+      tabManage.classList.add('active');
+      tabManage.setAttribute('aria-selected', 'true');
+      tabEdit.classList.remove('active');
+      tabEdit.setAttribute('aria-selected', 'false');
+      tabManageContent.classList.remove('hidden');
+      tabEditContent.classList.add('hidden');
+      renderChecklist();
+    },
+    { signal }
+  );
 
   // Edición de título
   if (wheelTitleText) {
-    wheelTitleText.addEventListener('click', editTitle);
+    wheelTitleText.addEventListener('click', editTitle, { signal });
   }
   if (editTitleBtn) {
-    editTitleBtn.addEventListener('click', editTitle);
+    editTitleBtn.addEventListener('click', editTitle, { signal });
   }
 
   // ==========================================================
   // CONTROLADORES DE EVENTOS
   // ==========================================================
 
-  textarea.addEventListener('input', updateFromTextarea);
-  spinButton.addEventListener('click', startSpin);
-  shuffleBtn.addEventListener('click', shuffleOptions);
-  clearBtn.addEventListener('click', clearOptions);
+  textarea.addEventListener('input', updateFromTextarea, { signal });
+  spinButton.addEventListener('click', startSpin, { signal });
+  shuffleBtn.addEventListener('click', shuffleOptions, { signal });
+  clearBtn.addEventListener('click', clearOptions, { signal });
 
   // Activar Todas las opciones ocultas
   if (activateAllBtn) {
-    activateAllBtn.addEventListener('click', () => {
-      if (isSpinning || disabledOptions.size === 0) return;
-      disabledOptions.clear();
-      options = [...allOptions];
-      localStorage.setItem('ruleta_ocultas', JSON.stringify([]));
-
-      if (activeCountSpan) activeCountSpan.textContent = options.length;
-
-      generateContrastColors(options.length);
-      drawRoulette();
-      spinButton.disabled = options.length === 0;
-      renderChecklist();
-    });
+    activateAllBtn.addEventListener(
+      'click',
+      () => {
+        if (isSpinning || disabledIndices.size === 0) return;
+        disabledIndices.clear();
+        persistOptionsState(textarea.value);
+        syncWheelState();
+        renderChecklist();
+      },
+      { signal }
+    );
   }
 
   // Modal
-  modalCloseBtn.addEventListener('click', closeModal);
+  modalCloseBtn.addEventListener('click', closeModal, { signal });
 
   // Cerrar modal con Esc
-  window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && winnerModal.classList.contains('active')) {
-      closeModal();
-    }
-  });
+  window.addEventListener(
+    'keydown',
+    (e) => {
+      if (e.key === 'Escape' && winnerModal.classList.contains('active')) {
+        closeModal();
+      }
+    },
+    { signal }
+  );
 
-  // Redimensionado
-  window.addEventListener('resize', () => {
-    resizeCanvas();
-    if (confetti.active) confetti.resize();
-  });
+  // Redimensionado: un ResizeObserver sobre el contenedor reacciona a
+  // cambios de layout reales (modo foco, breakpoints) sin el setTimeout de
+  // 200ms que había antes a modo de parche, y sin depender del evento
+  // `resize` de window, que no dispara si lo que cambia es el contenedor
+  // (p. ej. al activar el modo foco) y no la ventana.
+  const canvasContainer = canvas.parentElement;
+  let resizeObserver = null;
+  if (canvasContainer && typeof ResizeObserver !== 'undefined') {
+    resizeObserver = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      resizeCanvas(entry?.contentRect.width);
+    });
+    resizeObserver.observe(canvasContainer);
+  }
+  // El confeti sigue el tamaño de la ventana completa (se pinta sobre
+  // toda la pantalla), así que a diferencia de la rueda sí le sirve el
+  // evento `resize` de window.
+  window.addEventListener(
+    'resize',
+    () => {
+      if (confetti.active) confetti.resize();
+    },
+    { signal }
+  );
 
   // Cargar título de la ruleta
-  const storedTitle = localStorage.getItem('ruleta_titulo');
+  const storedTitle = readStorage('ruleta_titulo');
   if (storedTitle !== null && wheelTitleText) {
     wheelTitleText.textContent = storedTitle;
   } else if (wheelTitleText) {
-    wheelTitleText.textContent = "Ruleta de Opciones";
-  }
-
-  // Cargar opciones ocultas
-  const storedOcultas = localStorage.getItem('ruleta_ocultas');
-  if (storedOcultas !== null) {
-    try {
-      const parsed = JSON.parse(storedOcultas);
-      disabledOptions = new Set(parsed);
-    } catch (e) {
-      console.error("Error al parsear ruleta_ocultas:", e);
-      disabledOptions = new Set();
-    }
+    wheelTitleText.textContent = 'Ruleta de Opciones';
   }
 
   // Cargar lista desde localStorage o por defecto
-  const stored = localStorage.getItem('ruleta_opciones');
+  const stored = readStorage('ruleta_opciones');
   if (stored !== null) {
     textarea.value = stored;
   } else {
     textarea.value = DEFAULT_OPTIONS.join('\n');
   }
 
+  // allOptions debe existir antes de migrar los índices ocultos, porque la
+  // migración desde el formato v1 (strings) necesita saber en qué posición
+  // cae cada texto oculto.
+  allOptions = textarea.value
+    .split('\n')
+    .map((opt) => opt.trim())
+    .filter((opt) => opt.length > 0);
+  disabledIndices = loadDisabledIndices(allOptions);
+
   initUIState();
-  updateFromTextarea();
+  syncWheelState();
+  renderChecklist();
   resizeCanvas();
 
-  // Retardo para correcta carga del canvas en dispositivos lentos
-  setTimeout(resizeCanvas, 200);
+  // Función de limpieza de esta instancia: cancela el giro en curso, para
+  // el confeti y quita todos los listeners (DOM y window) registrados con
+  // `signal`, incluido el que cierra el modal con Esc.
+  cleanupPreviousInstance = () => {
+    abortController.abort();
+    resizeObserver?.disconnect();
+    if (spinRafId !== null) cancelAnimationFrame(spinRafId);
+    confetti.stop();
+    audio.close();
+  };
 }
+
+// Astro dispara `astro:before-swap` justo antes de reemplazar el DOM en una
+// view transition: es el momento correcto para soltar listeners y RAF de la
+// página que se va, antes de que `astro:page-load` reinicialice la que
+// entra.
+document.addEventListener('astro:before-swap', () => cleanupPreviousInstance?.());
 
 // Initialise on load or transitions
 if (document.readyState === 'loading') {
