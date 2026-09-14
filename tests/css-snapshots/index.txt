@@ -1,4 +1,4 @@
-.hero[S]{background-color:var(--bg-body);background-image:url(/images/hero/equipo-decidiendo.jpg);background-position:50% 25%;background-repeat:no-repeat;background-size:cover;align-items:flex-end;width:100%;min-height:100svh;display:flex;position:relative;overflow:hidden}
+.hero[S]{background-color:var(--bg-body);background-image:url(/images/hero/hero-amigos.webp);background-position:65% 30%;background-repeat:no-repeat;background-size:cover;align-items:flex-end;width:100%;min-height:100svh;display:flex;position:relative;overflow:hidden}
 .hero-scrim[S]{background:linear-gradient(#07070a0d 0%,#07070a59 40%,#07070ad1 70%,#07070af5 100%);position:absolute;inset:0}
 .hero-inner[S]{z-index:1;width:100%;max-width:640px;padding:0 1.25rem 2.75rem;position:relative}
 .hero[S] h1[S]{letter-spacing:-.02em;color:#fff;margin-bottom:1.25rem;font-family:Outfit,sans-serif;font-size:clamp(2.2rem,8vw,4.4rem);font-weight:700;line-height:1.04}

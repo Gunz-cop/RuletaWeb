@@ -10,11 +10,11 @@
  * (860px, el mismo breakpoint que ya usa el resto del sitio) reacomoda a
  * scrim lateral + texto a la izquierda, imagen respirando a la derecha.
  *
- * La imagen vive en public/images/hero/ (no pasa por astro:assets: es una
- * ruta pública directa, `background-image` no admite `<Image>`). Si el
- * archivo todavía no está, --bg-body de respaldo sostiene el layout sin que
- * se rompa nada — con la escala real de la ruleta reemplazando placeholders,
- * ver public/images/hero/README.md para el nombre exacto esperado.
+ * La imagen vive en public/images/hero/hero-amigos.webp (no pasa por
+ * astro:assets: es una ruta pública directa, `background-image` no admite
+ * `<Image>`). Queda además hero-oficina.webp sin usar en la misma carpeta,
+ * por si se quiere swapear el mood más adelante — ver
+ * public/images/hero/README.md.
  *
  * El marcado y sus reglas viajan juntos, así que el scope de Astro sigue
  * aplicando igual. Lo que no viaja es la regla que lo oculta en modo foco:
@@ -50,10 +50,10 @@
     min-height: 100svh;
     width: 100%;
     overflow: hidden;
-    background-color: var(--bg-body); /* respaldo mientras no exista la foto */
-    background-image: url('/images/hero/equipo-decidiendo.jpg');
+    background-color: var(--bg-body); /* respaldo si la imagen no carga */
+    background-image: url('/images/hero/hero-amigos.webp');
     background-size: cover;
-    background-position: center 25%;
+    background-position: 65% 30%;
     background-repeat: no-repeat;
   }
 
