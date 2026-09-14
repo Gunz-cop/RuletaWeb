@@ -94,20 +94,20 @@ const tools: Tool[] = [
 // or show all. For the hub grid on home, we show all.
 ---
 
-<div class="hub-grid">
+<div class="hub-list">
   {tools.map((tool, index) => {
-    // Escalonar delays usando el índice
-    const delayClass = `reveal-delay-${(index % 6) + 1}`;
     const isCurrent = tool.id === activeToolId;
+    const n = String(index + 1).padStart(2, '0');
 
     return (
-      <a 
-        href={tool.status === 'active' ? tool.href : '#'} 
-        class={`hub-card token-grid-card reveal-scale ${delayClass} ${isCurrent ? 'current-active' : ''}`}
+      <a
+        href={tool.status === 'active' ? tool.href : '#'}
+        class={`hub-row reveal ${isCurrent ? 'current-active' : ''}`}
         id={`card-${tool.id}`}
-        style={tool.status !== 'active' ? 'cursor: not-allowed; opacity: 0.7;' : 'text-decoration: none;'}
+        style={tool.status !== 'active' ? 'cursor: not-allowed; opacity: 0.5;' : ''}
       >
-        <div class="hub-card-icon">
+        <span class="hub-row-index">{n}</span>
+        <div class="hub-row-icon">
           {tool.icon === 'wheel' && (
             <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="10"/>
@@ -180,148 +180,129 @@ const tools: Tool[] = [
             </svg>
           )}
         </div>
-        <h3>{tool.name}</h3>
-        <p>{tool.desc}</p>
-        <span class={`hub-card-badge ${tool.status === 'active' ? 'active' : ''}`}>
-          {tool.status === 'active' ? '⚡ Disponible' : '⌛ Próximamente'}
+        <div class="hub-row-text">
+          <h3>{tool.name}</h3>
+          <p>{tool.desc}</p>
+        </div>
+        <span class="hub-row-status">
+          {isCurrent ? 'Estás aquí' : tool.status === 'active' ? 'Disponible' : 'Próximamente'}
         </span>
+        <svg class="hub-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="5" y1="12" x2="19" y2="12"/>
+          <polyline points="12 5 19 12 12 19"/>
+        </svg>
       </a>
     );
   })}
 </div>
 
 <style>
-  .hub-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.5rem;
-    width: 100%;
-  }
-
-  .hub-card {
-    background: var(--bg-surface);
-    border: 1px solid var(--card-border);
-    border-radius: var(--radius-lg);
-    padding: 2rem 1.75rem;
+  .hub-list {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
-    position: relative;
-    overflow: hidden;
-    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-                border-color 0.35s ease,
-                box-shadow 0.35s ease;
+    width: 100%;
+    border-top: 1px solid var(--divider-line);
   }
 
-  .hub-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3.5px;
-    background: var(--accent-gradient);
-    opacity: 0;
-    transition: opacity 0.35s ease;
+  .hub-row {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.4rem 0;
+    border-bottom: 1px solid var(--divider-line);
+    text-decoration: none;
+    transition: gap 0.25s ease;
   }
 
-  .hub-card:hover::before {
-    opacity: 1;
+  .hub-row:hover {
+    gap: 1.75rem;
   }
 
-  .hub-card.current-active {
-    border-color: rgba(255, 94, 98, 0.25);
-    box-shadow: 0 4px 20px rgba(255, 94, 98, 0.05);
+  .hub-row.current-active {
     pointer-events: none; /* No clickable if you are already on that page */
   }
 
-  .hub-card.current-active::before {
-    opacity: 0.6;
-    background: var(--accent-gradient);
-  }
-
-  .hub-card-icon {
-    width: 52px;
-    height: 52px;
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    background: rgba(0, 242, 254, 0.06);
-    border: 1px solid rgba(0, 242, 254, 0.12);
+  .hub-row-index {
+    color: var(--text-tertiary);
+    font-size: 0.85rem;
+    font-variant-numeric: tabular-nums;
+    width: 1.6rem;
     flex-shrink: 0;
   }
 
-  .hub-card-icon svg {
-    width: 26px; height: 26px;
-    stroke: var(--accent-mint);
+  .hub-row-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(226, 144, 90, 0.08);
+    flex-shrink: 0;
+  }
+
+  .hub-row-icon svg {
+    width: 22px; height: 22px;
+    stroke: var(--accent-warm);
     stroke-width: 1.8;
     fill: none;
   }
 
-  /* 3-color Rotation for icons and tags */
-  .hub-card:nth-child(3n+1) .hub-card-icon {
-    background: rgba(255, 94, 98, 0.06);
-    border-color: rgba(255, 94, 98, 0.12);
-  }
-  .hub-card:nth-child(3n+1) .hub-card-icon svg {
-    stroke: var(--accent-coral);
+  .hub-row-text {
+    flex: 1;
+    min-width: 0;
   }
 
-  .hub-card:nth-child(3n+2) .hub-card-icon {
-    background: rgba(179, 102, 255, 0.06);
-    border-color: rgba(179, 102, 255, 0.12);
-  }
-  .hub-card:nth-child(3n+2) .hub-card-icon svg {
-    stroke: var(--accent-purple);
-  }
-
-  .hub-card h3 {
+  .hub-row h3 {
     font-family: 'Outfit', sans-serif;
-    font-size: 1.15rem;
+    font-size: 1.05rem;
     font-weight: 700;
     color: #ffffff;
+    margin: 0 0 0.2rem;
+  }
+
+  .hub-row p {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    line-height: 1.4;
     margin: 0;
   }
 
-  .hub-card p {
-    color: var(--text-secondary);
-    font-size: 0.88rem;
-    line-height: 1.5;
-    margin: 0;
-    flex: 1;
-  }
-
-  .hub-card-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    padding: 0.4rem 0.9rem;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    color: var(--text-secondary);
+  .hub-row-status {
+    color: var(--text-tertiary);
     font-size: 0.72rem;
     font-weight: 600;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    width: fit-content;
+    flex-shrink: 0;
+    display: none;
   }
 
-  .hub-card-badge.active {
-    background: rgba(0, 242, 254, 0.06);
-    border: 1px solid rgba(0, 242, 254, 0.15);
-    color: var(--accent-mint);
+  .hub-row.current-active .hub-row-status {
+    color: var(--accent-warm);
   }
 
-  .hub-card:nth-child(3n+1) .hub-card-badge.active {
-    background: rgba(255, 94, 98, 0.06);
-    border-color: rgba(255, 94, 98, 0.15);
-    color: var(--accent-coral);
+  .hub-row-arrow {
+    width: 18px; height: 18px;
+    color: var(--text-tertiary);
+    flex-shrink: 0;
+    transition: transform 0.25s ease, color 0.25s ease;
   }
 
-  .hub-card:nth-child(3n+2) .hub-card-badge.active {
-    background: rgba(179, 102, 255, 0.06);
-    border-color: rgba(179, 102, 255, 0.15);
-    color: var(--accent-purple);
+  .hub-row:hover .hub-row-arrow {
+    color: var(--accent-warm);
+    transform: translateX(3px);
+  }
+
+  .hub-row.current-active .hub-row-arrow {
+    display: none;
+  }
+
+  @media (min-width: 560px) {
+    .hub-row-status { display: block; }
+  }
+
+  @media (max-width: 559px) {
+    .hub-row-text p { display: none; }
   }
 </style>

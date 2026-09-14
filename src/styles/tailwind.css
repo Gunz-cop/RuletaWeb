@@ -55,11 +55,14 @@
   --color-surface-hover: #1c1c27;
   --color-elevated: #222230;
 
-  /* Acentos arcade */
+  /* Acentos arcade (aún en uso fuera de home, ver DESIGN.md) */
   --color-coral: #ff5e62;
   --color-mint: #00f2fe;
   --color-purple: #b366ff;
   --color-peach: #ff9966;
+
+  /* Acento editorial — único acento cálido de las piezas ya migradas */
+  --color-warm: #e2905a;
 
   /* Texto */
   --color-ink-primary: #f0f0f5;

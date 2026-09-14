@@ -1,0 +1,143 @@
+---
+/**
+ * Rail de "cómo funciona": tres columnas separadas por bordes de 1px, sin
+ * cards. Parte del sistema editorial (ver DESIGN.md) — se oculta en modo
+ * foco igual que el resto de la home, vía :global(.how-it-works) en
+ * index.astro.
+ */
+
+const steps = [
+  {
+    n: '01',
+    title: 'Elegir',
+    text: 'Escoge la herramienta que le sirve a tu dilema: azar simple o reparto en grupo.',
+  },
+  {
+    n: '02',
+    title: 'Girar',
+    text: 'Todo corre en tu navegador. Nada se envía a un servidor, nada queda guardado.',
+  },
+  {
+    n: '03',
+    title: 'Decidir',
+    text: 'Un resultado claro, sin discusión. Listo para compartir con el grupo.',
+  },
+];
+---
+
+<section class="how-it-works reveal" aria-label="Cómo funciona decídelo.app">
+  <div class="wrap">
+    <div class="how-header">
+      <div class="how-tag">Cómo funciona</div>
+      <h2 class="how-heading">Elegir. Girar. <em>Decidir.</em></h2>
+    </div>
+    <div class="how-rail">
+      {steps.map((step) => (
+        <div class="how-step">
+          <span class="how-step-n">{step.n}</span>
+          <div>
+            <h3>{step.title}</h3>
+            <p>{step.text}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+<style>
+  .how-it-works {
+    padding: 4rem 0;
+    border-bottom: 1px solid var(--divider-line);
+  }
+
+  .how-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 1rem;
+    margin-bottom: 3rem;
+  }
+
+  .how-tag {
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+  }
+
+  .how-heading {
+    font-family: 'Outfit', sans-serif;
+    font-size: clamp(1.5rem, 3vw, 2.1rem);
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0;
+  }
+
+  .how-heading em {
+    font-family: 'Newsreader', serif;
+    font-style: italic;
+    font-weight: 400;
+    color: var(--accent-warm);
+  }
+
+  .how-rail {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .how-step {
+    min-height: 200px;
+    padding: 0 2rem;
+    border-left: 1px solid var(--divider-line);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .how-step:first-child {
+    padding-left: 0;
+    border-left: none;
+  }
+
+  .how-step:last-child {
+    padding-right: 0;
+  }
+
+  .how-step-n {
+    color: var(--text-tertiary);
+    font-size: 0.85rem;
+  }
+
+  .how-step h3 {
+    font-family: 'Newsreader', serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: clamp(1.6rem, 3vw, 2.1rem);
+    color: #ffffff;
+    margin: 0 0 0.6rem;
+  }
+
+  .how-step p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.55;
+    max-width: 280px;
+  }
+
+  @media (max-width: 760px) {
+    .how-rail {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+    .how-step {
+      padding: 0 0 0 1.25rem;
+      border-left: 1px solid var(--divider-line);
+      min-height: 0;
+    }
+    .how-step:first-child {
+      padding-left: 1.25rem;
+      border-left: 1px solid var(--divider-line);
+    }
+  }
+</style>

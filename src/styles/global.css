@@ -16,7 +16,7 @@
   --card-border: rgba(255, 94, 98, 0.08);
   --card-border-hover: rgba(0, 242, 254, 0.15);
 
-  /* Acentos vibrantes - Arcade Neón */
+  /* Acentos vibrantes - Arcade Neón (aún en uso fuera de home, ver DESIGN.md) */
   --accent-coral: #ff5e62;
   --accent-mint: #00f2fe;
   --accent-cyan: #00f2fe; /* Aliased for backward compatibility */
@@ -26,6 +26,11 @@
   --accent-glow-mint: rgba(0, 242, 254, 0.2);
   --accent-glow-cyan: rgba(0, 242, 254, 0.2);
   --accent-glow-purple: rgba(179, 102, 255, 0.15);
+
+  /* Acento editorial — único acento cálido, sin degradado ni glow.
+     Reemplaza el trío neón en las piezas ya migradas (home, HubGrid). */
+  --accent-warm: #e2905a;
+  --divider-line: rgba(240, 240, 245, 0.12);
 
   /* Textos */
   --text-primary: #f0f0f5;

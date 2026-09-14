@@ -47,16 +47,18 @@ nuevo, decide primero si de verdad hace falta una utilidad de Tailwind para
 | `#5a5a6e` | `--text-tertiary` | `--color-ink-tertiary` | `text-ink-tertiary` |
 | `#ef4444` | `--accent-danger` | `--color-danger` | `text-danger` |
 | `#39ff14` | `--accent-success` | `--color-success` | `text-success` |
+| `#e2905a` | `--accent-warm` | `--color-warm` | `text-warm` / `bg-warm` |
 | `6px / 12px / 16px / 24px` | `--radius-sm/md/lg/xl` | `--radius-sm/md/lg/xl` | `rounded-sm/md/lg/xl` |
 | sombras | `--shadow-sm/md/lg` | `--shadow-sm/md/lg` | `shadow-sm/md/lg` |
 | tipografías | `font-family` a mano en cada regla | `--font-sans` / `--font-display` | `font-sans` / `font-display` |
 
 Lo que **no** está duplicado porque no tiene equivalente de utilidad directo:
 `--card-border` (borde por defecto de tarjeta, `rgba(255,94,98,0.08)`),
-`--accent-gradient` (el degradado de marca, ver más abajo) y `--transition`
+`--accent-gradient` (el degradado de marca, ver más abajo), `--transition`
 (`all 0.3s cubic-bezier(0.4,0,0.2,1)` — coincide exactamente con
 `transition-all duration-300 ease-in-out` de Tailwind si necesitas
-reproducirlo con utilidades).
+reproducirlo con utilidades) y `--divider-line` (`rgba(240,240,245,0.12)`,
+la línea de 1px del sistema editorial — ver más abajo).
 
 ---
 
@@ -93,19 +95,69 @@ Dos familias, cargadas desde Google Fonts en `Layout.astro`:
 - **Outfit** (`--font-display`, utilidad `font-display`) — titulares,
   nombres de tarjeta, cualquier texto en mayúscula o con peso 700+.
 
+Una tercera, cargada solo en la home (no en `Layout.astro` — ver "La
+estética: sistema editorial" más abajo):
+- **Newsreader**, itálica — acento de énfasis dentro de un titular en
+  `Outfit` (`<em>`), nunca cuerpo de texto completo.
+
 ---
 
-## La estética: "arcade neón"
+## La estética: sistema editorial (en migración)
 
-Fondo casi negro (`--bg-body: #07070a`), tarjetas ligeramente más claras
-(`--bg-surface`, `--bg-surface-alt`) con un borde apenas visible
-(`--card-border`, 8% de opacidad) y acentos saturados que hacen de neón:
-coral, menta y púrpura. El degradado de marca
-(`--accent-gradient: linear-gradient(135deg, #ff9966 0%, #ff5e62 50%, #b366ff 100%)`)
-aparece como barra superior en las tarjetas principales, en botones de
-llamada a la acción y en el efecto de letra capital de los posts del blog.
+El sitio nació con una estética "arcade neón" (fondo casi negro, tarjetas
+con barra en degradado coral/menta/púrpura, glow, partículas difuminadas).
+Esa estética leía como una web de casino/gambling en vez de una caja de
+herramientas para decidir en grupo, así que se está migrando a un sistema
+editorial: la misma base oscura del sitio (no cambia — sigue siendo la
+paleta "tinta nocturna" de la tabla de arriba), pero **sin degradados, sin
+glow, sin partículas y con un único acento cálido** en vez del trío neón.
 
-### Patrones recurrentes
+**Estado de la migración**: la home (`index.astro` y sus componentes
+`HomeHero`, `HomeHowItWorks`, `HomeToolsSection`) y `HubGrid` (el bloque
+"más herramientas", compartido por las 11 páginas que lo importan) ya usan
+el sistema nuevo. El resto de cada herramienta (la ruleta, los dados, la
+moneda...) sigue con los botones y tarjetas en degradado de la estética
+anterior — migrarlos es una tarea aparte, más grande, porque toca UI
+interactiva con sus propios tests de estado (`npm run test:estado`).
+
+### El acento: `--accent-warm`
+
+Un solo acento (`#e2905a`, terracota cálido — ver tabla de tokens) hace lo
+que antes hacían tres colores neón a la vez: texto enfatizado, iconos,
+estado activo, hover. No hay degradado de marca en las piezas migradas: si
+una regla necesitaría `--accent-gradient`, en el sistema editorial se
+resuelve con `--accent-warm` liso.
+
+### Patrones recurrentes (piezas migradas)
+
+**Sin cards.** Donde la estética anterior usaba una tarjeta con fondo y
+borde por elemento, el sistema editorial usa **listas divididas por un
+borde de 1px** (`--divider-line`, `rgba(240,240,245,0.12)`) — ver
+`HubGrid.astro` (`.hub-list` / `.hub-row`) o el rail de tres columnas de
+`HomeHowItWorks.astro` (`.how-rail` / `.how-step`, con `border-left` entre
+columnas en vez de una tarjeta por paso). Mucho espacio negativo en vez de
+relleno de color.
+
+**Tipografía como protagonista.** Títulos grandes (`clamp(2.4rem, 6vw,
+4.4rem)` en el hero) en `Outfit` — la misma familia de titulares que ya
+usaba el sitio — con una palabra de énfasis en cursiva `Newsreader`
+(`<em>`, color `--accent-warm`). `Newsreader` se carga solo en la home
+(`index.astro` la pasa a `Layout` vía `slot="head"`) porque hoy es la
+única pieza que la usa; si se migra otra página, su `<link>` de Google
+Fonts va con ella, no se sube a `Layout.astro` de forma global hasta que
+la mayoría de páginas la necesiten.
+
+**Botones como texto subrayado**, no pastillas rellenas: `.hero-cta` es
+texto en negrita con `border-bottom: 1px solid`, sin fondo ni sombra. La
+flecha SVG se desplaza `3px` al hover en vez de brillar.
+
+**Numeración en vez de badges de color.** El índice de herramientas usa
+`01`/`02`/`03`... (`font-variant-numeric: tabular-nums`) donde antes había
+un icono en un chip de color; el estado ("Disponible" / "Próximamente" /
+"Estás aquí") es texto plano en `--text-tertiary`, no un badge con fondo
+translúcido.
+
+### Patrones recurrentes (piezas aún sin migrar)
 
 **Tarjeta base** (`.game-board`, `.history-card`, `.blog-post-card`,
 `.sticky-sidebar-card`...): fondo `--bg-surface` o `--bg-surface-alt`,
@@ -128,11 +180,14 @@ tarjeta.
 al 6% de opacidad y borde al 15% — ese patrón (texto sólido / fondo muy
 translúcido / borde algo menos translúcido, los tres del mismo color) se
 repite en varios sitios y vale la pena reconocerlo antes de inventar uno
-nuevo.
+nuevo. Al migrar una pieza de estas al sistema editorial, este patrón se
+reemplaza por texto plano en `--text-tertiary` (ver arriba), no por la
+misma forma en el color nuevo.
 
 **Reveal on scroll** (`.reveal`, `.reveal-scale`, `.slide-up` +
 `.delay-1`…`.delay-9`): animaciones de entrada compartidas desde
-`global.css`, no se reinventan por página.
+`global.css`, no se reinventan por página. Esto no cambia con la
+migración — las piezas nuevas siguen usando `.reveal`.
 
 ---
 
