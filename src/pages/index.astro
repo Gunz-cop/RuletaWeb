@@ -174,8 +174,14 @@ const schemaLD = {
      alcanza. Sin esto el titular volvía al tamaño pequeño y la home encogía
      50px en móvil. Solo la home carga este CSS, así que no se filtran. */
   :global(.section-header) { margin-bottom: 2.5rem; }
-  :global(.section-tag) { margin-bottom: 0.75rem; }
-  :global(.section-heading) { font-size: clamp(1.6rem, 4vw, 2.2rem); }
+  /* Mismo kicker gris que ya usaba "Cómo funciona": el default de
+     global.css es --accent-mint (acento neón de las páginas sin migrar),
+     que aquí desentonaba con el acento cálido único del sistema editorial. */
+  :global(.section-tag) { margin-bottom: 0.75rem; color: var(--text-secondary); }
+  /* Mismo tamaño para el h2 de "Cómo funciona" y el del índice de
+     herramientas: son secciones hermanas y deben leer con la misma
+     jerarquía, un escalón por debajo del titular del hero. */
+  :global(.section-heading) { font-size: clamp(1.65rem, 4vw, 2.3rem); }
 
   #confetti-canvas {
     position: fixed;

@@ -293,6 +293,11 @@ const tools: Tool[] = [
   }
 
   .hub-row.current-active .hub-row-status {
+    /* La fila activa no tiene flecha (no es clickable): en mobile, donde
+       .hub-row-status se oculta por defecto, es la única señal de "estás
+       aquí" que le queda a la fila. Sin esto, la ruleta se ve idéntica a
+       cualquier otra herramienta en pantallas angostas. */
+    display: block;
     color: rgb(var(--tool-rgb));
   }
 
@@ -320,5 +325,17 @@ const tools: Tool[] = [
 
   @media (max-width: 559px) {
     .hub-row-text p { display: none; }
+
+    /* La fila activa es la única que muestra .hub-row-status en este ancho
+       (ver arriba); sin la flecha compitiendo por espacio, más compacto
+       aquí deja el nombre de la herramienta en menos líneas. */
+    .hub-row.current-active .hub-row-status {
+      font-size: 0.64rem;
+      letter-spacing: 0.04em;
+    }
+
+    .hub-row {
+      gap: 1rem;
+    }
   }
 </style>
