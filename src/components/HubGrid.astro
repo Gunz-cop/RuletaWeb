@@ -6,6 +6,10 @@ interface Tool {
   href: string;
   status: 'active' | 'coming-soon';
   icon: 'wheel' | 'coin' | 'dice' | 'rps' | 'secret-friend' | 'numbers' | 'teams' | 'oracle' | 'timer';
+  /** Un color por herramienta, no un solo acento: mismo criterio de luminosidad
+   * y saturación moderada (nada de neón), hue distinto por categoría. Codifica
+   * "son actividades distintas", no decoración — ver DESIGN.md. */
+  color: string;
 }
 
 interface Props {
@@ -21,7 +25,8 @@ const tools: Tool[] = [
     desc: 'Crea tu propia ruleta personalizada con opciones, gírala y deja que el azar elija por ti de forma divertida y rápida.',
     href: '/#ruleta',
     status: 'active',
-    icon: 'wheel'
+    icon: 'wheel',
+    color: '226,144,90',
   },
   {
     id: 'moneda',
@@ -29,7 +34,8 @@ const tools: Tool[] = [
     desc: 'Cara o cruz al instante con físicas en 3D. Elige entre moneda clásica, pirata o forajida con un agujero de bala real.',
     href: '/moneda',
     status: 'active',
-    icon: 'coin'
+    icon: 'coin',
+    color: '212,165,63',
   },
   {
     id: 'dados',
@@ -37,7 +43,8 @@ const tools: Tool[] = [
     desc: 'Lanza 1, 2 o 3 dados a la vez. Elige entre las temáticas Casino de Las Vegas, Calabozos y Dragones (D20) o Yu-Gi-Oh.',
     href: '/dados',
     status: 'active',
-    icon: 'dice'
+    icon: 'dice',
+    color: '199,123,143',
   },
   {
     id: 'piedra-papel-tijera',
@@ -45,7 +52,8 @@ const tools: Tool[] = [
     desc: 'El clásico juego de manos contra la IA o un amigo. Animaciones dinámicas, contador de victorias y dos modos de juego.',
     href: '/piedra-papel-tijera',
     status: 'active',
-    icon: 'rps'
+    icon: 'rps',
+    color: '127,176,163',
   },
   {
     id: 'amigo-secreto',
@@ -53,7 +61,8 @@ const tools: Tool[] = [
     desc: 'Organiza tu sorteo de regalos sin papelitos y 100% privado. Genera enlaces instantáneos para compartir.',
     href: '/amigo-secreto',
     status: 'active',
-    icon: 'secret-friend'
+    icon: 'secret-friend',
+    color: '212,106,106',
   },
   {
     id: 'numeros',
@@ -61,7 +70,8 @@ const tools: Tool[] = [
     desc: 'Genera uno o varios números aleatorios en un rango personalizado, con opción de evitar duplicados.',
     href: '/numeros',
     status: 'active',
-    icon: 'numbers'
+    icon: 'numbers',
+    color: '138,160,212',
   },
   {
     id: 'equipos',
@@ -69,7 +79,8 @@ const tools: Tool[] = [
     desc: 'Divide una lista de nombres de manera equilibrada en múltiples equipos aleatorios de forma instantánea.',
     href: '/equipos',
     status: 'active',
-    icon: 'teams'
+    icon: 'teams',
+    color: '111,184,138',
   },
   {
     id: 'si-o-no',
@@ -77,7 +88,8 @@ const tools: Tool[] = [
     desc: 'Pregunta al oráculo místico y obtén una respuesta binaria directa acompañada de una animación de bola 8.',
     href: '/si-o-no',
     status: 'active',
-    icon: 'oracle'
+    icon: 'oracle',
+    color: '176,136,201',
   },
   {
     id: 'temporizador',
@@ -85,7 +97,8 @@ const tools: Tool[] = [
     desc: 'Establece un rango de tiempo y deja que termine en un segundo aleatorio. Ideal para juegos y retos.',
     href: '/temporizador',
     status: 'active',
-    icon: 'timer'
+    icon: 'timer',
+    color: '91,163,176',
   }
 ];
 
@@ -94,20 +107,20 @@ const tools: Tool[] = [
 // or show all. For the hub grid on home, we show all.
 ---
 
-<div class="hub-grid">
+<div class="hub-list">
   {tools.map((tool, index) => {
-    // Escalonar delays usando el índice
-    const delayClass = `reveal-delay-${(index % 6) + 1}`;
     const isCurrent = tool.id === activeToolId;
+    const n = String(index + 1).padStart(2, '0');
 
     return (
-      <a 
-        href={tool.status === 'active' ? tool.href : '#'} 
-        class={`hub-card token-grid-card reveal-scale ${delayClass} ${isCurrent ? 'current-active' : ''}`}
+      <a
+        href={tool.status === 'active' ? tool.href : '#'}
+        class={`hub-row reveal reveal-delay-${(index % 9) + 1} ${isCurrent ? 'current-active' : ''}`}
         id={`card-${tool.id}`}
-        style={tool.status !== 'active' ? 'cursor: not-allowed; opacity: 0.7;' : 'text-decoration: none;'}
+        style={`--tool-rgb: ${tool.color};${tool.status !== 'active' ? ' cursor: not-allowed; opacity: 0.5;' : ''}`}
       >
-        <div class="hub-card-icon">
+        <span class="hub-row-index">{n}</span>
+        <div class="hub-row-icon">
           {tool.icon === 'wheel' && (
             <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="10"/>
@@ -180,148 +193,132 @@ const tools: Tool[] = [
             </svg>
           )}
         </div>
-        <h3>{tool.name}</h3>
-        <p>{tool.desc}</p>
-        <span class={`hub-card-badge ${tool.status === 'active' ? 'active' : ''}`}>
-          {tool.status === 'active' ? '⚡ Disponible' : '⌛ Próximamente'}
+        <div class="hub-row-text">
+          <h3>{tool.name}</h3>
+          <p>{tool.desc}</p>
+        </div>
+        <span class="hub-row-status">
+          {isCurrent ? 'Estás aquí' : tool.status === 'active' ? 'Disponible' : 'Próximamente'}
         </span>
+        <svg class="hub-row-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="5" y1="12" x2="19" y2="12"/>
+          <polyline points="12 5 19 12 12 19"/>
+        </svg>
       </a>
     );
   })}
 </div>
 
 <style>
-  .hub-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.5rem;
-    width: 100%;
-  }
-
-  .hub-card {
-    background: var(--bg-surface);
-    border: 1px solid var(--card-border);
-    border-radius: var(--radius-lg);
-    padding: 2rem 1.75rem;
+  .hub-list {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
-    position: relative;
-    overflow: hidden;
-    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-                border-color 0.35s ease,
-                box-shadow 0.35s ease;
+    width: 100%;
+    border-top: 1px solid var(--divider-line);
   }
 
-  .hub-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3.5px;
-    background: var(--accent-gradient);
-    opacity: 0;
-    transition: opacity 0.35s ease;
+  .hub-row {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.4rem 0;
+    border-bottom: 1px solid var(--divider-line);
+    text-decoration: none;
+    transition: transform 160ms var(--ease-out);
   }
 
-  .hub-card:hover::before {
-    opacity: 1;
+  /* Feedback de presión en toda la fila (es un link de ancho completo). */
+  .hub-row:active {
+    transform: scale(0.99);
   }
 
-  .hub-card.current-active {
-    border-color: rgba(255, 94, 98, 0.25);
-    box-shadow: 0 4px 20px rgba(255, 94, 98, 0.05);
+  .hub-row.current-active {
     pointer-events: none; /* No clickable if you are already on that page */
   }
 
-  .hub-card.current-active::before {
-    opacity: 0.6;
-    background: var(--accent-gradient);
-  }
-
-  .hub-card-icon {
-    width: 52px;
-    height: 52px;
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    background: rgba(0, 242, 254, 0.06);
-    border: 1px solid rgba(0, 242, 254, 0.12);
+  .hub-row-index {
+    color: var(--text-tertiary);
+    font-size: 0.85rem;
+    font-variant-numeric: tabular-nums;
+    width: 1.6rem;
     flex-shrink: 0;
   }
 
-  .hub-card-icon svg {
-    width: 26px; height: 26px;
-    stroke: var(--accent-mint);
+  .hub-row-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(var(--tool-rgb), 0.12);
+    flex-shrink: 0;
+  }
+
+  .hub-row-icon svg {
+    width: 22px; height: 22px;
+    stroke: rgb(var(--tool-rgb));
     stroke-width: 1.8;
     fill: none;
   }
 
-  /* 3-color Rotation for icons and tags */
-  .hub-card:nth-child(3n+1) .hub-card-icon {
-    background: rgba(255, 94, 98, 0.06);
-    border-color: rgba(255, 94, 98, 0.12);
-  }
-  .hub-card:nth-child(3n+1) .hub-card-icon svg {
-    stroke: var(--accent-coral);
+  .hub-row-text {
+    flex: 1;
+    min-width: 0;
   }
 
-  .hub-card:nth-child(3n+2) .hub-card-icon {
-    background: rgba(179, 102, 255, 0.06);
-    border-color: rgba(179, 102, 255, 0.12);
-  }
-  .hub-card:nth-child(3n+2) .hub-card-icon svg {
-    stroke: var(--accent-purple);
-  }
-
-  .hub-card h3 {
+  .hub-row h3 {
     font-family: 'Outfit', sans-serif;
-    font-size: 1.15rem;
+    font-size: 1.05rem;
     font-weight: 700;
     color: #ffffff;
+    margin: 0 0 0.2rem;
+  }
+
+  .hub-row p {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    line-height: 1.4;
     margin: 0;
   }
 
-  .hub-card p {
-    color: var(--text-secondary);
-    font-size: 0.88rem;
-    line-height: 1.5;
-    margin: 0;
-    flex: 1;
-  }
-
-  .hub-card-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    padding: 0.4rem 0.9rem;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    color: var(--text-secondary);
+  .hub-row-status {
+    color: var(--text-tertiary);
     font-size: 0.72rem;
     font-weight: 600;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    width: fit-content;
+    flex-shrink: 0;
+    display: none;
   }
 
-  .hub-card-badge.active {
-    background: rgba(0, 242, 254, 0.06);
-    border: 1px solid rgba(0, 242, 254, 0.15);
-    color: var(--accent-mint);
+  .hub-row.current-active .hub-row-status {
+    color: rgb(var(--tool-rgb));
   }
 
-  .hub-card:nth-child(3n+1) .hub-card-badge.active {
-    background: rgba(255, 94, 98, 0.06);
-    border-color: rgba(255, 94, 98, 0.15);
-    color: var(--accent-coral);
+  .hub-row-arrow {
+    width: 18px; height: 18px;
+    color: var(--text-tertiary);
+    flex-shrink: 0;
+    transition: transform 180ms var(--ease-out), color 180ms var(--ease-out);
   }
 
-  .hub-card:nth-child(3n+2) .hub-card-badge.active {
-    background: rgba(179, 102, 255, 0.06);
-    border-color: rgba(179, 102, 255, 0.15);
-    color: var(--accent-purple);
+  @media (hover: hover) and (pointer: fine) {
+    .hub-row:hover .hub-row-arrow {
+      color: rgb(var(--tool-rgb));
+      transform: translateX(3px);
+    }
+  }
+
+  .hub-row.current-active .hub-row-arrow {
+    display: none;
+  }
+
+  @media (min-width: 560px) {
+    .hub-row-status { display: block; }
+  }
+
+  @media (max-width: 559px) {
+    .hub-row-text p { display: none; }
   }
 </style>

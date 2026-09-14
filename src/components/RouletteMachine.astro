@@ -156,15 +156,17 @@
     text-align: center;
     word-break: break-word;
     cursor: pointer;
-    transition: var(--transition);
+    transition: color 200ms var(--ease-out);
     user-select: none;
   }
 
-  #wheel-title-text:hover {
-    color: var(--accent-cyan);
-    text-decoration: underline;
-    text-decoration-style: dashed;
-    text-underline-offset: 4px;
+  @media (hover: hover) and (pointer: fine) {
+    #wheel-title-text:hover {
+      color: var(--accent-cyan);
+      text-decoration: underline;
+      text-decoration-style: dashed;
+      text-underline-offset: 4px;
+    }
   }
 
   .edit-title-btn {
@@ -176,7 +178,7 @@
     padding: 0.25rem;
     display: flex;
     align-items: center;
-    transition: var(--transition);
+    transition: transform 200ms var(--ease-out), color 200ms var(--ease-out);
     opacity: 0.5;
   }
 
@@ -184,6 +186,10 @@
     color: var(--accent-cyan);
     opacity: 1;
     transform: scale(1.15);
+  }
+
+  .edit-title-btn:active {
+    transform: scale(0.9);
   }
 
   .wheel-card {
@@ -336,7 +342,7 @@
     font-weight: 600;
     padding: 0.6rem 0.9rem;
     cursor: pointer;
-    transition: var(--transition);
+    transition: color 200ms var(--ease-out), border-color 200ms var(--ease-out);
   }
 
   .tab-btn:hover { color: var(--text-primary); }
@@ -427,7 +433,7 @@
     padding: 0.6rem 0.85rem;
     cursor: pointer;
     user-select: none;
-    transition: var(--transition);
+    transition: background-color 200ms var(--ease-out), border-color 200ms var(--ease-out);
   }
 
   :global(.checklist-item:hover) {
@@ -445,7 +451,7 @@
     font-size: 0.9rem;
     color: var(--text-primary);
     word-break: break-all;
-    transition: var(--transition);
+    transition: color 200ms var(--ease-out);
   }
 
   :global(.checklist-item.disabled) {

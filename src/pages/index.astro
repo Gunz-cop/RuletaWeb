@@ -1,7 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import Marquee from '../components/Marquee.astro';
 import HomeHero from '../components/HomeHero.astro';
+import HomeHowItWorks from '../components/HomeHowItWorks.astro';
 import RouletteMachine from '../components/RouletteMachine.astro';
 import HomeToolsSection from '../components/HomeToolsSection.astro';
 import WinnerModal from '../components/WinnerModal.astro';
@@ -10,8 +10,8 @@ import HubGrid from '../components/HubGrid.astro';
 import SeoArticle from '../components/SeoArticle.astro';
 import { getSocialImageUrl } from '../lib/heroImages';
 
-const title = 'Decídelo.app — Toma Decisiones Aleatorias en Segundos';
-const description = 'Herramientas gratuitas para tomar decisiones al azar: ruleta aleatoria, lanzar moneda, dados virtuales y más. Sin registro, sin dramas. ¡Dale al azar!';
+const title = 'Decídelo.app — Herramientas para Decidir en Grupo';
+const description = 'Ruleta, moneda, dados, equipos y más para resolver cualquier empate en fiestas, en familia, entre amigos o en la oficina. Gratis, sin registro y 100% en tu navegador.';
 
 // La imagen vive en src/assets y la optimiza Astro; el JSON-LD necesita
 // su URL absoluta ya generada, no la ruta pública que tenía antes.
@@ -75,16 +75,23 @@ const schemaLD = {
 ---
 
 <Layout title={title} description={description} schemaLD={schemaLD} showHomeHeader={true}>
+  <Fragment slot="head">
+    <!-- Newsreader itálica: acento tipográfico del sistema editorial, solo en home -->
+    <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@1,400&display=swap" rel="stylesheet">
+  </Fragment>
+
   <!-- Canvas transparente para el efecto de confeti -->
   <canvas id="confetti-canvas" aria-hidden="true"></canvas>
-
-  <!-- Marquesina de Dilemas -->
-  <Marquee />
 
   <!-- ====================================================================
        HERO SECTION
        ==================================================================== -->
   <HomeHero />
+
+  <!-- ====================================================================
+       CÓMO FUNCIONA
+       ==================================================================== -->
+  <HomeHowItWorks />
 
   <!-- Espacio Publicitario Superior -->
   <AdSlot position="top" />
@@ -194,6 +201,7 @@ const schemaLD = {
 
   body.focus-mode-active :global(.logo-link),
   body.focus-mode-active :global(.hero),
+  body.focus-mode-active :global(.how-it-works),
   body.focus-mode-active :global(.hub-section),
   body.focus-mode-active :global(.seo-section),
   body.focus-mode-active :global(.ad-placeholder),

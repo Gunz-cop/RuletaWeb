@@ -98,4 +98,22 @@
     background-clip: text;
     filter: drop-shadow(0 2px 8px rgba(0, 229, 255, 0.3));
   }
+
+  /*
+   * El bloque de global.css solo cubre .reveal/.reveal-scale/.slide-up, que no
+   * existen aquí: sin esto, el emoji rebota en bucle mientras el modal está
+   * abierto y la tarjeta entra con un scale rebotado. Se queda la entrada por
+   * opacidad del overlay, que sí ayuda a entender que algo apareció.
+   */
+  @media (prefers-reduced-motion: reduce) {
+    .celebration-emoji {
+      animation: none;
+    }
+
+    .modal-card,
+    .modal-overlay.active .modal-card {
+      transform: none;
+      transition: none;
+    }
+  }
 </style>

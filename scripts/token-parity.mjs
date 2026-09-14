@@ -27,6 +27,7 @@ const PAIRS = {
   '--accent-coral': '--color-coral',
   '--accent-mint': '--color-mint',
   '--accent-purple': '--color-purple',
+  '--accent-warm': '--color-warm',
   '--text-primary': '--color-ink-primary',
   '--text-secondary': '--color-ink-secondary',
   '--text-tertiary': '--color-ink-tertiary',
