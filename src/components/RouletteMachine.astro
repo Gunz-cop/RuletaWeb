@@ -57,15 +57,12 @@
           <div class="wheel-outer-wrapper">
             <!-- Indicador visual superior -->
             <div class="pointer" id="wheel-pointer">
+              <!-- Sin degradado (el sistema editorial no admite): las dos
+                   paradas de #pointer-grad quedaron del arcade neón — un
+                   único --accent-warm liso en las dos formas. -->
               <svg width="34" height="34" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M15 30L3 7.5L27 7.5L15 30Z" fill="url(#pointer-grad)"/>
-                <path d="M15 25L6.5 9L23.5 9L15 25Z" fill="#e2905a"/>
-                <defs>
-                  <linearGradient id="pointer-grad" x1="15" y1="0" x2="15" y2="30" gradientUnits="userSpaceOnUse">
-                    <stop stop-color="#f2b98a"/>
-                    <stop offset="1" stop-color="#e2905a"/>
-                  </linearGradient>
-                </defs>
+                <path d="M15 30L3 7.5L27 7.5L15 30Z" fill="#e2905a"/>
+                <path d="M15 25L6.5 9L23.5 9L15 25Z" fill="#1a1207"/>
               </svg>
             </div>
             <!-- Canvas de la ruleta -->
@@ -96,10 +93,10 @@
             <textarea id="options-input" autocomplete="off" spellcheck="false" placeholder="Ingresa tus opciones aquí, una por línea..." aria-label="Escribe las opciones de la ruleta una por línea"></textarea>
             <div class="btn-group">
               <button id="shuffle-btn" class="wheel-toolbar-btn" title="Mezclar aleatoriamente el orden">
-                <span class="btn-icon" aria-hidden="true">🔀</span> Mezclar
+                <span class="wheel-toolbar-btn-label"><span class="btn-icon" aria-hidden="true">🔀</span> Mezclar</span>
               </button>
               <button id="clear-btn" class="wheel-toolbar-btn wheel-toolbar-btn--danger" title="Vaciar la lista completa">
-                <span class="btn-icon" aria-hidden="true">🗑️</span> Limpiar
+                <span class="wheel-toolbar-btn-label"><span class="btn-icon" aria-hidden="true">🗑️</span> Limpiar</span>
               </button>
             </div>
           </div>
@@ -109,7 +106,7 @@
             <div class="manage-header-flex">
               <p class="manage-instruction">Desmarca las casillas para ocultar opciones de la ruleta temporalmente sin borrarlas.</p>
               <button id="activate-all-btn" class="wheel-toolbar-btn wheel-toolbar-btn--sm" title="Activar todas las opciones">
-                <span class="btn-icon" aria-hidden="true">✅</span> Activar Todas
+                <span class="wheel-toolbar-btn-label"><span class="btn-icon" aria-hidden="true">✅</span> Activar Todas</span>
               </button>
             </div>
             <div id="options-checklist-container" class="options-checklist-container">
@@ -276,9 +273,11 @@
      neón. Sigue siendo un botón físico (círculo, no texto subrayado como
      .hero-cta) porque vive centrado sobre la rueda, no en un flujo de
      texto — pero pierde el pulso cian y el halo que tenía en la estética
-     arcade. Contraste del texto: #e2905a sobre negro da ~8.4:1, así que el
-     texto en tinta oscura (no blanco) es lo legible aquí, igual que
-     .primary-btn ya hace con su degradado. */
+     arcade. Contraste del texto: #1a1207 sobre #e2905a da 7.38:1 (AAA para
+     texto normal; 8.37:1 era el contraste de #1a1207 contra negro puro, no
+     contra el fondo real del botón — de ahí el número anterior mal puesto
+     aquí). Blanco solo llega a ~2.5:1, así que la tinta oscura es la única
+     opción legible, igual que .primary-btn ya hace con su degradado. */
   .spin-center-button {
     position: absolute;
     width: 80px;
@@ -399,14 +398,28 @@
     transition: color 200ms var(--ease-out), border-color 200ms var(--ease-out);
   }
 
+  /* Explícito, no implícito: .tab-btn-label hereda el color de .tab-btn
+     (gris inactivo / --accent-warm cuando .active), a diferencia de
+     .tab-btn-count, que abajo se fija siempre en --text-secondary. Sin
+     esta regla la herencia funciona igual, pero queda sin decir por qué
+     el span existe. */
+  .tab-btn-label {
+    color: inherit;
+  }
+
   /* El contador va en su propia línea a propósito, no como un desborde de
      texto que envuelve donde le toca: "(6/20)" partido a la mitad por un
-     wrap accidental se leía como un bug, no como diseño. */
+     wrap accidental se leía como un bug, no como diseño.
+     Nada de opacity para atenuarlo: a 0.72rem (~11.5px) cuenta como texto
+     normal para AA (necesita 4.5:1), y --text-secondary al 80% de opacidad
+     sobre --bg-surface cae a ~4.05:1 — por debajo del umbral. Con opacidad
+     1 da 5.72:1. --text-tertiary tampoco alcanza (2.84:1), así que el color
+     tiene que ser --text-secondary sí o sí, sin atenuar. */
   .tab-btn-count {
     font-size: 0.72rem;
     font-weight: 500;
     font-variant-numeric: tabular-nums;
-    opacity: 0.8;
+    color: var(--text-secondary);
   }
 
   @media (hover: hover) and (pointer: fine) {
@@ -473,46 +486,59 @@
 
   /* Botones de la ruleta (mezclar/limpiar/activar todas): texto con
      acento en vez de pastilla rellena, siguiendo el mismo criterio que
-     .hero-cta ("botones como texto subrayado" — ver DESIGN.md). El borde
-     inferior queda siempre visible, no solo al :hover, porque en táctil
+     .hero-cta ("botones como texto subrayado" — ver DESIGN.md).
+     El botón en sí solo da el área de toque (44px, flex centrado, sin
+     borde propio): si el border-bottom fuera del botón, con min-height:44
+     y el texto centrado el borde cae en el límite inferior del área
+     táctil, ~10px por debajo de la palabra — se ve una rayita flotando,
+     no un subrayado. El borde real vive en el <span> interno
+     (.wheel-toolbar-btn-label), que abraza justo el texto, igual que
+     .hero-cta. Queda visible siempre, no solo al :hover, porque en táctil
      el hover no existe y el botón tiene que leerse como tocable sin
-     necesitar un puntero. min-height 44px es el objetivo táctil real; el
-     padding visual es más chico, pero el área de toque no. */
+     necesitar un puntero. */
   .wheel-toolbar-btn {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
+    justify-content: center;
     min-height: 44px;
-    padding: 0.5rem 0.1rem;
+    padding: 0.25rem 0.1rem;
     background: transparent;
     border: none;
-    border-bottom: 1px solid var(--divider-line);
     color: var(--text-secondary);
     font-family: inherit;
     font-weight: 600;
     font-size: 0.85rem;
     cursor: pointer;
+  }
+
+  .wheel-toolbar-btn-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding-bottom: 0.2rem;
+    border-bottom: 1px solid var(--divider-line);
+    color: inherit;
     transition: color 160ms var(--ease-out), border-color 160ms var(--ease-out);
   }
 
   @media (hover: hover) and (pointer: fine) {
-    .wheel-toolbar-btn:hover {
+    .wheel-toolbar-btn:hover .wheel-toolbar-btn-label {
       color: var(--text-primary);
       border-bottom-color: var(--text-secondary);
     }
   }
 
-  .wheel-toolbar-btn:active {
+  .wheel-toolbar-btn:active .wheel-toolbar-btn-label {
     transform: scale(0.97);
   }
 
-  .wheel-toolbar-btn--danger {
+  .wheel-toolbar-btn--danger .wheel-toolbar-btn-label {
     color: var(--accent-danger);
     border-bottom-color: rgba(239, 68, 68, 0.35);
   }
 
   @media (hover: hover) and (pointer: fine) {
-    .wheel-toolbar-btn--danger:hover {
+    .wheel-toolbar-btn--danger:hover .wheel-toolbar-btn-label {
       color: #f87171;
       border-bottom-color: #f87171;
     }

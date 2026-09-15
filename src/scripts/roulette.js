@@ -95,26 +95,101 @@ function initRoulette() {
   let focusModeEnabled = readStorage('ruleta_focus') === 'true';
   audio.enabled = soundEnabled;
 
-  // Generar paleta de colores HSL con ángulo áureo (distribución óptima).
-  // El hue sigue rotando las 360°: es lo que garantiza que dos gajos
-  // vecinos (índices consecutivos) queden siempre a ~137.5° uno del otro
-  // en el círculo cromático, muy por encima de lo que el ojo confunde,
-  // pase lo que pase con N. Restringir el hue a una franja cálida (todo
-  // terracota) rompería esa garantía con 15-20 opciones: dentro de un
-  // arco de 60-90° el golden angle ya no tiene sitio para separar tantos
-  // gajos y varios acaban leyendo como "el mismo naranja". Lo que sí
-  // cambia respecto al arcade neón es la saturación (72%→58%) y la
-  // luminosidad (52%→46%): menos flúor, más tinta con color, en línea
-  // con el resto del sistema editorial. El contraste del texto ya no se
-  // fija en blanco a ciegas — wheel-canvas.js lo calcula por gajo, ver
-  // ese archivo — así que ninguna combinación de hue queda con texto
-  // ilegible.
-  function generateContrastColors(count) {
-    colors = [];
+  // ------------------------------------------------------------------
+  // PALETA DE LA RULETA — tres variantes para que el usuario elija, NO una
+  // decisión tomada. Cambiar PALETA_RUEDA y reconstruir (`npm run build`)
+  // alterna entre ellas; scripts/wheel-contrast.mjs solo valida la variante
+  // 'A' (es la que hoy está en producción). Cuando se elija una, borrar
+  // este flag y las ramas que no se usen — esto es andamiaje de comparación,
+  // no código final.
+  // ------------------------------------------------------------------
+  const PALETA_RUEDA = 'A'; // 'A' | 'B' | 'C'
+
+  // Variante A (la que sigue en producción): arcoíris completo por ángulo
+  // áureo. El hue rota las 360°, así que dos gajos vecinos (índices
+  // consecutivos) quedan siempre a ~137.5° uno del otro en el círculo
+  // cromático — muy por encima de lo que el ojo confunde, para cualquier N.
+  // Restringir el hue a una franja cálida (todo terracota) rompería esa
+  // garantía con 15-20 opciones: dentro de un arco de 60-90° el golden
+  // angle ya no tiene sitio para separar tantos gajos y varios acaban
+  // leyendo como "el mismo naranja" — por eso las variantes B/C de abajo
+  // no lo intentan por tono: distinguen por LUMINOSIDAD en vez de hue.
+  // Saturación/luminosidad bajadas respecto al arcade neón (72%/52% →
+  // 58%/46%): menos flúor, más tinta con color.
+  function paletaA(count) {
+    const arr = [];
     for (let i = 0; i < count; i++) {
       const hue = (i * 137.5) % 360;
-      colors.push(`hsl(${hue}, 58%, 46%)`);
+      arr.push(`hsl(${hue}, 58%, 46%)`);
     }
+    return arr;
+  }
+
+  // Cicla `count` gajos por una lista de niveles [hue, sat%, light%],
+  // ambas variantes B y C la usan. Corrige la "costura" de la rueda: el
+  // último gajo y el primero SON vecinos (la rueda es un círculo), así que
+  // si count % niveles.length === 1 caen en el mismo nivel y quedarían del
+  // mismo color pegados uno al otro. Se corrige corriendo el último gajo
+  // un nivel más — comprobado a mano que no crea una colisión nueva contra
+  // el penúltimo para los tamaños de ciclo que usan B (3) y C (4).
+  function cicloDeNiveles(count, niveles) {
+    const idx = [];
+    for (let i = 0; i < count; i++) idx.push(i % niveles.length);
+    if (count > 1 && idx[count - 1] === idx[0]) {
+      idx[count - 1] = (idx[count - 1] + 1) % niveles.length;
+    }
+    return idx.map((n) => niveles[n]);
+  }
+
+  // Variante B: gama cálida acotada (terracota → ocre → arena), un arco de
+  // hue estrecho (14°-34°, todo alrededor de --accent-warm ≈24°) en vez de
+  // los 360° completos. La distinción entre vecinos la da la luminosidad
+  // (54%/66%/78%, subiendo con el hue), no el tono. Los tres niveles están
+  // elegidos para que colorTextoLegible() (wheel-canvas.js) elija SIEMPRE
+  // negro puro en los tres — 5.54:1 / 9.04:1 / 13.26:1, todos AA — así que
+  // toda la rueda termina con un solo color de texto en vez del
+  // blanco/negro alternado por gajo de la variante A, sin tocar esa
+  // función: los tres niveles quedan del lado "negro gana" por margen.
+  // Con muchas opciones (15-20) los
+  // tres niveles se repiten varias veces alrededor de la rueda: los vecinos
+  // siguen distinguiéndose (nunca se repite el nivel de un gajo al de al
+  // lado, ver cicloDeNiveles), pero cada opción deja de tener "su propio"
+  // color — varias comparten tono en puntos no adyacentes de la rueda.
+  function paletaB(count) {
+    const NIVELES = [
+      [14, 45, 54],
+      [24, 45, 66],
+      [34, 45, 78],
+    ];
+    return cicloDeNiveles(count, NIVELES).map(([h, s, l]) => `hsl(${h}, ${s}%, ${l}%)`);
+  }
+
+  // Variante C: dos tonos del sistema alternados — cálido (--accent-warm,
+  // hue≈24°) y neutro/tinta (gris, sin hue) — cada uno con dos escalones de
+  // luminosidad propios, ciclando de a 4: cálido-oscuro, gris-oscuro,
+  // cálido-claro, gris-claro. La diferencia cálido/gris ya es fuerte de por
+  // sí (saturado contra plano), y el escalón de luminosidad es el respaldo
+  // para el caso en que la "costura" de la rueda (ver cicloDeNiveles)
+  // fuerce a dos gajos vecinos a compartir familia: ahí la luminosidad es
+  // lo único que los distingue, así que tiene que ser una diferencia real,
+  // no cosmética. Mismo mecanismo que B: los cuatro niveles quedan del lado
+  // "negro gana" en colorTextoLegible() — 6.77:1 / 5.66:1 / 10.66:1 / 8.86:1,
+  // todos AA. El peor caso es el gris oscuro (5.66:1), justo porque un gris
+  // tiene menos margen que un color saturado a la misma luminosidad nominal.
+  function paletaC(count) {
+    const NIVELES = [
+      [24, 45, 56],
+      [0, 0, 52],
+      [24, 45, 72],
+      [0, 0, 66],
+    ];
+    return cicloDeNiveles(count, NIVELES).map(([h, s, l]) => `hsl(${h}, ${s}%, ${l}%)`);
+  }
+
+  function generateContrastColors(count) {
+    if (PALETA_RUEDA === 'B') colors = paletaB(count);
+    else if (PALETA_RUEDA === 'C') colors = paletaC(count);
+    else colors = paletaA(count);
   }
 
   function drawRoulette() {

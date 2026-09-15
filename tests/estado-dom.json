@@ -24,6 +24,9 @@
       "padding": "0px",
       "minHeight": "820px"
     },
+    ".roulette-section .section-header": {
+      "display": "none"
+    },
     ".app-grid": {
       "gridTemplateColumns": "500.5px 409.5px"
     },
@@ -80,6 +83,9 @@
     },
     "#tab-manage-content": {
       "display": "none"
+    },
+    ".roulette-section .section-header": {
+      "display": "block"
     },
     "#winner-modal": {
       "display": "flex",

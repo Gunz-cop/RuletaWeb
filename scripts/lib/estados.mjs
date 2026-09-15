@@ -29,6 +29,14 @@ export const ESTADOS = [
       // Y recoloca la cabecera y la sección de la ruleta.
       { sel: '.header-inner', props: ['justifyContent'] },
       { sel: '.roulette-section', props: ['display', 'alignItems', 'padding', 'minHeight'] },
+      // .section-header (kicker "Herramienta principal" + "Gira y decide.")
+      // es nuevo: antes de la migración editorial esta sección no tenía
+      // ningún elemento con esa clase, así que la regla de modo foco que la
+      // oculta llevaba órfana desde el refactor a componentes. Ahora que sí
+      // hay un .section-header dentro de .roulette-section, la regla vuelve
+      // a tener efecto — esto es lo que hubiera avisado si alguien la
+      // rompía de nuevo.
+      { sel: '.roulette-section .section-header', props: ['display'] },
       { sel: '.app-grid', props: ['gridTemplateColumns'] },
       { sel: 'body', props: ['backgroundColor'] },
     ],
@@ -70,6 +78,7 @@ export const ESTADOS = [
       { sel: '.hub-section', props: ['display'] },
       { sel: '.header-inner', props: ['justifyContent'] },
       { sel: '#tab-manage-content', props: ['display'] },
+      { sel: '.roulette-section .section-header', props: ['display'] },
       // Contraste con modal-ganador: sin girar, el modal está oculto.
       { sel: '#winner-modal', props: ['display', 'opacity', 'visibility'] },
       // La home agranda las cabeceras de sección respecto al resto del
