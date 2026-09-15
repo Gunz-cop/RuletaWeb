@@ -95,12 +95,25 @@ function initRoulette() {
   let focusModeEnabled = readStorage('ruleta_focus') === 'true';
   audio.enabled = soundEnabled;
 
-  // Generar paleta de colores HSL con ángulo áureo (distribución óptima)
+  // Generar paleta de colores HSL con ángulo áureo (distribución óptima).
+  // El hue sigue rotando las 360°: es lo que garantiza que dos gajos
+  // vecinos (índices consecutivos) queden siempre a ~137.5° uno del otro
+  // en el círculo cromático, muy por encima de lo que el ojo confunde,
+  // pase lo que pase con N. Restringir el hue a una franja cálida (todo
+  // terracota) rompería esa garantía con 15-20 opciones: dentro de un
+  // arco de 60-90° el golden angle ya no tiene sitio para separar tantos
+  // gajos y varios acaban leyendo como "el mismo naranja". Lo que sí
+  // cambia respecto al arcade neón es la saturación (72%→58%) y la
+  // luminosidad (52%→46%): menos flúor, más tinta con color, en línea
+  // con el resto del sistema editorial. El contraste del texto ya no se
+  // fija en blanco a ciegas — wheel-canvas.js lo calcula por gajo, ver
+  // ese archivo — así que ninguna combinación de hue queda con texto
+  // ilegible.
   function generateContrastColors(count) {
     colors = [];
     for (let i = 0; i < count; i++) {
       const hue = (i * 137.5) % 360;
-      colors.push(`hsl(${hue}, 72%, 52%)`);
+      colors.push(`hsl(${hue}, 58%, 46%)`);
     }
   }
 

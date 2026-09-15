@@ -39,7 +39,7 @@
       "display": "none"
     },
     "#tab-manage": {
-      "color": "rgb(0, 242, 254)",
+      "color": "rgb(226, 144, 90)",
       "backgroundColor": "rgba(0, 0, 0, 0)"
     }
   },
