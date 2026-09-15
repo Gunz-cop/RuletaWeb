@@ -29,16 +29,12 @@ const UMBRAL_AA_TEXTO_NORMAL = 4.5;
 
 // --- Extraer S/L reales de generateContrastColors(), no una copia a mano ---
 const rouletteSrc = readFileSync(ROULETTE_JS, 'utf8');
-// paletaA() es la variante en producción (ver PALETA_RUEDA en roulette.js):
-// arr.push(`hsl(${hue}, S%, L%)`) con hue rotando 360°. Las variantes B/C
-// usan otra forma (niveles fijos, no ${hue}) a propósito, así que este
-// regex no las confunde con la variante que de verdad se sirve hoy.
-const m = rouletteSrc.match(/arr\.push\(`hsl\(\$\{hue\},\s*([\d.]+)%,\s*([\d.]+)%\)`\)/);
+const m = rouletteSrc.match(/colors\.push\(`hsl\(\$\{hue\},\s*([\d.]+)%,\s*([\d.]+)%\)`\)/);
 if (!m) {
   console.error(
-    'No encuentro el patrón `arr.push(`hsl(${hue}, S%, L%)`)` de paletaA() en roulette.js.\n' +
-    'Si generateContrastColors()/paletaA() cambió de forma, actualiza el regex de este\n' +
-    'script antes de asumir que la paleta sigue siendo segura.'
+    'No encuentro el patrón `colors.push(`hsl(${hue}, S%, L%)`)` en roulette.js.\n' +
+    'Si generateContrastColors() cambió de forma, actualiza el regex de este script\n' +
+    'antes de asumir que la paleta sigue siendo segura.'
   );
   process.exit(1);
 }
