@@ -95,12 +95,29 @@ function initRoulette() {
   let focusModeEnabled = readStorage('ruleta_focus') === 'true';
   audio.enabled = soundEnabled;
 
-  // Generar paleta de colores HSL con ángulo áureo (distribución óptima)
+  // Paleta de la ruleta: arcoíris completo por ángulo áureo (137.5°, la
+  // proporción que reparte puntos lo más lejos posible entre sí alrededor
+  // de un círculo). El hue rota las 360° a propósito — no se restringe a
+  // una franja cálida — porque es lo único que garantiza que dos gajos
+  // vecinos (índices consecutivos) queden bien separados en el círculo
+  // cromático para cualquier cantidad de opciones, incluidas las 15-20 que
+  // caben en la rueda: una gama acotada (p. ej. todo terracota) se queda
+  // sin sitio para tantos pasos distinguibles y varios gajos acaban
+  // leyendo como "el mismo color". Saturación/luminosidad (58%/46%) están
+  // bajadas respecto al arcade neón original (72%/52%) para que se sienta
+  // menos flúor sin perder esa garantía de separación.
+  //
+  // El texto de cada gajo NO es blanco fijo: wheel-canvas.js
+  // (colorTextoLegible) calcula la luminancia real de cada color y elige
+  // blanco o negro según cuál dé más contraste. Con blanco fijo, un gajo en
+  // la franja amarilla (hue≈60°) cae a ~1.46:1 — muy por debajo de AA — así
+  // que el texto se volvía ilegible sin que nada lo avisara. No simplificar
+  // esto de vuelta a un color fijo sin volver a hacer esa cuenta.
   function generateContrastColors(count) {
     colors = [];
     for (let i = 0; i < count; i++) {
       const hue = (i * 137.5) % 360;
-      colors.push(`hsl(${hue}, 72%, 52%)`);
+      colors.push(`hsl(${hue}, 58%, 46%)`);
     }
   }
 

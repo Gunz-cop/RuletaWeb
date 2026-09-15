@@ -21,8 +21,13 @@ export class ConfettiManager {
     this.particles = [];
     this.resize();
 
-    // Paleta de colores festivos acorde a la marca
-    const colors = ['#00e5ff', '#b366ff', '#f43f5e', '#fb7185', '#34d399', '#fbbf24', '#a78bfa', '#66f0ff'];
+    // Paleta de colores festivos. Los dos cian puros del trío neón
+    // (#00e5ff/#66f0ff) desentonaban con el acento cálido único del
+    // sistema editorial, así que se reemplazan por variantes cálidas; el
+    // resto de la variedad festiva (rosa, verde, ámbar, violeta) se queda
+    // igual — el confeti no tiene por qué ser monocromo, es celebración,
+    // no el color de marca.
+    const colors = ['#e2905a', '#f2b98a', '#f43f5e', '#fb7185', '#34d399', '#fbbf24', '#a78bfa', '#d9773e'];
 
     // Math.random() aquí a propósito, no crypto.getRandomValues: esto es
     // puro adorno visual (posición/tamaño/color de cada partícula), no un

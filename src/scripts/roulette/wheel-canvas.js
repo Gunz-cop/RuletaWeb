@@ -9,6 +9,53 @@
 // canvas visible. Eso convierte el costo por frame de "N segmentos + N
 // measureText" a "una rotación + un blit", que es lo que de verdad pesa en
 // un móvil de gama media.
+// Contraste real (WCAG), no "texto blanco porque el fondo es oscuro". La
+// paleta de generateContrastColors() (roulette.js) rota 360° de hue: hay
+// wedges donde blanco sobre ese color no llega a AA, sobre todo en la
+// franja amarillo/naranja donde la luminosidad percibida sube aunque el
+// HSL diga "46% de luz". La solución no es "blanco salvo que falle,
+// entonces negro": para un hue de luminancia intermedia ni blanco ni negro
+// llegan a 4.5:1 por separado, así que hay que calcular las DOS opciones y
+// quedarse con la que de más contraste. El peor caso posible de esa
+// estrategia (demostrable: ocurre cuando la luminancia del color cae justo
+// en el punto donde ambos contrastes se igualan) es 4.58:1 — por encima
+// del umbral AA de texto normal (4.5:1) para cualquier hue que
+// generateContrastColors pueda producir, no solo los que se probaron a
+// ojo.
+function hslToRgb(h, s, l) {
+  s /= 100;
+  l /= 100;
+  const k = (n) => (n + h / 30) % 12;
+  const a = s * Math.min(l, 1 - l);
+  const f = (n) => l - a * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1));
+  return [f(0) * 255, f(8) * 255, f(4) * 255];
+}
+
+function relativeLuminance([r, g, b]) {
+  const canal = [r, g, b].map((v) => {
+    v /= 255;
+    return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+  });
+  return 0.2126 * canal[0] + 0.7152 * canal[1] + 0.0722 * canal[2];
+}
+
+// Ratio de contraste (fórmula WCAG) entre dos luminancias relativas.
+function contrastRatio(l1, l2) {
+  const hi = Math.max(l1, l2);
+  const lo = Math.min(l1, l2);
+  return (hi + 0.05) / (lo + 0.05);
+}
+
+function colorTextoLegible(hslString) {
+  const m = hslString.match(/hsl\(\s*([\d.]+)\s*,\s*([\d.]+)%\s*,\s*([\d.]+)%\s*\)/);
+  if (!m) return '#ffffff'; // formato inesperado: no arriesgar, asumir blanco legible
+  const [, h, s, l] = m.map(Number);
+  const L = relativeLuminance(hslToRgb(h, s, l));
+  const contrasteBlanco = contrastRatio(L, 1);
+  const contrasteNegro = contrastRatio(L, 0);
+  return contrasteBlanco >= contrasteNegro ? '#ffffff' : '#000000';
+}
+
 export class WheelRenderer {
   constructor(ctx) {
     this.ctx = ctx;
@@ -108,7 +155,7 @@ export class WheelRenderer {
       ctx.rotate(startAngle + arc / 2);
       ctx.textAlign = 'right';
       ctx.textBaseline = 'middle';
-      ctx.fillStyle = '#ffffff';
+      ctx.fillStyle = colorTextoLegible(colors[i]);
 
       // Escalar fuente dinámicamente
       let fontSize = 16;

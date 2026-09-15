@@ -108,6 +108,14 @@ const { showHomeHeader = false } = Astro.props;
     .nav-link { display: inline-flex; }
   }
 
+  /* Sonido y Modo Foco: parte de la ruleta (ver DESIGN.md, la migración
+     incluye estos dos botones) aunque el marcado viva en Header.astro, que
+     solo se renderiza en la home con showHomeHeader=true — .control-btn no
+     se usa en ninguna otra página, así que recolorearla no filtra el
+     acento cálido a las herramientas sin migrar. min-height/min-width en
+     44px es el objetivo táctil real: el padding visual se queda más
+     angosto porque en mobile el botón es solo el ícono (.btn-label se
+     oculta hasta 480px, ver abajo). */
   .control-btn {
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.07);
@@ -117,28 +125,34 @@ const { showHomeHeader = false } = Astro.props;
     font-size: 0.8rem;
     font-weight: 500;
     padding: 0.45rem 0.65rem;
+    min-width: 44px;
+    min-height: 44px;
     cursor: pointer;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 0.35rem;
     transition: var(--transition);
   }
 
-  .control-btn:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.14);
+  @media (hover: hover) and (pointer: fine) {
+    .control-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.14);
+    }
   }
 
   .control-btn:focus-visible {
-    outline: 2px solid var(--accent-coral);
+    outline: 2px solid var(--accent-warm);
     outline-offset: 2px;
   }
 
+  /* Estado persistente (no depende de :hover): el acento cálido único del
+     sistema editorial en vez del coral neón. */
   .control-btn.active {
-    background: rgba(255, 94, 98, 0.12);
-    border-color: rgba(255, 94, 98, 0.3);
-    color: var(--accent-coral);
-    box-shadow: 0 0 10px rgba(255, 94, 98, 0.1);
+    background: rgba(226, 144, 90, 0.14);
+    border-color: rgba(226, 144, 90, 0.35);
+    color: var(--accent-warm);
   }
 
   .control-btn .btn-label {
