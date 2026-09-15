@@ -54,6 +54,9 @@ function initRoulette() {
   const totalCountSpan = document.getElementById('total-count');
   const wheelTitleText = document.getElementById('wheel-title-text');
   const editTitleBtn = document.getElementById('edit-title-btn');
+  const undoToast = document.getElementById('undo-toast');
+  const undoToastMessage = document.getElementById('undo-toast-message');
+  const undoToastBtn = document.getElementById('undo-toast-btn');
 
   if (!textarea || !spinButton || !wheelPointer || !winnerModal) return;
 
@@ -89,6 +92,12 @@ function initRoulette() {
   // mientras había un giro en curso; se aplica en cuanto termina (ver
   // updateSpin).
   let pendingResync = false;
+  // Foto de las dos cosas que "Limpiar" borra, para poder restaurarlas con
+  // "Deshacer": el texto y qué estaba oculto. Null cuando no hay nada que
+  // deshacer (nunca se vació, ya se deshizo, expiró el aviso o el usuario
+  // empezó a escribir algo nuevo -- ver invalidateClearUndo()).
+  let pendingClearUndo = null;
+  let undoToastTimer = null;
 
   // Sonido y Foco (Persistidos en localStorage)
   let soundEnabled = readStorage('ruleta_sound') !== 'false';
@@ -113,6 +122,17 @@ function initRoulette() {
   // la franja amarilla (hue≈60°) cae a ~1.46:1 — muy por debajo de AA — así
   // que el texto se volvía ilegible sin que nada lo avisara. No simplificar
   // esto de vuelta a un color fijo sin volver a hacer esa cuenta.
+  // Una línea por opción, sin vacías ni espacios sueltos. Único punto que
+  // hace este split: lo usan la carga inicial, cada tecla del textarea y
+  // el "Deshacer" de Limpiar, y las tres necesitan tratar el texto guardado
+  // exactamente igual o divergen en silencio.
+  function parseOptionsText(raw) {
+    return raw
+      .split('\n')
+      .map((opt) => opt.trim())
+      .filter((opt) => opt.length > 0);
+  }
+
   function generateContrastColors(count) {
     colors = [];
     for (let i = 0; i < count; i++) {
@@ -240,10 +260,7 @@ function initRoulette() {
     const previousAllOptions = allOptions;
     const previousDisabled = disabledIndices;
 
-    allOptions = val
-      .split('\n')
-      .map((opt) => opt.trim())
-      .filter((opt) => opt.length > 0);
+    allOptions = parseOptionsText(val);
 
     // Reasignar qué índices siguen ocultos. Primero se intenta la misma
     // posición (rápido y es el caso común: escribir en medio del texto sin
@@ -360,17 +377,73 @@ function initRoulette() {
     syncWheelState();
   }
 
-  // Edición interactiva del título de la ruleta
-  function editTitle() {
-    if (isSpinning) return;
-    const currentTitle = wheelTitleText.textContent.trim();
-    const newTitle = prompt('Ingrese el nuevo título de la ruleta:', currentTitle);
-    if (newTitle !== null) {
-      const trimmedTitle = newTitle.trim();
-      const finalTitle = trimmedTitle || 'Ruleta de Opciones';
-      wheelTitleText.textContent = finalTitle;
-      writeStorage('ruleta_titulo', finalTitle);
-    }
+  // Edición interactiva del título de la ruleta: en vez de prompt(), el
+  // propio <h3> se vuelve editable in situ con contenteditable. No lo
+  // sustituimos por un <input> aparte porque el id #wheel-title-text tiene
+  // que seguir existiendo y conteniendo el título (lo usan el resto de
+  // funciones de este archivo y los tests de estado); con contenteditable
+  // es el mismo elemento todo el tiempo, así que ninguna referencia queda
+  // apuntando a un nodo desconectado del DOM.
+  let titleBeforeEdit = '';
+
+  function isEditingTitle() {
+    return wheelTitleText.getAttribute('contenteditable') === 'true';
+  }
+
+  function selectAllText(el) {
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    const selection = window.getSelection();
+    selection?.removeAllRanges();
+    selection?.addRange(range);
+  }
+
+  function startTitleEdit() {
+    if (isSpinning || isEditingTitle()) return;
+
+    titleBeforeEdit = wheelTitleText.textContent.trim();
+    wheelTitleText.setAttribute('contenteditable', 'true');
+    wheelTitleText.setAttribute('role', 'textbox');
+    wheelTitleText.setAttribute('aria-label', 'Título de la ruleta');
+    // "done" en vez del salto de línea que el teclado táctil ofrecería por
+    // defecto en un contenteditable: aquí un Enter siempre confirma (ver
+    // el keydown de abajo), nunca inserta una línea nueva.
+    wheelTitleText.setAttribute('enterkeyhint', 'done');
+
+    wheelTitleText.focus();
+    selectAllText(wheelTitleText);
+
+    // Que el teclado táctil no tape el campo ni descoloque el layout: al
+    // no ser un <input>, algunos navegadores no lo desplazan solos a la
+    // vista cuando el viewport se encoge, así que lo hacemos a mano.
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    wheelTitleText.scrollIntoView({ block: 'center', behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+  }
+
+  function endTitleEdit() {
+    wheelTitleText.removeAttribute('contenteditable');
+    wheelTitleText.removeAttribute('role');
+    wheelTitleText.removeAttribute('aria-label');
+    wheelTitleText.removeAttribute('enterkeyhint');
+    window.getSelection()?.removeAllRanges();
+  }
+
+  // Enter o perder el foco: confirma. Vacío o solo espacios cae al mismo
+  // título por defecto que ya usaba el prompt() original.
+  function commitTitleEdit() {
+    if (!isEditingTitle()) return;
+    const trimmed = wheelTitleText.textContent.trim();
+    const finalTitle = trimmed || 'Ruleta de Opciones';
+    wheelTitleText.textContent = finalTitle;
+    endTitleEdit();
+    writeStorage('ruleta_titulo', finalTitle);
+  }
+
+  // Escape: cancela y restaura el valor anterior, sin persistir nada.
+  function cancelTitleEdit() {
+    if (!isEditingTitle()) return;
+    wheelTitleText.textContent = titleBeforeEdit;
+    endTitleEdit();
   }
 
   // Calcula, a partir del ángulo actual, qué segmento queda bajo el
@@ -495,13 +568,82 @@ function initRoulette() {
     audio.playTick(spinVelocity);
   }
 
-  // Limpiar toda la lista
+  // Aviso de "Deshacer" tras vaciar, en vez del confirm() que había antes.
+  // Vaciar y volver a escribir el mensaje en el siguiente frame (en vez de
+  // solo cambiar `hidden`) es lo que garantiza que el aria-live vuelva a
+  // anunciarlo: si dos "Limpiar" seguidos dejaran el mismo texto en el
+  // nodo sin pasar por un estado vacío, algunos lectores de pantalla no ven
+  // una mutación real y se callan la segunda vez.
+  function hideUndoToast() {
+    if (undoToastTimer !== null) {
+      clearTimeout(undoToastTimer);
+      undoToastTimer = null;
+    }
+    if (!undoToast) return;
+    undoToast.hidden = true;
+    if (undoToastMessage) undoToastMessage.textContent = '';
+  }
+
+  function showUndoToast(message) {
+    if (!undoToast || !undoToastMessage) return;
+    if (undoToastTimer !== null) clearTimeout(undoToastTimer);
+
+    undoToast.hidden = false;
+    undoToastMessage.textContent = '';
+    requestAnimationFrame(() => {
+      undoToastMessage.textContent = message;
+    });
+
+    // 7s: tiempo suficiente para leer el aviso y reaccionar sin quedarse
+    // pegado en pantalla. Limpiado en hideUndoToast(), en el abort de la
+    // instancia y al restaurar, para no disparar un cierre tardío sobre un
+    // aviso que ya se cerró por otra vía.
+    undoToastTimer = setTimeout(() => {
+      pendingClearUndo = null;
+      hideUndoToast();
+    }, 7000);
+  }
+
+  // Empezar a escribir invalida el "Deshacer": restaurar encima le pisaría
+  // al usuario lo que acaba de teclear. Es el único disparador de
+  // invalidación explícito -- shuffleOptions() y el propio restoreClearUndo()
+  // llaman a updateFromTextarea() sin pasar por el listener de 'input', así
+  // que no se invalidan entre sí.
+  function invalidateClearUndo() {
+    if (pendingClearUndo === null) return;
+    pendingClearUndo = null;
+    hideUndoToast();
+  }
+
+  function restoreClearUndo() {
+    if (pendingClearUndo === null) return;
+    const { text, disabled } = pendingClearUndo;
+    pendingClearUndo = null;
+    hideUndoToast();
+
+    // Restaura las DOS cosas que Limpiar borró -- texto y ocultas -- sin
+    // pasar por el emparejamiento por texto de updateFromTextarea(), que
+    // aquí compararía contra una lista ya vacía y perdería el estado
+    // oculto. Se reconstruye directo desde la foto y se persiste igual que
+    // como estaba.
+    textarea.value = text;
+    allOptions = parseOptionsText(text);
+    disabledIndices = new Set(disabled);
+    persistOptionsState(text);
+    syncWheelState();
+    renderChecklist();
+  }
+
+  // Limpiar toda la lista: vacía al instante y ofrece deshacer en vez de
+  // bloquear con confirm().
   function clearOptions() {
     if (isSpinning) return;
-    if (confirm('¿Estás seguro de que deseas vaciar la ruleta?')) {
-      textarea.value = '';
-      updateFromTextarea();
-    }
+    if (allOptions.length === 0 && disabledIndices.size === 0) return;
+
+    pendingClearUndo = { text: textarea.value, disabled: new Set(disabledIndices) };
+    textarea.value = '';
+    updateFromTextarea();
+    showUndoToast('Ruleta vaciada. Puedes deshacerlo.');
   }
 
   // ==========================================================
@@ -589,20 +731,51 @@ function initRoulette() {
 
   // Edición de título
   if (wheelTitleText) {
-    wheelTitleText.addEventListener('click', editTitle, { signal });
+    wheelTitleText.addEventListener('click', startTitleEdit, { signal });
+    wheelTitleText.addEventListener('blur', commitTitleEdit, { signal });
+    wheelTitleText.addEventListener(
+      'keydown',
+      (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          wheelTitleText.blur();
+        } else if (e.key === 'Escape') {
+          e.preventDefault();
+          cancelTitleEdit();
+          wheelTitleText.blur();
+        }
+      },
+      { signal }
+    );
   }
   if (editTitleBtn) {
-    editTitleBtn.addEventListener('click', editTitle, { signal });
+    editTitleBtn.addEventListener('click', startTitleEdit, { signal });
   }
 
   // ==========================================================
   // CONTROLADORES DE EVENTOS
   // ==========================================================
 
-  textarea.addEventListener('input', updateFromTextarea, { signal });
+  // Invalidar el "Deshacer" de Limpiar en la propia tecla, no dentro de
+  // updateFromTextarea(): esa misma función también la llaman clearOptions()
+  // y el "Deshacer" al restaurar, y ninguna de esas dos debería invalidarse
+  // a sí misma. Solo una pulsación real del usuario cuenta como "empezó a
+  // escribir algo nuevo".
+  textarea.addEventListener(
+    'input',
+    () => {
+      invalidateClearUndo();
+      updateFromTextarea();
+    },
+    { signal }
+  );
   spinButton.addEventListener('click', startSpin, { signal });
   shuffleBtn.addEventListener('click', shuffleOptions, { signal });
   clearBtn.addEventListener('click', clearOptions, { signal });
+
+  if (undoToastBtn) {
+    undoToastBtn.addEventListener('click', restoreClearUndo, { signal });
+  }
 
   // Activar Todas las opciones ocultas
   if (activateAllBtn) {
@@ -622,13 +795,15 @@ function initRoulette() {
   // Modal
   modalCloseBtn.addEventListener('click', closeModal, { signal });
 
-  // Cerrar modal con Esc
+  // Cerrar modal o aviso de "Deshacer" con Esc
   window.addEventListener(
     'keydown',
     (e) => {
-      if (e.key === 'Escape' && winnerModal.classList.contains('active')) {
+      if (e.key !== 'Escape') return;
+      if (winnerModal.classList.contains('active')) {
         closeModal();
       }
+      invalidateClearUndo();
     },
     { signal }
   );
@@ -677,10 +852,7 @@ function initRoulette() {
   // allOptions debe existir antes de migrar los índices ocultos, porque la
   // migración desde el formato v1 (strings) necesita saber en qué posición
   // cae cada texto oculto.
-  allOptions = textarea.value
-    .split('\n')
-    .map((opt) => opt.trim())
-    .filter((opt) => opt.length > 0);
+  allOptions = parseOptionsText(textarea.value);
   disabledIndices = loadDisabledIndices(allOptions);
 
   initUIState();
@@ -695,6 +867,7 @@ function initRoulette() {
     abortController.abort();
     resizeObserver?.disconnect();
     if (spinRafId !== null) cancelAnimationFrame(spinRafId);
+    if (undoToastTimer !== null) clearTimeout(undoToastTimer);
     confetti.stop();
     audio.close();
   };

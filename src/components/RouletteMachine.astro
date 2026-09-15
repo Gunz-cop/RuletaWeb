@@ -117,6 +117,23 @@
       </div> <!-- input-column -->
     </div> <!-- app-grid -->
   </div> <!-- wrap -->
+
+  <!-- Aviso de "Deshacer" tras vaciar la ruleta, en vez del confirm() que
+       había antes. `hidden` empieza puesto para que no ocupe espacio ni se
+       lea con el lector de pantalla hasta que roulette.js lo active.
+
+       El aria-live vive en el <p> del mensaje, no en el contenedor: un
+       aria-live envolviendo también al botón reanuncia el subárbol entero
+       (mensaje + "Deshacer") cada vez que el texto cambia, así que un
+       lector de pantalla puede interrumpir su lectura justo cuando el foco
+       intenta llegar al botón, o listarlo dos veces. Separado así, el
+       mensaje se anuncia solo una vez por aparición y el botón es un
+       <button> normal, alcanzable con Tab igual que cualquier otro control
+       de la página -- sin necesidad de moverle el foco a la fuerza. -->
+  <div id="undo-toast" class="undo-toast" hidden>
+    <p id="undo-toast-message" class="undo-toast-message" aria-live="polite" aria-atomic="true"></p>
+    <button id="undo-toast-btn" type="button" class="undo-toast-btn">Deshacer</button>
+  </div>
 </section>
 <style>
   /* Ruleta Section */
@@ -187,12 +204,34 @@
   }
 
   @media (hover: hover) and (pointer: fine) {
-    #wheel-title-text:hover {
+    #wheel-title-text:hover:not([contenteditable='true']) {
       color: var(--accent-warm);
       text-decoration: underline;
       text-decoration-style: dashed;
       text-underline-offset: 4px;
     }
+  }
+
+  /* Modo edición: mismo elemento, misma tipografía -- roulette.js solo le
+     añade contenteditable, no lo sustituye por un <input>, así que no hace
+     falta reproducir aquí ni un tamaño ni una familia aparte. El cambio
+     visual se limita al cursor de texto y a la selección; el `outline`
+     normal del navegador se apaga porque ya hay dos señales de "esto es
+     editable" (el texto queda seleccionado y aparece un cursor de texto) y
+     un anillo alrededor del titular desentonaría con el resto del sistema
+     editorial. `:focus-visible` lo repone solo cuando el foco llegó por
+     teclado (vía el botón del lápiz con Enter/Espacio, no con el clic que
+     abre el mismo modo), que es el caso que sí necesita una marca visible. */
+  #wheel-title-text[contenteditable='true'] {
+    cursor: text;
+    user-select: text;
+    outline: none;
+  }
+
+  #wheel-title-text[contenteditable='true']:focus-visible {
+    outline: 1px dashed var(--accent-warm);
+    outline-offset: 6px;
+    border-radius: 2px;
   }
 
   /* Objetivo táctil de 44px: en desktop el ícono se ve chico a propósito
@@ -548,6 +587,94 @@
     font-size: 0.78rem;
     white-space: nowrap;
     flex-shrink: 0;
+  }
+
+  /* Aviso "Deshacer": posición fija para no desplazar el layout al
+     aparecer (una pieza en flujo normal empujaría el resto de la tarjeta
+     hacia abajo, y aquí no hay espacio reservado para eso). Vive pegado
+     abajo del viewport, lejos del botón GIRAR -- que está arriba, dentro
+     de .wheel-card -- así que nunca compite con él por espacio, ni en
+     escritorio ni en los 390px que pide la tarea. Superficie y borde son
+     los mismos tokens que .wheel-card/.input-card: ninguna pieza nueva de
+     color ni degradado, sistema editorial. */
+  .undo-toast {
+    position: fixed;
+    left: 50%;
+    bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+    transform: translateX(-50%);
+    z-index: 60;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    width: min(92vw, 420px);
+    background: var(--bg-surface);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    padding: 0.85rem 1rem;
+    animation: undo-toast-in 200ms var(--ease-out);
+  }
+
+  /* Misma especificidad que la regla de arriba, pero con el atributo
+     `[hidden]` sumado: gana por especificidad y no depende del orden en
+     la hoja, así que roulette.js puede seguir alternando la propiedad
+     `hidden` del elemento sin pelear con el `display: flex` de al lado. */
+  .undo-toast[hidden] {
+    display: none;
+  }
+
+  @keyframes undo-toast-in {
+    from {
+      opacity: 0;
+      transform: translate(-50%, 8px);
+    }
+    to {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .undo-toast {
+      animation: none;
+    }
+  }
+
+  .undo-toast-message {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    flex: 1;
+  }
+
+  .undo-toast-btn {
+    flex-shrink: 0;
+    min-height: 44px;
+    padding: 0 0.25rem;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(226, 144, 90, 0.4);
+    color: var(--accent-warm);
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: border-color 160ms var(--ease-out), transform 160ms var(--ease-out);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .undo-toast-btn:hover {
+      border-bottom-color: var(--accent-warm);
+    }
+  }
+
+  .undo-toast-btn:active {
+    transform: scale(0.96);
+  }
+
+  .undo-toast-btn:focus-visible {
+    outline: 1px dashed var(--accent-warm);
+    outline-offset: 3px;
   }
 
   .options-checklist-container {

@@ -69,6 +69,34 @@ export const ESTADOS = [
     ],
   },
   {
+    // Reemplaza al prompt() que abría editTitle(): el propio <h3> se vuelve
+    // editable in situ. Comprobar el cursor de texto y el outline apagado
+    // en el estado de reposo (:not) sería redundante; lo que importa aquí
+    // es que #wheel-title-text[contenteditable="true"] sí reciba la regla.
+    ruta: '/',
+    nombre: 'titulo-edicion',
+    clics: ['#edit-title-btn'],
+    espera: 200,
+    comprobar: [
+      { sel: '#wheel-title-text[contenteditable="true"]', props: ['cursor', 'userSelect', 'outlineStyle'] },
+    ],
+  },
+  {
+    // Reemplaza al confirm() que bloqueaba clearOptions(): vacía al
+    // instante y este es el aviso de "Deshacer" que queda visible unos
+    // segundos. El textarea trae las opciones por defecto al cargar, así
+    // que #clear-btn siempre tiene algo que vaciar en este estado.
+    ruta: '/',
+    nombre: 'deshacer-limpiar',
+    clics: ['#clear-btn'],
+    esperarSelector: '#undo-toast:not([hidden])',
+    espera: 250,
+    comprobar: [
+      { sel: '#undo-toast', props: ['display', 'position', 'zIndex'] },
+      { sel: '#undo-toast-btn', props: ['display', 'cursor', 'minHeight'] },
+    ],
+  },
+  {
     ruta: '/',
     nombre: 'reposo',
     clics: [],

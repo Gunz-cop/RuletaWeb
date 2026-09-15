@@ -31,7 +31,9 @@
 .wheel-column[S]{flex-direction:column;justify-content:center;align-items:center;display:flex}
 .wheel-title-container[S]{justify-content:center;align-items:center;gap:.35rem;width:100%;max-width:520px;margin-bottom:1.25rem;display:flex}
 #wheel-title-text[S]{color:#fff;text-align:center;word-break:break-word;cursor:pointer;transition:color .2s var(--ease-out);user-select:none;font-family:Outfit,sans-serif;font-size:1.5rem;font-weight:700}
-@media (hover:hover) and (pointer:fine){#wheel-title-text[S]:hover{color:var(--accent-warm);text-underline-offset:4px;text-decoration:underline dashed}}
+@media (hover:hover) and (pointer:fine){#wheel-title-text[S]:hover:not([contenteditable=true]){color:var(--accent-warm);text-underline-offset:4px;text-decoration:underline dashed}}
+#wheel-title-text[S][contenteditable=true]{cursor:text;user-select:text;outline:none}
+#wheel-title-text[S][contenteditable=true]:focus-visible{outline:1px dashed var(--accent-warm);outline-offset:6px;border-radius:2px}
 .edit-title-btn[S]{color:var(--text-tertiary);cursor:pointer;min-width:44px;min-height:44px;transition:color .2s var(--ease-out);background:0 0;border:none;justify-content:center;align-items:center;font-size:1.1rem;display:flex}
 @media (hover:hover) and (pointer:fine){.edit-title-btn[S]:hover{color:var(--accent-warm)}}
 .edit-title-btn[S]:active{transform:scale(.9)}
@@ -70,6 +72,15 @@
 .wheel-toolbar-btn--danger[S] .wheel-toolbar-btn-label[S]{color:var(--accent-danger);border-bottom-color:#ef444459}
 @media (hover:hover) and (pointer:fine){.wheel-toolbar-btn--danger[S]:hover .wheel-toolbar-btn-label[S]{color:#f87171;border-bottom-color:#f87171}}
 .wheel-toolbar-btn--sm[S]{white-space:nowrap;flex-shrink:0;font-size:.78rem}
+.undo-toast[S]{left:50%;bottom:calc(1.25rem + env(safe-area-inset-bottom,0px));z-index:60;background:var(--bg-surface);border:1px solid var(--card-border);border-radius:var(--radius-md);width:min(92vw,420px);box-shadow:var(--shadow-lg);animation:undo-toast-in .2s var(--ease-out);align-items:center;gap:1rem;padding:.85rem 1rem;display:flex;position:fixed;transform:translate(-50%)}
+.undo-toast[S][hidden]{display:none}
+@keyframes undo-toast-in{0%{opacity:0;transform:translate(-50%,8px)}to{opacity:1;transform:translate(-50%)}}
+@media (prefers-reduced-motion:reduce){.undo-toast[S]{animation:none}}
+.undo-toast-message[S]{color:var(--text-primary);flex:1;margin:0;font-size:.9rem}
+.undo-toast-btn[S]{min-height:44px;color:var(--accent-warm);cursor:pointer;transition:border-color .16s var(--ease-out), transform .16s var(--ease-out);background:0 0;border:none;border-bottom:1px solid #e2905a66;flex-shrink:0;padding:0 .25rem;font-family:Outfit,sans-serif;font-size:.9rem;font-weight:700}
+@media (hover:hover) and (pointer:fine){.undo-toast-btn[S]:hover{border-bottom-color:var(--accent-warm)}}
+.undo-toast-btn[S]:active{transform:scale(.96)}
+.undo-toast-btn[S]:focus-visible{outline:1px dashed var(--accent-warm);outline-offset:3px}
 .options-checklist-container[S]{flex-direction:column;gap:.5rem;max-height:250px;padding-right:.25rem;display:flex;overflow-y:auto}
 .options-checklist-container[S]::-webkit-scrollbar{width:5px}
 .options-checklist-container[S]::-webkit-scrollbar-track{background:#00000026;border-radius:4px}
