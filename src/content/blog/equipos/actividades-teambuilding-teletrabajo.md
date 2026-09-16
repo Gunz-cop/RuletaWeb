@@ -35,7 +35,7 @@ Una de las barreras más grandes en las videoconferencias es la parálisis del v
 
 <div style="background: linear-gradient(135deg, rgba(0, 229, 255, 0.05) 0%, rgba(179, 102, 255, 0.05) 100%); border: 1px solid rgba(0, 229, 255, 0.15); padding: 1.25rem; border-radius: 10px; margin: 1.5rem 0; text-align: center;">
   <p style="margin-bottom: 1rem; font-size: 0.95rem; color: #b4b4c7;">¿Quieres intentarlo en tu próxima reunión?</p>
-  <a href="https://decidelo.app/#ruleta" style="color: #00e5ff; font-weight: 700; text-decoration: none; border-bottom: 1px dashed #00e5ff;">🎡 Abrir la Ruleta de Decisiones</a>
+  <a href="https://decidelo.app/ruleta" style="color: #00e5ff; font-weight: 700; text-decoration: none; border-bottom: 1px dashed #00e5ff;">🎡 Abrir la Ruleta de Decisiones</a>
 </div>
 
 ---

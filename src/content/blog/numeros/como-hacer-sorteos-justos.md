@@ -36,7 +36,7 @@ Si has asignado un boleto o número a cada participante (por ejemplo, en una rif
 
 ### Sorteos de Nombres o Listas
 Si tienes una lista de nombres de usuario o correos electrónicos y deseas elegir uno o dividirlos.
-- Puedes utilizar la [Ruleta de Decisión](https://decidelo.app/) pegando la lista de participantes en las opciones de la ruleta y haciéndola girar en directo.
+- Puedes utilizar la [Ruleta de Decisión](https://decidelo.app/ruleta) pegando la lista de participantes en las opciones de la ruleta y haciéndola girar en directo.
 
 ## 3. Demuestra la transparencia a tus participantes
 

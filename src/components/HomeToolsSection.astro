@@ -3,8 +3,9 @@
  * Sección "más herramientas" de la home: la cabecera de sección y la
  * rejilla de tarjetas.
  *
- * Como el hero, se oculta en modo foco mediante una regla que se queda en
- * index.astro y que por eso va con :global(.hub-section).
+ * La ruleta ya no vive aquí (se mudó a /ruleta), así que el modo foco de la
+ * home también se fue con ella -- esta sección ya no necesita ocultarse
+ * para nada; ese comportamiento ahora es propio de /ruleta.
  */
 import HubGrid from './HubGrid.astro';
 ---
@@ -17,7 +18,7 @@ import HubGrid from './HubGrid.astro';
       <p class="section-subtitle">Para fiestas, dinámicas en familia, planes con amigos o actividades de equipo en el trabajo.</p>
     </div>
 
-    <HubGrid activeToolId="ruleta" />
+    <HubGrid />
   </div>
 </section>
 <style>

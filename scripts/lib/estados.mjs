@@ -80,7 +80,15 @@ async function verificarBotonGirarSobrePanel(pagina) {
 
 export const ESTADOS = [
   {
-    ruta: '/',
+    // La ruleta se mudó a /ruleta (ver AGENTS.md): el modo foco es un
+    // control suyo (roulette.js, #focus-toggle-btn), así que su estado
+    // viaja con ella. Los selectores también se reescribieron -- la
+    // versión vieja comprobaba .nav-link/.logo-link, que solo existen con
+    // el header de home (showHomeHeader=true); /ruleta usa el header de
+    // herramienta (showHomeHeader=false + showRouletteControls=true, ver
+    // Header.astro), donde esos elementos no existen. Comprobarlos aquí
+    // habría dado un falso "no se oculta" permanente, no una detección real.
+    ruta: '/ruleta',
     nombre: 'modo-foco',
     clics: ['#focus-toggle-btn'],
     espera: 400,
@@ -88,9 +96,8 @@ export const ESTADOS = [
       // El modo foco esconde todo lo que no es la ruleta.
       { sel: '.hero', props: ['display'] },
       { sel: '.hub-section', props: ['display'] },
+      { sel: '.seo-section', props: ['display'] },
       { sel: 'footer', props: ['display'] },
-      { sel: '.nav-link', props: ['display'] },
-      { sel: '.logo-link', props: ['display'] },
       // Y recoloca la cabecera y la sección de la ruleta.
       { sel: '.header-inner', props: ['justifyContent'] },
       { sel: '.roulette-section', props: ['display', 'alignItems', 'padding', 'minHeight'] },
@@ -107,7 +114,7 @@ export const ESTADOS = [
     ],
   },
   {
-    ruta: '/',
+    ruta: '/ruleta',
     nombre: 'pestana-gestionar',
     clics: ['#tab-manage'],
     espera: 250,
@@ -118,7 +125,7 @@ export const ESTADOS = [
     ],
   },
   {
-    ruta: '/',
+    ruta: '/ruleta',
     nombre: 'modal-ganador',
     clics: ['#spin-button'],
     // El giro no dura un tiempo fijo: se frena por rozamiento, así que se
@@ -149,7 +156,7 @@ export const ESTADOS = [
     // normaliza desde "plaintext-only" a "true", otros no), así que un
     // selector de atributo con valor exacto es frágil por la misma razón
     // que el CSS de RouletteMachine.astro dejó de usarlo.
-    ruta: '/',
+    ruta: '/ruleta',
     nombre: 'titulo-edicion',
     clics: ['#edit-title-btn'],
     espera: 200,
@@ -162,7 +169,7 @@ export const ESTADOS = [
     // instante y este es el aviso de "Deshacer" que queda visible unos
     // segundos. El textarea trae las opciones por defecto al cargar, así
     // que #clear-btn siempre tiene algo que vaciar en este estado.
-    ruta: '/',
+    ruta: '/ruleta',
     nombre: 'deshacer-limpiar',
     clics: ['#clear-btn'],
     esperarSelector: '#undo-toast:not([hidden])',
@@ -173,18 +180,19 @@ export const ESTADOS = [
     ],
   },
   {
+    // Reposo de la home: la ruleta ya no vive aquí, así que este estado se
+    // queda solo con lo que es de verdad de la home. Las comprobaciones de
+    // la ruleta (pestaña de gestionar, modal, cabecera de la sección) se
+    // mudaron al estado gemelo 'reposo' de /ruleta, más abajo.
     ruta: '/',
     nombre: 'reposo',
     clics: [],
     comprobar: [
-      // Contraste del anterior: sin pulsar nada, nada está oculto.
+      // Contraste con modo-foco (que ahora vive en /ruleta): sin pulsar
+      // nada, nada está oculto aquí tampoco.
       { sel: '.hero', props: ['display'] },
       { sel: '.hub-section', props: ['display'] },
       { sel: '.header-inner', props: ['justifyContent'] },
-      { sel: '#tab-manage-content', props: ['display'] },
-      { sel: '.roulette-section .section-header', props: ['display'] },
-      // Contraste con modal-ganador: sin girar, el modal está oculto.
-      { sel: '#winner-modal', props: ['display', 'opacity', 'visibility'] },
       // La home agranda las cabeceras de sección respecto al resto del
       // sitio. Al sacar la sección de herramientas a un componente, esos
       // overrides dejaron de alcanzarla y el titular volvió al tamaño
@@ -196,12 +204,27 @@ export const ESTADOS = [
     ],
   },
   {
+    // Reposo de /ruleta: contraste de los estados provocados de la ruleta
+    // (pestana-gestionar, modal-ganador) -- sin pulsar nada, nada de eso
+    // está activo. Antes de la mudanza esto vivía mezclado con el reposo
+    // de la home; se separa porque son páginas distintas ahora.
+    ruta: '/ruleta',
+    nombre: 'reposo',
+    clics: [],
+    comprobar: [
+      { sel: '#tab-manage-content', props: ['display'] },
+      { sel: '.roulette-section .section-header', props: ['display'] },
+      // Contraste con modal-ganador: sin girar, el modal está oculto.
+      { sel: '#winner-modal', props: ['display', 'opacity', 'visibility'] },
+    ],
+  },
+  {
     // Panel de opciones como hoja inferior en móvil (layout nuevo): no
     // existe en reposo -- .panel-open lo pone roulette.js al pulsar la
     // manija -- así que, igual que el modo edición del título o el aviso
     // de deshacer, necesita su propio estado provocado en vez de una
     // captura de píxeles (canvas + animaciones infinitas, ver cabecera).
-    ruta: '/',
+    ruta: '/ruleta',
     nombre: 'panel-opciones-movil',
     viewport: { width: 390, height: 844 },
     clics: ['#options-panel-toggle'],
@@ -219,25 +242,25 @@ export const ESTADOS = [
   {
     // Invariante, no snapshot -- ver el comentario junto a
     // verificarPanelFijoTrasScroll más arriba.
-    ruta: '/',
+    ruta: '/ruleta',
     nombre: 'panel-fijo-tras-scroll',
     viewport: { width: 390, height: 844 },
     verificarRelacion: verificarPanelFijoTrasScroll,
   },
   {
-    ruta: '/',
+    ruta: '/ruleta',
     nombre: 'boton-girar-visible-con-panel-390x844',
     viewport: { width: 390, height: 844 },
     verificarRelacion: verificarBotonGirarSobrePanel,
   },
   {
-    ruta: '/',
+    ruta: '/ruleta',
     nombre: 'boton-girar-visible-con-panel-375x667',
     viewport: { width: 375, height: 667 },
     verificarRelacion: verificarBotonGirarSobrePanel,
   },
   {
-    ruta: '/',
+    ruta: '/ruleta',
     nombre: 'boton-girar-visible-con-panel-360x640',
     viewport: { width: 360, height: 640 },
     verificarRelacion: verificarBotonGirarSobrePanel,
@@ -246,7 +269,7 @@ export const ESTADOS = [
     // La pestaña "Gestionar" alcanzada desde dentro del panel móvil: cubre
     // que abrir el panel no rompe el resto de la interacción que ya vigila
     // el estado "pestana-gestionar" de arriba.
-    ruta: '/',
+    ruta: '/ruleta',
     nombre: 'panel-opciones-movil-gestionar',
     viewport: { width: 390, height: 844 },
     clics: ['#options-panel-toggle', '#tab-manage'],

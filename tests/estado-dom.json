@@ -1,18 +1,15 @@
 {
-  "/ [modo-foco]": {
+  "/ruleta [modo-foco]": {
     ".hero": {
       "display": "none"
     },
     ".hub-section": {
       "display": "none"
     },
+    ".seo-section": {
+      "display": "none"
+    },
     "footer": {
-      "display": "none"
-    },
-    ".nav-link": {
-      "display": "none"
-    },
-    ".logo-link": {
       "display": "none"
     },
     ".header-inner": {
@@ -34,7 +31,7 @@
       "backgroundColor": "rgb(6, 6, 8)"
     }
   },
-  "/ [pestana-gestionar]": {
+  "/ruleta [pestana-gestionar]": {
     "#tab-manage-content": {
       "display": "flex"
     },
@@ -46,7 +43,7 @@
       "backgroundColor": "rgba(0, 0, 0, 0)"
     }
   },
-  "/ [modal-ganador]": {
+  "/ruleta [modal-ganador]": {
     "#winner-modal": {
       "display": "flex",
       "opacity": "1",
@@ -71,13 +68,13 @@
       "fontSize": "56px"
     }
   },
-  "/ [titulo-edicion]": {
+  "/ruleta [titulo-edicion]": {
     "#wheel-title-text.title-editing": {
       "cursor": "text",
       "userSelect": "text"
     }
   },
-  "/ [deshacer-limpiar]": {
+  "/ruleta [deshacer-limpiar]": {
     "#undo-toast": {
       "display": "flex",
       "position": "fixed",
@@ -99,17 +96,6 @@
     ".header-inner": {
       "justifyContent": "space-between"
     },
-    "#tab-manage-content": {
-      "display": "none"
-    },
-    ".roulette-section .section-header": {
-      "display": "block"
-    },
-    "#winner-modal": {
-      "display": "flex",
-      "opacity": "0",
-      "visibility": "visible"
-    },
     ".hub-section .section-heading": {
       "fontSize": "36.8px"
     },
@@ -120,7 +106,20 @@
       "marginBottom": "48px"
     }
   },
-  "/ [panel-opciones-movil]": {
+  "/ruleta [reposo]": {
+    "#tab-manage-content": {
+      "display": "none"
+    },
+    ".roulette-section .section-header": {
+      "display": "block"
+    },
+    "#winner-modal": {
+      "display": "flex",
+      "opacity": "0",
+      "visibility": "visible"
+    }
+  },
+  "/ruleta [panel-opciones-movil]": {
     "#mobile-options-panel": {
       "position": "fixed",
       "zIndex": "55",
@@ -134,31 +133,31 @@
       "display": "none"
     }
   },
-  "/ [panel-fijo-tras-scroll]": {
+  "/ruleta [panel-fijo-tras-scroll]": {
     "relacion": {
       "ok": true,
       "mensaje": "bottom antes de scrollear=1193.1px, después de scrollear a 900px=1193.1px (delta 0.0px, tolerancia 2px). Un delta grande significa que el panel no está fixed al viewport de verdad -- algún ancestro le puso un transform."
     }
   },
-  "/ [boton-girar-visible-con-panel-390x844]": {
+  "/ruleta [boton-girar-visible-con-panel-390x844]": {
     "relacion": {
       "ok": true,
       "mensaje": "spin-button.bottom=311.2px, panel.top=438.9px (holgura 127.7px). Holgura negativa significa que el panel abierto tapa el botón GIRAR."
     }
   },
-  "/ [boton-girar-visible-con-panel-375x667]": {
+  "/ruleta [boton-girar-visible-con-panel-375x667]": {
     "relacion": {
       "ok": true,
-      "mensaje": "spin-button.bottom=303.7px, panel.top=346.8px (holgura 43.2px). Holgura negativa significa que el panel abierto tapa el botón GIRAR."
+      "mensaje": "spin-button.bottom=316.1px, panel.top=346.8px (holgura 30.8px). Holgura negativa significa que el panel abierto tapa el botón GIRAR."
     }
   },
-  "/ [boton-girar-visible-con-panel-360x640]": {
+  "/ruleta [boton-girar-visible-con-panel-360x640]": {
     "relacion": {
       "ok": true,
-      "mensaje": "spin-button.bottom=296.2px, panel.top=332.8px (holgura 36.6px). Holgura negativa significa que el panel abierto tapa el botón GIRAR."
+      "mensaje": "spin-button.bottom=308.6px, panel.top=332.8px (holgura 24.3px). Holgura negativa significa que el panel abierto tapa el botón GIRAR."
     }
   },
-  "/ [panel-opciones-movil-gestionar]": {
+  "/ruleta [panel-opciones-movil-gestionar]": {
     "#mobile-options-panel": {
       "transform": "matrix(1, 0, 0, 1, 0, 0)"
     },

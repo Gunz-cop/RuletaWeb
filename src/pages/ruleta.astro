@@ -221,6 +221,40 @@ const schemaLD = {
     padding: 3rem 0;
   }
 
+  /* En home, la ruleta se veía primero en móvil gracias a un `order: -1`
+     flex que la reordenaba por delante del hero (ver el historial de
+     index.astro) -- el CSS de RouletteMachine.astro asume exactamente eso:
+     su media query de 859px calcula la altura disponible como si
+     `.roulette-section` fuera lo primero bajo el header
+     (`calc(100svh - 72px)`, comentario "ya es lo primero que se ve al
+     cargar"). /ruleta no reordena nada (es una página de herramienta
+     normal, sin envoltorio flex), así que ese supuesto se rompe: el hero
+     de arriba suma su alto antes de la rueda y el test de invariantes
+     (npm run test:estado) lo detectó -- con el panel de opciones abierto,
+     el botón GIRAR quedaba tapado, exactamente el fallo real que ese test
+     existe para cazar.
+     La solución no es reordenar (eso reintroduce la complejidad que el
+     encargo pidió retirar de index.astro) ni tocar RouletteMachine.astro
+     (no es parte de este encargo y arriesga otras páginas... salvo que
+     esta es la única que lo usa). Se oculta el hero propio solo bajo
+     859px: el <h1> sigue en el DOM (accesible a lectores de pantalla que
+     no respeten `display:none`... aunque la mayoría sí lo hacen, como
+     .section-tag más abajo en RouletteMachine.astro con el mismo criterio)
+     y la rueda vuelve a ser, en los hechos, lo primero visible bajo el
+     header -- que es justo lo que ese CSS ya asumía. */
+  @media (max-width: 859px) {
+    /* Se oculta el <main> completo, no solo `.hero`: `main` trae
+       3rem de relleno vertical propio (arriba y abajo, ver la regla
+       `main { padding: 3rem 0; }` de más arriba) que seguía reservando
+       ~96px de hueco vacío aunque el hero de adentro ya no se viera --
+       eso fue justo lo que faltó la primera vez que se probó esto: el
+       test de invariantes bajó de "tapado por 240px" a "tapado por 70px",
+       no a "sin tapar", porque el padding del contenedor seguía sumando. */
+    main.wrap {
+      display: none;
+    }
+  }
+
   /* ====================================================================
      MODO FOCO
      ====================================================================

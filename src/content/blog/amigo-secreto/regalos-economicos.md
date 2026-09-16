@@ -57,7 +57,7 @@ Regalar un momento de desconexión o comodidad nunca falla, y existen opciones m
 
 Una vez que tengáis el presupuesto y los regalos listos, la entrega puede ser igual de divertida que el juego. Aquí te propongo una dinámica rápida usando la tecnología:
 
-* **El juego del robo:** Todos los regalos se envuelven y se colocan en el centro de la mesa sin nombres. Los participantes usan nuestra [Ruleta de Opciones](https://decidelo.app/) con sus nombres escritos para definir el orden de elección. El primer participante toma un regalo y lo abre. El siguiente participante puede elegir entre "robar" el regalo ya abierto del primero o tomar uno nuevo de la pila. ¡Esto genera momentos de risas y disputas sanas memorables!
+* **El juego del robo:** Todos los regalos se envuelven y se colocan en el centro de la mesa sin nombres. Los participantes usan nuestra [Ruleta de Opciones](https://decidelo.app/ruleta) con sus nombres escritos para definir el orden de elección. El primer participante toma un regalo y lo abre. El siguiente participante puede elegir entre "robar" el regalo ya abierto del primero o tomar uno nuevo de la pila. ¡Esto genera momentos de risas y disputas sanas memorables!
 
 > [!TIP]
 > Recuerda que para organizar el sorteo sin revelar el resultado a nadie, puedes usar de forma 100% gratuita nuestra aplicación de [Amigo Secreto Online](https://decidelo.app/amigo-secreto). Podrás configurar excepciones y enviar los enlaces directamente por WhatsApp.

@@ -20,9 +20,9 @@
  * public/images/hero/README.md.
  *
  * El marcado y sus reglas viajan juntos, así que el scope de Astro sigue
- * aplicando igual. Lo que no viaja es la regla que lo oculta en modo foco:
- * esa vive en index.astro y usa :global(.hero), porque el scope de la
- * página ya no alcanza a este marcado.
+ * aplicando igual. La ruleta (y su modo foco) ya no vive en esta página --
+ * se mudó a /ruleta -- así que este hero ya no necesita ocultarse para
+ * nada.
  */
 ---
 
@@ -31,7 +31,10 @@
   <div class="hero-inner">
     <h1>Alguien tiene que <em>decidir.</em></h1>
     <p class="hero-subtitle">Ruleta, moneda, dados, equipos y más para resolver cualquier empate en una fiesta, en familia, entre amigos o en la oficina. Sin registro, sin dramas.</p>
-    <a href="#ruleta" class="hero-cta" id="hero-cta-btn">
+    <!-- TODO: la ruleta se mudó a /ruleta. Este CTA apunta ahí por ahora
+         para no romper el enlace; la home nueva (unidad de trabajo
+         siguiente) decide su propio destino y redacción. -->
+    <a href="/ruleta" class="hero-cta" id="hero-cta-btn">
       Girar la Ruleta
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <line x1="5" y1="12" x2="19" y2="12"></line>

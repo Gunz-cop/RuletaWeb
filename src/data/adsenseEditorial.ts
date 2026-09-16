@@ -50,7 +50,7 @@ const commonMistakes = [
 export const editorialKits: Record<string, EditorialKit> = {
   'ruleta/ruleta-de-nombres-para-profesores': {
     toolName: 'Ruleta de opciones',
-    toolUrl: '/#ruleta',
+    toolUrl: '/ruleta',
     testedUseCase: 'Un docente carga la lista de estudiantes, gira la ruleta para elegir participaciones y oculta cada nombre elegido para que todos tengan oportunidad antes de repetir.',
     steps: ['Pega un nombre por línea en la ruleta.', 'Activa la vista de ocultar/activar para retirar a quien ya participó.', 'Muestra el resultado en pantalla antes de pasar a la siguiente pregunta.'],
     templateTitle: 'Lista lista para clase',
@@ -72,7 +72,7 @@ export const editorialKits: Record<string, EditorialKit> = {
   },
   'ruleta/ruleta-retos': {
     toolName: 'Ruleta de opciones',
-    toolUrl: '/#ruleta',
+    toolUrl: '/ruleta',
     testedUseCase: 'En una reunión familiar se cargan retos breves y seguros para romper el hielo sin obligar a nadie a participar en actividades incómodas.',
     steps: ['Escribe retos de menos de un minuto.', 'Incluye opciones suaves para personas tímidas.', 'Elimina retos ya usados para mantener variedad.'],
     templateTitle: 'Retos seguros para copiar',
@@ -270,13 +270,13 @@ export const editorialKits: Record<string, EditorialKit> = {
   },
   'ruleta/juegos-reuniones-familiares-ruleta': {
     toolName: 'Ruleta de opciones',
-    toolUrl: '/#ruleta',
+    toolUrl: '/ruleta',
     testedUseCase: 'En una reunión familiar se proyecta una ruleta en la TV para elegir turnos de trivia, karaoke o retos suaves sin que una sola persona dirija toda la actividad.',
     steps: ['Elige una dinámica apta para todas las edades.', 'Carga nombres o retos en la ruleta.', 'Elimina opciones usadas para que todos participen.'],
     templateTitle: 'Ruleta familiar segura',
     templateItems: ['Trivia familiar', 'Karaoke suave', 'Cuenta una anécdota', 'Mímica por equipos', 'Elige el próximo juego'],
     mistakes: ['Incluir retos incómodos.', 'No dar opción de pasar turno.', 'Alargar la dinámica cuando el grupo ya perdió energía.'],
-    related: [{ label: 'Ruleta de retos', href: '/blog/ruleta/ruleta-retos' }, { label: 'Abrir ruleta', href: '/#ruleta' }],
+    related: [{ label: 'Ruleta de retos', href: '/blog/ruleta/ruleta-retos' }, { label: 'Abrir ruleta', href: '/ruleta' }],
     faqs: [{ question: '¿Cómo evito que alguien se sienta obligado?', answer: 'Incluye reglas de pase y retos seguros. La ruleta debe animar la reunión, no exponer a nadie.' }],
   },
   'piedra-papel-tijera/arbitro-esports': {

@@ -2,20 +2,17 @@
 import Layout from '../layouts/Layout.astro';
 import HomeHero from '../components/HomeHero.astro';
 import HomeHowItWorks from '../components/HomeHowItWorks.astro';
-import RouletteMachine from '../components/RouletteMachine.astro';
 import HomeToolsSection from '../components/HomeToolsSection.astro';
-import WinnerModal from '../components/WinnerModal.astro';
 import AdSlot from '../components/AdSlot.astro';
-import HubGrid from '../components/HubGrid.astro';
 import SeoArticle from '../components/SeoArticle.astro';
 import { getSocialImageUrl } from '../lib/heroImages';
 
-// Experimento de SEO: la raíz nunca tuvo un <title>/<description> que
-// dijera "ruleta" -- se prueba esta redacción para ver si decidelo.app
-// empieza a rankear por búsquedas de ruleta antes de decidir si la
-// herramienta se muda a su propia página (/ruleta). Ver AGENTS.md sobre
-// Search Console para el seguimiento. No toca el <h1> ni el JSON-LD: son
-// cambios aparte, deliberadamente medibles por separado.
+// TODO: la ruleta se mudó a /ruleta (ver AGENTS.md, la unidad de trabajo de
+// esa mudanza). Este title/description siguen siendo los del experimento
+// SEO de "la raíz es la ruleta" a propósito: el cambio a metadatos de hub
+// depende de un informe de Search Console que el propietario todavía no
+// exportó, así que tocarlos ahora sería adivinar sin datos. Se retocan en
+// la unidad de trabajo siguiente, junto con el JSON-LD de abajo.
 const title = 'Ruleta Aleatoria Online Gratis — Decídelo.app';
 const description = 'Ruleta aleatoria online para sortear nombres, elegir al azar y resolver empates. Gratis, sin registro, 100% en tu navegador. Además: moneda, dados y equipos.';
 
@@ -23,6 +20,10 @@ const description = 'Ruleta aleatoria online para sortear nombres, elegir al aza
 // su URL absoluta ya generada, no la ruta pública que tenía antes.
 const socialImage = await getSocialImageUrl('/blog/ruleta.png');
 
+// TODO: mismo motivo que arriba -- este JSON-LD sigue centrado en la
+// ruleta ("Hub de herramientas..." como description del WebApplication es
+// lo único que ya habla de hub). Se revisa en la unidad de trabajo
+// siguiente, con los datos de Search Console en mano.
 const schemaLD = {
   "@context": "https://schema.org",
   "@graph": [
@@ -86,98 +87,47 @@ const schemaLD = {
     <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@1,400&display=swap" rel="stylesheet">
   </Fragment>
 
-  <!-- Canvas transparente para el efecto de confeti -->
-  <canvas id="confetti-canvas" aria-hidden="true"></canvas>
+  <!-- ====================================================================
+       HERO SECTION
+       ==================================================================== -->
+  <HomeHero />
 
-  <!-- El envoltorio existe solo para poder reordenar VISUALMENTE estas
-       secciones en móvil (con `order` de flex, ver el <style> de abajo) sin
-       tocar el orden real del DOM: el rastreo y el SEO siguen viendo hero,
-       cómo-funciona, ruleta, herramientas y artículo en este mismo orden.
-       Envolver aquí en vez de hacerlo en Layout.astro evita convertir
-       `<body>` en un contenedor flex para todas las páginas del sitio por una
-       necesidad que es solo de la home. -->
-  <div class="home-sections">
-    <!-- ====================================================================
-         HERO SECTION
-         ==================================================================== -->
-    <HomeHero />
+  <!-- ====================================================================
+       CÓMO FUNCIONA
+       ==================================================================== -->
+  <HomeHowItWorks />
 
-    <!-- ====================================================================
-         CÓMO FUNCIONA
-         ==================================================================== -->
-    <HomeHowItWorks />
+  <!-- Espacio Publicitario Superior -->
+  <AdSlot position="top" />
 
-    <!-- Espacio Publicitario Superior -->
-    <AdSlot position="top" />
+  <!-- ====================================================================
+       HUB DE HERRAMIENTAS
+       ==================================================================== -->
+  <!-- id="ruleta" de cortesía: la ruleta vivía en esta sección de la home
+       (id="ruleta" en el <section> viejo) y algún enlace absoluto viejo a
+       /#ruleta puede seguir circulando (redes, marcadores, caché). La
+       regla del encargo es que la raíz NUNCA redirige a /ruleta -- así que
+       en vez de un redirect, este ancla vacía hace que ese enlace viejo
+       aterrice aquí, en el índice de herramientas, en vez de a mitad de
+       ninguna parte. -->
+  <span id="ruleta" aria-hidden="true"></span>
+  <HomeToolsSection />
 
-    <!-- ====================================================================
-         SECCIÓN DE LA RULETA — Herramienta Principal
-         ==================================================================== -->
-    <RouletteMachine />
-
-    <!-- ====================================================================
-         HUB DE HERRAMIENTAS
-         ==================================================================== -->
-    <HomeToolsSection />
-
-    <!-- ====================================================================
-         SECCIÓN DE ARTÍCULO SEO
-         ==================================================================== -->
-    <SeoArticle title="¿Qué es decídelo.app y para qué sirve?">
+  <!-- ====================================================================
+       SECCIÓN DE ARTÍCULO SEO
+       ====================================================================
+       La ruleta se mudó a /ruleta con su propio artículo completo. Este es
+       un artículo de hub provisional: solo la introducción de "¿Qué es
+       decídelo.app?" que ya existía. NO es el artículo de hub definitivo
+       -- escribir ese es la unidad de trabajo siguiente, con más contenido
+       sobre el conjunto de herramientas (no solo la ruleta). -->
+  <SeoArticle title="¿Qué es decídelo.app y para qué sirve?">
     <p><strong>Decídelo.app</strong> es un hub de herramientas de decisión aleatoria diseñado para resolver esos momentos de indecisión que todos enfrentamos a diario. Ya sea que necesites elegir qué cenar, sortear un ganador entre participantes, asignar tareas de forma imparcial o simplemente dejar que el destino tome la decisión por ti, nuestras herramientas hacen el trabajo pesado en cuestión de segundos.</p>
     <p>A diferencia de otros servicios similares, <strong>decídelo.app</strong> funciona 100% en tu navegador. Tus datos nunca salen de tu dispositivo: no hay servidores externos, no hay cookies de rastreo, y no hay necesidad de registro. Todo se almacena localmente mediante la tecnología <code>localStorage</code>, garantizando tu privacidad total.</p>
-
-    <h2>La Ruleta Aleatoria Online: Tu aliada contra la indecisión</h2>
-    <p>Nuestra herramienta estrella es la <strong>Ruleta Aleatoria Online</strong>. Construida con tecnología <strong>HTML5 Canvas</strong> de última generación, ofrece una experiencia visual fluida a 60 fotogramas por segundo con un algoritmo de desaceleración basado en física de fricción real. Cada giro se siente orgánico, impredecible y emocionante.</p>
-
-    <h3>¿Cómo funciona la Ruleta?</h3>
-    <ul>
-      <li><strong>Escribe tus opciones</strong> en el panel lateral (una por línea). La ruleta se actualiza en tiempo real.</li>
-      <li><strong>Personaliza el título</strong> haciendo clic sobre él. Ideal para sorteos con nombre: "¿Quién lava los platos?".</li>
-      <li><strong>Presiona GIRAR</strong> y observa cómo la rueda cobra vida con efectos de sonido sintetizados y un puntero que se sacude al pasar por cada segmento.</li>
-      <li><strong>¡Resultado con confeti!</strong> Al detenerse, un modal elegante revela al ganador con una celebración visual de confeti animado.</li>
-      <li><strong>Oculta opciones</strong> sin borrarlas. Perfecto para torneos por eliminación o para ir descartando candidatos ronda a ronda.</li>
-    </ul>
-
-    <h2>Casos de uso populares</h2>
-
-    <h3>Sorteos de nombres y ganadores</h3>
-    <p>Ya sea para dinamizar tus sorteos en redes sociales (Instagram, TikTok, Facebook), seleccionar ganadores en concursos, o elegir el orden de exposición de estudiantes en clase, la <em>ruleta de nombres</em> garantiza imparcialidad absoluta. El público confía en un resultado visualmente aleatorio más que en un simple número generado por computadora.</p>
-
-    <h3>Decidir qué comer</h3>
-    <p>El clásico dilema de parejas y amigos. Introduce opciones como "Pizza 🍕", "Tacos 🌮", "Sushi 🍣" o "Hamburguesas 🍔" y deja que el destino elija el menú del día. Elimina discusiones innecesarias de forma divertida y democrática.</p>
-
-    <h3>Dinámicas de clase y gamificación</h3>
-    <p>Los profesores y facilitadores utilizan esta herramienta para hacer preguntas aleatorias, asignar tareas, seleccionar equipos o elegir temas de debate. La ruleta mantiene a los participantes alerta, atentos y comprometidos porque cualquiera puede ser el próximo.</p>
-
-    <h3>Juegos y entretenimiento</h3>
-    <p>Úsala como una ruleta de la fortuna, verdad o reto, penitencias para fiestas o para determinar premios en eventos. Personalízala con retos, castigos, recompensas o cualquier contenido creativo que se te ocurra.</p>
-
-    <h2>Diseño accesible y enfoque en la concentración</h2>
-    <p>Hemos diseñado <strong>decídelo.app</strong> con especial atención a la accesibilidad y experiencia de usuario. Nuestro <strong>Modo Foco</strong> elimina todas las distracciones de la pantalla (texto informativo, herramientas secundarias, anuncios) y te permite centrarte exclusivamente en la ruleta y tus opciones. Este modo es especialmente útil para personas con TDAH o que simplemente prefieren una interfaz limpia.</p>
-    <p>El elegante modo oscuro predeterminado con una paleta cuidadosamente seleccionada reduce la fatiga ocular durante sesiones prolongadas. Los sonidos físicos sintéticos (totalmente opcionales) proporcionan retroalimentación sensorial sin ser intrusivos.</p>
-
-    <h2>¿Por qué decídelo.app es diferente?</h2>
-    <ul>
-      <li><strong>Privacidad real:</strong> Sin servidores, sin cookies, sin registro. Todo funciona localmente en tu navegador.</li>
-      <li><strong>Velocidad:</strong> Carga instantánea. No hay dependencias pesadas ni frameworks innecesarios.</li>
-      <li><strong>Diseño premium:</strong> Cada detalle está cuidado: desde las micro-animaciones hasta la paleta de colores.</li>
-      <li><strong>Accesibilidad:</strong> Compatible con lectores de pantalla, navegación por teclado y preferencias de movimiento reducido.</li>
-      <li><strong>Offline-ready:</strong> Una vez cargada, funciona sin conexión a internet.</li>
-    </ul>
   </SeoArticle>
 
-    <!-- Espacio Publicitario Inferior -->
-    <AdSlot position="bottom" />
-
-    <!-- ====================================================================
-         MODAL DE GANADOR
-         ==================================================================== -->
-    <WinnerModal />
-  </div>
-
-  <!-- Carga del JavaScript específico de la Ruleta -->
-  <script src="../scripts/roulette.js"></script>
+  <!-- Espacio Publicitario Inferior -->
+  <AdSlot position="bottom" />
 </Layout>
 
 <style>
@@ -197,110 +147,4 @@ const schemaLD = {
      herramientas: son secciones hermanas y deben leer con la misma
      jerarquía, un escalón por debajo del titular del hero. */
   :global(.section-heading) { font-size: clamp(1.65rem, 4vw, 2.3rem); }
-
-  /* ====================================================================
-     REORDEN VISUAL EN MÓVIL — decisión del propietario, no renegociable.
-     ====================================================================
-     Bajo 860px (el mismo breakpoint que ya separa el grid de dos columnas
-     de la ruleta) la ruleta pasa a verse primero, antes que el hero y el
-     "cómo funciona": es la herramienta, así que es lo primero que hay que
-     poder usar sin scroll. El DOM no cambia -- solo el orden de pintado --
-     así que el rastreo/SEO sigue viendo hero → cómo-funciona → ruleta →
-     herramientas → artículo, que es el orden narrativo real de la página.
-
-     Con flex, los elementos sin `order` explícito valen 0 y mantienen su
-     orden de documento entre sí; solo hace falta sacar la ruleta a -1 para
-     que se adelante a todos los demás. Como el anuncio superior
-     (`<AdSlot position="top">`) vivía en el DOM justo antes de la ruleta,
-     este único cambio también lo deja, de rebote, debajo de la rueda en
-     vez de encima -- exactamente lo que pide la decisión 2 del encargo.
-     Revertir la decisión 1 (quitar esta regla) revierte también ese efecto
-     lateral, así que la decisión 2 no necesita una regla propia: no hay
-     nada que hacer con el anuncio que no haga ya esta única línea. */
-  @media (max-width: 859px) {
-    .home-sections {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .home-sections > :global(.roulette-section) {
-      order: -1;
-    }
-
-    /* Decisión 2, aparte y explícita a propósito aunque hoy coincida con el
-       efecto de la regla de arriba: el propietario sabe que el anuncio
-       superior pierde visibilidad al quedar bajo la rueda, y quiere poder
-       deshacer *esta* decisión sola sin tocar la del reordenamiento
-       general. Para volver a poner el anuncio arriba de la rueda, basta con
-       darle aquí un order menor que -1 (p. ej. -2); para "revertir del
-       todo", con borrar esta regla alcanza -- sin ella, el anuncio ya
-       queda debajo de la rueda igual, por el orden de documento normal. */
-    .home-sections > :global([data-ad-paused="top"]) {
-      order: 0;
-    }
-  }
-
-  #confetti-canvas {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100vw; height: 100vh;
-    pointer-events: none;
-    z-index: 99;
-  }
-
-  /* Focus Mode Styles */
-  /* .hero y .hub-section van con :global() porque su marcado vive ahora en
-     HomeHero.astro y HomeToolsSection.astro: con el scope de esta página ya
-     no los alcanzaría. El test de estados comprueba que siguen ocultándose
-     (npm run test:estado). */
-  body.focus-mode-active {
-    background-color: #060608;
-  }
-
-  body.focus-mode-active :global(header) {
-    background: transparent;
-    border-bottom: none;
-  }
-
-  body.focus-mode-active :global(.logo-link),
-  body.focus-mode-active :global(.hero),
-  body.focus-mode-active :global(.how-it-works),
-  body.focus-mode-active :global(.hub-section),
-  body.focus-mode-active :global(.seo-section),
-  body.focus-mode-active :global(.ad-placeholder),
-  body.focus-mode-active :global(footer),
-  body.focus-mode-active :global(.nav-link) {
-    display: none !important;
-  }
-
-  body.focus-mode-active :global(.header-inner) {
-    justify-content: flex-end;
-  }
-
-  body.focus-mode-active :global(.roulette-section) {
-    min-height: calc(100vh - 80px);
-    display: flex;
-    align-items: center;
-    padding: 0;
-  }
-
-  body.focus-mode-active :global(.roulette-section > .wrap) {
-    width: 100%;
-  }
-
-  body.focus-mode-active :global(.roulette-section .section-header) {
-    display: none;
-  }
-
-  body.focus-mode-active :global(.app-grid) {
-    align-items: center;
-  }
-
-  @media (min-width: 860px) {
-    body.focus-mode-active :global(.app-grid) {
-      max-width: 950px;
-      margin: 0 auto;
-    }
-  }
-
 </style>
