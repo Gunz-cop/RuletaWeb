@@ -145,7 +145,7 @@ function initRoulette() {
   function drawRoulette() {
     const dpr = window.devicePixelRatio || 1;
     const size = canvas.width / dpr;
-    wheel.render(size, dpr, options, colors, currentAngle);
+    wheel.render(size, dpr, options, colors, currentAngle, isSpinning);
   }
 
   // Único punto que recalcula "opciones activas + colores + repintado +
@@ -539,6 +539,15 @@ function initRoulette() {
       spinButton.textContent = 'GIRAR';
 
       wheelPointer.style.transform = `translateX(-50%) translateY(0) rotate(0deg)`;
+
+      // El frame anterior se pintó con isSpinning todavía en true (bitmap
+      // de giro, texto sin orientar): ahora que ya está en reposo, hay que
+      // repintar una vez más para que el offscreen quede horneado con la
+      // orientación correcta para ESTE ángulo final. Pasa en el mismo tick
+      // síncrono que el resto de esta función, antes de que el navegador
+      // pinte el frame, así que no hay parpadeo visible entre un estado y
+      // el otro.
+      drawRoulette();
       announceWinner();
 
       // Aplicar ahora el texto que se escribió mientras giraba: recién
