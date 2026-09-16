@@ -13,6 +13,71 @@
  * Astro— la regla se sigue emitiendo en el CSS, así que ningún test de CSS lo
  * nota, pero el elemento deja de recibirla. Eso sí se ve aquí.
  */
+// --- Invariantes de geometría del panel móvil -----------------------------
+// getComputedStyle no puede expresar "un elemento no tapa a otro" ni "este
+// elemento no se mueve al scrollear" -- son relaciones entre rects, no
+// propiedades de uno solo. Estas dos funciones reciben la página de
+// Playwright directamente (ver verificarRelacion en estado-dom.mjs) y las
+// usan los estados de más abajo. Se agregaron después de que una auditoría
+// externa encontrara dos fallas reales que ningún test anterior detectaba:
+// el panel de opciones no era position:fixed al viewport de verdad (un
+// ancestro con `transform` lo convertía en su bloque contenedor), y el
+// botón GIRAR quedaba tapado por completo con el panel abierto.
+async function medirRect(pagina, selector) {
+  return pagina.evaluate((sel) => {
+    const el = document.querySelector(sel);
+    if (!el) return null;
+    const r = el.getBoundingClientRect();
+    return { top: r.top, bottom: r.bottom, left: r.left, right: r.right };
+  }, selector);
+}
+
+const TOLERANCIA_PX = 2;
+
+// El panel (cerrado, mostrando solo su manija) tiene que quedar en el mismo
+// sitio de la ventana sin importar cuánto se haya scrolleado la página. Si
+// algún ancestro le pone un `transform` (p. ej. .reveal antes de que el
+// observer marque .revealed), position:fixed deja de anclarse al viewport
+// y se ancla a ese ancestro en su lugar -- el panel "flota" en medio de la
+// página en vez de quedarse pegado abajo.
+async function verificarPanelFijoTrasScroll(pagina) {
+  const antes = await medirRect(pagina, '#mobile-options-panel');
+  await pagina.evaluate(() => window.scrollTo(0, 900));
+  await pagina.waitForTimeout(150);
+  const despues = await medirRect(pagina, '#mobile-options-panel');
+  if (!antes || !despues) {
+    return { ok: false, mensaje: '#mobile-options-panel no existe en el DOM' };
+  }
+  const delta = Math.abs(antes.bottom - despues.bottom);
+  return {
+    ok: delta <= TOLERANCIA_PX,
+    mensaje:
+      `bottom antes de scrollear=${antes.bottom.toFixed(1)}px, después de scrollear a 900px=${despues.bottom.toFixed(1)}px ` +
+      `(delta ${delta.toFixed(1)}px, tolerancia ${TOLERANCIA_PX}px). Un delta grande significa que el panel no está ` +
+      `fixed al viewport de verdad -- algún ancestro le puso un transform.`,
+  };
+}
+
+// Con el panel abierto, el botón GIRAR (el único disparador del giro) tiene
+// que seguir por encima del borde superior del panel. "Se ve la mitad de
+// arriba de la rueda" no alcanza si esa mitad no incluye el botón.
+async function verificarBotonGirarSobrePanel(pagina) {
+  await pagina.click('#options-panel-toggle');
+  await pagina.waitForTimeout(400);
+  const spin = await medirRect(pagina, '#spin-button');
+  const panel = await medirRect(pagina, '#mobile-options-panel');
+  if (!spin || !panel) {
+    return { ok: false, mensaje: '#spin-button o #mobile-options-panel no existen en el DOM' };
+  }
+  const holgura = panel.top - spin.bottom;
+  return {
+    ok: holgura >= 0,
+    mensaje:
+      `spin-button.bottom=${spin.bottom.toFixed(1)}px, panel.top=${panel.top.toFixed(1)}px ` +
+      `(holgura ${holgura.toFixed(1)}px). Holgura negativa significa que el panel abierto tapa el botón GIRAR.`,
+  };
+}
+
 export const ESTADOS = [
   {
     ruta: '/',
@@ -128,6 +193,68 @@ export const ESTADOS = [
       { sel: '.hub-section .section-heading', props: ['fontSize'] },
       { sel: '.hub-section .section-tag', props: ['marginBottom'] },
       { sel: '.hub-section .section-header', props: ['marginBottom'] },
+    ],
+  },
+  {
+    // Panel de opciones como hoja inferior en móvil (layout nuevo): no
+    // existe en reposo -- .panel-open lo pone roulette.js al pulsar la
+    // manija -- así que, igual que el modo edición del título o el aviso
+    // de deshacer, necesita su propio estado provocado en vez de una
+    // captura de píxeles (canvas + animaciones infinitas, ver cabecera).
+    ruta: '/',
+    nombre: 'panel-opciones-movil',
+    viewport: { width: 390, height: 844 },
+    clics: ['#options-panel-toggle'],
+    espera: 400,
+    comprobar: [
+      { sel: '#mobile-options-panel', props: ['position', 'zIndex', 'transform'] },
+      // `height`, no `minHeight`: la regla escrita es `height: 56px` en la
+      // manija, y `minHeight` da "auto" tanto si la regla aplica como si
+      // no -- no habría detectado que la regla dejó de encontrar el
+      // elemento, que es justo lo que existe para cazar.
+      { sel: '#options-panel-toggle', props: ['height', 'cursor'] },
+      { sel: '.roulette-section .section-tag', props: ['display'] },
+    ],
+  },
+  {
+    // Invariante, no snapshot -- ver el comentario junto a
+    // verificarPanelFijoTrasScroll más arriba.
+    ruta: '/',
+    nombre: 'panel-fijo-tras-scroll',
+    viewport: { width: 390, height: 844 },
+    verificarRelacion: verificarPanelFijoTrasScroll,
+  },
+  {
+    ruta: '/',
+    nombre: 'boton-girar-visible-con-panel-390x844',
+    viewport: { width: 390, height: 844 },
+    verificarRelacion: verificarBotonGirarSobrePanel,
+  },
+  {
+    ruta: '/',
+    nombre: 'boton-girar-visible-con-panel-375x667',
+    viewport: { width: 375, height: 667 },
+    verificarRelacion: verificarBotonGirarSobrePanel,
+  },
+  {
+    ruta: '/',
+    nombre: 'boton-girar-visible-con-panel-360x640',
+    viewport: { width: 360, height: 640 },
+    verificarRelacion: verificarBotonGirarSobrePanel,
+  },
+  {
+    // La pestaña "Gestionar" alcanzada desde dentro del panel móvil: cubre
+    // que abrir el panel no rompe el resto de la interacción que ya vigila
+    // el estado "pestana-gestionar" de arriba.
+    ruta: '/',
+    nombre: 'panel-opciones-movil-gestionar',
+    viewport: { width: 390, height: 844 },
+    clics: ['#options-panel-toggle', '#tab-manage'],
+    espera: 400,
+    comprobar: [
+      { sel: '#mobile-options-panel', props: ['transform'] },
+      { sel: '#tab-manage-content', props: ['display'] },
+      { sel: '#tab-edit-content', props: ['display'] },
     ],
   },
   // --- Dados -------------------------------------------------------------

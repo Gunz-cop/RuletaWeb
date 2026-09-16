@@ -120,6 +120,55 @@
       "marginBottom": "48px"
     }
   },
+  "/ [panel-opciones-movil]": {
+    "#mobile-options-panel": {
+      "position": "fixed",
+      "zIndex": "55",
+      "transform": "matrix(1, 0, 0, 1, 0, 0)"
+    },
+    "#options-panel-toggle": {
+      "height": "56px",
+      "cursor": "pointer"
+    },
+    ".roulette-section .section-tag": {
+      "display": "none"
+    }
+  },
+  "/ [panel-fijo-tras-scroll]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "bottom antes de scrollear=1193.1px, después de scrollear a 900px=1193.1px (delta 0.0px, tolerancia 2px). Un delta grande significa que el panel no está fixed al viewport de verdad -- algún ancestro le puso un transform."
+    }
+  },
+  "/ [boton-girar-visible-con-panel-390x844]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "spin-button.bottom=311.2px, panel.top=438.9px (holgura 127.7px). Holgura negativa significa que el panel abierto tapa el botón GIRAR."
+    }
+  },
+  "/ [boton-girar-visible-con-panel-375x667]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "spin-button.bottom=303.7px, panel.top=346.8px (holgura 43.2px). Holgura negativa significa que el panel abierto tapa el botón GIRAR."
+    }
+  },
+  "/ [boton-girar-visible-con-panel-360x640]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "spin-button.bottom=296.2px, panel.top=332.8px (holgura 36.6px). Holgura negativa significa que el panel abierto tapa el botón GIRAR."
+    }
+  },
+  "/ [panel-opciones-movil-gestionar]": {
+    "#mobile-options-panel": {
+      "transform": "matrix(1, 0, 0, 1, 0, 0)"
+    },
+    "#tab-manage-content": {
+      "display": "flex"
+    },
+    "#tab-edit-content": {
+      "display": "none"
+    }
+  },
   "/dados [lanzado-casino]": {
     ".dice-cube": {
       "transformStyle": "preserve-3d",
