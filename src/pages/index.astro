@@ -83,33 +83,41 @@ const schemaLD = {
   <!-- Canvas transparente para el efecto de confeti -->
   <canvas id="confetti-canvas" aria-hidden="true"></canvas>
 
-  <!-- ====================================================================
-       HERO SECTION
-       ==================================================================== -->
-  <HomeHero />
+  <!-- El envoltorio existe solo para poder reordenar VISUALMENTE estas
+       secciones en móvil (con `order` de flex, ver el <style> de abajo) sin
+       tocar el orden real del DOM: el rastreo y el SEO siguen viendo hero,
+       cómo-funciona, ruleta, herramientas y artículo en este mismo orden.
+       Envolver aquí en vez de hacerlo en Layout.astro evita convertir
+       `<body>` en un contenedor flex para todas las páginas del sitio por una
+       necesidad que es solo de la home. -->
+  <div class="home-sections">
+    <!-- ====================================================================
+         HERO SECTION
+         ==================================================================== -->
+    <HomeHero />
 
-  <!-- ====================================================================
-       CÓMO FUNCIONA
-       ==================================================================== -->
-  <HomeHowItWorks />
+    <!-- ====================================================================
+         CÓMO FUNCIONA
+         ==================================================================== -->
+    <HomeHowItWorks />
 
-  <!-- Espacio Publicitario Superior -->
-  <AdSlot position="top" />
+    <!-- Espacio Publicitario Superior -->
+    <AdSlot position="top" />
 
-  <!-- ====================================================================
-       SECCIÓN DE LA RULETA — Herramienta Principal
-       ==================================================================== -->
-  <RouletteMachine />
+    <!-- ====================================================================
+         SECCIÓN DE LA RULETA — Herramienta Principal
+         ==================================================================== -->
+    <RouletteMachine />
 
-  <!-- ====================================================================
-       HUB DE HERRAMIENTAS
-       ==================================================================== -->
-  <HomeToolsSection />
+    <!-- ====================================================================
+         HUB DE HERRAMIENTAS
+         ==================================================================== -->
+    <HomeToolsSection />
 
-  <!-- ====================================================================
-       SECCIÓN DE ARTÍCULO SEO
-       ==================================================================== -->
-  <SeoArticle title="¿Qué es decídelo.app y para qué sirve?">
+    <!-- ====================================================================
+         SECCIÓN DE ARTÍCULO SEO
+         ==================================================================== -->
+    <SeoArticle title="¿Qué es decídelo.app y para qué sirve?">
     <p><strong>Decídelo.app</strong> es un hub de herramientas de decisión aleatoria diseñado para resolver esos momentos de indecisión que todos enfrentamos a diario. Ya sea que necesites elegir qué cenar, sortear un ganador entre participantes, asignar tareas de forma imparcial o simplemente dejar que el destino tome la decisión por ti, nuestras herramientas hacen el trabajo pesado en cuestión de segundos.</p>
     <p>A diferencia de otros servicios similares, <strong>decídelo.app</strong> funciona 100% en tu navegador. Tus datos nunca salen de tu dispositivo: no hay servidores externos, no hay cookies de rastreo, y no hay necesidad de registro. Todo se almacena localmente mediante la tecnología <code>localStorage</code>, garantizando tu privacidad total.</p>
 
@@ -153,13 +161,14 @@ const schemaLD = {
     </ul>
   </SeoArticle>
 
-  <!-- Espacio Publicitario Inferior -->
-  <AdSlot position="bottom" />
+    <!-- Espacio Publicitario Inferior -->
+    <AdSlot position="bottom" />
 
-  <!-- ====================================================================
-       MODAL DE GANADOR
-       ==================================================================== -->
-  <WinnerModal />
+    <!-- ====================================================================
+         MODAL DE GANADOR
+         ==================================================================== -->
+    <WinnerModal />
+  </div>
 
   <!-- Carga del JavaScript específico de la Ruleta -->
   <script src="../scripts/roulette.js"></script>
@@ -182,6 +191,48 @@ const schemaLD = {
      herramientas: son secciones hermanas y deben leer con la misma
      jerarquía, un escalón por debajo del titular del hero. */
   :global(.section-heading) { font-size: clamp(1.65rem, 4vw, 2.3rem); }
+
+  /* ====================================================================
+     REORDEN VISUAL EN MÓVIL — decisión del propietario, no renegociable.
+     ====================================================================
+     Bajo 860px (el mismo breakpoint que ya separa el grid de dos columnas
+     de la ruleta) la ruleta pasa a verse primero, antes que el hero y el
+     "cómo funciona": es la herramienta, así que es lo primero que hay que
+     poder usar sin scroll. El DOM no cambia -- solo el orden de pintado --
+     así que el rastreo/SEO sigue viendo hero → cómo-funciona → ruleta →
+     herramientas → artículo, que es el orden narrativo real de la página.
+
+     Con flex, los elementos sin `order` explícito valen 0 y mantienen su
+     orden de documento entre sí; solo hace falta sacar la ruleta a -1 para
+     que se adelante a todos los demás. Como el anuncio superior
+     (`<AdSlot position="top">`) vivía en el DOM justo antes de la ruleta,
+     este único cambio también lo deja, de rebote, debajo de la rueda en
+     vez de encima -- exactamente lo que pide la decisión 2 del encargo.
+     Revertir la decisión 1 (quitar esta regla) revierte también ese efecto
+     lateral, así que la decisión 2 no necesita una regla propia: no hay
+     nada que hacer con el anuncio que no haga ya esta única línea. */
+  @media (max-width: 859px) {
+    .home-sections {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .home-sections > :global(.roulette-section) {
+      order: -1;
+    }
+
+    /* Decisión 2, aparte y explícita a propósito aunque hoy coincida con el
+       efecto de la regla de arriba: el propietario sabe que el anuncio
+       superior pierde visibilidad al quedar bajo la rueda, y quiere poder
+       deshacer *esta* decisión sola sin tocar la del reordenamiento
+       general. Para volver a poner el anuncio arriba de la rueda, basta con
+       darle aquí un order menor que -1 (p. ej. -2); para "revertir del
+       todo", con borrar esta regla alcanza -- sin ella, el anuncio ya
+       queda debajo de la rueda igual, por el orden de documento normal. */
+    .home-sections > :global([data-ad-paused="top"]) {
+      order: 0;
+    }
+  }
 
   #confetti-canvas {
     position: fixed;

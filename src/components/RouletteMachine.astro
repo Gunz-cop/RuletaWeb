@@ -73,9 +73,39 @@
         </div>
       </div>
 
-      <!-- Columna Derecha: Entrada de Datos -->
-      <div class="input-column">
-        <div class="input-card">
+      <!-- Columna Derecha: Entrada de Datos.
+
+           id="mobile-options-panel" y el botón "manija" de abajo solo
+           importan bajo 860px (ver el <style> de este archivo): ahí
+           .input-column deja de ser una columna del grid y pasa a ser un
+           panel inferior fijo que se abre y cierra, para que la rueda no
+           tenga que desaparecer de pantalla para editar la lista. En
+           escritorio esta columna sigue siendo exactamente lo que era. -->
+      <div class="input-column" id="mobile-options-panel">
+        <!-- Manija/disclosure del panel: solo se ve (display) bajo 860px.
+             Es un elemento nuevo, no una opción existente reordenada, así
+             que no toca la regla de "no cambiar el orden del HTML" del
+             encargo -- esa es sobre las secciones de index.astro. Vive
+             siempre montada (no se genera con JS) para que roulette.js no
+             tenga que crear ni destruir un nodo con estado de foco/ARIA.
+             roulette.js le alterna panel-open + aria-expanded; el chevron
+             gira por CSS según esa misma clase. -->
+        <button
+          type="button"
+          id="options-panel-toggle"
+          class="options-panel-handle"
+          aria-expanded="false"
+          aria-controls="options-panel-body"
+        >
+          <span class="options-panel-handle-bar" aria-hidden="true"></span>
+          <span class="options-panel-handle-row">
+            <span class="options-panel-handle-label">Opciones de la ruleta</span>
+            <svg class="options-panel-handle-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="18 15 12 9 6 15"></polyline>
+            </svg>
+          </span>
+        </button>
+        <div class="input-card" id="options-panel-body">
           <h3 id="input-title" class="section-title">Opciones de la Ruleta</h3>
           <p class="section-desc">Escribe tus opciones o contrólalas de forma individual.</p>
 
@@ -808,6 +838,190 @@
 @media (max-width: 480px) {
   .roulette-section .section-header {
     margin-bottom: 1.5rem;
+  }
+}
+
+/* ====================================================================
+   MÓVIL: la ruleta se ve completa sin scroll, las opciones bajan a un
+   panel inferior deslizable. Mismo breakpoint (860px) que ya separa el
+   grid de dos columnas de una sola -- no se inventa uno nuevo.
+   ==================================================================== */
+@media (max-width: 859px) {
+  /* 72px es el alto real de <header> (0.85rem de padding arriba/abajo +
+     44px de los botones .control-btn, que son lo más alto que hay dentro):
+     no se mide con JS a propósito, para no sumar una lectura de layout más
+     en cada carga -- si el header cambia de alto algún día, este número
+     hay que revisarlo a mano.
+     100dvh en vez de 100vh: en Safari de iPhone la barra de direcciones
+     cambia el alto real de la ventana, y 100vh se calcula sobre el alto
+     "grande" (barra oculta), así que el contenido queda cortado por abajo
+     hasta que se hace scroll una vez. 100dvh sí se encoge cuando la barra
+     está visible. El fallback en 100svh (el alto "chico", barra siempre
+     visible) va primero por si el navegador no entiende dvh: se solapa por
+     defecto a favor de menos scroll, no de más. */
+  .roulette-section {
+    min-height: calc(100svh - 72px);
+    min-height: calc(100dvh - 72px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0.75rem 0 calc(64px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* El kicker "Herramienta principal" no aporta nada que la propia rueda no
+     diga ya, y cuesta una línea entera de alto que en 390px hace falta
+     para que quepa la rueda sin scroll. Se oculta por CSS, no se borra del
+     DOM -- sigue ahí para quien lea la página sin estilos. */
+  .roulette-section .section-tag {
+    display: none;
+  }
+
+  .roulette-section .section-header {
+    margin-bottom: 0.6rem;
+    text-align: center;
+  }
+
+  .roulette-heading {
+    font-size: 1.35rem;
+  }
+
+  .app-grid {
+    gap: 0;
+  }
+
+  .wheel-column {
+    justify-content: center;
+  }
+
+  .wheel-title-container {
+    margin-bottom: 0.85rem;
+  }
+
+  /* --------------------------------------------------------------
+     Panel de opciones como hoja inferior.
+     .input-column deja de ser una columna del grid (que de todos modos ya
+     colapsa sola: al sacarla del flujo con position:fixed no le queda
+     ninguna celda que ocupar) y pasa a ser una hoja anclada abajo. Cerrada,
+     solo asoma la manija (options-panel-handle); su alto real varía con el
+     contenido, así que "cerrado" se expresa como "muévete hacia abajo tu
+     propio alto menos el de la manija" (translateY(calc(100% - Npx))), no
+     como un valor fijo en px -- así no hay que sincronizar dos números.
+     -------------------------------------------------------------- */
+  .input-column {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    /* 55: por debajo del aviso de "Deshacer" (60, en este mismo archivo) a
+       propósito -- si se vacía la lista con el panel abierto, el aviso
+       tiene que seguir viéndose por encima de la hoja, no taparse contra
+       ella. Por debajo también del header/scroll-progress (100/101,
+       global.css) y del modal del ganador (100, WinnerModal.astro): ambos
+       se pintan por encima del panel sin pedirlo, no hace falta tocar
+       nada ahí. */
+    z-index: 55;
+    /* Con un alto mayor (probado primero con 70dvh) la hoja abierta tapaba
+       la rueda entera en un iPhone estándar (390×844): el título "Gira y
+       decide." sobrevivía por encima, pero el círculo no. 48dvh, con 430px
+       de techo, deja asomar la mitad de arriba de la rueda (el puntero
+       incluido) por encima de la hoja abierta -- que es justo lo que pide
+       el encargo ("que siga viéndose al menos parte de la rueda"). */
+    max-height: min(48dvh, 430px);
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-surface);
+    border: 1px solid var(--card-border);
+    border-bottom: none;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    box-shadow: var(--shadow-lg);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    transform: translateY(calc(100% - 56px));
+    transition: transform 320ms var(--ease-out);
+  }
+
+  .input-column.panel-open {
+    transform: translateY(0);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .input-column {
+      transition: none;
+    }
+  }
+
+  .options-panel-handle {
+    flex-shrink: 0;
+    height: 56px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-primary);
+    font-family: 'Outfit', sans-serif;
+  }
+
+  .options-panel-handle:focus-visible {
+    outline: 2px solid var(--accent-warm);
+    outline-offset: -3px;
+  }
+
+  .options-panel-handle-bar {
+    width: 36px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--card-border);
+  }
+
+  .options-panel-handle-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+  }
+
+  .options-panel-handle-chevron {
+    transition: transform 220ms var(--ease-out);
+  }
+
+  /* Cerrado, la manija apunta hacia arriba ("desplegar"); abierto, hacia
+     abajo ("recoger"). El giro solo cambia el ícono, no la lectura por
+     lector de pantalla -- eso lo hace aria-expanded en el propio botón. */
+  .input-column.panel-open .options-panel-handle-chevron {
+    transform: rotate(180deg);
+  }
+
+  /* Dentro de la hoja, .input-card deja de ser la tarjeta con su propio
+     fondo/borde/sombra (la hoja ya los tiene) y pasa a ser solo el
+     contenido, que se recorta y scrollea si no entra en el alto disponible
+     -- la hoja no crece más allá de min(70dvh, 600px) de arriba. */
+  .input-card {
+    height: auto;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    background: transparent;
+    border: none;
+    border-top: 1px solid var(--divider-line);
+    border-radius: 0;
+    box-shadow: none;
+    padding-top: 1rem;
+  }
+
+  /* Con el panel abierto, la página de fondo ya no tiene nada que aportar
+     -- la rueda entera cabe arriba de la hoja -- así que se bloquea su
+     scroll para que un arrastre que empieza sobre la hoja (p. ej. al
+     desplazar el checklist) no se filtre a la página completa. roulette.js
+     añade y quita esta clase junto con panel-open; vive fuera del scope de
+     este componente (body no es parte de su marcado), de ahí el
+     :global(). */
+  :global(body.options-panel-open) {
+    overflow: hidden;
   }
 }
 </style>

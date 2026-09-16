@@ -58,6 +58,8 @@ function initRoulette() {
   const undoToastMessage = document.getElementById('undo-toast-message');
   const undoToastBtn = document.getElementById('undo-toast-btn');
   const undoToastCloseBtn = document.getElementById('undo-toast-close');
+  const optionsPanelToggle = document.getElementById('options-panel-toggle');
+  const optionsPanel = document.getElementById('mobile-options-panel');
 
   if (!textarea || !spinButton || !wheelPointer || !winnerModal) return;
 
@@ -847,6 +849,31 @@ function initRoulette() {
     { signal }
   );
 
+  // Panel de opciones en móvil (hoja inferior). Solo tiene efecto visual
+  // bajo 860px -- ver RouletteMachine.astro -- pero el listener se registra
+  // siempre: es barato y así no hace falta reinstalarlo si la ventana
+  // cruza el breakpoint.
+  //
+  // La clase en <body> (no en el panel) es lo que bloquea el scroll de
+  // fondo; vive en <body> porque es la única forma de afectar el scroll de
+  // toda la página, no la del panel. setPanelOpen() es la única función que
+  // toca panel-open/aria-expanded/la clase de <body> a la vez, para que
+  // ningún llamador pueda dejarlos desincronizados.
+  function setPanelOpen(open) {
+    if (!optionsPanel || !optionsPanelToggle) return;
+    optionsPanel.classList.toggle('panel-open', open);
+    optionsPanelToggle.setAttribute('aria-expanded', String(open));
+    document.body.classList.toggle('options-panel-open', open);
+  }
+
+  if (optionsPanelToggle && optionsPanel) {
+    optionsPanelToggle.addEventListener(
+      'click',
+      () => setPanelOpen(!optionsPanel.classList.contains('panel-open')),
+      { signal }
+    );
+  }
+
   // Edición de título
   if (wheelTitleText) {
     wheelTitleText.addEventListener('click', startTitleEdit, { signal });
@@ -1002,7 +1029,7 @@ function initRoulette() {
   // Modal
   modalCloseBtn.addEventListener('click', closeModal, { signal });
 
-  // Cerrar modal o aviso de "Deshacer" con Esc
+  // Cerrar modal, aviso de "Deshacer" o panel de opciones (móvil) con Esc
   window.addEventListener(
     'keydown',
     (e) => {
@@ -1011,6 +1038,13 @@ function initRoulette() {
         closeModal();
       }
       invalidateClearUndo();
+      if (optionsPanel?.classList.contains('panel-open')) {
+        setPanelOpen(false);
+        // Devuelve el foco a la manija: sin esto quedaría en el elemento
+        // que tuviera el foco dentro de la hoja que se acaba de ocultar
+        // (fuera de vista pero técnicamente aún enfocable).
+        optionsPanelToggle?.focus();
+      }
     },
     { signal }
   );
@@ -1077,6 +1111,10 @@ function initRoulette() {
     if (undoToastTimer !== null) clearTimeout(undoToastTimer);
     confetti.stop();
     audio.close();
+    // Sin esto, navegar a otra página con el panel de opciones abierto (View
+    // Transitions no recarga el documento) dejaría <body> con el scroll
+    // bloqueado para siempre, sin ningún roulette.js vivo que lo revierta.
+    document.body.classList.remove('options-panel-open');
   };
 }
 

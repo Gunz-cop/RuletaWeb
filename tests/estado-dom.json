@@ -120,6 +120,34 @@
       "marginBottom": "48px"
     }
   },
+  "/ [panel-opciones-movil]": {
+    "#mobile-options-panel": {
+      "position": "fixed",
+      "zIndex": "55",
+      "transform": "matrix(1, 0, 0, 1, 0, 0)"
+    },
+    "#options-panel-toggle": {
+      "minHeight": "auto",
+      "cursor": "pointer"
+    },
+    ".roulette-section .section-tag": {
+      "display": "none"
+    },
+    ".wheel-card": {
+      "display": "flex"
+    }
+  },
+  "/ [panel-opciones-movil-gestionar]": {
+    "#mobile-options-panel": {
+      "transform": "matrix(1, 0, 0, 1, 0, 0)"
+    },
+    "#tab-manage-content": {
+      "display": "flex"
+    },
+    "#tab-edit-content": {
+      "display": "none"
+    }
+  },
   "/dados [lanzado-casino]": {
     ".dice-cube": {
       "transformStyle": "preserve-3d",

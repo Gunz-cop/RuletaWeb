@@ -130,6 +130,42 @@ export const ESTADOS = [
       { sel: '.hub-section .section-header', props: ['marginBottom'] },
     ],
   },
+  {
+    // Panel de opciones como hoja inferior en móvil (layout nuevo): no
+    // existe en reposo -- .panel-open lo pone roulette.js al pulsar la
+    // manija -- así que, igual que el modo edición del título o el aviso
+    // de deshacer, necesita su propio estado provocado en vez de una
+    // captura de píxeles (canvas + animaciones infinitas, ver cabecera).
+    ruta: '/',
+    nombre: 'panel-opciones-movil',
+    viewport: { width: 390, height: 844 },
+    clics: ['#options-panel-toggle'],
+    espera: 400,
+    comprobar: [
+      { sel: '#mobile-options-panel', props: ['position', 'zIndex', 'transform'] },
+      { sel: '#options-panel-toggle', props: ['minHeight', 'cursor'] },
+      // Contraste con el estado cerrado: el kicker se oculta para ganar
+      // alto, pero la rueda (el punto entero del reordenamiento de arriba)
+      // sigue en el DOM y visible por debajo de la hoja.
+      { sel: '.roulette-section .section-tag', props: ['display'] },
+      { sel: '.wheel-card', props: ['display'] },
+    ],
+  },
+  {
+    // La pestaña "Gestionar" alcanzada desde dentro del panel móvil: cubre
+    // que abrir el panel no rompe el resto de la interacción que ya vigila
+    // el estado "pestana-gestionar" de arriba.
+    ruta: '/',
+    nombre: 'panel-opciones-movil-gestionar',
+    viewport: { width: 390, height: 844 },
+    clics: ['#options-panel-toggle', '#tab-manage'],
+    espera: 400,
+    comprobar: [
+      { sel: '#mobile-options-panel', props: ['transform'] },
+      { sel: '#tab-manage-content', props: ['display'] },
+      { sel: '#tab-edit-content', props: ['display'] },
+    ],
+  },
   // --- Dados -------------------------------------------------------------
   // Los dados, sus caras y sus puntos los construye dados.js al lanzar, así
   // que en reposo no existen y las capturas no los ven. Estas tres entradas
