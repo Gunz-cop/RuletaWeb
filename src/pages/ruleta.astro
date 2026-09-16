@@ -117,31 +117,39 @@ const schemaLD = {
   showHomeHeader=false: /ruleta lee como sus ocho hermanas (moneda, dados,
   etc.), no como la home -- migrarla al header/hero del sistema editorial
   es la tarea de migración aparte que ya está en marcha para el resto de
-  herramientas, no algo que decidir de rebote acá. Con eso viene, a
-  propósito, `main .hero` de global.css (la estética arcade sin migrar):
-  es exactamente lo que ya heredan moneda.astro y dados.astro, así que
-  /ruleta se ve consistente con ellas en vez de a medio camino.
+  herramientas, no algo que decidir de rebote acá.
+
+  Sin hero propio: el <h1> de la página vive dentro de RouletteMachine (ver
+  ese componente y AGENTS.md, el hallazgo del h1 oculto en móvil) porque
+  esa línea ya se pinta ahí sin costo extra de alto, mientras que un hero
+  aparte -- aun compacto -- volvía a tapar el botón GIRAR a 360×640. Por
+  eso esta página no monta `main .hero` de global.css, a diferencia de
+  moneda.astro y dados.astro, que sí lo heredan tal cual.
 
   showRouletteControls=true: es la única página sin showHomeHeader que
   necesita Foco y Sonido (ver Header.astro) -- roulette.js los busca por id
   sin comprobar que existan.
 -->
 <Layout title={title} description={description} keywords={keywords} schemaLD={schemaLD} showHomeHeader={false} showRouletteControls={true}>
+  <Fragment slot="head">
+    <!-- Newsreader itálica: la usa el "Online" en cursiva del h1 de esta
+         página (RouletteMachine.astro, .roulette-heading em). Antes de la
+         mudanza la cargaba index.astro porque la ruleta vivía ahí; el
+         comentario de RouletteMachine.astro que decía "ya está cargada
+         por index.astro" quedó desactualizado y nadie lo notó porque el
+         navegador cae a una tipografía de reemplazo sin avisar. -->
+    <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@1,400&display=swap" rel="stylesheet">
+  </Fragment>
+
   <!-- Canvas transparente para el efecto de confeti del modal de ganador.
        Viaja desde index.astro: el confeti es del modal, no de la home. -->
   <canvas id="confetti-canvas" aria-hidden="true"></canvas>
 
-  <main class="wrap">
-    <!-- Hero Section -->
-    <section class="hero slide-up delay-1">
-      <h1>Ruleta Aleatoria <span class="gradient-text">Online</span></h1>
-      <p>Crea tu propia ruleta con las opciones que quieras, gírala y deja que el azar decida. Gratis, sin registro y 100% en tu navegador.</p>
-    </section>
-  </main>
-
   <AdSlot position="top" />
 
-  <RouletteMachine />
+  <RouletteMachine headingLevel="h1">
+    <p slot="description">Crea tu propia ruleta con las opciones que quieras, gírala y deja que el azar decida. Gratis, sin registro y 100% en tu navegador.</p>
+  </RouletteMachine>
 
   <section class="hub-section wrap">
     <div class="section-header reveal">
@@ -205,10 +213,6 @@ const schemaLD = {
 </Layout>
 
 <style>
-  main {
-    padding: 3rem 0;
-  }
-
   #confetti-canvas {
     position: fixed;
     top: 0; left: 0;
@@ -221,40 +225,6 @@ const schemaLD = {
     padding: 3rem 0;
   }
 
-  /* En home, la ruleta se veía primero en móvil gracias a un `order: -1`
-     flex que la reordenaba por delante del hero (ver el historial de
-     index.astro) -- el CSS de RouletteMachine.astro asume exactamente eso:
-     su media query de 859px calcula la altura disponible como si
-     `.roulette-section` fuera lo primero bajo el header
-     (`calc(100svh - 72px)`, comentario "ya es lo primero que se ve al
-     cargar"). /ruleta no reordena nada (es una página de herramienta
-     normal, sin envoltorio flex), así que ese supuesto se rompe: el hero
-     de arriba suma su alto antes de la rueda y el test de invariantes
-     (npm run test:estado) lo detectó -- con el panel de opciones abierto,
-     el botón GIRAR quedaba tapado, exactamente el fallo real que ese test
-     existe para cazar.
-     La solución no es reordenar (eso reintroduce la complejidad que el
-     encargo pidió retirar de index.astro) ni tocar RouletteMachine.astro
-     (no es parte de este encargo y arriesga otras páginas... salvo que
-     esta es la única que lo usa). Se oculta el hero propio solo bajo
-     859px: el <h1> sigue en el DOM (accesible a lectores de pantalla que
-     no respeten `display:none`... aunque la mayoría sí lo hacen, como
-     .section-tag más abajo en RouletteMachine.astro con el mismo criterio)
-     y la rueda vuelve a ser, en los hechos, lo primero visible bajo el
-     header -- que es justo lo que ese CSS ya asumía. */
-  @media (max-width: 859px) {
-    /* Se oculta el <main> completo, no solo `.hero`: `main` trae
-       3rem de relleno vertical propio (arriba y abajo, ver la regla
-       `main { padding: 3rem 0; }` de más arriba) que seguía reservando
-       ~96px de hueco vacío aunque el hero de adentro ya no se viera --
-       eso fue justo lo que faltó la primera vez que se probó esto: el
-       test de invariantes bajó de "tapado por 240px" a "tapado por 70px",
-       no a "sin tapar", porque el padding del contenedor seguía sumando. */
-    main.wrap {
-      display: none;
-    }
-  }
-
   /* ====================================================================
      MODO FOCO
      ====================================================================
@@ -264,10 +234,12 @@ const schemaLD = {
      existen -- copiarla tal cual habría dejado media regla apuntando a
      nada sin que ningún test lo notara (el CSS se sigue emitiendo igual).
      Lo que hay que ocultar aquí es lo que de verdad hay en esta página:
-     el hero propio, el índice de herramientas, el artículo SEO y el
-     footer. Los AdSlot no hace falta tocarlos -- ya nacen con el atributo
-     `hidden` (AdSense sigue pausado, ver AdSlot.astro), así que nunca
-     compiten por espacio en modo foco. */
+     el índice de herramientas, el artículo SEO y el footer -- ya no hay
+     un hero propio que ocultar, porque esta página no monta ninguno (su
+     h1 vive dentro de la propia sección de la ruleta, ver
+     RouletteMachine.astro). Los AdSlot no hace falta tocarlos -- ya nacen
+     con el atributo `hidden` (AdSense sigue pausado, ver AdSlot.astro),
+     así que nunca compiten por espacio en modo foco. */
   body.focus-mode-active {
     background-color: #060608;
   }
@@ -277,16 +249,22 @@ const schemaLD = {
     border-bottom: none;
   }
 
-  body.focus-mode-active :global(.hero),
   body.focus-mode-active :global(.hub-section),
   body.focus-mode-active :global(.seo-section),
   body.focus-mode-active :global(footer) {
     display: none !important;
   }
 
-  body.focus-mode-active :global(.header-inner) {
-    justify-content: flex-end;
-  }
+  /* Sin `justify-content: flex-end` aquí: esa regla venía de index.astro,
+     donde funcionaba porque el modo foco de la home también ocultaba
+     `.logo-link` -- con el logo fuera de flujo, empujar el resto a la
+     derecha no chocaba con nada. El header de herramienta (el que usa
+     /ruleta) no oculta su logo (la clase ahí es `.logo`, no `.logo-link`),
+     así que forzar flex-end lo empujaba contra los botones y el texto
+     quedaba solapado (visto en captura real). El `justify-content`
+     original de `.header-inner` (space-between, ver Header.astro) ya deja
+     el logo a la izquierda y las acciones a la derecha sin superponerse,
+     así que no hace falta ninguna regla propia de modo foco aquí. */
 
   body.focus-mode-active :global(.roulette-section) {
     min-height: calc(100vh - 80px);

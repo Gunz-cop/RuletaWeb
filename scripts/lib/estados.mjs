@@ -61,6 +61,23 @@ async function verificarPanelFijoTrasScroll(pagina) {
 // Con el panel abierto, el botón GIRAR (el único disparador del giro) tiene
 // que seguir por encima del borde superior del panel. "Se ve la mitad de
 // arriba de la rueda" no alcanza si esa mitad no incluye el botón.
+//
+// Umbral en 16px (un ancho de dedo), no en 0: con >= 0 el invariante solo
+// avisa cuando el botón YA está tapado. Una auditoría externa midió que la
+// holgura real venía bajando (43.2→30.8px a 375px, 36.6→24.3px a
+// 360×640) y el invariante seguía en verde todo el tiempo, porque nunca
+// llegó a cruzar 0 -- avisaba tarde por diseño. Si algún viewport queda en
+// rojo con este umbral, la holgura real es demasiado chica para un dedo: no
+// hay que bajar el umbral para que vuelva a pasar, hay que agrandar la
+// holgura.
+//
+// Nota para quien depure esto en el futuro (costó caro la primera vez y
+// nunca quedó escrito): el error de Playwright "intercepts pointer events"
+// no distingue "tapado por otro elemento" de "excluido por `inert`" --
+// los dos dan el mismo mensaje, así que no sirve para diagnosticar cuál de
+// las dos cosas pasó. Hay que mirar los rects a mano.
+const HOLGURA_MINIMA_PX = 16;
+
 async function verificarBotonGirarSobrePanel(pagina) {
   await pagina.click('#options-panel-toggle');
   await pagina.waitForTimeout(400);
@@ -69,12 +86,27 @@ async function verificarBotonGirarSobrePanel(pagina) {
   if (!spin || !panel) {
     return { ok: false, mensaje: '#spin-button o #mobile-options-panel no existen en el DOM' };
   }
+  // Punto ciego que tapaba el invariante entero: si #spin-button tuviera
+  // alto o ancho cero (por ejemplo porque una regla rota lo colapsó), el
+  // rect sigue siendo un objeto válido con top/bottom/left/right iguales,
+  // la resta de más abajo da una "holgura" que puede salir positiva igual,
+  // y el invariante pasaría aunque el botón no exista visualmente. Exigir
+  // un rectángulo real es barato y cierra ese hueco.
+  const altoSpin = spin.bottom - spin.top;
+  const anchoSpin = spin.right - spin.left;
+  if (altoSpin <= 0 || anchoSpin <= 0) {
+    return {
+      ok: false,
+      mensaje: `#spin-button tiene un rect degenerado (alto=${altoSpin.toFixed(1)}px, ancho=${anchoSpin.toFixed(1)}px) -- no es un botón visible real.`,
+    };
+  }
   const holgura = panel.top - spin.bottom;
   return {
-    ok: holgura >= 0,
+    ok: holgura >= HOLGURA_MINIMA_PX,
     mensaje:
       `spin-button.bottom=${spin.bottom.toFixed(1)}px, panel.top=${panel.top.toFixed(1)}px ` +
-      `(holgura ${holgura.toFixed(1)}px). Holgura negativa significa que el panel abierto tapa el botón GIRAR.`,
+      `(holgura ${holgura.toFixed(1)}px, mínimo ${HOLGURA_MINIMA_PX}px). Holgura por debajo del mínimo significa ` +
+      `que el panel abierto tapa (o casi tapa) el botón GIRAR.`,
   };
 }
 
@@ -94,12 +126,16 @@ export const ESTADOS = [
     espera: 400,
     comprobar: [
       // El modo foco esconde todo lo que no es la ruleta.
-      { sel: '.hero', props: ['display'] },
       { sel: '.hub-section', props: ['display'] },
       { sel: '.seo-section', props: ['display'] },
       { sel: 'footer', props: ['display'] },
-      // Y recoloca la cabecera y la sección de la ruleta.
-      { sel: '.header-inner', props: ['justifyContent'] },
+      // .main.wrap: la página ya no monta ningún <main> (se retiró junto
+      // con el hero propio al mover el h1 dentro de la ruleta, ver
+      // AGENTS.md), así que ya no hay un contenedor de sobra que pueda
+      // volver a reservar ~96px muertos e introducir scroll en modo foco
+      // -- pero si alguna vez reaparece un <main> en esta página, esta
+      // comprobación tiene que existir para cazarlo oculto de verdad.
+      { sel: 'main.wrap', props: ['display'] },
       { sel: '.roulette-section', props: ['display', 'alignItems', 'padding', 'minHeight'] },
       // .section-header (kicker "Herramienta principal" + "Gira y decide.")
       // es nuevo: antes de la migración editorial esta sección no tenía
@@ -180,19 +216,20 @@ export const ESTADOS = [
     ],
   },
   {
-    // Reposo de la home: la ruleta ya no vive aquí, así que este estado se
-    // queda solo con lo que es de verdad de la home. Las comprobaciones de
-    // la ruleta (pestaña de gestionar, modal, cabecera de la sección) se
-    // mudaron al estado gemelo 'reposo' de /ruleta, más abajo.
+    // Antes llamado 'reposo' de la home, con tres aserciones de más
+    // (.hero/.hub-section display, .header-inner justifyContent) que eran
+    // el contraste de 'modo-foco' -- pero modo foco vive en /ruleta desde
+    // la mudanza, y en / no hay ninguna regla que oculte esos elementos ni
+    // recoloque la cabecera: esas tres nunca iban a fallar, un contraste
+    // entre dos páginas distintas no es un contraste. Lo único que este
+    // estado vigila de verdad son los overrides :global() de section-tag/
+    // section-heading/section-header que index.astro le suma al índice de
+    // herramientas (ver ese archivo) -- se renombra para decir eso mismo,
+    // no para acumular más aserciones decorativas la próxima vez.
     ruta: '/',
-    nombre: 'reposo',
+    nombre: 'cabeceras-de-seccion',
     clics: [],
     comprobar: [
-      // Contraste con modo-foco (que ahora vive en /ruleta): sin pulsar
-      // nada, nada está oculto aquí tampoco.
-      { sel: '.hero', props: ['display'] },
-      { sel: '.hub-section', props: ['display'] },
-      { sel: '.header-inner', props: ['justifyContent'] },
       // La home agranda las cabeceras de sección respecto al resto del
       // sitio. Al sacar la sección de herramientas a un componente, esos
       // overrides dejaron de alcanzarla y el titular volvió al tamaño
@@ -216,6 +253,27 @@ export const ESTADOS = [
       { sel: '.roulette-section .section-header', props: ['display'] },
       // Contraste con modal-ganador: sin girar, el modal está oculto.
       { sel: '#winner-modal', props: ['display', 'opacity', 'visibility'] },
+    ],
+  },
+  {
+    // El h1 de la página (ver AGENTS.md: vive dentro de RouletteMachine
+    // desde que se corrigió el hallazgo del h1 oculto en móvil) tiene que
+    // seguir en pantalla a 390px -- antes de ese arreglo, `main.wrap {
+    // display: none }` bajo 859px lo sacaba del árbol de accesibilidad
+    // entero, y ningún test anterior lo vigilaba porque ninguno miraba el
+    // h1 en este viewport. Esta captura sirve de contraste: si la regla
+    // que ocultaba `<main>` vuelve a aparecer, el h1 deja de existir en el
+    // DOM visible y el valor grabado como línea base ('block' o similar)
+    // deja de coincidir -- el snapshot lo marca como diferencia, no como
+    // 'NO EXISTE EN EL DOM' silencioso, porque el h1 nunca se quita del
+    // DOM, solo se le pondría display:none por herencia de un ancestro
+    // oculto (lo que getComputedStyle sí refleja).
+    ruta: '/ruleta',
+    nombre: 'h1-visible-390x844',
+    viewport: { width: 390, height: 844 },
+    clics: [],
+    comprobar: [
+      { sel: 'h1', props: ['display'] },
     ],
   },
   {

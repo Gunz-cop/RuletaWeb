@@ -1,12 +1,14 @@
 ---
 interface Props {
   showHomeHeader?: boolean;
-  /** Sonido y Modo Foco son controles de la ruleta, no del hub: solo
-   * /ruleta los necesita entre las páginas con showHomeHeader=false. Ver
-   * AGENTS.md/el encargo de mudanza de la ruleta -- roulette.js busca
-   * #focus-toggle-btn y #sound-toggle-btn por id sin comprobar que
-   * existan, así que la página que lo carga tiene que pasar esta prop en
-   * true o el script revienta al cargar. */
+  /** Sonido y Modo Foco son controles de la ruleta, no del hub: los
+   * pinta cualquiera de las dos cabeceras, pero solo cuando la página que
+   * las usa de verdad los pide. La home ya no carga roulette.js (se mudó
+   * a /ruleta), así que dejó de pasar esta prop y los botones desaparecen
+   * con ella -- antes quedaban montados y muertos, sin script que los
+   * escuchara. roulette.js busca #focus-toggle-btn y #sound-toggle-btn
+   * por id sin comprobar que existan, así que la página que lo carga
+   * tiene que pasar esta prop en true o el script revienta al cargar. */
   showRouletteControls?: boolean;
 }
 
@@ -25,14 +27,18 @@ const { showHomeHeader = false, showRouletteControls = false } = Astro.props;
         <a href="/#herramientas" class="nav-link">Herramientas</a>
         <a href="/blog" class="nav-link">Blog</a>
         <a href="/sobre" class="nav-link">Sobre</a>
-        <button id="focus-toggle-btn" class="control-btn" title="Activar Modo Foco" aria-pressed="false">
-          <span class="btn-icon" aria-hidden="true">🎯</span>
-          <span class="btn-label">Foco</span>
-        </button>
-        <button id="sound-toggle-btn" class="control-btn" title="Activar/Desactivar sonido" aria-pressed="true">
-          <span class="btn-icon" aria-hidden="true">🔊</span>
-          <span class="btn-label">Sonido</span>
-        </button>
+        {showRouletteControls && (
+          <>
+            <button id="focus-toggle-btn" class="control-btn" title="Activar Modo Foco" aria-pressed="false">
+              <span class="btn-icon" aria-hidden="true">🎯</span>
+              <span class="btn-label">Foco</span>
+            </button>
+            <button id="sound-toggle-btn" class="control-btn" title="Activar/Desactivar sonido" aria-pressed="true">
+              <span class="btn-icon" aria-hidden="true">🔊</span>
+              <span class="btn-label">Sonido</span>
+            </button>
+          </>
+        )}
       </nav>
     ) : (
       <a href="/" class="logo" id="header-logo">
@@ -131,9 +137,10 @@ const { showHomeHeader = false, showRouletteControls = false } = Astro.props;
 
   /* Sonido y Modo Foco: parte de la ruleta (ver DESIGN.md, la migración
      incluye estos dos botones) aunque el marcado viva en Header.astro, que
-     solo se renderiza en la home con showHomeHeader=true — .control-btn no
-     se usa en ninguna otra página, así que recolorearla no filtra el
-     acento cálido a las herramientas sin migrar. min-height/min-width en
+     los pinta en cualquiera de las dos cabeceras solo cuando
+     showRouletteControls es true — hoy únicamente /ruleta la activa, así
+     que recolorearla no filtra el acento cálido a las herramientas sin
+     migrar. min-height/min-width en
      44px es el objetivo táctil real: el padding visual se queda más
      angosto porque en mobile el botón es solo el ícono (.btn-label se
      oculta hasta 480px, ver abajo). */

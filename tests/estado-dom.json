@@ -1,8 +1,5 @@
 {
   "/ruleta [modo-foco]": {
-    ".hero": {
-      "display": "none"
-    },
     ".hub-section": {
       "display": "none"
     },
@@ -12,9 +9,7 @@
     "footer": {
       "display": "none"
     },
-    ".header-inner": {
-      "justifyContent": "flex-end"
-    },
+    "main.wrap": "NO EXISTE EN EL DOM",
     ".roulette-section": {
       "display": "flex",
       "alignItems": "center",
@@ -86,16 +81,7 @@
       "minHeight": "44px"
     }
   },
-  "/ [reposo]": {
-    ".hero": {
-      "display": "flex"
-    },
-    ".hub-section": {
-      "display": "block"
-    },
-    ".header-inner": {
-      "justifyContent": "space-between"
-    },
+  "/ [cabeceras-de-seccion]": {
     ".hub-section .section-heading": {
       "fontSize": "36.8px"
     },
@@ -119,6 +105,11 @@
       "visibility": "visible"
     }
   },
+  "/ruleta [h1-visible-390x844]": {
+    "h1": {
+      "display": "block"
+    }
+  },
   "/ruleta [panel-opciones-movil]": {
     "#mobile-options-panel": {
       "position": "fixed",
@@ -129,9 +120,7 @@
       "height": "56px",
       "cursor": "pointer"
     },
-    ".roulette-section .section-tag": {
-      "display": "none"
-    }
+    ".roulette-section .section-tag": "NO EXISTE EN EL DOM"
   },
   "/ruleta [panel-fijo-tras-scroll]": {
     "relacion": {
@@ -142,19 +131,19 @@
   "/ruleta [boton-girar-visible-con-panel-390x844]": {
     "relacion": {
       "ok": true,
-      "mensaje": "spin-button.bottom=311.2px, panel.top=438.9px (holgura 127.7px). Holgura negativa significa que el panel abierto tapa el botón GIRAR."
+      "mensaje": "spin-button.bottom=311.2px, panel.top=438.9px (holgura 127.7px, mínimo 16px). Holgura por debajo del mínimo significa que el panel abierto tapa (o casi tapa) el botón GIRAR."
     }
   },
   "/ruleta [boton-girar-visible-con-panel-375x667]": {
     "relacion": {
       "ok": true,
-      "mensaje": "spin-button.bottom=316.1px, panel.top=346.8px (holgura 30.8px). Holgura negativa significa que el panel abierto tapa el botón GIRAR."
+      "mensaje": "spin-button.bottom=316.1px, panel.top=346.8px (holgura 30.8px, mínimo 16px). Holgura por debajo del mínimo significa que el panel abierto tapa (o casi tapa) el botón GIRAR."
     }
   },
   "/ruleta [boton-girar-visible-con-panel-360x640]": {
     "relacion": {
       "ok": true,
-      "mensaje": "spin-button.bottom=308.6px, panel.top=332.8px (holgura 24.3px). Holgura negativa significa que el panel abierto tapa el botón GIRAR."
+      "mensaje": "spin-button.bottom=308.6px, panel.top=332.8px (holgura 24.3px, mínimo 16px). Holgura por debajo del mínimo significa que el panel abierto tapa (o casi tapa) el botón GIRAR."
     }
   },
   "/ruleta [panel-opciones-movil-gestionar]": {
