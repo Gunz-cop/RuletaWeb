@@ -122,17 +122,28 @@
        había antes. `hidden` empieza puesto para que no ocupe espacio ni se
        lea con el lector de pantalla hasta que roulette.js lo active.
 
-       El aria-live vive en el <p> del mensaje, no en el contenedor: un
-       aria-live envolviendo también al botón reanuncia el subárbol entero
-       (mensaje + "Deshacer") cada vez que el texto cambia, así que un
-       lector de pantalla puede interrumpir su lectura justo cuando el foco
-       intenta llegar al botón, o listarlo dos veces. Separado así, el
-       mensaje se anuncia solo una vez por aparición y el botón es un
-       <button> normal, alcanzable con Tab igual que cualquier otro control
-       de la página -- sin necesidad de moverle el foco a la fuerza. -->
+       Sin aria-live propio: el <p> del mensaje no lleva uno porque un
+       contenedor que arranca `hidden` (fuera del árbol de accesibilidad) y
+       se destapa un frame antes de escribir el texto depende de que el
+       lector note la aparición Y la mutación en esa ventana, y no todos lo
+       garantizan. roulette.js anuncia el mismo texto por #sr-announcer
+       (Layout.astro), que ya vive siempre en el DOM y ya usa announceWinner
+       para el ganador -- así el anuncio no depende de cuándo se destapa
+       este bloque. El toast queda como pieza puramente visual.
+
+       Dos botones, ninguno dentro de una región anunciada: "Deshacer" y
+       "Cerrar" son <button> normales, alcanzables con Tab como cualquier
+       otro control de la página, sin necesidad de moverles el foco a la
+       fuerza. "Cerrar" es el único recurso en táctil para descartar el
+       aviso antes de los 7s -- ahí no hay Escape. -->
   <div id="undo-toast" class="undo-toast" hidden>
-    <p id="undo-toast-message" class="undo-toast-message" aria-live="polite" aria-atomic="true"></p>
-    <button id="undo-toast-btn" type="button" class="undo-toast-btn">Deshacer</button>
+    <p id="undo-toast-message" class="undo-toast-message"></p>
+    <div class="undo-toast-actions">
+      <button id="undo-toast-btn" type="button" class="undo-toast-btn">Deshacer</button>
+      <button id="undo-toast-close" type="button" class="undo-toast-close" aria-label="Cerrar aviso">
+        <span aria-hidden="true">✕</span>
+      </button>
+    </div>
   </div>
 </section>
 <style>
@@ -204,7 +215,7 @@
   }
 
   @media (hover: hover) and (pointer: fine) {
-    #wheel-title-text:hover:not([contenteditable='true']) {
+    #wheel-title-text:hover:not(.title-editing) {
       color: var(--accent-warm);
       text-decoration: underline;
       text-decoration-style: dashed;
@@ -214,21 +225,28 @@
 
   /* Modo edición: mismo elemento, misma tipografía -- roulette.js solo le
      añade contenteditable, no lo sustituye por un <input>, así que no hace
-     falta reproducir aquí ni un tamaño ni una familia aparte. El cambio
-     visual se limita al cursor de texto y a la selección; el `outline`
-     normal del navegador se apaga porque ya hay dos señales de "esto es
-     editable" (el texto queda seleccionado y aparece un cursor de texto) y
-     un anillo alrededor del titular desentonaría con el resto del sistema
-     editorial. `:focus-visible` lo repone solo cuando el foco llegó por
-     teclado (vía el botón del lápiz con Enter/Espacio, no con el clic que
-     abre el mismo modo), que es el caso que sí necesita una marca visible. */
-  #wheel-title-text[contenteditable='true'] {
+     falta reproducir aquí ni un tamaño ni una familia aparte. Se engancha a
+     la clase .title-editing, no a [contenteditable="true"]: el valor real
+     del atributo varía entre navegadores (algunos lo dejan en
+     "plaintext-only", que roulette.js intenta primero; otros lo normalizan
+     a "true"), y un selector de atributo con valor exacto deja de aplicar
+     en cualquiera que no coincida.
+
+     El cambio visual se limita al cursor de texto y a la selección; el
+     `outline` normal del navegador se apaga porque ya hay dos señales de
+     "esto es editable" (el texto queda seleccionado y aparece un cursor de
+     texto) y un anillo alrededor del titular desentonaría con el resto del
+     sistema editorial. `:focus-visible` lo repone solo cuando el foco
+     llegó por teclado (vía el botón del lápiz con Enter/Espacio, no con el
+     clic que abre el mismo modo), que es el caso que sí necesita una marca
+     visible. */
+  #wheel-title-text.title-editing {
     cursor: text;
     user-select: text;
     outline: none;
   }
 
-  #wheel-title-text[contenteditable='true']:focus-visible {
+  #wheel-title-text.title-editing:focus-visible {
     outline: 1px dashed var(--accent-warm);
     outline-offset: 6px;
     border-radius: 2px;
@@ -647,13 +665,23 @@
     flex: 1;
   }
 
+  .undo-toast-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+  }
+
   .undo-toast-btn {
     flex-shrink: 0;
     min-height: 44px;
     padding: 0 0.25rem;
     background: transparent;
     border: none;
-    border-bottom: 1px solid rgba(226, 144, 90, 0.4);
+    /* color-mix en vez de una rgba() calculada a mano: si --accent-warm
+       cambia de valor algún día, esta línea no se queda con el tono viejo
+       congelado -- sigue leyendo del mismo token. */
+    border-bottom: 1px solid color-mix(in srgb, var(--accent-warm) 40%, transparent);
     color: var(--accent-warm);
     font-family: 'Outfit', sans-serif;
     font-weight: 700;
@@ -675,6 +703,39 @@
   .undo-toast-btn:focus-visible {
     outline: 1px dashed var(--accent-warm);
     outline-offset: 3px;
+  }
+
+  /* "Cerrar": único recurso en táctil para descartar el aviso antes de los
+     7s (no hay Escape). Mismo objetivo táctil de 44px que .edit-title-btn,
+     mismo criterio de "ícono chico a propósito, caja de toque completa". */
+  .undo-toast-close {
+    flex-shrink: 0;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: var(--text-tertiary);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: color 160ms var(--ease-out);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .undo-toast-close:hover {
+      color: var(--text-primary);
+    }
+  }
+
+  .undo-toast-close:active {
+    transform: scale(0.9);
+  }
+
+  .undo-toast-close:focus-visible {
+    outline: 1px dashed var(--accent-warm);
+    outline-offset: -4px;
   }
 
   .options-checklist-container {

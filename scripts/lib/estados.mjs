@@ -70,15 +70,26 @@ export const ESTADOS = [
   },
   {
     // Reemplaza al prompt() que abría editTitle(): el propio <h3> se vuelve
-    // editable in situ. Comprobar el cursor de texto y el outline apagado
-    // en el estado de reposo (:not) sería redundante; lo que importa aquí
-    // es que #wheel-title-text[contenteditable="true"] sí reciba la regla.
+    // editable in situ. cursor/userSelect son las dos propiedades que
+    // decide nuestro CSS (`#wheel-title-text.title-editing`); no se
+    // comprueba `outline` aquí a propósito: la regla que lo pone en
+    // "dashed" es `:focus-visible`, y si ese pseudo-estado termina
+    // aplicando tras un clic (el caso de esta prueba) depende de la
+    // heurística de "modalidad de entrada" de cada navegador, no de una
+    // regla nuestra -- comprobarlo haría que el test fallara si Chromium
+    // cambia esa heurística sin que nadie haya roto nada aquí.
+    //
+    // El selector es la clase .title-editing, no [contenteditable="true"]:
+    // el valor real del atributo varía entre navegadores (Chromium lo
+    // normaliza desde "plaintext-only" a "true", otros no), así que un
+    // selector de atributo con valor exacto es frágil por la misma razón
+    // que el CSS de RouletteMachine.astro dejó de usarlo.
     ruta: '/',
     nombre: 'titulo-edicion',
     clics: ['#edit-title-btn'],
     espera: 200,
     comprobar: [
-      { sel: '#wheel-title-text[contenteditable="true"]', props: ['cursor', 'userSelect', 'outlineStyle'] },
+      { sel: '#wheel-title-text.title-editing', props: ['cursor', 'userSelect'] },
     ],
   },
   {

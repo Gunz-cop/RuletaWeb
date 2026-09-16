@@ -72,10 +72,9 @@
     }
   },
   "/ [titulo-edicion]": {
-    "#wheel-title-text[contenteditable=\"true\"]": {
+    "#wheel-title-text.title-editing": {
       "cursor": "text",
-      "userSelect": "text",
-      "outlineStyle": "dashed"
+      "userSelect": "text"
     }
   },
   "/ [deshacer-limpiar]": {

@@ -36,6 +36,20 @@
    ------------------------------------------------------------------ */
 @source "../../src";
 
+/* `src/scripts/` no tiene marcado propio -- es la lógica JS de cada
+   herramienta, no una plantilla -- así que le pasa lo mismo que a `tests/`
+   (ver AGENTS.md): una palabra suelta en un comentario, un valor de
+   `style.display` o el nombre de un evento del DOM puede coincidir con el
+   nombre de una utilidad y colarse en la hoja compartida por las 12
+   páginas sin que ninguna la use. class-collisions.mjs no lo detecta
+   porque no hay colisión de nombre, solo CSS generado de más. Antes de
+   esta línea, `.block` (de `style.display = 'block'` en
+   amigo-secreto.js), `.inline-flex` (dados.js), `.inline` y `.ring`
+   (palabras sueltas en comentarios de roulette.js/temporizador.js) y
+   `.blur` (el evento `'blur'` de roulette.js) viajaban así, sin que nada
+   los usara. */
+@source not "../../src/scripts";
+
 /* ==================================================================
    TOKENS DEL SITIO EXPUESTOS A TAILWIND
    ==================================================================
