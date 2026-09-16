@@ -69,6 +69,45 @@ export const ESTADOS = [
     ],
   },
   {
+    // Reemplaza al prompt() que abría editTitle(): el propio <h3> se vuelve
+    // editable in situ. cursor/userSelect son las dos propiedades que
+    // decide nuestro CSS (`#wheel-title-text.title-editing`); no se
+    // comprueba `outline` aquí a propósito: la regla que lo pone en
+    // "dashed" es `:focus-visible`, y si ese pseudo-estado termina
+    // aplicando tras un clic (el caso de esta prueba) depende de la
+    // heurística de "modalidad de entrada" de cada navegador, no de una
+    // regla nuestra -- comprobarlo haría que el test fallara si Chromium
+    // cambia esa heurística sin que nadie haya roto nada aquí.
+    //
+    // El selector es la clase .title-editing, no [contenteditable="true"]:
+    // el valor real del atributo varía entre navegadores (Chromium lo
+    // normaliza desde "plaintext-only" a "true", otros no), así que un
+    // selector de atributo con valor exacto es frágil por la misma razón
+    // que el CSS de RouletteMachine.astro dejó de usarlo.
+    ruta: '/',
+    nombre: 'titulo-edicion',
+    clics: ['#edit-title-btn'],
+    espera: 200,
+    comprobar: [
+      { sel: '#wheel-title-text.title-editing', props: ['cursor', 'userSelect'] },
+    ],
+  },
+  {
+    // Reemplaza al confirm() que bloqueaba clearOptions(): vacía al
+    // instante y este es el aviso de "Deshacer" que queda visible unos
+    // segundos. El textarea trae las opciones por defecto al cargar, así
+    // que #clear-btn siempre tiene algo que vaciar en este estado.
+    ruta: '/',
+    nombre: 'deshacer-limpiar',
+    clics: ['#clear-btn'],
+    esperarSelector: '#undo-toast:not([hidden])',
+    espera: 250,
+    comprobar: [
+      { sel: '#undo-toast', props: ['display', 'position', 'zIndex'] },
+      { sel: '#undo-toast-btn', props: ['display', 'cursor', 'minHeight'] },
+    ],
+  },
+  {
     ruta: '/',
     nombre: 'reposo',
     clics: [],

@@ -71,6 +71,24 @@
       "fontSize": "56px"
     }
   },
+  "/ [titulo-edicion]": {
+    "#wheel-title-text.title-editing": {
+      "cursor": "text",
+      "userSelect": "text"
+    }
+  },
+  "/ [deshacer-limpiar]": {
+    "#undo-toast": {
+      "display": "flex",
+      "position": "fixed",
+      "zIndex": "60"
+    },
+    "#undo-toast-btn": {
+      "display": "block",
+      "cursor": "pointer",
+      "minHeight": "44px"
+    }
+  },
   "/ [reposo]": {
     ".hero": {
       "display": "flex"

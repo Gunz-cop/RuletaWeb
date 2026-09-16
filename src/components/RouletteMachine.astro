@@ -117,6 +117,34 @@
       </div> <!-- input-column -->
     </div> <!-- app-grid -->
   </div> <!-- wrap -->
+
+  <!-- Aviso de "Deshacer" tras vaciar la ruleta, en vez del confirm() que
+       había antes. `hidden` empieza puesto para que no ocupe espacio ni se
+       lea con el lector de pantalla hasta que roulette.js lo active.
+
+       Sin aria-live propio: el <p> del mensaje no lleva uno porque un
+       contenedor que arranca `hidden` (fuera del árbol de accesibilidad) y
+       se destapa un frame antes de escribir el texto depende de que el
+       lector note la aparición Y la mutación en esa ventana, y no todos lo
+       garantizan. roulette.js anuncia el mismo texto por #sr-announcer
+       (Layout.astro), que ya vive siempre en el DOM y ya usa announceWinner
+       para el ganador -- así el anuncio no depende de cuándo se destapa
+       este bloque. El toast queda como pieza puramente visual.
+
+       Dos botones, ninguno dentro de una región anunciada: "Deshacer" y
+       "Cerrar" son <button> normales, alcanzables con Tab como cualquier
+       otro control de la página, sin necesidad de moverles el foco a la
+       fuerza. "Cerrar" es el único recurso en táctil para descartar el
+       aviso antes de los 7s -- ahí no hay Escape. -->
+  <div id="undo-toast" class="undo-toast" hidden>
+    <p id="undo-toast-message" class="undo-toast-message"></p>
+    <div class="undo-toast-actions">
+      <button id="undo-toast-btn" type="button" class="undo-toast-btn">Deshacer</button>
+      <button id="undo-toast-close" type="button" class="undo-toast-close" aria-label="Cerrar aviso">
+        <span aria-hidden="true">✕</span>
+      </button>
+    </div>
+  </div>
 </section>
 <style>
   /* Ruleta Section */
@@ -187,12 +215,41 @@
   }
 
   @media (hover: hover) and (pointer: fine) {
-    #wheel-title-text:hover {
+    #wheel-title-text:hover:not(.title-editing) {
       color: var(--accent-warm);
       text-decoration: underline;
       text-decoration-style: dashed;
       text-underline-offset: 4px;
     }
+  }
+
+  /* Modo edición: mismo elemento, misma tipografía -- roulette.js solo le
+     añade contenteditable, no lo sustituye por un <input>, así que no hace
+     falta reproducir aquí ni un tamaño ni una familia aparte. Se engancha a
+     la clase .title-editing, no a [contenteditable="true"]: el valor real
+     del atributo varía entre navegadores (algunos lo dejan en
+     "plaintext-only", que roulette.js intenta primero; otros lo normalizan
+     a "true"), y un selector de atributo con valor exacto deja de aplicar
+     en cualquiera que no coincida.
+
+     El cambio visual se limita al cursor de texto y a la selección; el
+     `outline` normal del navegador se apaga porque ya hay dos señales de
+     "esto es editable" (el texto queda seleccionado y aparece un cursor de
+     texto) y un anillo alrededor del titular desentonaría con el resto del
+     sistema editorial. `:focus-visible` lo repone solo cuando el foco
+     llegó por teclado (vía el botón del lápiz con Enter/Espacio, no con el
+     clic que abre el mismo modo), que es el caso que sí necesita una marca
+     visible. */
+  #wheel-title-text.title-editing {
+    cursor: text;
+    user-select: text;
+    outline: none;
+  }
+
+  #wheel-title-text.title-editing:focus-visible {
+    outline: 1px dashed var(--accent-warm);
+    outline-offset: 6px;
+    border-radius: 2px;
   }
 
   /* Objetivo táctil de 44px: en desktop el ícono se ve chico a propósito
@@ -548,6 +605,137 @@
     font-size: 0.78rem;
     white-space: nowrap;
     flex-shrink: 0;
+  }
+
+  /* Aviso "Deshacer": posición fija para no desplazar el layout al
+     aparecer (una pieza en flujo normal empujaría el resto de la tarjeta
+     hacia abajo, y aquí no hay espacio reservado para eso). Vive pegado
+     abajo del viewport, lejos del botón GIRAR -- que está arriba, dentro
+     de .wheel-card -- así que nunca compite con él por espacio, ni en
+     escritorio ni en los 390px que pide la tarea. Superficie y borde son
+     los mismos tokens que .wheel-card/.input-card: ninguna pieza nueva de
+     color ni degradado, sistema editorial. */
+  .undo-toast {
+    position: fixed;
+    left: 50%;
+    bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+    transform: translateX(-50%);
+    z-index: 60;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    width: min(92vw, 420px);
+    background: var(--bg-surface);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    padding: 0.85rem 1rem;
+    animation: undo-toast-in 200ms var(--ease-out);
+  }
+
+  /* Misma especificidad que la regla de arriba, pero con el atributo
+     `[hidden]` sumado: gana por especificidad y no depende del orden en
+     la hoja, así que roulette.js puede seguir alternando la propiedad
+     `hidden` del elemento sin pelear con el `display: flex` de al lado. */
+  .undo-toast[hidden] {
+    display: none;
+  }
+
+  @keyframes undo-toast-in {
+    from {
+      opacity: 0;
+      transform: translate(-50%, 8px);
+    }
+    to {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .undo-toast {
+      animation: none;
+    }
+  }
+
+  .undo-toast-message {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    flex: 1;
+  }
+
+  .undo-toast-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  .undo-toast-btn {
+    flex-shrink: 0;
+    min-height: 44px;
+    padding: 0 0.25rem;
+    background: transparent;
+    border: none;
+    /* color-mix en vez de una rgba() calculada a mano: si --accent-warm
+       cambia de valor algún día, esta línea no se queda con el tono viejo
+       congelado -- sigue leyendo del mismo token. */
+    border-bottom: 1px solid color-mix(in srgb, var(--accent-warm) 40%, transparent);
+    color: var(--accent-warm);
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: border-color 160ms var(--ease-out), transform 160ms var(--ease-out);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .undo-toast-btn:hover {
+      border-bottom-color: var(--accent-warm);
+    }
+  }
+
+  .undo-toast-btn:active {
+    transform: scale(0.96);
+  }
+
+  .undo-toast-btn:focus-visible {
+    outline: 1px dashed var(--accent-warm);
+    outline-offset: 3px;
+  }
+
+  /* "Cerrar": único recurso en táctil para descartar el aviso antes de los
+     7s (no hay Escape). Mismo objetivo táctil de 44px que .edit-title-btn,
+     mismo criterio de "ícono chico a propósito, caja de toque completa". */
+  .undo-toast-close {
+    flex-shrink: 0;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: var(--text-tertiary);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: color 160ms var(--ease-out);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .undo-toast-close:hover {
+      color: var(--text-primary);
+    }
+  }
+
+  .undo-toast-close:active {
+    transform: scale(0.9);
+  }
+
+  .undo-toast-close:focus-visible {
+    outline: 1px dashed var(--accent-warm);
+    outline-offset: -4px;
   }
 
   .options-checklist-container {

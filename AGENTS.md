@@ -196,11 +196,20 @@ resumen:
   en dos. Hay un test que lo comprueba (`npm run test:tokens`). La tabla de
   equivalencias completa y cómo decidir entre CSS propio y utilidad están
   en [DESIGN.md](./DESIGN.md).
-- **`tests/` está excluido del rastreo** con `@source not`. Tailwind 4
-  detecta las fuentes rastreando el proyecto salvo lo ignorado por git, y
-  los snapshots contienen CSS compilado con nombres de clase dentro:
-  sin esa exclusión, Tailwind genera utilidades que nadie usa y el snapshot
-  acaba alimentando al build que vigila.
+- **`tests/` y `src/scripts/` están excluidos del rastreo** con `@source
+  not`, cada uno por su motivo (ver los comentarios en `tailwind.css`).
+  Tailwind 4 detecta las fuentes rastreando el proyecto salvo lo ignorado
+  por git, y genera una utilidad por cualquier cosa que parezca un nombre
+  de clase: los snapshots de `tests/` contienen CSS compilado con nombres
+  de clase dentro, y `src/scripts/` es lógica JS sin marcado propio donde
+  una palabra suelta en un comentario o un nombre de evento del DOM
+  (`'blur'`, `'ring'`...) coincide con una utilidad real. Sin esas dos
+  exclusiones, Tailwind genera utilidades que nadie usa y encima el
+  snapshot de `tests/` acaba alimentando al build que vigila. Consecuencia
+  a tener en cuenta si tocás un script: una clase de Tailwind aplicada solo
+  por JS desde `src/scripts/` (`classList.add('flex')`, por ejemplo) no
+  genera esa utilidad -- tiene que aparecer también en el marcado de algún
+  `.astro` para que Tailwind la emita.
 
 Las páginas de herramientas siguen con su CSS propio y su bloque `<style>`.
 La migración a Tailwind es gradual, una herramienta a la vez, verificando
