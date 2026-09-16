@@ -113,7 +113,7 @@ const schemaLD = {
 };
 ---
 
-<!--
+{/*
   showHomeHeader=false: /ruleta lee como sus ocho hermanas (moneda, dados,
   etc.), no como la home -- migrarla al header/hero del sistema editorial
   es la tarea de migración aparte que ya está en marcha para el resto de
@@ -129,20 +129,20 @@ const schemaLD = {
   showRouletteControls=true: es la única página sin showHomeHeader que
   necesita Foco y Sonido (ver Header.astro) -- roulette.js los busca por id
   sin comprobar que existan.
--->
+*/}
 <Layout title={title} description={description} keywords={keywords} schemaLD={schemaLD} showHomeHeader={false} showRouletteControls={true}>
   <Fragment slot="head">
-    <!-- Newsreader itálica: la usa el "Online" en cursiva del h1 de esta
+    {/* Newsreader itálica: la usa el "Online" en cursiva del h1 de esta
          página (RouletteMachine.astro, .roulette-heading em). Antes de la
          mudanza la cargaba index.astro porque la ruleta vivía ahí; el
          comentario de RouletteMachine.astro que decía "ya está cargada
          por index.astro" quedó desactualizado y nadie lo notó porque el
-         navegador cae a una tipografía de reemplazo sin avisar. -->
+         navegador cae a una tipografía de reemplazo sin avisar. */}
     <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@1,400&display=swap" rel="stylesheet">
   </Fragment>
 
-  <!-- Canvas transparente para el efecto de confeti del modal de ganador.
-       Viaja desde index.astro: el confeti es del modal, no de la home. -->
+  {/* Canvas transparente para el efecto de confeti del modal de ganador.
+       Viaja desde index.astro: el confeti es del modal, no de la home. */}
   <canvas id="confetti-canvas" aria-hidden="true"></canvas>
 
   <AdSlot position="top" />
@@ -159,11 +159,11 @@ const schemaLD = {
     <HubGrid activeToolId="ruleta" />
   </section>
 
-  <!-- Sección de Artículo SEO: el artículo de la ruleta se mudó entero
+  {/* Sección de Artículo SEO: el artículo de la ruleta se mudó entero
        desde index.astro. Se retocó el arranque para hablar de la ruleta
        en vez de "qué es decídelo.app" -- esa introducción de hub se queda
        en la home. El resto (cómo funciona, casos de uso, modo foco, por
-       qué es diferente) viaja tal cual. -->
+       qué es diferente) viaja tal cual. */}
   <SeoArticle title="¿Cómo funciona la Ruleta Aleatoria Online y por qué usarla?">
     <p>La <strong>Ruleta Aleatoria Online</strong> de Decídelo.app está construida con tecnología <strong>HTML5 Canvas</strong> de última generación, y ofrece una experiencia visual fluida a 60 fotogramas por segundo con un algoritmo de desaceleración basado en física de fricción real. Cada giro se siente orgánico, impredecible y emocionante -- y todo corre en tu navegador, sin registro ni servidores de por medio.</p>
 
@@ -208,7 +208,7 @@ const schemaLD = {
 
   <WinnerModal />
 
-  <!-- Carga del JavaScript específico de la Ruleta -->
+  {/* Carga del JavaScript específico de la Ruleta */}
   <script src="../scripts/roulette.js"></script>
 </Layout>
 

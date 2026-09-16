@@ -1,4 +1,4 @@
-.hero[S]{background-color:var(--bg-body);background-image:url(/images/hero/hero-amigos-mobile.webp);background-position:50% 15%;background-repeat:no-repeat;background-size:cover;align-items:flex-end;width:100%;min-height:100svh;display:flex;position:relative;overflow:hidden}
+.hero[S]{background-color:var(--bg-body);background-image:url(/images/hero/hero-amigos-mobile.webp);background-position:50% 15%;background-repeat:no-repeat;background-size:cover;align-items:flex-end;width:100%;min-height:72svh;display:flex;position:relative;overflow:hidden}
 .hero-scrim[S]{background:linear-gradient(#07070a0d 0%,#07070a59 40%,#07070ad1 70%,#07070af5 100%);position:absolute;inset:0}
 .hero-inner[S]{z-index:1;width:100%;max-width:640px;padding:0 1.25rem 2.75rem;position:relative}
 .hero[S] h1[S]{letter-spacing:-.02em;color:#fff;margin-bottom:1.25rem;font-family:Outfit,sans-serif;font-size:clamp(2.2rem,8vw,4.4rem);font-weight:700;line-height:1.04}
@@ -10,7 +10,21 @@
 @media (hover:hover) and (pointer:fine){.hero-cta[S]:hover svg[S]{transform:translate(3px)}}
 .hero-facts[S]{flex-wrap:wrap;gap:1.5rem;margin-top:2.25rem;display:flex}
 .hero-facts[S] span[S]{letter-spacing:.06em;text-transform:uppercase;color:#f0f0f599;font-size:.68rem}
-@media (width>=860px){.hero[S]{background-image:url(/images/hero/hero-amigos.webp);background-position:100%;align-items:center}.hero-scrim[S]{background:linear-gradient(90deg,#07070af5 0%,#07070ad9 32%,#07070a66 58%,#07070a0d 80%)}.hero-inner[S]{max-width:620px;padding:0 4rem}.hero-subtitle[S]{max-width:480px}.hero-facts[S]{gap:1.75rem;margin-top:3rem}.hero-facts[S] span[S]{font-size:.72rem}}
+@media (width>=860px){.hero[S]{background-image:url(/images/hero/hero-amigos.webp);background-position:100%;align-items:center;min-height:60vh}.hero-scrim[S]{background:linear-gradient(90deg,#07070af5 0%,#07070ad9 32%,#07070a66 58%,#07070a0d 80%)}.hero-inner[S]{max-width:620px;padding:0 4rem}.hero-subtitle[S]{max-width:480px}.hero-facts[S]{gap:1.75rem;margin-top:3rem}.hero-facts[S] span[S]{font-size:.72rem}}
+.use-cases[S]{border-bottom:1px solid var(--divider-line);padding:4rem 0}
+.uc-header[S]{text-align:left;margin-bottom:3rem}
+.uc-heading[S] em[S]{color:var(--accent-warm);font-family:Newsreader,serif;font-style:italic;font-weight:400}
+.use-cases[S] .section-subtitle[S]{color:var(--text-secondary);max-width:500px;margin:.75rem 0 0;font-size:1rem}
+.uc-grid[S]{border-top:1px solid var(--divider-line);border-left:1px solid var(--divider-line);grid-template-columns:1fr 1fr;display:grid}
+.uc-item[S]{border-right:1px solid var(--divider-line);border-bottom:1px solid var(--divider-line);gap:1.25rem;padding:2.25rem;display:flex}
+.uc-n[S]{color:var(--text-tertiary);font-variant-numeric:tabular-nums;flex-shrink:0;font-size:.85rem}
+.uc-content[S] h3[S]{color:#fff;margin:0 0 .75rem;font-family:Outfit,sans-serif;font-size:1.15rem;font-weight:700}
+.uc-content[S] p[S]{color:var(--text-secondary);margin:0 0 1.1rem;font-size:.92rem;line-height:1.65}
+.uc-content[S] p[S] strong[S]{color:var(--text-primary);font-weight:600}
+.uc-links[S]{flex-wrap:wrap;align-items:center;gap:.5rem;display:flex}
+.uc-links[S] a[S]{color:var(--accent-warm);border-bottom:1px solid var(--accent-warm);padding-bottom:.1rem;font-size:.85rem;font-weight:600;text-decoration:none}
+.uc-links-sep[S]{color:var(--text-tertiary);font-size:.85rem}
+@media (width<=760px){.uc-grid[S]{grid-template-columns:1fr}.uc-item[S]{border-right:none;padding:1.75rem 0}}
 .how-it-works[S]{border-bottom:1px solid var(--divider-line);padding:4rem 0}
 .how-header[S]{flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:1rem;margin-bottom:3rem;display:flex}
 .how-heading[S]{margin:0}
@@ -25,6 +39,11 @@
 @media (width<=760px){.how-rail[S]{grid-template-columns:1fr;gap:2rem}.how-step[S]{border-left:1px solid var(--divider-line);min-height:0;padding:0 0 0 1.25rem}.how-step[S]:first-child{border-left:1px solid var(--divider-line);padding-left:1.25rem}}
 .hub-section[S] .section-header[S]{text-align:center;margin-bottom:3rem}
 .hub-section[S] .section-subtitle[S]{color:var(--text-secondary);max-width:500px;margin:.75rem auto 0;font-size:1rem}
+.hub-section[S] .hub-row{padding:1.9rem 0}
+.hub-section[S] .hub-row-icon{width:52px;height:52px}
+.hub-section[S] .hub-row-icon svg{width:26px;height:26px}
+.hub-section[S] .hub-row h3{font-size:1.3rem}
+.hub-section[S] .hub-row p{font-size:.95rem}
 .section-header{margin-bottom:2.5rem}
 .section-tag{color:var(--text-secondary);margin-bottom:.75rem}
 .section-heading{font-size:clamp(1.65rem,4vw,2.3rem)}
