@@ -10,8 +10,14 @@ import HubGrid from '../components/HubGrid.astro';
 import SeoArticle from '../components/SeoArticle.astro';
 import { getSocialImageUrl } from '../lib/heroImages';
 
-const title = 'Decídelo.app — Herramientas para Decidir en Grupo';
-const description = 'Ruleta, moneda, dados, equipos y más para resolver cualquier empate en fiestas, en familia, entre amigos o en la oficina. Gratis, sin registro y 100% en tu navegador.';
+// Experimento de SEO: la raíz nunca tuvo un <title>/<description> que
+// dijera "ruleta" -- se prueba esta redacción para ver si decidelo.app
+// empieza a rankear por búsquedas de ruleta antes de decidir si la
+// herramienta se muda a su propia página (/ruleta). Ver AGENTS.md sobre
+// Search Console para el seguimiento. No toca el <h1> ni el JSON-LD: son
+// cambios aparte, deliberadamente medibles por separado.
+const title = 'Ruleta Aleatoria Online Gratis — Decídelo.app';
+const description = 'Ruleta aleatoria online para sortear nombres, elegir al azar y resolver empates. Gratis, sin registro, 100% en tu navegador. Además: moneda, dados y equipos.';
 
 // La imagen vive en src/assets y la optimiza Astro; el JSON-LD necesita
 // su URL absoluta ya generada, no la ruta pública que tenía antes.
