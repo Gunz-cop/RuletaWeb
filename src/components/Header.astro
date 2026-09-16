@@ -1,9 +1,16 @@
 ---
 interface Props {
   showHomeHeader?: boolean;
+  /** Sonido y Modo Foco son controles de la ruleta, no del hub: solo
+   * /ruleta los necesita entre las páginas con showHomeHeader=false. Ver
+   * AGENTS.md/el encargo de mudanza de la ruleta -- roulette.js busca
+   * #focus-toggle-btn y #sound-toggle-btn por id sin comprobar que
+   * existan, así que la página que lo carga tiene que pasar esta prop en
+   * true o el script revienta al cargar. */
+  showRouletteControls?: boolean;
 }
 
-const { showHomeHeader = false } = Astro.props;
+const { showHomeHeader = false, showRouletteControls = false } = Astro.props;
 ---
 
 <header>
@@ -31,13 +38,27 @@ const { showHomeHeader = false } = Astro.props;
       <a href="/" class="logo" id="header-logo">
         <span>decídelo.app</span>
       </a>
-      <a href="/" class="btn-back" id="btn-back-hub">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="19" y1="12" x2="5" y2="12"></line>
-          <polyline points="12 19 5 12 12 5"></polyline>
-        </svg>
-        Volver al Hub
-      </a>
+      <div class="tool-header-actions">
+        {showRouletteControls && (
+          <>
+            <button id="focus-toggle-btn" class="control-btn" title="Activar Modo Foco" aria-pressed="false">
+              <span class="btn-icon" aria-hidden="true">🎯</span>
+              <span class="btn-label">Foco</span>
+            </button>
+            <button id="sound-toggle-btn" class="control-btn" title="Activar/Desactivar sonido" aria-pressed="true">
+              <span class="btn-icon" aria-hidden="true">🔊</span>
+              <span class="btn-label">Sonido</span>
+            </button>
+          </>
+        )}
+        <a href="/" class="btn-back" id="btn-back-hub">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+          Volver al Hub
+        </a>
+      </div>
     )}
   </div>
 </header>
@@ -164,6 +185,15 @@ const { showHomeHeader = false } = Astro.props;
   }
 
   /* Tool page header styles */
+  /* Agrupa Foco/Sonido (si vienen) con "Volver al Hub" para que
+     justify-between de .header-inner los trate como un solo bloque a la
+     derecha, igual que antes trataba solo al enlace. */
+  .tool-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
   .logo {
     text-decoration: none;
     font-family: 'Outfit', sans-serif;

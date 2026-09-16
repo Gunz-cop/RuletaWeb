@@ -1,0 +1,282 @@
+---
+import Layout from '../layouts/Layout.astro';
+import AdSlot from '../components/AdSlot.astro';
+import HubGrid from '../components/HubGrid.astro';
+import SeoArticle from '../components/SeoArticle.astro';
+import RouletteMachine from '../components/RouletteMachine.astro';
+import WinnerModal from '../components/WinnerModal.astro';
+import { getSocialImageUrl } from '../lib/heroImages';
+
+// Título y descripción vienen del experimento SEO que antes vivía en la
+// raíz (ver el historial de index.astro): la ruleta ya se mudó a su propia
+// página, así que es aquí donde ese title/description tienen sentido de
+// verdad. Se retocó el final de la descripción para que hable de la
+// ruleta, no del hub -- "además: moneda, dados y equipos" prometía un
+// listado de herramientas que esta página ya no es.
+const title = 'Ruleta Aleatoria Online Gratis — Decídelo.app';
+const description = 'Ruleta aleatoria online para sortear nombres, elegir al azar y resolver empates. Gratis, sin registro, 100% en tu navegador, con modo foco y sonido opcional.';
+const keywords = 'ruleta aleatoria, ruleta de nombres, ruleta online, sortear nombres, ruleta de decisiones, ruleta para sorteos, girar la ruleta, ruleta gratis, ruleta random';
+
+// La imagen vive en src/assets y la optimiza Astro; el JSON-LD necesita
+// su URL absoluta ya generada, no la ruta pública que tenía antes.
+const socialImage = await getSocialImageUrl('/blog/ruleta.png');
+
+const schemaLD = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebApplication",
+      "@id": "https://decidelo.app/ruleta#webapp",
+      "name": "Ruleta Aleatoria Online — Decídelo.app",
+      "description": "Ruleta aleatoria online para sortear nombres, elegir al azar y resolver empates. Gratis, sin registro y con modo foco.",
+      "url": "https://decidelo.app/ruleta",
+      "applicationCategory": "UtilityApplication",
+      "operatingSystem": "All",
+      "browserRequirements": "Requires JavaScript and HTML5 Canvas",
+      "softwareVersion": "2.0.0",
+      "inLanguage": "es",
+      "offers": {
+        "@type": "Offer",
+        "price": "0.00",
+        "priceCurrency": "USD"
+      },
+      "image": socialImage,
+      "screenshot": socialImage,
+      "publisher": {
+        "@type": "Organization",
+        "@id": "https://decidelo.app/#organization",
+        "name": "Decídelo.app",
+        "url": "https://decidelo.app/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://decidelo.app/favicon.svg"
+        }
+      }
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://decidelo.app/ruleta#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "¿Cómo funciona la ruleta aleatoria online?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Escribe tus opciones, una por línea, pulsa Girar y la rueda se detiene sola en un resultado elegido al azar. Puedes editar el título, mezclar el orden u ocultar opciones sin borrarlas."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Puedo usar la ruleta para sortear nombres?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Sí. Pega la lista de nombres en el panel de opciones y gira: es el uso más habitual, tanto para sorteos como para elegir turnos o participaciones al azar."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Qué es el Modo Foco de la ruleta?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Oculta el resto de la página (cabecera, herramientas, artículo, publicidad) y deja solo la ruleta en pantalla, útil para proyectarla o para reducir distracciones."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "¿La ruleta guarda mis datos en un servidor?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Todo corre en tu navegador: las opciones y preferencias de sonido/foco se guardan localmente y no se envían a ningún servidor."
+          }
+        }
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://decidelo.app/ruleta#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Inicio",
+          "item": "https://decidelo.app/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Ruleta",
+          "item": "https://decidelo.app/ruleta"
+        }
+      ]
+    }
+  ]
+};
+---
+
+<!--
+  showHomeHeader=false: /ruleta lee como sus ocho hermanas (moneda, dados,
+  etc.), no como la home -- migrarla al header/hero del sistema editorial
+  es la tarea de migración aparte que ya está en marcha para el resto de
+  herramientas, no algo que decidir de rebote acá. Con eso viene, a
+  propósito, `main .hero` de global.css (la estética arcade sin migrar):
+  es exactamente lo que ya heredan moneda.astro y dados.astro, así que
+  /ruleta se ve consistente con ellas en vez de a medio camino.
+
+  showRouletteControls=true: es la única página sin showHomeHeader que
+  necesita Foco y Sonido (ver Header.astro) -- roulette.js los busca por id
+  sin comprobar que existan.
+-->
+<Layout title={title} description={description} keywords={keywords} schemaLD={schemaLD} showHomeHeader={false} showRouletteControls={true}>
+  <!-- Canvas transparente para el efecto de confeti del modal de ganador.
+       Viaja desde index.astro: el confeti es del modal, no de la home. -->
+  <canvas id="confetti-canvas" aria-hidden="true"></canvas>
+
+  <main class="wrap">
+    <!-- Hero Section -->
+    <section class="hero slide-up delay-1">
+      <h1>Ruleta Aleatoria <span class="gradient-text">Online</span></h1>
+      <p>Crea tu propia ruleta con las opciones que quieras, gírala y deja que el azar decida. Gratis, sin registro y 100% en tu navegador.</p>
+    </section>
+  </main>
+
+  <AdSlot position="top" />
+
+  <RouletteMachine />
+
+  <section class="hub-section wrap">
+    <div class="section-header reveal">
+      <div class="section-tag">🧰 Caja de Herramientas</div>
+      <h2 class="section-heading">Prueba otras herramientas de decisión</h2>
+    </div>
+    <HubGrid activeToolId="ruleta" />
+  </section>
+
+  <!-- Sección de Artículo SEO: el artículo de la ruleta se mudó entero
+       desde index.astro. Se retocó el arranque para hablar de la ruleta
+       en vez de "qué es decídelo.app" -- esa introducción de hub se queda
+       en la home. El resto (cómo funciona, casos de uso, modo foco, por
+       qué es diferente) viaja tal cual. -->
+  <SeoArticle title="¿Cómo funciona la Ruleta Aleatoria Online y por qué usarla?">
+    <p>La <strong>Ruleta Aleatoria Online</strong> de Decídelo.app está construida con tecnología <strong>HTML5 Canvas</strong> de última generación, y ofrece una experiencia visual fluida a 60 fotogramas por segundo con un algoritmo de desaceleración basado en física de fricción real. Cada giro se siente orgánico, impredecible y emocionante -- y todo corre en tu navegador, sin registro ni servidores de por medio.</p>
+
+    <h2>¿Cómo funciona la Ruleta?</h2>
+    <ul>
+      <li><strong>Escribe tus opciones</strong> en el panel lateral (una por línea). La ruleta se actualiza en tiempo real.</li>
+      <li><strong>Personaliza el título</strong> haciendo clic sobre él. Ideal para sorteos con nombre: "¿Quién lava los platos?".</li>
+      <li><strong>Presiona GIRAR</strong> y observa cómo la rueda cobra vida con efectos de sonido sintetizados y un puntero que se sacude al pasar por cada segmento.</li>
+      <li><strong>¡Resultado con confeti!</strong> Al detenerse, un modal elegante revela al ganador con una celebración visual de confeti animado.</li>
+      <li><strong>Oculta opciones</strong> sin borrarlas. Perfecto para torneos por eliminación o para ir descartando candidatos ronda a ronda.</li>
+    </ul>
+
+    <h2>Casos de uso populares</h2>
+
+    <h3>Sorteos de nombres y ganadores</h3>
+    <p>Ya sea para dinamizar tus sorteos en redes sociales (Instagram, TikTok, Facebook), seleccionar ganadores en concursos, o elegir el orden de exposición de estudiantes en clase, la <em>ruleta de nombres</em> garantiza imparcialidad absoluta. El público confía en un resultado visualmente aleatorio más que en un simple número generado por computadora.</p>
+
+    <h3>Decidir qué comer</h3>
+    <p>El clásico dilema de parejas y amigos. Introduce opciones como "Pizza 🍕", "Tacos 🌮", "Sushi 🍣" o "Hamburguesas 🍔" y deja que el destino elija el menú del día. Elimina discusiones innecesarias de forma divertida y democrática.</p>
+
+    <h3>Dinámicas de clase y gamificación</h3>
+    <p>Los profesores y facilitadores utilizan esta herramienta para hacer preguntas aleatorias, asignar tareas, seleccionar equipos o elegir temas de debate. La ruleta mantiene a los participantes alerta, atentos y comprometidos porque cualquiera puede ser el próximo.</p>
+
+    <h3>Juegos y entretenimiento</h3>
+    <p>Úsala como una ruleta de la fortuna, verdad o reto, penitencias para fiestas o para determinar premios en eventos. Personalízala con retos, castigos, recompensas o cualquier contenido creativo que se te ocurra.</p>
+
+    <h2>Diseño accesible y enfoque en la concentración</h2>
+    <p>Hemos diseñado esta ruleta con especial atención a la accesibilidad y experiencia de usuario. Nuestro <strong>Modo Foco</strong> elimina todas las distracciones de la pantalla (texto informativo, herramientas secundarias, anuncios) y te permite centrarte exclusivamente en la ruleta y tus opciones. Este modo es especialmente útil para personas con TDAH o que simplemente prefieren una interfaz limpia.</p>
+    <p>El elegante modo oscuro predeterminado con una paleta cuidadosamente seleccionada reduce la fatiga ocular durante sesiones prolongadas. Los sonidos físicos sintéticos (totalmente opcionales) proporcionan retroalimentación sensorial sin ser intrusivos.</p>
+
+    <h2>¿Por qué esta ruleta es diferente?</h2>
+    <ul>
+      <li><strong>Privacidad real:</strong> Sin servidores, sin cookies, sin registro. Todo funciona localmente en tu navegador.</li>
+      <li><strong>Velocidad:</strong> Carga instantánea. No hay dependencias pesadas ni frameworks innecesarios.</li>
+      <li><strong>Diseño premium:</strong> Cada detalle está cuidado: desde las micro-animaciones hasta la paleta de colores.</li>
+      <li><strong>Accesibilidad:</strong> Compatible con lectores de pantalla, navegación por teclado y preferencias de movimiento reducido.</li>
+      <li><strong>Offline-ready:</strong> Una vez cargada, funciona sin conexión a internet.</li>
+    </ul>
+  </SeoArticle>
+
+  <AdSlot position="bottom" />
+
+  <WinnerModal />
+
+  <!-- Carga del JavaScript específico de la Ruleta -->
+  <script src="../scripts/roulette.js"></script>
+</Layout>
+
+<style>
+  main {
+    padding: 3rem 0;
+  }
+
+  #confetti-canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    pointer-events: none;
+    z-index: 99;
+  }
+
+  .hub-section {
+    padding: 3rem 0;
+  }
+
+  /* ====================================================================
+     MODO FOCO
+     ====================================================================
+     Reescrito desde cero para /ruleta: la versión que vivía en index.astro
+     apuntaba a selectores de la home (.how-it-works, .seo-section junto a
+     nav-link/logo-link del header de home...) que en esta página no
+     existen -- copiarla tal cual habría dejado media regla apuntando a
+     nada sin que ningún test lo notara (el CSS se sigue emitiendo igual).
+     Lo que hay que ocultar aquí es lo que de verdad hay en esta página:
+     el hero propio, el índice de herramientas, el artículo SEO y el
+     footer. Los AdSlot no hace falta tocarlos -- ya nacen con el atributo
+     `hidden` (AdSense sigue pausado, ver AdSlot.astro), así que nunca
+     compiten por espacio en modo foco. */
+  body.focus-mode-active {
+    background-color: #060608;
+  }
+
+  body.focus-mode-active :global(header) {
+    background: transparent;
+    border-bottom: none;
+  }
+
+  body.focus-mode-active :global(.hero),
+  body.focus-mode-active :global(.hub-section),
+  body.focus-mode-active :global(.seo-section),
+  body.focus-mode-active :global(footer) {
+    display: none !important;
+  }
+
+  body.focus-mode-active :global(.header-inner) {
+    justify-content: flex-end;
+  }
+
+  body.focus-mode-active :global(.roulette-section) {
+    min-height: calc(100vh - 80px);
+    display: flex;
+    align-items: center;
+    padding: 0;
+  }
+
+  body.focus-mode-active :global(.roulette-section > .wrap) {
+    width: 100%;
+  }
+
+  body.focus-mode-active :global(.roulette-section .section-header) {
+    display: none;
+  }
+
+  body.focus-mode-active :global(.app-grid) {
+    align-items: center;
+  }
+
+  @media (min-width: 860px) {
+    body.focus-mode-active :global(.app-grid) {
+      max-width: 950px;
+      margin: 0 auto;
+    }
+  }
+</style>
