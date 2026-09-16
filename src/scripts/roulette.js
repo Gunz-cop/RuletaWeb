@@ -585,6 +585,12 @@ function initRoulette() {
     const winnerIndex = getSegmentIndexAtPointer(currentAngle);
     const winner = options[winnerIndex];
 
+    // Vuelve a "assertive" por si el aviso de "Deshacer" de Limpiar lo dejó
+    // en "polite" (ver announceUndoToast): el ganador de un giro sí es
+    // urgente y tiene que interrumpir lo que el lector esté leyendo, así
+    // que cada función deja el nivel que necesita en vez de asumir el que
+    // dejó la última que escribió aquí.
+    srAnnouncer.setAttribute('aria-live', 'assertive');
     srAnnouncer.textContent = `Resultado del sorteo: ${winner}`;
 
     winnerDisplay.textContent = winner;
@@ -627,23 +633,46 @@ function initRoulette() {
   // depende de que el lector note la aparición Y la mutación en esa
   // ventana; no todos lo garantizan. Con #sr-announcer el toast queda como
   // pieza puramente visual, sin ese riesgo.
+  // "polite", no "assertive" (que es lo que trae #sr-announcer por
+  // defecto desde Layout.astro, pensado para el ganador de la ruleta: ese
+  // sí es un resultado que hay que anunciar ya, interrumpiendo lo que sea
+  // que el lector esté leyendo). "Puedes deshacerlo" no es urgente, así
+  // que no debería cortarle la lectura a nadie; se cambia el nivel del
+  // nodo compartido antes de escribir. announceWinner() vuelve a ponerlo
+  // en "assertive" antes de anunciar el ganador, así que el orden real de
+  // las dos llamadas no importa -- cada una deja el nivel que necesita.
+  //
+  // Vaciar antes de escribir, en vez de escribir directo: si el aviso
+  // anterior dejó exactamente el mismo texto en el nodo (dos "Limpiar"
+  // seguidos dan el mismo mensaje), escribirlo de nuevo sin pasar por un
+  // estado intermedio no es una mutación real desde la perspectiva de
+  // varios lectores de pantalla, que deduplican anuncios idénticos y se
+  // callan la segunda vez.
   function announceUndoToast(message) {
-    srAnnouncer.textContent = message;
+    srAnnouncer.setAttribute('aria-live', 'polite');
+    srAnnouncer.textContent = '';
+    requestAnimationFrame(() => {
+      srAnnouncer.textContent = message;
+    });
   }
 
   // Si el foco está dentro del aviso (en "Deshacer" o en "Cerrar") cuando
-  // se oculta -por los 7s, por Escape o por el propio restore- el nodo
-  // enfocado desaparece del DOM y el foco cae al <body>: alguien navegando
-  // con teclado pierde el hilo justo después de actuar. Se lo devolvemos a
-  // #clear-btn, que es de donde salió el aviso.
-  function hideUndoToast() {
+  // se oculta, el nodo enfocado desaparece del DOM y el foco cae al
+  // <body>: alguien navegando con teclado pierde el hilo justo después de
+  // actuar. `anchor` es a dónde devolverlo -- por defecto #clear-btn, que
+  // es de donde salió el aviso y sigue siendo el sitio correcto para la
+  // expiración a los 7s, "Cerrar" y Escape. restoreClearUndo() pasa el
+  // textarea en su lugar: tras un Deshacer, el sitio natural para seguir
+  // es la lista que se acaba de recuperar, no el mismo botón que la
+  // volvería a vaciar a un Enter de distancia.
+  function hideUndoToast(anchor = clearBtn) {
     if (undoToastTimer !== null) {
       clearTimeout(undoToastTimer);
       undoToastTimer = null;
     }
     if (!undoToast) return;
     if (undoToast.contains(document.activeElement)) {
-      clearBtn.focus();
+      anchor?.focus();
     }
     undoToast.hidden = true;
     if (undoToastMessage) undoToastMessage.textContent = '';
@@ -685,7 +714,11 @@ function initRoulette() {
     if (pendingClearUndo === null) return;
     const { text, disabled } = pendingClearUndo;
     pendingClearUndo = null;
-    hideUndoToast();
+    // El textarea, no #clear-btn: acá es donde alguien navegando con
+    // teclado quiere seguir trabajando después de un Deshacer, y dejarlo
+    // en el botón que vuelve a vaciar la lista es un Enter de distancia de
+    // repetir el error.
+    hideUndoToast(textarea);
 
     // Restaura las DOS cosas que Limpiar borró -- texto y ocultas -- sin
     // pasar por el emparejamiento por texto de updateFromTextarea(), que
@@ -698,6 +731,11 @@ function initRoulette() {
     persistOptionsState(text);
     syncWheelState();
     renderChecklist();
+
+    // Sin esto, quien usa lector de pantalla no recibe ninguna
+    // confirmación de que la lista volvió: el aviso visual desaparece y
+    // #sr-announcer se queda con el texto de "Ruleta vaciada..." de antes.
+    announceUndoToast('Opciones restauradas.');
   }
 
   // Limpiar toda la lista: vacía al instante y ofrece deshacer en vez de
@@ -835,9 +873,19 @@ function initRoulette() {
     // "seguir tecleando". El 'paste' de abajo hace su propia inserción con
     // Range en vez de dejar que el navegador dispare 'input', así que esta
     // misma comprobación se reusa explícitamente ahí después de insertar.
+    //
+    // Array.from(...), no .slice() directo sobre el string: .slice() corta
+    // por unidad UTF-16, y esta herramienta vive de opciones con emoji
+    // ("Pizza 🍕", "Tacos 🌮" son las opciones por defecto) -- un emoji
+    // fuera del plano básico son dos unidades UTF-16, así que .slice()
+    // puede partir el par sustituto a la mitad y persistir un "�" en el
+    // título, además de contar cada emoji como "2" para el límite.
+    // Array.from() itera por punto de código completo y evita las dos
+    // cosas.
     function enforceTitleMaxLength() {
-      if (wheelTitleText.textContent.length > TITLE_MAX_LENGTH) {
-        wheelTitleText.textContent = wheelTitleText.textContent.slice(0, TITLE_MAX_LENGTH);
+      const chars = Array.from(wheelTitleText.textContent);
+      if (chars.length > TITLE_MAX_LENGTH) {
+        wheelTitleText.textContent = chars.slice(0, TITLE_MAX_LENGTH).join('');
         collapseCursorToEnd(wheelTitleText);
       }
     }

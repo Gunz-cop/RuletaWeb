@@ -47,7 +47,19 @@
    amigo-secreto.js), `.inline-flex` (dados.js), `.inline` y `.ring`
    (palabras sueltas en comentarios de roulette.js/temporizador.js) y
    `.blur` (el evento `'blur'` de roulette.js) viajaban así, sin que nada
-   los usara. */
+   los usara.
+
+   Consecuencia a futuro, para quien toque un script después: un
+   `classList.add('flex')` (o cualquier otra utilidad) escrito solo en
+   `src/scripts/` YA NO genera esa utilidad -- sin error de build, sin
+   fallo de snapshot, sin aviso de class-collisions.mjs, la clase
+   simplemente no hace nada en el navegador. Si un script necesita aplicar
+   una utilidad de Tailwind por JS, esa clase tiene que aparecer también en
+   el marcado de algún `.astro` dentro de `src/` (que sigue rastreado) para
+   que Tailwind la genere; las clases que ya vive así -- por ejemplo
+   `hidden` en `class="tab-content-pane hidden"` de RouletteMachine.astro,
+   o `visible`, que además tiene su propia regla en global.css -- no se
+   ven afectadas porque ya cumplen esa condición. */
 @source not "../../src/scripts";
 
 /* ==================================================================
