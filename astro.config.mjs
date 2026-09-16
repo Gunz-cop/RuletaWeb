@@ -41,6 +41,8 @@ const adsenseReadyBlogUrls = new Set([
   'https://decidelo.app/blog/equipos/actividades-teambuilding-teletrabajo',
   'https://decidelo.app/blog/si-o-no/ia-toma-decisiones-carrera-profesional',
   'https://decidelo.app/blog/temporizador/entrenamiento-reaccion',
+  'https://decidelo.app/blog/ruleta/ruleta-aleatoria-guia-definitiva',
+  'https://decidelo.app/blog/ruleta/sorteo-ruleta',
 ]);
 
 export default defineConfig({

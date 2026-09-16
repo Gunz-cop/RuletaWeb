@@ -23,6 +23,8 @@ export const adsenseReadySlugs = [
   'ruleta/juegos-reuniones-familiares-ruleta',
   'piedra-papel-tijera/arbitro-esports',
   'temporizador/metodo-pomodoro-tdah-temporizador',
+  'ruleta/ruleta-aleatoria-guia-definitiva',
+  'ruleta/sorteo-ruleta',
 ] as const;
 
 export const adsenseReadySet = new Set<string>(adsenseReadySlugs);
