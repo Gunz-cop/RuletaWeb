@@ -97,9 +97,19 @@ export class WheelRenderer {
     return text + ellipsis;
   }
 
-  // Pinta la rueda completa (ángulo base 0) en el offscreen. Solo se llama
-  // cuando cambian tamaño, dpr, opciones o colores — nunca por frame.
-  #paint(size, dpr, options, colors) {
+  // Pinta la rueda completa (ángulo base 0 para la geometría) en el
+  // offscreen. `restAngle` es null durante el giro (la orientación del
+  // texto no se toca: se sigue dibujando siempre alineada a la derecha,
+  // igual que antes de este cambio, porque nadie lee las etiquetas
+  // mientras giran y el bitmap se reutiliza sin repintar por frame) o el
+  // ángulo de reposo (radianes) cuando se pinta para el estado quieto: ese
+  // es el momento en que hay que decidir, gajo por gajo, si el ángulo
+  // FINAL en pantalla (ángulo del gajo + rotación de reposo, porque
+  // render() rota el bitmap entero ese mismo ángulo al dibujarlo) cae en
+  // la mitad izquierda, y si es así invertir 180° la etiqueta y su
+  // alineación para que se siga leyendo de izquierda a derecha hacia el
+  // centro en vez de boca abajo.
+  #paint(size, dpr, options, colors, restAngle) {
     const pixelSize = Math.round(size * dpr);
     this.#ensureSurface(pixelSize);
 
@@ -149,11 +159,36 @@ export class WheelRenderer {
       ctx.lineWidth = options.length > 30 ? 1 : 2.5;
       ctx.stroke();
 
-      // Texto radial
+      // Texto radial. La rotación base coloca la línea de base a lo largo
+      // del radio, con el texto creciendo hacia afuera (alineado a la
+      // derecha, dibujado en radius-18). Eso lee bien mientras el gajo
+      // apunta hacia la mitad derecha de la pantalla; en la mitad
+      // izquierda esa misma rotación deja el texto boca abajo, porque una
+      // línea de base girada más de 90° se invierte. `restAngle !== null`
+      // es la señal de "esto se está pintando para el estado quieto": ahí
+      // sí conocemos el ángulo final en pantalla (mid-ángulo del gajo +
+      // rotación de reposo) y podemos decidir por gajo si hace falta
+      // girar 180° más y voltear la alineación para que el texto siga
+      // creciendo hacia el centro en vez de hacia afuera.
+      const midAngle = startAngle + arc / 2;
+      let labelRotation = midAngle;
+      let textAlign = 'right';
+      let textX = radius - 18;
+
+      if (restAngle !== null) {
+        const totalScreenAngle = (((midAngle + restAngle) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+        const enLaMitadIzquierda = totalScreenAngle > Math.PI / 2 && totalScreenAngle < (3 * Math.PI) / 2;
+        if (enLaMitadIzquierda) {
+          labelRotation = midAngle + Math.PI;
+          textAlign = 'left';
+          textX = -(radius - 18);
+        }
+      }
+
       ctx.save();
       ctx.translate(centerX, centerY);
-      ctx.rotate(startAngle + arc / 2);
-      ctx.textAlign = 'right';
+      ctx.rotate(labelRotation);
+      ctx.textAlign = textAlign;
       ctx.textBaseline = 'middle';
       ctx.fillStyle = colorTextoLegible(colors[i]);
 
@@ -165,10 +200,14 @@ export class WheelRenderer {
 
       ctx.font = `bold ${fontSize}px Outfit, sans-serif`;
 
+      // El espacio disponible es simétrico (mismo radio interior/exterior
+      // a ambos lados), así que no depende de a qué lado quedó la
+      // etiqueta: solo cambia el signo de dónde se dibuja (textX), ya
+      // resuelto arriba.
       const availableWidth = radius - 70;
       const text = this.#truncateText(options[i], availableWidth, ctx);
 
-      ctx.fillText(text, radius - 18, 0);
+      ctx.fillText(text, textX, 0);
       ctx.restore();
     }
 
@@ -197,8 +236,14 @@ export class WheelRenderer {
 
   // size/dpr en las mismas unidades que ya usaba drawRoulette (size = CSS px,
   // ctx ya viene escalado por dpr desde resizeCanvas). angle es el ángulo de
-  // giro actual en radianes.
-  render(size, dpr, options, colors, angle) {
+  // giro actual en radianes. `spinning` distingue el modo de pintado: con el
+  // giro en curso el bitmap se pinta una sola vez y se reutiliza frame a
+  // frame (el ángulo no debe entrar en la clave de caché, o repintaríamos en
+  // cada frame y perderíamos justo la optimización que existe para esto); en
+  // reposo cada ángulo distinto necesita su propio repintado porque la
+  // orientación del texto (ver #paint) depende de dónde cae cada gajo en
+  // pantalla, así que ahí el ángulo sí entra en la clave.
+  render(size, dpr, options, colors, angle, spinning) {
     // Firma barata para decidir si hace falta repintar el offscreen.
     // JSON.stringify evita la ambigüedad de un join con separador: con
     // options=["Juan","Pedro Ana"] y options=["Juan Pedro","Ana"], un join
@@ -207,9 +252,17 @@ export class WheelRenderer {
     // distintas y una se quedaría pintada con las opciones de la otra.
     // Son arrays cortos (la ruleta no tiene miles de opciones) y esto solo
     // corre cuando cambia algo, no en cada frame de giro.
-    const key = `${size}|${dpr}|${JSON.stringify(options)}|${colors.join(',')}`;
+    //
+    // El modo ("spin" vs "rest:<ángulo>") va en la propia clave, no solo el
+    // ángulo cuando aplica: sin ese marcador, el último frame de un giro
+    // (modo "spin", bitmap con el texto sin orientar) y el primer repintado
+    // en reposo a ESE MISMO ángulo producirían la misma clave si solo
+    // concatenáramos el ángulo condicionalmente, y el repintado en reposo no
+    // se dispararía nunca.
+    const modeKey = spinning ? 'spin' : `rest:${angle}`;
+    const key = `${size}|${dpr}|${JSON.stringify(options)}|${colors.join(',')}|${modeKey}`;
     if (key !== this.cacheKey) {
-      this.#paint(size, dpr, options, colors);
+      this.#paint(size, dpr, options, colors, spinning ? null : angle);
       this.cacheKey = key;
     }
 
