@@ -43,6 +43,16 @@ function servir(dist) {
   return new Promise((k) => s.listen(0, '127.0.0.1', () => k({ s, p: s.address().port })));
 }
 
+// Invariantes de geometría (rects), aparte del snapshot de estilos
+// computados de arriba. No tienen "línea base" que actualizar: no son un
+// valor que se espera que cambie con el diseño, son una relación que
+// siempre tiene que cumplirse (un botón no puede quedar tapado, un panel
+// position:fixed no puede moverse al scrollear). Por eso viven en su propio
+// acumulador (`fallosInvariantes`) y hacen fallar el proceso en los dos
+// modos, con o sin --update: actualizar la línea base no tiene sentido
+// para "el botón GIRAR sigue tapado".
+const fallosInvariantes = [];
+
 async function medir() {
   if (!existsSync(DIST)) {
     console.error('No existe dist/. Ejecuta `npm run build` antes.');
@@ -68,7 +78,7 @@ async function medir() {
     // que no dice qué estado era ni deja correr los demás.
     try {
       for (const { sel, texto } of est.escribir ?? []) await pagina.fill(sel, texto);
-      for (const sel of est.clics) await pagina.click(sel);
+      for (const sel of est.clics ?? []) await pagina.click(sel);
       if (est.esperarSelector) {
         await pagina.waitForSelector(est.esperarSelector, { timeout: 20000 });
       }
@@ -79,7 +89,25 @@ async function medir() {
       await ctx.close();
       continue;
     }
-    if (est.clics.length) await pagina.waitForTimeout(est.espera ?? 250);
+    if (est.clics?.length) await pagina.waitForTimeout(est.espera ?? 250);
+
+    // verificarRelacion es la vía de escape para lo que un snapshot de
+    // getComputedStyle no puede expresar: geometría relativa entre dos
+    // elementos, o el mismo elemento antes/después de scrollear. Recibe la
+    // página de Playwright directamente (este archivo no serializa a JSON,
+    // así que puede llevar funciones de verdad) y hace su propia
+    // interacción -- clic, scroll, lo que haga falta -- en vez de la
+    // secuencia genérica de clics/comprobar de arriba.
+    if (est.verificarRelacion) {
+      const resultado = await est.verificarRelacion(pagina);
+      salida[`${est.ruta} [${est.nombre}]`] = { relacion: resultado };
+      if (!resultado.ok) {
+        fallosInvariantes.push(`${est.ruta} [${est.nombre}]: ${resultado.mensaje}`);
+      }
+      await pagina.close();
+      await ctx.close();
+      continue;
+    }
 
     const leer = () => pagina.evaluate((comprobar) => {
       const r = {};
@@ -90,7 +118,7 @@ async function medir() {
         r[sel] = Object.fromEntries(props.map((k) => [k, cs[k]]));
       }
       return r;
-    }, est.comprobar);
+    }, est.comprobar ?? []);
 
     // Espera a que los valores dejen de moverse en vez de a un reloj fijo.
     // Una transición a medias da opacity: 0.998 y el test parpadea; esto lo
@@ -116,10 +144,21 @@ async function medir() {
 const actual = await medir();
 const texto = JSON.stringify(actual, null, 2) + '\n';
 
+// Las invariantes de geometría se imprimen y hacen fallar el proceso pase
+// lo que pase con la línea base de estilos computados -- ver el comentario
+// junto a fallosInvariantes más arriba.
+function reportarInvariantes() {
+  if (!fallosInvariantes.length) return true;
+  console.error(`\n${fallosInvariantes.length} invariante(s) de geometría fallan:`);
+  for (const msg of fallosInvariantes) console.error(`FALLA  ${msg}`);
+  return false;
+}
+
 if (process.argv.includes('--update')) {
   mkdirSync(dirname(BASE), { recursive: true });
   writeFileSync(BASE, texto);
   console.log(`Línea base de estados reescrita: ${Object.keys(actual).length} estados.`);
+  if (!reportarInvariantes()) process.exit(1);
 } else if (!existsSync(BASE)) {
   console.error('No hay línea base. Ejecuta `npm run test:estado -- --update`.');
   process.exit(1);
@@ -127,6 +166,13 @@ if (process.argv.includes('--update')) {
   const esperado = JSON.parse(readFileSync(BASE, 'utf8'));
   let fallos = 0;
   for (const [estado, elementos] of Object.entries(esperado)) {
+    // Los estados que solo llevan verificarRelacion se guardan como
+    // { relacion: {...} } y no entran en este diff: sus números (px de
+    // getBoundingClientRect) varían un poco de una corrida a otra por
+    // redondeo de subpíxel, y ya los valida reportarInvariantes() con
+    // tolerancia -- compararlos aquí por igualdad exacta los volvería
+    // intermitentes sin razón.
+    if (elementos && typeof elementos === 'object' && 'relacion' in elementos) continue;
     for (const [sel, props] of Object.entries(elementos)) {
       const ahora = actual[estado]?.[sel];
       if (JSON.stringify(ahora) === JSON.stringify(props)) continue;
@@ -136,10 +182,11 @@ if (process.argv.includes('--update')) {
       console.error(`  ahora:    ${JSON.stringify(ahora)}`);
     }
   }
+  const invariantesOk = reportarInvariantes();
   if (fallos) {
     console.error(`\n${fallos} comprobación(es) de estado fallan. Una regla dejó de`);
     console.error('aplicarse a su elemento, aunque el CSS se siga emitiendo igual.');
-    process.exit(1);
   }
+  if (fallos || !invariantesOk) process.exit(1);
   console.log(`ok     ${Object.keys(esperado).length} estados con los mismos estilos computados.`);
 }

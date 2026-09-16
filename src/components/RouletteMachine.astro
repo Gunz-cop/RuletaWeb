@@ -418,6 +418,16 @@
     flex-direction: column;
   }
 
+  /* La manija/disclosure de la hoja inferior solo existe visualmente bajo
+     860px (ver ese media query más abajo, donde vuelve a display:flex).
+     Sin este default en escritorio el botón se renderiza con el estilo de
+     botón nativo del navegador, sobre .input-card -- se vio en una captura
+     de escritorio a 1280px: quedaba una barra gris fea encima de "Opciones
+     de la Ruleta", duplicando el título. */
+  .options-panel-handle {
+    display: none;
+  }
+
   .input-card {
     background: var(--bg-surface);
     border: 1px solid var(--card-border);
@@ -864,8 +874,41 @@
     min-height: calc(100dvh - 72px);
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    /* flex-start, no center: centrado dejaba ~140px muertos repartidos
+       arriba y abajo (título+rueda miden bastante menos que el alto
+       disponible). Empaquetado arriba, ese aire se va al fondo -- donde no
+       hace falta, porque la manija ya tiene posición fija respecto a la
+       ventana y no compite por ese espacio -- y de paso ayuda a que el
+       botón GIRAR quede más lejos del
+       panel cuando se abre (ver más abajo). */
+    justify-content: flex-start;
     padding: 0.75rem 0 calc(64px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* .reveal (global.css) le pone a .roulette-section un `transform`
+     durante TODA su animación: translateY(40px) antes de que el observer
+     marque .revealed, translateY(0) después -- y cualquier valor de
+     transform que no sea "none" convierte al elemento en el bloque
+     contenedor de sus descendientes con posición fija en CSS. El panel de opciones
+     de más abajo es uno de esos descendientes: sin este override quedaba
+     anclado al fondo de .roulette-section en vez de al de la ventana, y
+     "fondo de la sección" se mueve con el scroll -- el panel flotaba en
+     medio de la página en vez de quedarse pegado abajo (detectado con
+     scroll real, no a simple vista: en reposo, con scrollY 0, el fondo de
+     la sección coincide con el de la ventana y el bug no se nota).
+     .roulette-section ya es lo primero que se ve al cargar gracias al
+     reordenamiento de arriba, así que la animación de aparición no le
+     aporta nada -- se anula el transform en los dos estados de .reveal
+     (no alcanza con anular solo .revealed) para que el panel tenga
+     posición fija de verdad todo el tiempo, incluida la fracción de segundo antes de que el
+     observer actúe. Colateral: sin este transform, .roulette-section deja
+     de crear su propio contexto de apilamiento, así que el z-index:55 del
+     panel (más abajo) vuelve a competir directo contra header/modal/aviso
+     de deshacer en la raíz del documento -- que es como ya estaba
+     razonado antes de este fix, y sigue dando el resultado correcto. */
+  .roulette-section.reveal,
+  .roulette-section.reveal.revealed {
+    transform: none;
   }
 
   /* El kicker "Herramienta principal" no aporta nada que la propia rueda no
@@ -885,6 +928,16 @@
     font-size: 1.35rem;
   }
 
+  /* Menos aire lateral = rueda más grande: el canvas se dimensiona por JS
+     al 100% del ancho de .wheel-outer-wrapper, así que cada pixel que le
+     devolvemos aquí es un pixel más de diámetro real. .wrap (global.css)
+     trae 1.5rem de relleno lateral pensado para texto largo de escritorio,
+     que en 390px sobra -- se acota solo dentro de esta sección, no
+     globalmente, para no tocar el resto del sitio. */
+  .roulette-section .wrap {
+    padding: 0 0.5rem;
+  }
+
   .app-grid {
     gap: 0;
   }
@@ -895,6 +948,29 @@
 
   .wheel-title-container {
     margin-bottom: 0.85rem;
+  }
+
+  /* El resto del relleno "regalado": .wheel-card traía el padding pensado
+     para cuando comparte fila con la columna de opciones (donde sobra
+     ancho). En mobile el padding sale directo del diámetro de la rueda,
+     así que también se acota aquí -- junto con el .wrap de arriba, esto
+     recupera de vuelta buena parte de lo que "centrado" desperdiciaba
+     como aire, esta vez como rueda de verdad. */
+  .wheel-card {
+    padding: 0.75rem;
+  }
+
+  /* Con el panel abierto, el título del hero de esta sección ("Gira y
+     decide.") y el título editable de la rueda ("Ruleta de Opciones") se
+     ocultan: son las dos piezas que hoy sobreviven por encima de la hoja
+     en las capturas, y esconderlas es lo que le deja sitio de sobra al
+     botón GIRAR para no quedar tapado -- verificado con rects, no a ojo,
+     en 390×844, 375×667 y 360×640 (ver verificarBotonGirarSobrePanel en
+     scripts/lib/estados.mjs). No se achica el panel para conseguir esto
+     -- un panel más bajo dejaría el textarea inservible. */
+  body.options-panel-open .roulette-section .section-header,
+  body.options-panel-open .wheel-title-container {
+    display: none;
   }
 
   /* --------------------------------------------------------------
@@ -989,6 +1065,12 @@
     transition: transform 220ms var(--ease-out);
   }
 
+  @media (prefers-reduced-motion: reduce) {
+    .options-panel-handle-chevron {
+      transition: none;
+    }
+  }
+
   /* Cerrado, la manija apunta hacia arriba ("desplegar"); abierto, hacia
      abajo ("recoger"). El giro solo cambia el ícono, no la lectura por
      lector de pantalla -- eso lo hace aria-expanded en el propio botón. */
@@ -999,7 +1081,7 @@
   /* Dentro de la hoja, .input-card deja de ser la tarjeta con su propio
      fondo/borde/sombra (la hoja ya los tiene) y pasa a ser solo el
      contenido, que se recorta y scrollea si no entra en el alto disponible
-     -- la hoja no crece más allá de min(70dvh, 600px) de arriba. */
+     -- la hoja no crece más allá de min(48dvh, 430px) de arriba. */
   .input-card {
     height: auto;
     flex: 1;
@@ -1011,6 +1093,17 @@
     border-radius: 0;
     box-shadow: none;
     padding-top: 1rem;
+  }
+
+  /* La manija ya dice "Opciones de la ruleta"; este <h3> repite casi la
+     misma frase justo debajo, dentro de la hoja ya abierta -- confirmado
+     que #input-title no tiene ningún aria-labelledby apuntándole, así que
+     ocultarlo no le quita nombre accesible a nada. .section-desc es la
+     otra línea de alto regalada que no aporta nada que la propia lista de
+     abajo no explique sola. */
+  #input-title,
+  .section-desc {
+    display: none;
   }
 
   /* Con el panel abierto, la página de fondo ya no tiene nada que aportar

@@ -60,6 +60,7 @@ function initRoulette() {
   const undoToastCloseBtn = document.getElementById('undo-toast-close');
   const optionsPanelToggle = document.getElementById('options-panel-toggle');
   const optionsPanel = document.getElementById('mobile-options-panel');
+  const optionsPanelBody = document.getElementById('options-panel-body');
 
   if (!textarea || !spinButton || !wheelPointer || !winnerModal) return;
 
@@ -857,13 +858,42 @@ function initRoulette() {
   // La clase en <body> (no en el panel) es lo que bloquea el scroll de
   // fondo; vive en <body> porque es la única forma de afectar el scroll de
   // toda la página, no la del panel. setPanelOpen() es la única función que
-  // toca panel-open/aria-expanded/la clase de <body> a la vez, para que
-  // ningún llamador pueda dejarlos desincronizados.
+  // toca panel-open/aria-expanded/la clase de <body>/inert a la vez, para
+  // que ningún llamador pueda dejarlos desincronizados.
+  const mobilePanelQuery = window.matchMedia('(max-width: 859px)');
+
+  // Con el panel cerrado, sus controles (textarea, pestañas, checklist...)
+  // seguían siendo alcanzables por teclado y por lector de pantalla aunque
+  // estuvieran fuera de vista -- solo desplazados con translateY, no
+  // ocultos de verdad. Alguien tabulando llegaba a un textarea invisible, y
+  // como el contenedor es position:fixed el navegador no podía ni
+  // scrollearlo a la vista. inert los saca del todo mientras la hoja está
+  // cerrada. Guardado por mobilePanelQuery: en escritorio el panel ES la
+  // columna de opciones visible siempre, así que ahí nunca debe quedar
+  // inert, pase lo que pase con la clase panel-open (que en escritorio no
+  // tiene efecto visual, pero tampoco debería inutilizar la columna).
+  //
+  // inert va en #options-panel-body (el contenido: textarea, pestañas,
+  // checklist), NO en #mobile-options-panel entero -- ese contenedor
+  // también incluye la MANIJA (#options-panel-toggle), y esa tiene que
+  // seguir siendo clicable con el panel cerrado: es el único botón que lo
+  // abre. Ponerle inert al contenedor completo (como se hacía antes) deja
+  // a la manija misma inert de rebote -- inert es heredado por todo el
+  // subárbol -- así que ningún clic le llega nunca y el panel no hay forma
+  // de abrirlo. Es justo el bug que cazan verificarBotonGirarSobrePanel y
+  // panel-fijo-tras-scroll en el test de estados: los dos abren el panel
+  // haciendo clic en la manija antes de medir nada.
+  function syncPanelInert() {
+    if (!optionsPanelBody) return;
+    optionsPanelBody.inert = mobilePanelQuery.matches && !optionsPanel?.classList.contains('panel-open');
+  }
+
   function setPanelOpen(open) {
     if (!optionsPanel || !optionsPanelToggle) return;
     optionsPanel.classList.toggle('panel-open', open);
     optionsPanelToggle.setAttribute('aria-expanded', String(open));
     document.body.classList.toggle('options-panel-open', open);
+    syncPanelInert();
   }
 
   if (optionsPanelToggle && optionsPanel) {
@@ -872,6 +902,26 @@ function initRoulette() {
       () => setPanelOpen(!optionsPanel.classList.contains('panel-open')),
       { signal }
     );
+
+    // Cerrar tocando/clicando fuera. Es un listener en `document`, no un
+    // scrim visual encima de la rueda: un scrim que cubriera la zona del
+    // botón GIRAR (que a propósito queda visible por encima de la hoja
+    // abierta) le robaría el clic al botón antes de que le llegara. Con
+    // este enfoque el clic le llega primero al elemento real que haya
+    // debajo (gira la rueda si fue ahí) y de paso, al burbujear, cierra el
+    // panel -- las dos cosas a la vez, sin pelear por el mismo pixel.
+    document.addEventListener(
+      'click',
+      (e) => {
+        if (!optionsPanel.classList.contains('panel-open')) return;
+        if (optionsPanel.contains(e.target) || optionsPanelToggle.contains(e.target)) return;
+        setPanelOpen(false);
+      },
+      { signal }
+    );
+
+    mobilePanelQuery.addEventListener('change', syncPanelInert, { signal });
+    syncPanelInert();
   }
 
   // Edición de título
