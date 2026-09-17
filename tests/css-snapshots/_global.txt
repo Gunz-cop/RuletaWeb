@@ -12,6 +12,7 @@
 .control-btn[S].active{color:var(--accent-warm);background:#e2905a24;border-color:#e2905a59}
 .control-btn[S] .btn-label[S]{display:none}
 @media (width>=480px){.control-btn[S] .btn-label[S]{display:inline}}
+.tool-header-actions[S]{align-items:center;gap:.5rem;display:flex}
 .logo[S]{letter-spacing:-.02em;background:var(--accent-gradient);-webkit-text-fill-color:transparent;-webkit-background-clip:text;background-clip:text;font-family:Outfit,sans-serif;font-size:1.15rem;font-weight:800;text-decoration:none}
 .btn-back[S]{color:var(--text-secondary);border-radius:var(--radius-sm);transition:var(--transition);align-items:center;gap:.4rem;padding:.45rem .85rem;font-size:.82rem;font-weight:500;text-decoration:none;display:flex}
 .btn-back[S]:hover{color:var(--accent-cyan);background:#00e5ff0f}

@@ -1,0 +1,193 @@
+---
+/**
+ * "¿Cuál te sirve?" — la pieza que justifica que la home sea un hub y no
+ * una herramienta: antes de listar las nueve, cuatro situaciones típicas
+ * apuntan directo a las que aplican. Mismo sistema editorial que
+ * HomeHowItWorks.astro (rail dividido por bordes de 1px) y HubGrid.astro
+ * (lista numerada) — sin tarjetas, con numeración y un único acento.
+ *
+ * Los enlaces a herramientas dentro de cada situación son texto con
+ * subrayado (border-bottom), el mismo patrón que .hero-cta, no botones de
+ * pastilla — así el énfasis en negrita del texto y el enlace real no se
+ * confunden entre sí.
+ */
+
+// El cuerpo va como HTML ya armado (con <strong> para las herramientas
+// mencionadas en el texto) porque el frontmatter de un .astro es JS/TS
+// plano -- no admite JSX ahí, solo la plantilla de abajo lo admite -- y
+// partir cada frase en fragmentos de texto sueltos era menos legible que
+// una única cadena con el marcado ya puesto. El contenido es fijo, propio
+// del sitio, no entrada de usuario.
+const situations = [
+  {
+    n: '01',
+    title: 'Estás en una fiesta o una reunión',
+    body: 'Alguien tiene que empezar, alguien tiene que pagar, alguien tiene que responder. La <strong>ruleta</strong> sirve cuando hay muchos nombres y querés que el grupo vea el resultado salir. Si el reto es la gracia, la ruleta de retos es la misma herramienta con otro contenido. Y el <strong>temporizador aleatorio</strong> convierte cualquier objeto en una patata caliente.',
+    links: [
+      { label: 'Ruleta', href: '/ruleta' },
+      { label: 'Temporizador', href: '/temporizador' },
+    ],
+  },
+  {
+    n: '02',
+    title: 'Son dos opciones y ninguna convence',
+    body: 'No hace falta una rueda de doce casillas para elegir entre dos cosas. La <strong>moneda</strong> resuelve cara o cruz en un toque. Si la pregunta es de sí o no y querés que suene a oráculo, el <strong>sí o no</strong> contesta con la bola 8.',
+    links: [
+      { label: 'Moneda', href: '/moneda' },
+      { label: 'Sí o No', href: '/si-o-no' },
+      { label: 'Piedra, papel o tijera', href: '/piedra-papel-tijera' },
+    ],
+  },
+  {
+    n: '03',
+    title: 'Hay que repartir un grupo',
+    body: 'Cuando el problema no es elegir uno sino repartir a todos. El <strong>generador de equipos</strong> parte una lista de nombres en grupos equilibrados. El <strong>amigo secreto</strong> hace el sorteo de regalos y genera un enlace por persona, sin papelitos y sin que nadie vea el resto.',
+    links: [
+      { label: 'Equipos', href: '/equipos' },
+      { label: 'Amigo secreto', href: '/amigo-secreto' },
+    ],
+  },
+  {
+    n: '04',
+    title: 'Necesitás un número, no un nombre',
+    body: 'Rifas, sorteos numerados, orden de exposición, un dado para un juego de mesa que perdió los suyos. El <strong>generador de números</strong> da uno o varios en el rango que le pidas, con o sin repetidos. Los <strong>dados</strong> son para cuando el número tiene que verse rodar.',
+    links: [
+      { label: 'Números', href: '/numeros' },
+      { label: 'Dados', href: '/dados' },
+    ],
+  },
+];
+---
+
+<section class="use-cases reveal" id="cual-te-sirve" aria-label="Qué herramienta te sirve según tu situación">
+  <div class="wrap">
+    <div class="section-header uc-header reveal">
+      <div class="section-tag">Empezar por el problema</div>
+      <h2 class="section-heading uc-heading">No sabés cuál usar. <em>Empezá por acá.</em></h2>
+      <p class="section-subtitle">Cuatro situaciones que cubren casi todo lo que la gente viene a resolver acá.</p>
+    </div>
+
+    <div class="uc-grid">
+      {situations.map((s, index) => (
+        <div class={`uc-item reveal reveal-delay-${index + 1}`}>
+          <span class="uc-n">{s.n}</span>
+          <div class="uc-content">
+            <h3>{s.title}</h3>
+            <p set:html={s.body} />
+            <div class="uc-links">
+              {s.links.map((link, i) => (
+                <Fragment>
+                  {i > 0 && <span class="uc-links-sep" aria-hidden="true">·</span>}
+                  <a href={link.href}>{link.label}</a>
+                </Fragment>
+              ))}
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .use-cases {
+    padding: 4rem 0;
+    border-bottom: 1px solid var(--divider-line);
+  }
+
+  .uc-header {
+    text-align: left;
+    margin-bottom: 3rem;
+  }
+
+  .uc-heading em {
+    font-family: 'Newsreader', serif;
+    font-style: italic;
+    font-weight: 400;
+    color: var(--accent-warm);
+  }
+
+  .use-cases .section-subtitle {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    max-width: 500px;
+    margin: 0.75rem 0 0;
+  }
+
+  /* Rejilla de dos columnas divididas por bordes, como .how-rail: sin
+     fondo ni sombra por celda, el borde es la única separación. */
+  .uc-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-top: 1px solid var(--divider-line);
+    border-left: 1px solid var(--divider-line);
+  }
+
+  .uc-item {
+    display: flex;
+    gap: 1.25rem;
+    padding: 2.25rem;
+    border-right: 1px solid var(--divider-line);
+    border-bottom: 1px solid var(--divider-line);
+  }
+
+  .uc-n {
+    color: var(--text-tertiary);
+    font-size: 0.85rem;
+    font-variant-numeric: tabular-nums;
+    flex-shrink: 0;
+  }
+
+  .uc-content h3 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0 0 0.75rem;
+  }
+
+  .uc-content p {
+    color: var(--text-secondary);
+    font-size: 0.92rem;
+    line-height: 1.65;
+    margin: 0 0 1.1rem;
+  }
+
+  .uc-content p strong {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+
+  .uc-links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  /* Enlaces como texto subrayado, no como botones: mismo patrón que
+     .hero-cta (border-bottom, sin fondo ni relleno de color). */
+  .uc-links a {
+    color: var(--accent-warm);
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    border-bottom: 1px solid var(--accent-warm);
+    padding-bottom: 0.1rem;
+  }
+
+  .uc-links-sep {
+    color: var(--text-tertiary);
+    font-size: 0.85rem;
+  }
+
+  @media (max-width: 760px) {
+    .uc-grid {
+      grid-template-columns: 1fr;
+    }
+    .uc-item {
+      padding: 1.75rem 0;
+      border-right: none;
+    }
+  }
+</style>

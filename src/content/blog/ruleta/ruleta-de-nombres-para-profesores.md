@@ -19,7 +19,7 @@ Aquí te mostramos por qué deberías incorporarla a tus clases y cómo sacarle 
 
 Es una versión interactiva de las tradicionales tómbolas de papelitos o palitos con nombres escritos. In lugar de extraer un papel físico, el docente proyecta en la pizarra digital o pantalla compartida una ruleta virtual multicolor. Al hacer clic en ella, gira rápidamente con sonidos animados y selecciona un nombre al azar.
 
-En nuestra web, puedes utilizar directamente la [Ruleta de Decisión](https://decidelo.app/) de forma gratuita en tu ordenador, tableta o proyector.
+En nuestra web, puedes utilizar directamente la [Ruleta de Decisión](https://decidelo.app/ruleta) de forma gratuita en tu ordenador, tableta o proyector.
 
 ## 5 formas creativas de usar la ruleta en clase
 

@@ -39,7 +39,7 @@ El premio debe ser relevante para tu comunidad. Si vendes cosméticos, sortea un
 Una vez finalizado el plazo de inscripción, reúne todos los nombres o números de los participantes en una lista limpia. Puedes usar una hoja de Excel, Google Sheets o simplemente anotarlos en un bloc de notas. Asegúrate de eliminar duplicados si las reglas especificaban "una participación por persona".
 
 ### Paso 3: Configura la ruleta de sorteos en Decídelo.app
-1. Entra en nuestra [Ruleta de Opciones](https://decidelo.app/).
+1. Entra en nuestra [Ruleta de Opciones](https://decidelo.app/ruleta).
 2. Haz clic en el panel de **Opciones de la Ruleta**.
 3. Copia tu lista de participantes y pégala en el campo de texto (un nombre por línea).
 4. Guarda los cambios. Verás cómo la ruleta se divide automáticamente en sectores iguales con todos los nombres.

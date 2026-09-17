@@ -40,7 +40,7 @@ Un clásico absoluto de los trabajos universitarios grupales es la disputa por d
 <div style="background: linear-gradient(135deg, rgba(0, 229, 255, 0.08) 0%, rgba(179, 102, 255, 0.08) 100%); border: 1px solid rgba(0, 229, 255, 0.25); padding: 1.5rem; border-radius: 12px; margin: 2rem 0; text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
   <h3 style="margin-top: 0; color: #ffffff; font-family: 'Outfit', sans-serif; font-size: 1.3rem;">🎡 Evita discusiones en tus trabajos grupales</h3>
   <p style="margin-bottom: 1.25rem; font-size: 0.95rem; color: #b4b4c7;">Define turnos y tareas al azar en clase de forma visual y transparente en segundos.</p>
-  <a href="https://decidelo.app/#ruleta" style="background: linear-gradient(90deg, #00e5ff 0%, #b366ff 100%); color: #000000; padding: 0.75rem 1.75rem; border-radius: 999px; font-weight: 800; text-decoration: none; display: inline-block; font-size: 0.95rem; font-family: 'Outfit', sans-serif; box-shadow: 0 4px 15px rgba(0, 229, 255, 0.3); transition: transform 0.2s ease;">¡Abrir la Ruleta de Opciones!</a>
+  <a href="https://decidelo.app/ruleta" style="background: linear-gradient(90deg, #00e5ff 0%, #b366ff 100%); color: #000000; padding: 0.75rem 1.75rem; border-radius: 999px; font-weight: 800; text-decoration: none; display: inline-block; font-size: 0.95rem; font-family: 'Outfit', sans-serif; box-shadow: 0 4px 15px rgba(0, 229, 255, 0.3); transition: transform 0.2s ease;">¡Abrir la Ruleta de Opciones!</a>
 </div>
 
 ---

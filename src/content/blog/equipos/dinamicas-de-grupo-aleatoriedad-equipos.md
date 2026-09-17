@@ -141,7 +141,7 @@ En las versiones básicas puras de un generador (como meter nombres en una bolsa
 Actualmente, lo más rápido y seguro para la privacidad del usuario es mantener tus listas de clases o empleados en una nota adhesiva en tu ordenador (Notepad, Sticky Notes) o Excel, y simplemente hacer *Copy & Paste* en el recuadro cuando lo necesites. La web procesará los datos al vuelo sin almacenar información personal identificable en servidores lejanos de bases de datos.
 
 ### ¿Qué pasa si quiero asignar roles además de grupos?
-El mejor truco es usar la metodología en cascada. Primero usas el **Generador de Equipos** para crear el grupo de 4 personas. Luego, dentro de ese grupo de 4 personas (Juan, Marta, Luis, Ana), usan en su teléfono una [Ruleta de Opciones](https://decidelo.app/) donde introducen sus nombres para ver a quién le toca el rol de "Expositor", a quién el de "Escritor", etc. ¡Dos capas de azar equivalen a cero discusiones!
+El mejor truco es usar la metodología en cascada. Primero usas el **Generador de Equipos** para crear el grupo de 4 personas. Luego, dentro de ese grupo de 4 personas (Juan, Marta, Luis, Ana), usan en su teléfono una [Ruleta de Opciones](https://decidelo.app/ruleta) donde introducen sus nombres para ver a quién le toca el rol de "Expositor", a quién el de "Escritor", etc. ¡Dos capas de azar equivalen a cero discusiones!
 
 ---
 

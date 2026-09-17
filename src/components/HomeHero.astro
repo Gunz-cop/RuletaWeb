@@ -1,6 +1,6 @@
 ---
 /**
- * Cabecera de la home: titular, subtítulo, botón a la ruleta y una foto de
+ * Cabecera de la home: titular, subtítulo, botón al índice y una foto de
  * fondo a pantalla completa (full-bleed) — no vive dentro de `.wrap` como el
  * resto de las secciones, es la única excepción deliberada porque un hero
  * de landing necesita ocupar todo el marco, no quedar encajonado.
@@ -9,6 +9,13 @@
  * texto anclado abajo con scrim vertical); la media query de arriba
  * (860px, el mismo breakpoint que ya usa el resto del sitio) reacomoda a
  * scrim lateral + texto a la izquierda, imagen respirando a la derecha.
+ *
+ * Alto acotado, no pantalla completa: esta home ya no aloja ninguna
+ * herramienta debajo del pliegue, así que un hero de altura completa leía
+ * como una landing de aplicación en vez de la puerta de un sitio con
+ * nueve herramientas y un artículo debajo. Bajarlo a una fracción de la
+ * pantalla dice desde el primer scroll que hay más contenido, no una sola
+ * app a pantalla completa.
  *
  * Dos recortes de la misma foto, no una sola imagen escalada: mobile usa
  * hero-amigos-mobile.webp (recortado a mano con sharp para que el grupo y
@@ -20,19 +27,23 @@
  * public/images/hero/README.md.
  *
  * El marcado y sus reglas viajan juntos, así que el scope de Astro sigue
- * aplicando igual. Lo que no viaja es la regla que lo oculta en modo foco:
- * esa vive en index.astro y usa :global(.hero), porque el scope de la
- * página ya no alcanza a este marcado.
+ * aplicando igual. La ruleta (y su modo foco) ya no vive en esta página --
+ * se mudó a /ruleta -- así que este hero ya no necesita ocultarse para
+ * nada, y por eso tampoco lleva ya un id propio: nada lo apuntaba una vez
+ * que el modo foco de la home se fue con la ruleta.
  */
 ---
 
-<section class="hero reveal" id="hero">
+<section class="hero reveal">
   <div class="hero-scrim" aria-hidden="true"></div>
   <div class="hero-inner">
     <h1>Alguien tiene que <em>decidir.</em></h1>
-    <p class="hero-subtitle">Ruleta, moneda, dados, equipos y más para resolver cualquier empate en una fiesta, en familia, entre amigos o en la oficina. Sin registro, sin dramas.</p>
-    <a href="#ruleta" class="hero-cta" id="hero-cta-btn">
-      Girar la Ruleta
+    <p class="hero-subtitle">Nueve herramientas para resolver un empate, repartir turnos o sortear un nombre. Todo corre en tu navegador: sin registro, sin cuenta y sin que nada salga de tu teléfono.</p>
+    {/* La home ya no tiene una herramienta estrella: la ruleta es una más
+         de las nueve, así que el CTA del hero manda al índice completo,
+         no a una herramienta puntual. */}
+    <a href="#herramientas" class="hero-cta">
+      Ver las nueve herramientas
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <line x1="5" y1="12" x2="19" y2="12"></line>
         <polyline points="12 5 19 12 12 19"></polyline>
@@ -50,7 +61,10 @@
     position: relative;
     display: flex;
     align-items: flex-end;
-    min-height: 100svh;
+    /* Acotado a un poco más de dos tercios de la pantalla en móvil: alto
+       para que la foto respire, pero ya no un salto de pantalla completa
+       antes de ver que hay más sitio debajo. */
+    min-height: 72svh;
     width: 100%;
     overflow: hidden;
     background-color: var(--bg-body); /* respaldo si la imagen no carga */
@@ -162,6 +176,10 @@
   @media (min-width: 860px) {
     .hero {
       align-items: center;
+      /* En escritorio hay más ancho para acomodar texto e imagen lado a
+         lado, así que el alto puede bajar más que en móvil sin que la
+         foto se sienta apretada. */
+      min-height: 60vh;
       /* La panorámica original: hay ancho de sobra para mostrarla completa
          en vez del recorte que arma el mobile-first de arriba. */
       background-image: url('/images/hero/hero-amigos.webp');

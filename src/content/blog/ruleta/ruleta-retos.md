@@ -20,7 +20,7 @@ Olvídate de pensar en ideas sobre la marcha o de comprar juegos de mesa caros. 
 El mecanismo es extremadamente sencillo, pero requiere de ciertas reglas para que la diversión no se detenga. 
 
 1. **Reúne al grupo:** Sentados en círculo si es presencial, o conectados por videollamada (Zoom, Discord, WhatsApp) si jugáis a distancia.
-2. **Proyecta la pantalla:** Abre nuestra [Ruleta de Opciones](https://decidelo.app/) en una tablet, ordenador o conéctalo a la televisión para que todos sientan el suspense del giro.
+2. **Proyecta la pantalla:** Abre nuestra [Ruleta de Opciones](https://decidelo.app/ruleta) en una tablet, ordenador o conéctalo a la televisión para que todos sientan el suspense del giro.
 3. **Elige el formato:**
    * **Opción A (La Ruleta Temática):** Llenas la ruleta con retos y preguntas. Al girar, el participante en turno debe realizar la acción que la ruleta dicte.
    * **Opción B (La Ruleta de Nombres + Cartas):** Llenas la ruleta con los nombres de los jugadores. La persona que salga seleccionada debe elegir entre "Verdad o Reto", y los demás le proponen el desafío.

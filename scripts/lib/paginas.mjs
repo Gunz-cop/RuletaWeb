@@ -10,7 +10,7 @@
  * layout sin meter 52 entradas casi idénticas.
  */
 export const PAGINAS = [
-  'index', 'amigo-secreto', 'dados', 'equipos', 'moneda', 'numeros',
+  'index', 'ruleta', 'amigo-secreto', 'dados', 'equipos', 'moneda', 'numeros',
   'piedra-papel-tijera', 'si-o-no', 'temporizador',
   'contacto', 'sobre', 'politica-privacidad', 'terminos-condiciones',
   'blog', 'blog/moneda/decision-moneda',

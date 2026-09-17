@@ -1,6 +1,6 @@
 ---
 /**
- * La ruleta de la home: la rueda, el panel de opciones y sus dos pestañas.
+ * La ruleta: la rueda, el panel de opciones y sus dos pestañas.
  *
  * Migrado al sistema editorial (ver DESIGN.md): sin la cabina arcade
  * (badge "DECI-BOARD V2.0" + LEDs parpadeantes), sin degradados ni glow, un
@@ -12,36 +12,46 @@
  * migrado esas páginas de rebote. En su lugar, este componente define sus
  * propias clases scopeadas (.wheel-toolbar-btn, .wheel-card, .input-card…).
  *
- * .section-tag/.section-heading SÍ son las clases compartidas de
- * global.css (con el tamaño de sección de home ya sobrescrito en
- * index.astro): son el mismo encabezado de sección que usan "Cómo
- * funciona" y el índice de herramientas, y de paso resucitan una regla de
- * modo foco que llevaba órfana desde el refactor a componentes —
- * `body.focus-mode-active :global(.roulette-section .section-header)` en
- * index.astro esperaba un `.section-header` dentro de esta sección que
- * nunca existió aquí (la cabina arcade no se llamaba así). Ahora sí hay
- * uno, así que el modo foco vuelve a ocultarlo como estaba pensado.
+ * .section-heading SÍ es una clase compartida de global.css: es el mismo
+ * encabezado de sección que usan "Cómo funciona" y el índice de
+ * herramientas en la home (que le suma su propio tamaño de sección por
+ * separado en index.astro, con :global() -- esos overrides solo se cargan
+ * ahí, no llegan a /ruleta).
  *
- * Es la pieza más grande que vivía en index.astro. El marcado y sus reglas
- * viajan juntos, así que el scope de Astro sigue aplicando igual, y
+ * .section-header sí resucita una regla de modo foco que llevaba órfana
+ * desde el refactor a componentes -- las reglas del modo foco viven ahora
+ * en ruleta.astro (antes en index.astro, cuando la ruleta vivía en la
+ * home) y esperaban un `.section-header` dentro de esta sección que nunca
+ * existió aquí (la cabina arcade no se llamaba así). Ahora sí hay uno, así
+ * que el modo foco vuelve a ocultarlo como estaba pensado.
+ *
+ * /ruleta es hoy el único consumidor de este componente, y su título es el
+ * <h1> real de la página (ver AGENTS.md, hallazgo del h1 oculto en móvil):
+ * de ahí la prop headingLevel, en vez de dejar el <h2> fijo como cuando
+ * esto vivía dentro de la home.
+ *
  * roulette.js la maneja entera por id, no por clase, de modo que no le
- * afecta que el marcado haya cambiado de archivo.
- *
- * Lo que NO viaja son las reglas del modo foco: recolocan la ruleta desde
- * fuera y se quedan en index.astro, donde han tenido que pasar a :global()
- * porque el scope de la página ya no alcanza este marcado. El test de
- * estados lo comprueba (npm run test:estado).
+ * afecta qué archivo la declara ni qué etiqueta de encabezado use.
  *
  * Las reglas de .checklist-item van con :global() porque ese HTML lo genera
  * roulette.js, no este archivo.
  */
+interface Props {
+  /** Nivel del encabezado de esta sección. Por defecto h2, como cuando el
+   * bloque vivía dentro de la home con su propio h1 en HomeHero. /ruleta
+   * lo pide en h1 porque aquí es el título de toda la página. */
+  headingLevel?: 'h1' | 'h2';
+}
+
+const { headingLevel = 'h2' } = Astro.props;
+const Heading = headingLevel;
 ---
 
 <section class="roulette-section reveal" id="ruleta" aria-label="Ruleta de Decisión Aleatoria">
   <div class="wrap">
     <div class="section-header">
-      <div class="section-tag">Herramienta principal</div>
-      <h2 class="section-heading roulette-heading">Gira y <em>decide.</em></h2>
+      <Heading class="section-heading roulette-heading">Ruleta Aleatoria <em>Online</em></Heading>
+      <slot name="description" />
     </div>
 
     <div class="app-grid">
@@ -182,12 +192,12 @@
     padding: 2rem 0 4rem;
   }
 
-  /* Mismo tratamiento tipográfico que "Cómo funciona": kicker +
-     .section-heading vienen de global.css (tamaño ya agrandado para la
-     home en index.astro), la palabra de énfasis en Newsreader itálica
-     cálida es el mismo patrón que usa HomeHero/HomeHowItWorks. Newsreader
-     ya está cargada por index.astro (única página que usa este
-     componente), así que no hace falta un <link> nuevo aquí. */
+  /* Mismo tratamiento tipográfico que "Cómo funciona" de la home:
+     .section-heading viene de global.css, la palabra de énfasis en
+     Newsreader itálica cálida es el mismo patrón que usa
+     HomeHero/HomeHowItWorks. El <link> de Newsreader lo carga la página
+     que use este componente (hoy ruleta.astro) en su slot "head", no este
+     archivo -- ver el comentario en ruleta.astro. */
   .roulette-heading {
     margin: 0;
   }
@@ -197,6 +207,19 @@
     font-style: italic;
     font-weight: 400;
     color: var(--accent-warm);
+  }
+
+  /* Párrafo descriptivo bajo el h1 (contenido del slot "description"),
+     mismo tratamiento que .hero p de global.css: /ruleta ya no monta
+     .hero (se retiró junto con el hallazgo del h1 oculto en móvil), así
+     que ese estilo compartido no la alcanza y hay que repetirlo aquí,
+     scopeado al único lugar de esta página donde aparece. */
+  .section-header p {
+    max-width: 640px;
+    margin: 0 auto;
+    color: var(--text-secondary);
+    font-size: 1rem;
+    line-height: 1.6;
   }
 
   /* App Grid Layout */
@@ -911,11 +934,13 @@
     transform: none;
   }
 
-  /* El kicker "Herramienta principal" no aporta nada que la propia rueda no
-     diga ya, y cuesta una línea entera de alto que en 390px hace falta
-     para que quepa la rueda sin scroll. Se oculta por CSS, no se borra del
-     DOM -- sigue ahí para quien lea la página sin estilos. */
-  .roulette-section .section-tag {
+  /* El párrafo descriptivo (contenido del slot "description") cuesta una
+     línea entera de alto que en 390px hace falta para que quepa la rueda
+     sin scroll -- mismo motivo por el que antes se ocultaba el kicker
+     "Herramienta principal", que ya no existe (ver AGENTS.md, el h1
+     ahora vive aquí). Se oculta por CSS, no se borra del DOM -- sigue ahí
+     para quien lea la página sin estilos. */
+  .roulette-section .section-header p {
     display: none;
   }
 

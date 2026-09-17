@@ -3,8 +3,9 @@
  * Sección "más herramientas" de la home: la cabecera de sección y la
  * rejilla de tarjetas.
  *
- * Como el hero, se oculta en modo foco mediante una regla que se queda en
- * index.astro y que por eso va con :global(.hub-section).
+ * La ruleta ya no vive aquí (se mudó a /ruleta), así que el modo foco de la
+ * home también se fue con ella -- esta sección ya no necesita ocultarse
+ * para nada; ese comportamiento ahora es propio de /ruleta.
  */
 import HubGrid from './HubGrid.astro';
 ---
@@ -17,7 +18,7 @@ import HubGrid from './HubGrid.astro';
       <p class="section-subtitle">Para fiestas, dinámicas en familia, planes con amigos o actividades de equipo en el trabajo.</p>
     </div>
 
-    <HubGrid activeToolId="ruleta" />
+    <HubGrid />
   </div>
 </section>
 <style>
@@ -31,5 +32,36 @@ import HubGrid from './HubGrid.astro';
     font-size: 1rem;
     max-width: 500px;
     margin: 0.75rem auto 0;
+  }
+
+  /* Tamaño de portada del índice: en la home, la pieza central de la
+     página, las filas leen más grandes que en sus otras diez hermanas
+     (las nueve páginas de herramienta y BlogPost vía BlogSidebar). No se
+     toca HubGrid.astro para esto -- ese archivo es el que comparten esas
+     once páginas, así que cualquier cambio ahí se les filtra a todas. En
+     cambio, estos overrides :global() viven solo en este componente, que
+     solo la home importa, igual que index.astro ya hace con las cabeceras
+     de sección (.section-header/.section-tag/.section-heading). Cero
+     diferencia para las páginas de herramienta y el blog. */
+  .hub-section :global(.hub-row) {
+    padding: 1.9rem 0;
+  }
+
+  .hub-section :global(.hub-row-icon) {
+    width: 52px;
+    height: 52px;
+  }
+
+  .hub-section :global(.hub-row-icon svg) {
+    width: 26px;
+    height: 26px;
+  }
+
+  .hub-section :global(.hub-row h3) {
+    font-size: 1.3rem;
+  }
+
+  .hub-section :global(.hub-row p) {
+    font-size: 0.95rem;
   }
 </style>

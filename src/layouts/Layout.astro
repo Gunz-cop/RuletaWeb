@@ -15,6 +15,10 @@ interface Props {
   robots?: string;
   schemaLD?: object;
   showHomeHeader?: boolean;
+  /** Ver Header.astro: expone Foco/Sonido en cualquiera de las dos
+   * cabeceras. Solo /ruleta la pasa en true -- es la única página que
+   * carga roulette.js, que necesita encontrar esos botones por id. */
+  showRouletteControls?: boolean;
   bodyClass?: string;
 }
 
@@ -27,6 +31,7 @@ const {
   robots = 'index, follow',
   schemaLD,
   showHomeHeader = false,
+  showRouletteControls = false,
   bodyClass = '',
 } = Astro.props;
 
@@ -90,7 +95,7 @@ const siteUrl = 'https://decidelo.app';
   <!-- Screen Reader Announcer -->
   <div id="sr-announcer" class="sr-only" aria-live="assertive" aria-atomic="true"></div>
 
-  <Header showHomeHeader={showHomeHeader} />
+  <Header showHomeHeader={showHomeHeader} showRouletteControls={showRouletteControls} />
 
   <slot />
 

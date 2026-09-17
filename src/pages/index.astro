@@ -1,23 +1,22 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import HomeHero from '../components/HomeHero.astro';
+import HomeUseCases from '../components/HomeUseCases.astro';
 import HomeHowItWorks from '../components/HomeHowItWorks.astro';
-import RouletteMachine from '../components/RouletteMachine.astro';
 import HomeToolsSection from '../components/HomeToolsSection.astro';
-import WinnerModal from '../components/WinnerModal.astro';
 import AdSlot from '../components/AdSlot.astro';
-import HubGrid from '../components/HubGrid.astro';
 import SeoArticle from '../components/SeoArticle.astro';
 import { getSocialImageUrl } from '../lib/heroImages';
 
-// Experimento de SEO: la raíz nunca tuvo un <title>/<description> que
-// dijera "ruleta" -- se prueba esta redacción para ver si decidelo.app
-// empieza a rankear por búsquedas de ruleta antes de decidir si la
-// herramienta se muda a su propia página (/ruleta). Ver AGENTS.md sobre
-// Search Console para el seguimiento. No toca el <h1> ni el JSON-LD: son
-// cambios aparte, deliberadamente medibles por separado.
-const title = 'Ruleta Aleatoria Online Gratis — Decídelo.app';
-const description = 'Ruleta aleatoria online para sortear nombres, elegir al azar y resolver empates. Gratis, sin registro, 100% en tu navegador. Además: moneda, dados y equipos.';
+// La raíz es de hub, no de ruleta: /ruleta tiene desde su propia mudanza
+// el title/description centrados en esa herramienta, así que dejar los
+// mismos aquí hacía que las dos páginas compitieran por la misma consulta
+// en Google, con la raíz llevándose el clic por autoridad de dominio y
+// sirviendo la intención equivocada. Se elige la opción larga de las dos
+// redactadas para el hub: nombra herramientas concretas (más señal de
+// variedad de contenido) en vez de quedarse en la descripción genérica.
+const title = 'Decídelo.app — Ruleta, moneda, dados y 6 herramientas más para decidir al azar';
+const description = 'Nueve herramientas gratis para decidir al azar: ruleta, moneda, dados, equipos, amigo secreto, números, sí o no y más. Sin registro, 100% en tu navegador.';
 
 // La imagen vive en src/assets y la optimiza Astro; el JSON-LD necesita
 // su URL absoluta ya generada, no la ruta pública que tenía antes.
@@ -34,7 +33,6 @@ const schemaLD = {
       "url": "https://decidelo.app/",
       "applicationCategory": "UtilityApplication",
       "operatingSystem": "All",
-      "browserRequirements": "Requires JavaScript and HTML5 Canvas",
       "softwareVersion": "2.0.0",
       "inLanguage": "es",
       "offers": {
@@ -82,102 +80,78 @@ const schemaLD = {
 
 <Layout title={title} description={description} schemaLD={schemaLD} showHomeHeader={true}>
   <Fragment slot="head">
-    <!-- Newsreader itálica: acento tipográfico del sistema editorial, solo en home -->
+    {/* Newsreader itálica: acento tipográfico del sistema editorial, solo en home */}
     <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@1,400&display=swap" rel="stylesheet">
   </Fragment>
 
-  <!-- Canvas transparente para el efecto de confeti -->
-  <canvas id="confetti-canvas" aria-hidden="true"></canvas>
+  {/* HERO -- acotado, ya no a pantalla completa (ver HomeHero.astro) */}
+  <HomeHero />
 
-  <!-- El envoltorio existe solo para poder reordenar VISUALMENTE estas
-       secciones en móvil (con `order` de flex, ver el <style> de abajo) sin
-       tocar el orden real del DOM: el rastreo y el SEO siguen viendo hero,
-       cómo-funciona, ruleta, herramientas y artículo en este mismo orden.
-       Envolver aquí en vez de hacerlo en Layout.astro evita convertir
-       `<body>` en un contenedor flex para todas las páginas del sitio por una
-       necesidad que es solo de la home. -->
-  <div class="home-sections">
-    <!-- ====================================================================
-         HERO SECTION
-         ==================================================================== -->
-    <HomeHero />
+  {/* "¿CUÁL TE SIRVE?" -- va primero después del hero, antes del índice
+       completo: el visitante que no sabe qué herramienta usar es el que
+       más necesita orientación, y una vez que sabe qué busca, el índice
+       de las nueve (con los mismos nombres ya mencionados acá) confirma
+       la elección en vez de obligarlo a leer las nueve descripciones para
+       encontrar la suya. Quien ya sabía qué quería sigue de largo sin
+       costo: es una sección corta, no un formulario. */}
+  <HomeUseCases />
 
-    <!-- ====================================================================
-         CÓMO FUNCIONA
-         ==================================================================== -->
-    <HomeHowItWorks />
+  {/* Espacio Publicitario Superior -- entre la orientación por situación y
+       el índice, el mismo lugar relativo que ocupaba antes de este
+       reordenamiento (después de la primera sección de contenido, antes
+       del bloque central de la página). */}
+  <AdSlot position="top" />
 
-    <!-- Espacio Publicitario Superior -->
-    <AdSlot position="top" />
+  {/* ÍNDICE DE LAS NUEVE -- la pieza central de la página. */}
+  {/* id="ruleta" de cortesía: la ruleta vivía en esta sección de la home
+       (id="ruleta" en el <section> viejo) y algún enlace absoluto viejo a
+       /#ruleta puede seguir circulando (redes, marcadores, caché). La
+       regla del encargo es que la raíz NUNCA redirige a /ruleta -- así que
+       en vez de un redirect, este ancla vacía hace que ese enlace viejo
+       aterrice aquí, en el índice de herramientas, en vez de a mitad de
+       ninguna parte. */}
+  <span id="ruleta" aria-hidden="true"></span>
+  <HomeToolsSection />
 
-    <!-- ====================================================================
-         SECCIÓN DE LA RULETA — Herramienta Principal
-         ==================================================================== -->
-    <RouletteMachine />
+  {/* CÓMO FUNCIONA -- va después del índice, no antes: es el remate de
+       "así de simple es usar cualquiera de estas nueve", así que lee
+       mejor una vez que el visitante ya vio la lista completa que como
+       antesala genérica antes de saber de qué herramientas se habla. */}
+  <HomeHowItWorks />
 
-    <!-- ====================================================================
-         HUB DE HERRAMIENTAS
-         ==================================================================== -->
-    <HomeToolsSection />
+  {/* ARTÍCULO DE HUB -- explica qué es el sitio y cómo elegir entre las
+       nueve, con enlaces a cada herramienta y al blog. Reemplaza el
+       artículo provisional de dos párrafos: ahora es el artículo de hub
+       completo, no una introducción recortada. */}
+  <SeoArticle title="¿Qué es Decídelo.app y cómo elegir la herramienta correcta?">
+    <p><strong>Decídelo.app</strong> es una caja de herramientas para decidir al azar. Nueve herramientas gratuitas que resuelven el mismo problema desde ángulos distintos: cuando hay que elegir entre varias opciones, repartir algo entre varias personas o poner un final a una discusión que no lo tiene. No hay cuentas, no hay registro y no hay servidor: todo se ejecuta en el navegador del visitante, y lo poco que se guarda —el historial de la moneda, las opciones de la última ruleta— vive en el almacenamiento local de tu propio dispositivo.</p>
 
-    <!-- ====================================================================
-         SECCIÓN DE ARTÍCULO SEO
-         ==================================================================== -->
-    <SeoArticle title="¿Qué es decídelo.app y para qué sirve?">
-    <p><strong>Decídelo.app</strong> es un hub de herramientas de decisión aleatoria diseñado para resolver esos momentos de indecisión que todos enfrentamos a diario. Ya sea que necesites elegir qué cenar, sortear un ganador entre participantes, asignar tareas de forma imparcial o simplemente dejar que el destino tome la decisión por ti, nuestras herramientas hacen el trabajo pesado en cuestión de segundos.</p>
-    <p>A diferencia de otros servicios similares, <strong>decídelo.app</strong> funciona 100% en tu navegador. Tus datos nunca salen de tu dispositivo: no hay servidores externos, no hay cookies de rastreo, y no hay necesidad de registro. Todo se almacena localmente mediante la tecnología <code>localStorage</code>, garantizando tu privacidad total.</p>
+    <p>Esa decisión técnica tiene una consecuencia práctica que vale la pena entender: los nombres que escribís en un sorteo no viajan a ninguna parte. No se envían, no se almacenan fuera de tu teléfono y no hay forma de que nosotros los veamos. Es también la razón de que las herramientas abran rápido en una red lenta: son páginas estáticas, sin frameworks pesados detrás.</p>
 
-    <h2>La Ruleta Aleatoria Online: Tu aliada contra la indecisión</h2>
-    <p>Nuestra herramienta estrella es la <strong>Ruleta Aleatoria Online</strong>. Construida con tecnología <strong>HTML5 Canvas</strong> de última generación, ofrece una experiencia visual fluida a 60 fotogramas por segundo con un algoritmo de desaceleración basado en física de fricción real. Cada giro se siente orgánico, impredecible y emocionante.</p>
+    <h2>Cómo elegir entre las nueve</h2>
+    <p>La pregunta que más se repite no es cómo funciona cada herramienta, sino cuál de las nueve corresponde. Hay tres familias.</p>
 
-    <h3>¿Cómo funciona la Ruleta?</h3>
-    <ul>
-      <li><strong>Escribe tus opciones</strong> en el panel lateral (una por línea). La ruleta se actualiza en tiempo real.</li>
-      <li><strong>Personaliza el título</strong> haciendo clic sobre él. Ideal para sorteos con nombre: "¿Quién lava los platos?".</li>
-      <li><strong>Presiona GIRAR</strong> y observa cómo la rueda cobra vida con efectos de sonido sintetizados y un puntero que se sacude al pasar por cada segmento.</li>
-      <li><strong>¡Resultado con confeti!</strong> Al detenerse, un modal elegante revela al ganador con una celebración visual de confeti animado.</li>
-      <li><strong>Oculta opciones</strong> sin borrarlas. Perfecto para torneos por eliminación o para ir descartando candidatos ronda a ronda.</li>
-    </ul>
+    <p><strong>Elegir uno entre muchos.</strong> La <a href="/ruleta">ruleta</a> es la herramienta clásica del grupo: cargás una lista de nombres u opciones, girás y la rueda se detiene en uno. Su ventaja sobre cualquier otro método es que el resultado se ve salir, y eso importa cuando hay varias personas mirando: nadie duda de una rueda que frenó a la vista de todos. Sirve para sortear ganadores, elegir quién participa en clase, repartir tareas de la casa o decidir el menú del sábado. El <a href="/numeros">generador de números</a> hace lo mismo cuando lo que sorteás no tiene nombre sino número —una rifa, un puesto en una fila— y los <a href="/dados">dados</a> cuando querés el gesto físico de tirar.</p>
 
-    <h2>Casos de uso populares</h2>
+    <p><strong>Elegir entre dos.</strong> Acá la ruleta es exagerada. La <a href="/moneda">moneda</a> resuelve un empate binario en un toque, y trae historial para las rachas. El <a href="/si-o-no">sí o no</a> contesta preguntas cerradas con el formato del oráculo de la bola 8, que es menos una herramienta de precisión que una forma de darle cierre a una duda que ya estaba decidida. <a href="/piedra-papel-tijera">Piedra, papel o tijera</a> sirve cuando son dos personas presentes y quieren jugarlo, contra la máquina o entre ellas.</p>
 
-    <h3>Sorteos de nombres y ganadores</h3>
-    <p>Ya sea para dinamizar tus sorteos en redes sociales (Instagram, TikTok, Facebook), seleccionar ganadores en concursos, o elegir el orden de exposición de estudiantes en clase, la <em>ruleta de nombres</em> garantiza imparcialidad absoluta. El público confía en un resultado visualmente aleatorio más que en un simple número generado por computadora.</p>
+    <p><strong>Repartir entre todos.</strong> Estas dos no eligen a uno: distribuyen. El <a href="/equipos">generador de equipos</a> toma una lista y la parte en grupos del tamaño que pidas, equilibrados y sin que el criterio lo ponga nadie. El <a href="/amigo-secreto">amigo secreto</a> es el caso más usado del sitio: organiza un sorteo de regalos completo y genera un enlace privado por participante, de modo que cada persona ve solo a quién le tocó. Reemplaza los papelitos en la bolsa y resuelve el problema que los papelitos nunca resolvieron, que es cómo hacer el sorteo cuando el grupo no está en la misma habitación.</p>
 
-    <h3>Decidir qué comer</h3>
-    <p>El clásico dilema de parejas y amigos. Introduce opciones como "Pizza 🍕", "Tacos 🌮", "Sushi 🍣" o "Hamburguesas 🍔" y deja que el destino elija el menú del día. Elimina discusiones innecesarias de forma divertida y democrática.</p>
+    <p>Queda el <a href="/temporizador">temporizador aleatorio</a>, que es el raro de la lista: no elige nada, termina en un segundo impredecible dentro del rango que le des. Es la patata caliente, el juego de la silla y cualquier dinámica donde la gracia esté en no saber cuándo suena.</p>
 
-    <h3>Dinámicas de clase y gamificación</h3>
-    <p>Los profesores y facilitadores utilizan esta herramienta para hacer preguntas aleatorias, asignar tareas, seleccionar equipos o elegir temas de debate. La ruleta mantiene a los participantes alerta, atentos y comprometidos porque cualquiera puede ser el próximo.</p>
+    <h2>Por qué el azar funciona para decidir</h2>
+    <p>Buena parte del valor de estas herramientas no está en la aleatoriedad sino en la autoridad. Un grupo que no se pone de acuerdo rara vez discute por falta de información: discute porque nadie quiere cargar con la decisión. Una rueda que gira traslada esa carga a algo que no tiene preferencias, y el grupo acepta el resultado porque acepta el procedimiento. Lo mismo hace un árbitro, y por eso el método funciona incluso cuando a alguien no le gusta lo que salió.</p>
 
-    <h3>Juegos y entretenimiento</h3>
-    <p>Úsala como una ruleta de la fortuna, verdad o reto, penitencias para fiestas o para determinar premios en eventos. Personalízala con retos, castigos, recompensas o cualquier contenido creativo que se te ocurra.</p>
+    <p>Hay un segundo uso, menos obvio y más personal: usar el azar para descubrir qué querías. Tirás la moneda, sale cara, y sentís alivio o decepción. Esa reacción es la respuesta; la moneda solo la hizo visible. Para eso no importa qué herramienta uses.</p>
 
-    <h2>Diseño accesible y enfoque en la concentración</h2>
-    <p>Hemos diseñado <strong>decídelo.app</strong> con especial atención a la accesibilidad y experiencia de usuario. Nuestro <strong>Modo Foco</strong> elimina todas las distracciones de la pantalla (texto informativo, herramientas secundarias, anuncios) y te permite centrarte exclusivamente en la ruleta y tus opciones. Este modo es especialmente útil para personas con TDAH o que simplemente prefieren una interfaz limpia.</p>
-    <p>El elegante modo oscuro predeterminado con una paleta cuidadosamente seleccionada reduce la fatiga ocular durante sesiones prolongadas. Los sonidos físicos sintéticos (totalmente opcionales) proporcionan retroalimentación sensorial sin ser intrusivos.</p>
+    <h2>Privacidad, coste y requisitos</h2>
+    <p>Las nueve son gratuitas y no piden datos. No hay cuenta que crear ni correo que dejar. Funcionan en el teléfono, en la tablet y proyectadas en una pantalla grande, que es como se usan en un aula o en una reunión. Y si la conexión se cae con la página ya abierta, la herramienta sigue respondiendo: el cálculo pasa entero en tu dispositivo.</p>
 
-    <h2>¿Por qué decídelo.app es diferente?</h2>
-    <ul>
-      <li><strong>Privacidad real:</strong> Sin servidores, sin cookies, sin registro. Todo funciona localmente en tu navegador.</li>
-      <li><strong>Velocidad:</strong> Carga instantánea. No hay dependencias pesadas ni frameworks innecesarios.</li>
-      <li><strong>Diseño premium:</strong> Cada detalle está cuidado: desde las micro-animaciones hasta la paleta de colores.</li>
-      <li><strong>Accesibilidad:</strong> Compatible con lectores de pantalla, navegación por teclado y preferencias de movimiento reducido.</li>
-      <li><strong>Offline-ready:</strong> Una vez cargada, funciona sin conexión a internet.</li>
-    </ul>
+    <p>Si querés entender un caso concreto antes de abrir la herramienta, el <a href="/blog">blog</a> tiene guías por situación: cómo montar un amigo secreto a distancia, cómo hacer un sorteo que el público perciba como justo, qué dinámicas de aula funcionan con una ruleta de nombres y cómo repartir equipos sin que nadie quede último.</p>
   </SeoArticle>
 
-    <!-- Espacio Publicitario Inferior -->
-    <AdSlot position="bottom" />
-
-    <!-- ====================================================================
-         MODAL DE GANADOR
-         ==================================================================== -->
-    <WinnerModal />
-  </div>
-
-  <!-- Carga del JavaScript específico de la Ruleta -->
-  <script src="../scripts/roulette.js"></script>
+  {/* Espacio Publicitario Inferior */}
+  <AdSlot position="bottom" />
 </Layout>
 
 <style>
@@ -193,114 +167,9 @@ const schemaLD = {
      global.css es --accent-mint (acento neón de las páginas sin migrar),
      que aquí desentonaba con el acento cálido único del sistema editorial. */
   :global(.section-tag) { margin-bottom: 0.75rem; color: var(--text-secondary); }
-  /* Mismo tamaño para el h2 de "Cómo funciona" y el del índice de
-     herramientas: son secciones hermanas y deben leer con la misma
-     jerarquía, un escalón por debajo del titular del hero. */
+  /* Mismo tamaño para el h2 de "Cómo funciona", el del índice de
+     herramientas y el de "¿Cuál te sirve?": son secciones hermanas y deben
+     leer con la misma jerarquía, un escalón por debajo del titular del
+     hero. */
   :global(.section-heading) { font-size: clamp(1.65rem, 4vw, 2.3rem); }
-
-  /* ====================================================================
-     REORDEN VISUAL EN MÓVIL — decisión del propietario, no renegociable.
-     ====================================================================
-     Bajo 860px (el mismo breakpoint que ya separa el grid de dos columnas
-     de la ruleta) la ruleta pasa a verse primero, antes que el hero y el
-     "cómo funciona": es la herramienta, así que es lo primero que hay que
-     poder usar sin scroll. El DOM no cambia -- solo el orden de pintado --
-     así que el rastreo/SEO sigue viendo hero → cómo-funciona → ruleta →
-     herramientas → artículo, que es el orden narrativo real de la página.
-
-     Con flex, los elementos sin `order` explícito valen 0 y mantienen su
-     orden de documento entre sí; solo hace falta sacar la ruleta a -1 para
-     que se adelante a todos los demás. Como el anuncio superior
-     (`<AdSlot position="top">`) vivía en el DOM justo antes de la ruleta,
-     este único cambio también lo deja, de rebote, debajo de la rueda en
-     vez de encima -- exactamente lo que pide la decisión 2 del encargo.
-     Revertir la decisión 1 (quitar esta regla) revierte también ese efecto
-     lateral, así que la decisión 2 no necesita una regla propia: no hay
-     nada que hacer con el anuncio que no haga ya esta única línea. */
-  @media (max-width: 859px) {
-    .home-sections {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .home-sections > :global(.roulette-section) {
-      order: -1;
-    }
-
-    /* Decisión 2, aparte y explícita a propósito aunque hoy coincida con el
-       efecto de la regla de arriba: el propietario sabe que el anuncio
-       superior pierde visibilidad al quedar bajo la rueda, y quiere poder
-       deshacer *esta* decisión sola sin tocar la del reordenamiento
-       general. Para volver a poner el anuncio arriba de la rueda, basta con
-       darle aquí un order menor que -1 (p. ej. -2); para "revertir del
-       todo", con borrar esta regla alcanza -- sin ella, el anuncio ya
-       queda debajo de la rueda igual, por el orden de documento normal. */
-    .home-sections > :global([data-ad-paused="top"]) {
-      order: 0;
-    }
-  }
-
-  #confetti-canvas {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100vw; height: 100vh;
-    pointer-events: none;
-    z-index: 99;
-  }
-
-  /* Focus Mode Styles */
-  /* .hero y .hub-section van con :global() porque su marcado vive ahora en
-     HomeHero.astro y HomeToolsSection.astro: con el scope de esta página ya
-     no los alcanzaría. El test de estados comprueba que siguen ocultándose
-     (npm run test:estado). */
-  body.focus-mode-active {
-    background-color: #060608;
-  }
-
-  body.focus-mode-active :global(header) {
-    background: transparent;
-    border-bottom: none;
-  }
-
-  body.focus-mode-active :global(.logo-link),
-  body.focus-mode-active :global(.hero),
-  body.focus-mode-active :global(.how-it-works),
-  body.focus-mode-active :global(.hub-section),
-  body.focus-mode-active :global(.seo-section),
-  body.focus-mode-active :global(.ad-placeholder),
-  body.focus-mode-active :global(footer),
-  body.focus-mode-active :global(.nav-link) {
-    display: none !important;
-  }
-
-  body.focus-mode-active :global(.header-inner) {
-    justify-content: flex-end;
-  }
-
-  body.focus-mode-active :global(.roulette-section) {
-    min-height: calc(100vh - 80px);
-    display: flex;
-    align-items: center;
-    padding: 0;
-  }
-
-  body.focus-mode-active :global(.roulette-section > .wrap) {
-    width: 100%;
-  }
-
-  body.focus-mode-active :global(.roulette-section .section-header) {
-    display: none;
-  }
-
-  body.focus-mode-active :global(.app-grid) {
-    align-items: center;
-  }
-
-  @media (min-width: 860px) {
-    body.focus-mode-active :global(.app-grid) {
-      max-width: 950px;
-      margin: 0 auto;
-    }
-  }
-
 </style>
