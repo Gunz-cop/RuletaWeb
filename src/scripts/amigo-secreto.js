@@ -80,6 +80,12 @@ function initAmigoSecreto() {
         }
       };
       giftContainer.addEventListener('click', openGift, { once: true });
+      giftContainer.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          openGift();
+        }
+      });
     }
     return; // No configurar el organizador si estamos en pantalla de revelación
   } else {
@@ -120,12 +126,32 @@ function initAmigoSecreto() {
     });
   });
 
+  // Flechas izquierda/derecha entre pestañas, como espera un lector de
+  // pantalla de un role="tablist".
+  tabButtons.forEach((btn, idx) => {
+    btn.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      const step = e.key === 'ArrowRight' ? 1 : -1;
+      const next = tabButtons[(idx + step + tabButtons.length) % tabButtons.length];
+      switchTab(next.getAttribute('data-tab'), next);
+      next.focus();
+    });
+  });
+
   function switchTab(tabId, targetBtn) {
     globalActiveTab = tabId;
-    tabButtons.forEach(btn => btn.classList.remove('active'));
+    tabButtons.forEach(btn => {
+      btn.classList.remove('active');
+      btn.setAttribute('aria-selected', 'false');
+      btn.tabIndex = -1;
+    });
     document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
 
-    if (targetBtn) targetBtn.classList.add('active');
+    if (targetBtn) {
+      targetBtn.classList.add('active');
+      targetBtn.setAttribute('aria-selected', 'true');
+      targetBtn.tabIndex = 0;
+    }
     const contentEl = document.getElementById(tabId);
     if (contentEl) contentEl.classList.add('active');
   }
@@ -137,6 +163,12 @@ function initAmigoSecreto() {
   // Carga CSV & Drag and Drop
   if (csvDropzone && csvFileInput) {
     csvDropzone.addEventListener('click', () => csvFileInput.click());
+    csvDropzone.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        csvFileInput.click();
+      }
+    });
     csvFileInput.addEventListener('change', handleCSVFileSelect);
 
     ['dragenter', 'dragover'].forEach(eventName => {
@@ -351,12 +383,14 @@ function initAmigoSecreto() {
       // de un CSV ajeno, y como HTML podría ejecutar código en la página.
       tag.textContent = `${p.name} `;
 
-      const removeSpan = document.createElement('span');
-      removeSpan.className = 'tag-remove';
-      removeSpan.textContent = '×';
-      removeSpan.addEventListener('click', () => removeParticipant(p.id));
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'tag-remove';
+      removeBtn.textContent = '×';
+      removeBtn.setAttribute('aria-label', `Quitar a ${p.name}`);
+      removeBtn.addEventListener('click', () => removeParticipant(p.id));
 
-      tag.appendChild(removeSpan);
+      tag.appendChild(removeBtn);
       tagsContainer.appendChild(tag);
     });
 
@@ -613,13 +647,10 @@ function initAmigoSecreto() {
     btnWa.addEventListener('click', () => {
       const text = `¡Hola ${link.name}! Aquí tienes tu enlace secreto de Amigo Secreto. Haz clic para descubrir quién te tocó regalar: ${link.url}`;
       const encodedText = encodeURIComponent(text);
-      let waUrl = '';
-      if (link.contact) {
-        const cleanNumber = link.contact.replace(/[^0-9+]/g, '');
-        waUrl = `https://wa.me/${cleanNumber}?text=${encodedText}`;
-      } else {
-        waUrl = `https://api.whatsapp.com/send?text=${encodedText}`;
-      }
+      const number = whatsappNumber(link.contact);
+      const waUrl = number
+        ? `https://wa.me/${number}?text=${encodedText}`
+        : `https://api.whatsapp.com/send?text=${encodedText}`;
       markSent();
       window.open(waUrl, '_blank');
     });
@@ -686,6 +717,9 @@ function initAmigoSecreto() {
 
   // Sintetizador de Web Audio para la animación mágica de revelado
   function playRevealSound() {
+    // Quien pidió menos movimiento al sistema tampoco quiere una explosión
+    // de confeti ni campanas: el nombre se revela igual, en silencio.
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     try {
       if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -761,6 +795,18 @@ function initAmigoSecreto() {
 
 function nameKey(name) {
   return name.toLocaleLowerCase('es').replace(/\s+/g, ' ');
+}
+
+// wa.me necesita el número con indicativo de país y sin «+». La mayoría de
+// quienes usan la herramienta escriben el celular colombiano tal cual
+// (10 dígitos que empiezan por 3), y sin el 57 WhatsApp no encuentra a
+// nadie. Un correo o un texto sin número abre WhatsApp para elegir contacto.
+function whatsappNumber(contact) {
+  if (!contact || contact.includes('@')) return '';
+  const digits = contact.replace(/\D/g, '');
+  if (!digits) return '';
+  if (!contact.trim().startsWith('+') && /^3\d{9}$/.test(digits)) return `57${digits}`;
+  return digits;
 }
 
 function pairKey(a, b) {
