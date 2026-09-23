@@ -1,65 +1,77 @@
 ---
-title: 'Regalos originales para el Amigo Invisible por menos de 10 euros (Ideas unisex)'
-description: '¿Presupuesto ajustado? Encuentra las mejores ideas de regalos para el amigo invisible por menos de 10 euros. Opciones originales, divertidas y unisex.'
+title: 'Regalos para el amigo secreto por menos de $50.000 pesos (ideas unisex)'
+description: '¿Presupuesto ajustado para el amigo secreto de diciembre? Ideas de regalos originales y unisex entre $20.000 y $50.000 pesos colombianos: café de origen, artesanías, dulces típicos y detalles útiles.'
 pubDate: '2026-06-02'
+updatedDate: '2026-09-23'
 tags: ['regalos', 'amigo-secreto', 'compras', 'ideas']
 author: 'Decídelo.app'
 heroImage: '/blog/regalos-economicos.png'
 ---
 
-"Presupuesto: 10 euros". Cuando en el grupo de WhatsApp del amigo invisible se fija este límite de precio, suele cundir el pánico. Comprar algo de calidad, que resulte original y que además sirva tanto para un hombre como para una mujer por un billete de diez euros parece una misión imposible.
+"Presupuesto: $40.000". Cuando en el grupo de WhatsApp del amigo secreto de la oficina o de la familia se fija un monto así, empieza el estrés. Encontrar algo que se vea bonito, que sea original y que le sirva igual a un hombre que a una mujer, sin pasarse del tope, parece difícil.
 
-Acabamos cayendo en los tópicos de siempre: calcetines aburridos, colonias baratas o bombones industriales de última hora.
+Y así terminamos en lo de siempre: las medias de última hora, la loción de supermercado o la caja de chocolatinas comprada en la tienda de la esquina camino a la novena.
 
-Pero con un poco de creatividad y buscando en el lugar adecuado, puedes encontrar opciones increíbles que dejarán a tu amigo secreto con una sonrisa de oreja a oreja. En esta guía he recopilado una lista de **ideas de regalos unisex por menos de 10 euros** que son útiles, graciosos y muy originales.
+Con un poco de creatividad, y buscando en plazas de mercado, tiendas de barrio y ferias artesanales, se consiguen detalles muy buenos. En esta guía reunimos **ideas de regalos unisex entre $20.000 y $50.000 pesos**, que son los montos más comunes en los intercambios de diciembre en Colombia.
 
----
-
-## 1. Gadgets y Accesorios Tecnológicos Útiles
-A todo el mundo le gusta la tecnología útil. Por menos de 10 euros puedes encontrar pequeños accesorios que solucionan dolores de cabeza diarios:
-
-* **Soporte magnético para móvil en el coche:** Se coloca en la rejilla de ventilación del coche y permite sujetar el móvil de forma segura en un segundo. Es sumamente práctico.
-* **Organizador de cables de silicona:** Perfecto para colocar en la mesa de noche o el escritorio de la oficina y evitar que los cables de carga acaben enredados en el suelo.
-* **Luz de lectura LED para libros:** Un pequeño clip con luz tenue que se engancha directamente a las páginas del libro, ideal para los amantes de la lectura nocturna sin molestar a su pareja.
+> Los precios son orientativos y cambian según la ciudad y la tienda. Úsalos como referencia para saber qué cabe en el presupuesto del grupo.
 
 ---
 
-## 2. Para el Escritorio y el Trabajo
-Dado que muchos intercambios de amigo invisible se realizan en la oficina o en entornos estudiantiles, los regalos de escritorio originales son siempre un acierto:
+## 1. Sabores colombianos que siempre quedan bien
+Un regalo que se come o se toma casi nunca falla, y en Colombia hay de dónde escoger:
 
-* **Tazas con mensaje ingenioso o diseño térmico:** Tazas que cambian de color con la temperatura del líquido caliente o que tienen chistes divertidos sobre el café de las mañanas.
-* **Cuaderno de notas o agenda de diseño:** Un cuaderno con tapas duras elegantes o texturas retro para apuntar tareas pendientes.
-* **Mini aspirador de escritorio USB:** Un gadget divertidísimo y práctico para limpiar las migas de pan y el polvo del teclado del ordenador.
-
----
-
-## 3. Bienestar y Relax en Casa
-Regalar un momento de desconexión o comodidad nunca falla, y existen opciones muy asequibles:
-
-* **Taza infusora con tapa y filtro:** Ideal para preparar tés de hojas sueltas en casa u oficina. Se puede acompañar con una pequeña bolsita de té gourmet.
-* **Antifaz de gel frío/calor para ojos:** Perfecto para aliviar la hinchazón o relajarse tras largas jornadas frente a pantallas de ordenador.
-* **Mini maceta de cemento con una suculenta:** Las plantas suculentas requieren poquísimo riego, son muy decorativas y aportan vida a cualquier rincón de la casa o el escritorio.
+* **Café de origen en grano o molido (de $20.000 a $40.000):** Una libra de café especial del Huila, Nariño, Quindío o la Sierra Nevada. Se ve mucho mejor que el café de siempre y cualquiera lo aprovecha. Si alcanza, agrégale un filtro de tela para colar.
+* **Canasta de dulces típicos (de $20.000 a $35.000):** Bocadillo veleño, arequipe, obleas, cocadas o panelitas. Se arma en una canasta de mimbre o una caja kraft y queda como un regalo de temporada.
+* **Chocolate de mesa artesanal con molinillo (de $25.000 a $45.000):** Una barra de cacao de Santander o del Tolima con un molinillo de madera. Es un regalo muy de diciembre para las onces en familia.
 
 ---
 
-## Comparativa de Categorías de Regalos por menos de 10€
+## 2. Artesanías y hecho en Colombia
+Comprarle a un artesano le da al regalo una historia que ningún producto de centro comercial tiene:
 
-| Categoría | Utilidad diaria | Nivel de Originalidad | Riesgo de fallar |
+* **Manillas o llaveros tejidos (de $10.000 a $30.000):** Tejidos wayuu, en werregue o en caña flecha. Son livianos, unisex y fáciles de envolver.
+* **Individuales o posavasos en fique (de $20.000 a $40.000):** Bonitos, útiles en cualquier casa y hechos con una fibra muy nuestra.
+* **Mini matera de barro con una suculenta (de $15.000 a $30.000):** Las suculentas casi no piden agua, decoran el escritorio o la ventana y duran mucho más que un ramo de flores.
+
+---
+
+## 3. Para el escritorio y el trabajo
+Muchos intercambios se hacen en la oficina o en el colegio, así que un detalle práctico para el puesto de trabajo es un acierto:
+
+* **Mug con frase o mug térmico (de $20.000 a $45.000):** Uno que cambia de color con el tinto caliente o con un chiste sobre el café de la mañana.
+* **Libreta o agenda 2027 (de $15.000 a $35.000):** Llega justo a tiempo para el año nuevo. Las de tapa dura o con diseño ilustrado por artistas locales se ven mucho mejor.
+* **Organizador de cables y soporte para el celular (de $15.000 a $30.000):** Para que los cargadores dejen de enredarse en el escritorio y el celular quede a la vista durante las reuniones.
+
+---
+
+## 4. Bienestar y descanso
+Un rato para desconectarse también es un buen regalo, y hay opciones que caben en el presupuesto:
+
+* **Aromáticas y té en hoja con un infusor (de $20.000 a $40.000):** Aromática de frutas, limoncillo o manzanilla, con un infusor de acero para la taza.
+* **Antifaz de gel frío/calor (de $15.000 a $30.000):** Para descansar los ojos después de un día entero frente al computador.
+* **Vela aromática artesanal (de $20.000 a $45.000):** Con olor a café, canela o eucalipto; muchas se consiguen en ferias de emprendimiento de diciembre.
+
+---
+
+## Comparativa: ¿qué tipo de regalo escoger?
+
+| Categoría | Uso diario | Originalidad | Riesgo de no gustar |
 | :--- | :---: | :---: | :---: |
-| **Tecnología** | Muy Alta | Media | Bajo |
-| **Escritorio / Oficina** | Alta | Alta | Bajo |
-| **Hogar / Plantas** | Media | Muy Alta | Medio |
-| **Alimentación Gourmet** | Baja (se gasta rápido) | Media | Muy Bajo |
+| **Sabores colombianos** | Media (se consume) | Alta | Muy bajo |
+| **Artesanías** | Media | Muy alta | Bajo |
+| **Escritorio / Oficina** | Alta | Media | Bajo |
+| **Bienestar** | Media | Media | Medio |
 
 ---
 
-## Cómo dinamizar la entrega de regalos
+## Cómo hacer más divertida la entrega
 
-Una vez que tengáis el presupuesto y los regalos listos, la entrega puede ser igual de divertida que el juego. Aquí te propongo una dinámica rápida usando la tecnología:
+Con el presupuesto definido y los regalos listos, la entrega puede ser tan divertida como el sorteo. Una dinámica rápida para la novena o la fiesta de la oficina:
 
-* **El juego del robo:** Todos los regalos se envuelven y se colocan en el centro de la mesa sin nombres. Los participantes usan nuestra [Ruleta de Opciones](https://decidelo.app/ruleta) con sus nombres escritos para definir el orden de elección. El primer participante toma un regalo y lo abre. El siguiente participante puede elegir entre "robar" el regalo ya abierto del primero o tomar uno nuevo de la pila. ¡Esto genera momentos de risas y disputas sanas memorables!
+* **El juego del robo:** Todos los regalos se envuelven y se ponen en el centro de la mesa sin nombre. Con nuestra [Ruleta de Opciones](https://decidelo.app/ruleta) y los nombres de todos, se define el orden para escoger. La primera persona toma un regalo y lo abre. La siguiente puede "robarle" el regalo ya abierto o tomar uno nuevo del montón. ¡Garantiza risas y alegatos sanos!
 
 > [!TIP]
-> Recuerda que para organizar el sorteo sin revelar el resultado a nadie, puedes usar de forma 100% gratuita nuestra aplicación de [Amigo Secreto Online](https://decidelo.app/amigo-secreto). Podrás configurar excepciones y enviar los enlaces directamente por WhatsApp.
+> Para hacer el sorteo sin que nadie vea el resultado, usa gratis nuestra herramienta de [Amigo Secreto Online](https://decidelo.app/amigo-secreto). Puedes indicar parejas o grupos que no deben tocarse entre sí y enviar a cada uno su enlace por WhatsApp.
 
-No dejes que el presupuesto limitado apague la diversión del intercambio de regalos. Con estas ideas originales, demostrarás que no hace falta gastar una fortuna para hacer un regalo con cariño y sentido del humor. ¡Feliz sorteo!
+Un presupuesto ajustado no tiene por qué dañar el intercambio. Con estas ideas se nota que no hace falta gastar mucho para dar algo pensado con cariño. ¡Feliz amigo secreto!
