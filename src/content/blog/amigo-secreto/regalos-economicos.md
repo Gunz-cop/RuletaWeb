@@ -12,7 +12,7 @@ heroImage: '/blog/regalos-economicos.png'
 
 Y así terminamos en lo de siempre: las medias de última hora, la loción de supermercado o la caja de chocolatinas comprada en la tienda de la esquina camino a la novena.
 
-Con un poco de creatividad, y buscando en plazas de mercado, tiendas de barrio y ferias artesanales, se consiguen detalles muy buenos. En esta guía reunimos **ideas de regalos unisex entre $20.000 y $50.000 pesos**, que son los montos más comunes en los intercambios de diciembre en Colombia.
+Con un poco de creatividad, y buscando en plazas de mercado, tiendas de barrio y ferias artesanales, se consiguen detalles muy buenos. En los intercambios de diciembre en Colombia lo común es fijar entre $30.000 y $100.000 pesos. Esta guía se concentra en la parte baja de ese rango: **ideas de regalos unisex por menos de $50.000 pesos**, para cuando el grupo acuerda un monto ajustado.
 
 > Los precios son orientativos y cambian según la ciudad y la tienda. Úsalos como referencia para saber qué cabe en el presupuesto del grupo.
 
