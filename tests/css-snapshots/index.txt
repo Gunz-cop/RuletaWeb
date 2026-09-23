@@ -1,9 +1,9 @@
 .hero[S]{background-color:var(--bg-body);background-image:url(/images/hero/hero-amigos-mobile.webp);background-position:50% 15%;background-repeat:no-repeat;background-size:cover;align-items:flex-end;width:100%;min-height:72svh;display:flex;position:relative;overflow:hidden}
-.hero-scrim[S]{background:linear-gradient(#07070a0d 0%,#07070a59 40%,#07070ad1 70%,#07070af5 100%);position:absolute;inset:0}
+.hero-scrim[S]{background:linear-gradient(#07070a0d 0%,#07070a99 40%,#07070ae6 70%,#07070af5 100%);position:absolute;inset:0}
 .hero-inner[S]{z-index:1;width:100%;max-width:640px;padding:0 1.25rem 2.75rem;position:relative}
 .hero[S] h1[S]{letter-spacing:-.02em;color:#fff;margin-bottom:1.25rem;font-family:Outfit,sans-serif;font-size:clamp(2.2rem,8vw,4.4rem);font-weight:700;line-height:1.04}
 .hero[S] h1[S] em[S]{color:var(--accent-warm);font-family:Newsreader,serif;font-style:italic;font-weight:400}
-.hero-subtitle[S]{color:#f0f0f5d1;margin-bottom:1.75rem;font-size:clamp(1rem,4vw,1.2rem);font-weight:400;line-height:1.6}
+.hero-subtitle[S]{color:#f0f0f5eb;margin-bottom:1.75rem;font-size:clamp(1rem,4vw,1.2rem);font-weight:400;line-height:1.6}
 .hero-cta[S]{color:#fff;cursor:pointer;transition:transform .16s var(--ease-out);border:none;border-bottom:1px solid #fff;align-items:center;gap:.6rem;padding-bottom:.3rem;font-family:Outfit,sans-serif;font-size:1.05rem;font-weight:700;text-decoration:none;display:inline-flex}
 .hero-cta[S]:active{transform:scale(.97)}
 .hero-cta[S] svg[S]{width:18px;height:18px;transition:transform .2s var(--ease-out)}

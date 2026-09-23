@@ -19,14 +19,19 @@ function initAmigoSecreto() {
   const resultsSection = document.getElementById('results-section');
   const linksContainer = document.getElementById('links-list-container');
   const toast = document.getElementById('toast-message');
+  const drawWarning = document.getElementById('draw-warning');
 
   let participantsList = []; // Array de { id, name, contact }
   let globalActiveTab = 'tab-manual';
   let audioCtx = null;
 
-  // Detección de parámetros en URL para pantalla de revelación o carga inicial
+  // El dato va en el fragmento (#revelar=) porque el navegador nunca envía
+  // el fragmento al servidor: así el nombre no queda en registros ni en la
+  // analítica. Se sigue aceptando ?revelar= para no romper los enlaces que
+  // ya se repartieron antes del cambio.
+  const hashParams = new URLSearchParams(window.location.hash.slice(1));
   const urlParams = new URLSearchParams(window.location.search);
-  const encodedSecret = urlParams.get('revelar');
+  const encodedSecret = hashParams.get('revelar') || urlParams.get('revelar');
 
   if (encodedSecret) {
     // MODO REVELACIÓN INTERACTIVA
@@ -37,11 +42,27 @@ function initAmigoSecreto() {
       revealScreen.classList.add('slide-up');
     }
 
+    // La vista de revelación es personal: que no se indexe ni comparta título
+    // con la página del organizador.
+    const robotsMeta = document.querySelector('meta[name="robots"]');
+    if (robotsMeta) robotsMeta.setAttribute('content', 'noindex, nofollow');
+    document.title = 'Tu amigo secreto 🎁 | Decídelo.app';
+
     const decryptedName = decryptName(encodedSecret);
     const revealedNameEl = document.getElementById('revealed-name');
-    if (revealedNameEl) {
-      revealedNameEl.textContent = decryptedName || "Enlace Inválido";
+
+    if (!decryptedName) {
+      // Un enlace roto no debe celebrar nada: se explica y no se abre el regalo.
+      const inviteBox = revealScreen && revealScreen.querySelector('.invite-box');
+      if (inviteBox) {
+        inviteBox.querySelector('h2').textContent = 'Este enlace no funciona';
+        inviteBox.querySelector('p').textContent = 'Puede que se haya copiado incompleto. Pídele a quien organizó el sorteo que te lo envíe de nuevo.';
+      }
+      if (giftContainer) giftContainer.style.display = 'none';
+      return;
     }
+
+    if (revealedNameEl) revealedNameEl.textContent = decryptedName;
 
     // Listener para abrir el regalo
     if (giftContainer) {
@@ -65,6 +86,18 @@ function initAmigoSecreto() {
 
   // Verificar que existen los elementos del organizador antes de continuar
   if (!textInput || !btnDraw || !tagsContainer) return;
+
+  // Si el organizador abre un enlace en la misma pestaña, solo cambia el
+  // fragmento y la página no se recarga: hay que recargar a mano para
+  // entrar en modo revelación.
+  if (!window.__amigoHashListener) {
+    window.__amigoHashListener = true;
+    window.addEventListener('hashchange', () => {
+      if (new URLSearchParams(window.location.hash.slice(1)).get('revelar')) {
+        window.location.reload();
+      }
+    });
+  }
 
   // Resetear estados al re-entrar
   participantsList = [];
@@ -299,24 +332,54 @@ function initAmigoSecreto() {
       btnDraw.disabled = true;
       if (validationSection) validationSection.classList.remove('show');
       if (resultsSection) resultsSection.classList.remove('show');
+      updateDrawWarning([]);
       return;
     }
 
     participantsList.forEach(p => {
       const tag = document.createElement('span');
       tag.className = 'participant-tag';
-      tag.innerHTML = `${p.name} `;
+      // textContent, nunca innerHTML: el nombre lo escribe el usuario o llega
+      // de un CSV ajeno, y como HTML podría ejecutar código en la página.
+      tag.textContent = `${p.name} `;
 
       const removeSpan = document.createElement('span');
       removeSpan.className = 'tag-remove';
-      removeSpan.innerHTML = '&times;';
+      removeSpan.textContent = '×';
       removeSpan.addEventListener('click', () => removeParticipant(p.id));
 
       tag.appendChild(removeSpan);
       tagsContainer.appendChild(tag);
     });
 
-    btnDraw.disabled = participantsList.length < 2;
+    const duplicates = findDuplicateNames();
+    btnDraw.disabled = participantsList.length < 2 || duplicates.length > 0;
+    updateDrawWarning(duplicates);
+  }
+
+  // Dos personas con el mismo nombre reciben enlaces idénticos y una creerá
+  // que se tocó a sí misma: se bloquea el sorteo hasta que se distingan.
+  function findDuplicateNames() {
+    const seen = new Map();
+    participantsList.forEach(p => {
+      const key = p.name.toLocaleLowerCase('es').replace(/\s+/g, ' ');
+      if (!seen.has(key)) seen.set(key, { name: p.name, count: 0 });
+      seen.get(key).count++;
+    });
+    return [...seen.values()].filter(v => v.count > 1);
+  }
+
+  function updateDrawWarning(duplicates) {
+    if (!drawWarning) return;
+    let message = '';
+    if (duplicates.length > 0) {
+      const names = duplicates.map(d => `«${d.name}» (${d.count} veces)`).join(', ');
+      message = `Hay nombres repetidos: ${names}. Agrega una inicial o un apellido para distinguirlos; si no, quien reciba ese nombre creerá que se tocó a sí mismo.`;
+    } else if (participantsList.length === 2 || participantsList.length === 3) {
+      message = `Con ${participantsList.length} participantes cada uno puede deducir quién le regala. El sorteo funciona, pero la sorpresa es mejor desde 4 personas.`;
+    }
+    drawWarning.textContent = message;
+    drawWarning.hidden = !message;
   }
 
   // Sorteo de Ciclo Hamiltoniano Cerrado (Todos regalan y todos reciben en un solo bucle)
@@ -368,11 +431,19 @@ function initAmigoSecreto() {
 
       validationRows.forEach(row => {
         const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td><strong>${row.giverAnon}</strong></td>
-          <td class="matrix-arrow">➔ Regala a ➔</td>
-          <td><strong>${row.receiverAnon}</strong></td>
-        `;
+        const cells = [row.giverAnon, '➔ Regala a ➔', row.receiverAnon];
+        cells.forEach((text, idx) => {
+          const td = document.createElement('td');
+          if (idx === 1) {
+            td.className = 'matrix-arrow';
+            td.textContent = text;
+          } else {
+            const strong = document.createElement('strong');
+            strong.textContent = text;
+            td.appendChild(strong);
+          }
+          tr.appendChild(td);
+        });
         matrixTbody.appendChild(tr);
       });
     }
@@ -388,17 +459,20 @@ function initAmigoSecreto() {
 
       assignments.forEach(pair => {
         const encryptedReceiver = encryptName(pair.receiver.name);
-        const secretUrl = `${baseUrl}?revelar=${encryptedReceiver}`;
+        const secretUrl = `${baseUrl}#revelar=${encryptedReceiver}`;
 
         const row = document.createElement('div');
         row.className = 'link-row';
 
         const rowInfo = document.createElement('div');
         rowInfo.className = 'row-info';
-        rowInfo.innerHTML = `
-          <div class="row-name">${pair.giver.name}</div>
-          <div class="row-contact">Contacto: ${pair.giver.contact || 'No especificado'}</div>
-        `;
+        const rowName = document.createElement('div');
+        rowName.className = 'row-name';
+        rowName.textContent = pair.giver.name;
+        const rowContact = document.createElement('div');
+        rowContact.className = 'row-contact';
+        rowContact.textContent = `Contacto: ${pair.giver.contact || 'No especificado'}`;
+        rowInfo.append(rowName, rowContact);
 
         const rowActions = document.createElement('div');
         rowActions.className = 'row-actions';
