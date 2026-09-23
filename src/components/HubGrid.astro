@@ -102,9 +102,6 @@ const tools: Tool[] = [
   }
 ];
 
-// Reordering to put active one first or filtering out active if desired.
-// Let's filter out the activeToolId from being showing if we want to show "related tools" only,
-// or show all. For the hub grid on home, we show all.
 ---
 
 <div class="hub-list">
@@ -237,7 +234,7 @@ const tools: Tool[] = [
   }
 
   .hub-row-index {
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
     font-size: 0.85rem;
     font-variant-numeric: tabular-nums;
     width: 1.6rem;

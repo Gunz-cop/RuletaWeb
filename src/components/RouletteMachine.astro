@@ -55,7 +55,7 @@ const Heading = headingLevel;
     </div>
 
     <div class="app-grid">
-      <!-- Columna Izquierda: La Ruleta -->
+      {/* Columna Izquierda: La Ruleta */}
       <div class="wheel-column">
         <div class="wheel-title-container">
           <h3 id="wheel-title-text" title="Haz clic para editar el título">Ruleta de Opciones</h3>
@@ -65,41 +65,41 @@ const Heading = headingLevel;
         </div>
         <div class="wheel-card">
           <div class="wheel-outer-wrapper">
-            <!-- Indicador visual superior -->
+            {/* Indicador visual superior */}
             <div class="pointer" id="wheel-pointer">
-              <!-- Sin degradado (el sistema editorial no admite): las dos
+              {/* Sin degradado (el sistema editorial no admite): las dos
                    paradas de #pointer-grad quedaron del arcade neón — un
-                   único --accent-warm liso en las dos formas. -->
+                   único --accent-warm liso en las dos formas. */}
               <svg width="34" height="34" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M15 30L3 7.5L27 7.5L15 30Z" fill="#e2905a"/>
                 <path d="M15 25L6.5 9L23.5 9L15 25Z" fill="#1a1207"/>
               </svg>
             </div>
-            <!-- Canvas de la ruleta -->
+            {/* Canvas de la ruleta */}
             <canvas id="roulette-canvas"></canvas>
-            <!-- Botón central GIRAR -->
+            {/* Botón central GIRAR */}
             <button id="spin-button" class="spin-center-button" aria-label="Girar la rueda aleatoria">GIRAR</button>
           </div>
         </div>
       </div>
 
-      <!-- Columna Derecha: Entrada de Datos.
+      {/* Columna Derecha: Entrada de Datos.
 
            id="mobile-options-panel" y el botón "manija" de abajo solo
            importan bajo 860px (ver el <style> de este archivo): ahí
            .input-column deja de ser una columna del grid y pasa a ser un
            panel inferior fijo que se abre y cierra, para que la rueda no
            tenga que desaparecer de pantalla para editar la lista. En
-           escritorio esta columna sigue siendo exactamente lo que era. -->
+           escritorio esta columna sigue siendo exactamente lo que era. */}
       <div class="input-column" id="mobile-options-panel">
-        <!-- Manija/disclosure del panel: solo se ve (display) bajo 860px.
+        {/* Manija/disclosure del panel: solo se ve (display) bajo 860px.
              Es un elemento nuevo, no una opción existente reordenada, así
              que no toca la regla de "no cambiar el orden del HTML" del
              encargo -- esa es sobre las secciones de index.astro. Vive
              siempre montada (no se genera con JS) para que roulette.js no
              tenga que crear ni destruir un nodo con estado de foco/ARIA.
              roulette.js le alterna panel-open + aria-expanded; el chevron
-             gira por CSS según esa misma clase. -->
+             gira por CSS según esa misma clase. */}
         <button
           type="button"
           id="options-panel-toggle"
@@ -119,7 +119,7 @@ const Heading = headingLevel;
           <h3 id="input-title" class="section-title">Opciones de la Ruleta</h3>
           <p class="section-desc">Escribe tus opciones o contrólalas de forma individual.</p>
 
-          <!-- Pestañas -->
+          {/* Pestañas */}
           <div class="card-tabs" role="tablist">
             <button id="tab-edit" class="tab-btn active" role="tab" aria-selected="true" aria-controls="tab-edit-content">📝 Texto</button>
             <button id="tab-manage" class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-manage-content">
@@ -128,7 +128,7 @@ const Heading = headingLevel;
             </button>
           </div>
 
-          <!-- Pestaña 1: Editor de texto -->
+          {/* Pestaña 1: Editor de texto */}
           <div id="tab-edit-content" class="tab-content-pane" role="tabpanel" aria-labelledby="tab-edit">
             <textarea id="options-input" autocomplete="off" spellcheck="false" placeholder="Ingresa tus opciones aquí, una por línea..." aria-label="Escribe las opciones de la ruleta una por línea"></textarea>
             <div class="btn-group">
@@ -141,7 +141,7 @@ const Heading = headingLevel;
             </div>
           </div>
 
-          <!-- Pestaña 2: Lista de descarte -->
+          {/* Pestaña 2: Lista de descarte */}
           <div id="tab-manage-content" class="tab-content-pane hidden" role="tabpanel" aria-labelledby="tab-manage">
             <div class="manage-header-flex">
               <p class="manage-instruction">Desmarca las casillas para ocultar opciones de la ruleta temporalmente sin borrarlas.</p>
@@ -150,15 +150,15 @@ const Heading = headingLevel;
               </button>
             </div>
             <div id="options-checklist-container" class="options-checklist-container">
-              <!-- Se genera dinámicamente con JavaScript -->
+              {/* Se genera dinámicamente con JavaScript */}
             </div>
           </div>
-        </div> <!-- input-card -->
-      </div> <!-- input-column -->
-    </div> <!-- app-grid -->
-  </div> <!-- wrap -->
+        </div> {/* input-card */}
+      </div> {/* input-column */}
+    </div> {/* app-grid */}
+  </div> {/* wrap */}
 
-  <!-- Aviso de "Deshacer" tras vaciar la ruleta, en vez del confirm() que
+  {/* Aviso de "Deshacer" tras vaciar la ruleta, en vez del confirm() que
        había antes. `hidden` empieza puesto para que no ocupe espacio ni se
        lea con el lector de pantalla hasta que roulette.js lo active.
 
@@ -175,7 +175,7 @@ const Heading = headingLevel;
        "Cerrar" son <button> normales, alcanzables con Tab como cualquier
        otro control de la página, sin necesidad de moverles el foco a la
        fuerza. "Cerrar" es el único recurso en táctil para descartar el
-       aviso antes de los 7s -- ahí no hay Escape. -->
+       aviso antes de los 7s -- ahí no hay Escape. */}
   <div id="undo-toast" class="undo-toast" hidden>
     <p id="undo-toast-message" class="undo-toast-message"></p>
     <div class="undo-toast-actions">

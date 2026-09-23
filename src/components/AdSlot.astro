@@ -8,5 +8,5 @@ const { position, id } = Astro.props;
 const slotId = id || `ad-slot-${position}`;
 ---
 
-<!-- AdSense pausado hasta que el sitio sea aprobado. -->
+{/* AdSense pausado hasta que el sitio sea aprobado. */}
 <div id={slotId} data-ad-paused={position} hidden></div>

@@ -31,7 +31,7 @@ const situations = [
   {
     n: '02',
     title: 'Son dos opciones y ninguna convence',
-    body: 'No hace falta una rueda de doce casillas para elegir entre dos cosas. La <strong>moneda</strong> resuelve cara o cruz en un toque. Si la pregunta es de sí o no y querés que suene a oráculo, el <strong>sí o no</strong> contesta con la bola 8.',
+    body: 'No hace falta una rueda de doce casillas para elegir entre dos cosas. La <strong>moneda</strong> resuelve cara o cruz en un toque. Si la pregunta es de sí o no y querés que suene a oráculo, el <strong>sí o no</strong> contesta con la bola 8. Y si son dos personas las que no se ponen de acuerdo, <strong>piedra, papel o tijera</strong> lo resuelve en una ronda.',
     links: [
       { label: 'Moneda', href: '/moneda' },
       { label: 'Sí o No', href: '/si-o-no' },
@@ -59,33 +59,33 @@ const situations = [
 ];
 ---
 
-<section class="use-cases reveal" id="cual-te-sirve" aria-label="Qué herramienta te sirve según tu situación">
+<section class="use-cases reveal" id="cual-te-sirve" aria-labelledby="cual-te-sirve-titulo">
   <div class="wrap">
     <div class="section-header uc-header reveal">
       <div class="section-tag">Empezar por el problema</div>
-      <h2 class="section-heading uc-heading">No sabés cuál usar. <em>Empezá por acá.</em></h2>
+      <h2 class="section-heading uc-heading" id="cual-te-sirve-titulo">No sabés cuál usar. <em>Empezá por acá.</em></h2>
       <p class="section-subtitle">Cuatro situaciones que cubren casi todo lo que la gente viene a resolver acá.</p>
     </div>
 
-    <div class="uc-grid">
+    <ol class="uc-grid">
       {situations.map((s, index) => (
-        <div class={`uc-item reveal reveal-delay-${index + 1}`}>
+        <li class={`uc-item reveal reveal-delay-${index + 1}`}>
           <span class="uc-n">{s.n}</span>
           <div class="uc-content">
             <h3>{s.title}</h3>
             <p set:html={s.body} />
-            <div class="uc-links">
+            <ul class="uc-links">
               {s.links.map((link, i) => (
-                <Fragment>
+                <li>
                   {i > 0 && <span class="uc-links-sep" aria-hidden="true">·</span>}
                   <a href={link.href}>{link.label}</a>
-                </Fragment>
+                </li>
               ))}
-            </div>
+            </ul>
           </div>
-        </div>
+        </li>
       ))}
-    </div>
+    </ol>
   </div>
 </section>
 
@@ -116,7 +116,12 @@ const situations = [
 
   /* Rejilla de dos columnas divididas por bordes, como .how-rail: sin
      fondo ni sombra por celda, el borde es la única separación. */
+  /* Es una lista ordenada (el número ya lo pinta .uc-n), así que se le
+     quitan la viñeta y la sangría del navegador. */
   .uc-grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
     display: grid;
     grid-template-columns: 1fr 1fr;
     border-top: 1px solid var(--divider-line);
@@ -131,8 +136,10 @@ const situations = [
     border-bottom: 1px solid var(--divider-line);
   }
 
+  /* --text-secondary y no --text-tertiary: el terciario da 2,99:1 sobre el
+     fondo y el número es texto que se lee. */
   .uc-n {
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
     font-size: 0.85rem;
     font-variant-numeric: tabular-nums;
     flex-shrink: 0;
@@ -159,6 +166,9 @@ const situations = [
   }
 
   .uc-links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -167,6 +177,17 @@ const situations = [
 
   /* Enlaces como texto subrayado, no como botones: mismo patrón que
      .hero-cta (border-bottom, sin fondo ni relleno de color). */
+  .uc-links li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .uc-links a:focus-visible {
+    outline: 2px solid var(--accent-warm);
+    outline-offset: 3px;
+  }
+
   .uc-links a {
     color: var(--accent-warm);
     font-size: 0.85rem;
