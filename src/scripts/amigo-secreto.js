@@ -21,12 +21,14 @@ function initAmigoSecreto() {
   const toast = document.getElementById('toast-message');
   const drawWarning = document.getElementById('draw-warning');
   const savedDrawBanner = document.getElementById('saved-draw');
+  const exclusionsInput = document.getElementById('exclusions-textarea');
+  const exclusionsDetails = document.getElementById('exclusions-details');
   const STORAGE_KEY = 'amigo-secreto:ultimo-sorteo';
 
   let participantsList = []; // Array de { id, name, contact }
   let globalActiveTab = 'tab-manual';
   let audioCtx = null;
-  let currentDraw = null; // { date, text, matrixRows, links: [{ name, contact, url, sent }] }
+  let currentDraw = null; // { date, text, exclusions, matrixRows, links: [{ name, contact, url, sent }] }
 
   // El dato va en el fragmento (#revelar=) porque el navegador nunca envía
   // el fragmento al servidor: así el nombre no queda en registros ni en la
@@ -105,6 +107,7 @@ function initAmigoSecreto() {
   // Resetear estados al re-entrar
   participantsList = [];
   textInput.value = '';
+  if (exclusionsInput) exclusionsInput.value = '';
   updateParticipantsUI();
   offerSavedDraw();
 
@@ -129,6 +132,7 @@ function initAmigoSecreto() {
 
   // Listeners de entrada manual
   textInput.addEventListener('input', handleManualInput);
+  if (exclusionsInput) exclusionsInput.addEventListener('input', updateParticipantsUI);
 
   // Carga CSV & Drag and Drop
   if (csvDropzone && csvFileInput) {
@@ -357,8 +361,9 @@ function initAmigoSecreto() {
     });
 
     const duplicates = findDuplicateNames();
-    btnDraw.disabled = participantsList.length < 2 || duplicates.length > 0;
-    updateDrawWarning(duplicates);
+    const exclusionProblem = duplicates.length ? '' : checkExclusions(parseExclusions());
+    btnDraw.disabled = participantsList.length < 2 || duplicates.length > 0 || !!exclusionProblem;
+    updateDrawWarning(duplicates, exclusionProblem);
   }
 
   // Dos personas con el mismo nombre reciben enlaces idénticos y una creerá
@@ -366,24 +371,87 @@ function initAmigoSecreto() {
   function findDuplicateNames() {
     const seen = new Map();
     participantsList.forEach(p => {
-      const key = p.name.toLocaleLowerCase('es').replace(/\s+/g, ' ');
+      const key = nameKey(p.name);
       if (!seen.has(key)) seen.set(key, { name: p.name, count: 0 });
       seen.get(key).count++;
     });
     return [...seen.values()].filter(v => v.count > 1);
   }
 
-  function updateDrawWarning(duplicates) {
+  function updateDrawWarning(duplicates, exclusionProblem) {
     if (!drawWarning) return;
     let message = '';
     if (duplicates.length > 0) {
       const names = duplicates.map(d => `«${d.name}» (${d.count} veces)`).join(', ');
       message = `Hay nombres repetidos: ${names}. Agrega una inicial o un apellido para distinguirlos; si no, quien reciba ese nombre creerá que se tocó a sí mismo.`;
+    } else if (exclusionProblem) {
+      message = exclusionProblem;
     } else if (participantsList.length === 2 || participantsList.length === 3) {
       message = `Con ${participantsList.length} participantes cada uno puede deducir quién le regala. El sorteo funciona, pero la sorpresa es mejor desde 4 personas.`;
     }
     drawWarning.textContent = message;
     drawWarning.hidden = !message;
+  }
+
+  // Cada línea del campo de exclusiones es un grupo: nadie del grupo puede
+  // regalarle a otro del mismo grupo. Se comparan los nombres igual que al
+  // buscar repetidos, para que «ana» y «Ana» sean la misma persona.
+  function parseExclusions() {
+    const byKey = new Map(participantsList.map(p => [nameKey(p.name), p]));
+    const groups = [];
+    const unknown = [];
+    const single = [];
+    const text = exclusionsInput ? exclusionsInput.value : '';
+    text.split('\n').forEach(line => {
+      const names = line.split(',').map(n => n.trim()).filter(Boolean);
+      if (names.length === 0) return;
+      const members = [];
+      names.forEach(n => {
+        const p = byKey.get(nameKey(n));
+        if (!p) {
+          if (!unknown.includes(n)) unknown.push(n);
+        } else if (!members.includes(p)) {
+          members.push(p);
+        }
+      });
+      if (names.length === 1) single.push(names[0]);
+      else if (members.length >= 2) groups.push(members);
+    });
+    return { groups, unknown, single };
+  }
+
+  // Devuelve el motivo por el que no se puede sortear, o '' si se puede
+  // intentar. Solo detecta los imposibles evidentes; el resto lo decide la
+  // búsqueda al pulsar el botón.
+  function checkExclusions({ groups, unknown, single }) {
+    if (unknown.length) {
+      const names = unknown.map(n => `«${n}»`).join(', ');
+      return `En las exclusiones hay nombres que no están en la lista de participantes: ${names}. Revisa que estén escritos igual.`;
+    }
+    if (single.length) {
+      return `En las exclusiones, «${single[0]}» está solo en su línea. Escribe en la misma línea, separados por coma, los nombres que no deben tocarse entre sí.`;
+    }
+    const n = participantsList.length;
+    if (n < 2 || groups.length === 0) return '';
+
+    // En una cadena de n personas, los de un mismo grupo no pueden ir
+    // seguidos, así que como mucho caben la mitad.
+    const max = Math.floor(n / 2);
+    const big = groups.find(g => g.length > max);
+    if (big) {
+      return `El grupo «${big.map(p => p.name).join(', ')}» tiene ${big.length} de ${n} personas. Con estas exclusiones no hay sorteo posible: cada grupo puede tener como mucho ${max}. Agrega participantes o parte el grupo.`;
+    }
+
+    // Cada persona necesita a alguien a quien regalar y alguien que le
+    // regale; con 3 o más, esas son dos personas distintas.
+    const forbidden = buildForbidden(groups);
+    const needed = n === 2 ? 1 : 2;
+    const stuck = participantsList.find(p =>
+      participantsList.filter(o => o !== p && !forbidden.has(pairKey(p, o))).length < needed);
+    if (stuck) {
+      return `Con estas exclusiones no hay sorteo posible: a «${stuck.name}» no le quedan suficientes personas con quien cruzarse. Quita alguna exclusión o agrega participantes.`;
+    }
+    return '';
   }
 
   // Sorteo de ciclo cerrado: todos regalan y todos reciben en una sola cadena,
@@ -393,18 +461,30 @@ function initAmigoSecreto() {
   function runSorteo() {
     if (participantsList.length < 2) return;
 
+    const exclusions = parseExclusions();
+    const problem = checkExclusions(exclusions);
+    if (problem) {
+      updateDrawWarning([], problem);
+      return;
+    }
+    const cycle = findCycle(participantsList, buildForbidden(exclusions.groups));
+    if (!cycle.order) {
+      const message = cycle.proven
+        ? 'Con estas exclusiones no hay sorteo posible. Quita alguna exclusión o agrega participantes.'
+        : 'Con estas exclusiones no encontramos un sorteo posible. Quita alguna exclusión o agrega participantes.';
+      updateDrawWarning([], message);
+      showToast('Con estas exclusiones no hay sorteo posible');
+      return;
+    }
+
     const saved = loadSavedDraw();
     const sentCount = saved ? saved.links.filter(l => l.sent).length : 0;
     if (sentCount > 0 && !window.confirm(`Ya enviaste ${sentCount} enlace(s) del sorteo anterior. Si sorteas de nuevo, esos enlaces dejan de coincidir con los nuevos. ¿Sortear de nuevo?`)) {
       return;
     }
 
-    // 1. Barajado de participantes (Fisher-Yates)
-    const shuffled = [...participantsList];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
+    // 1. Orden de la cadena, ya barajado y respetando las exclusiones
+    const shuffled = cycle.order;
 
     // 2. Asignación secuencial cerrada (A -> B -> C -> ... -> A)
     const n = shuffled.length;
@@ -439,7 +519,13 @@ function initAmigoSecreto() {
       sent: false
     }));
 
-    currentDraw = { date: Date.now(), text: textInput.value, matrixRows, links };
+    currentDraw = {
+      date: Date.now(),
+      text: textInput.value,
+      exclusions: exclusionsInput ? exclusionsInput.value : '',
+      matrixRows,
+      links
+    };
     saveDraw();
     if (savedDrawBanner) savedDrawBanner.hidden = true;
     renderDraw(true);
@@ -571,16 +657,21 @@ function initAmigoSecreto() {
     if (!saved || !savedDrawBanner) return;
 
     const sent = saved.links.filter(l => l.sent).length;
+    // Los sorteos guardados antes de existir las exclusiones no traen el campo.
+    const savedExclusions = typeof saved.exclusions === 'string' ? saved.exclusions : '';
     const date = new Date(saved.date).toLocaleString('es', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
     const info = savedDrawBanner.querySelector('[data-saved-info]');
     if (info) {
-      info.textContent = `Tienes un sorteo guardado del ${date}: ${saved.links.length} participantes, ${sent} enlace(s) ya enviados.`;
+      const withExclusions = savedExclusions.trim() ? ', con exclusiones' : '';
+      info.textContent = `Tienes un sorteo guardado del ${date}: ${saved.links.length} participantes${withExclusions}, ${sent} enlace(s) ya enviados.`;
     }
     savedDrawBanner.hidden = false;
 
     savedDrawBanner.querySelector('[data-saved-restore]').onclick = () => {
       currentDraw = saved;
       textInput.value = saved.text || '';
+      if (exclusionsInput) exclusionsInput.value = savedExclusions;
+      if (exclusionsDetails && savedExclusions.trim()) exclusionsDetails.open = true;
       handleManualInput();
       savedDrawBanner.hidden = true;
       renderDraw(true);
@@ -666,6 +757,83 @@ function initAmigoSecreto() {
       }, 1200);
     }
   }
+}
+
+function nameKey(name) {
+  return name.toLocaleLowerCase('es').replace(/\s+/g, ' ');
+}
+
+function pairKey(a, b) {
+  return `${a.id}|${b.id}`;
+}
+
+// Las exclusiones son simétricas: si Ana no puede tocarle a Luis, Luis
+// tampoco a Ana. Se guardan las dos direcciones para no tener que pensarlo.
+function buildForbidden(groups) {
+  const forbidden = new Set();
+  groups.forEach(g => g.forEach(a => g.forEach(b => {
+    if (a !== b) forbidden.add(pairKey(a, b));
+  })));
+  return forbidden;
+}
+
+function shuffleInPlace(list) {
+  for (let i = list.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [list[i], list[j]] = [list[j], list[i]];
+  }
+  return list;
+}
+
+// Busca una sola cadena cerrada (A -> B -> ... -> A) en la que nadie quede
+// al lado de alguien de su grupo excluido. Devuelve { order } si la
+// encuentra; si no, { order: null, proven } donde proven dice si se probó
+// que no existe o solo se agotó el presupuesto de búsqueda.
+function findCycle(people, forbidden) {
+  const n = people.length;
+  const fits = (order) => order.every((p, i) => !forbidden.has(pairKey(p, order[(i + 1) % n])));
+
+  // Primero, barajar y descartar: cada cadena válida sale con la misma
+  // probabilidad, igual que sin exclusiones. Sin exclusiones acierta a la
+  // primera, así que el sorteo de siempre no cambia.
+  for (let attempt = 0; attempt < 2000; attempt++) {
+    const order = shuffleInPlace([...people]);
+    if (fits(order)) return { order };
+  }
+
+  // Con exclusiones muy apretadas barajar casi nunca acierta: se construye
+  // la cadena paso a paso, deshaciendo cuando se atasca. Se prueba primero a
+  // quien le quedan menos opciones (así los de un grupo grande se van
+  // intercalando antes de que no quede con quién separarlos), y entre
+  // empates al azar. El límite de tiempo evita que la página se cuelgue.
+  const allowed = (a, b) => !forbidden.has(pairKey(a, b));
+  const order = [people[Math.floor(Math.random() * n)]];
+  const used = new Set(order);
+  const deadline = Date.now() + 1000;
+  let gaveUp = false;
+  const extend = () => {
+    if (Date.now() > deadline) {
+      gaveUp = true;
+      return false;
+    }
+    const last = order[order.length - 1];
+    if (order.length === n) return allowed(last, order[0]);
+    const free = people.filter(p => !used.has(p));
+    const options = shuffleInPlace(free.filter(p => allowed(last, p)))
+      .map(p => ({ p, degree: free.filter(o => o !== p && allowed(p, o)).length }))
+      .sort((x, y) => x.degree - y.degree);
+    for (const { p } of options) {
+      order.push(p);
+      used.add(p);
+      if (extend()) return true;
+      order.pop();
+      used.delete(p);
+      if (gaveUp) return false;
+    }
+    return false;
+  };
+  if (extend()) return { order };
+  return { order: null, proven: !gaveUp };
 }
 
 // Inicializar script según estado del DOM o transiciones Astro
