@@ -19,14 +19,22 @@ function initAmigoSecreto() {
   const resultsSection = document.getElementById('results-section');
   const linksContainer = document.getElementById('links-list-container');
   const toast = document.getElementById('toast-message');
+  const drawWarning = document.getElementById('draw-warning');
+  const savedDrawBanner = document.getElementById('saved-draw');
+  const STORAGE_KEY = 'amigo-secreto:ultimo-sorteo';
 
   let participantsList = []; // Array de { id, name, contact }
   let globalActiveTab = 'tab-manual';
   let audioCtx = null;
+  let currentDraw = null; // { date, text, matrixRows, links: [{ name, contact, url, sent }] }
 
-  // Detección de parámetros en URL para pantalla de revelación o carga inicial
+  // El dato va en el fragmento (#revelar=) porque el navegador nunca envía
+  // el fragmento al servidor: así el nombre no queda en registros ni en la
+  // analítica. Se sigue aceptando ?revelar= para no romper los enlaces que
+  // ya se repartieron antes del cambio.
+  const hashParams = new URLSearchParams(window.location.hash.slice(1));
   const urlParams = new URLSearchParams(window.location.search);
-  const encodedSecret = urlParams.get('revelar');
+  const encodedSecret = hashParams.get('revelar') || urlParams.get('revelar');
 
   if (encodedSecret) {
     // MODO REVELACIÓN INTERACTIVA
@@ -37,11 +45,27 @@ function initAmigoSecreto() {
       revealScreen.classList.add('slide-up');
     }
 
+    // La vista de revelación es personal: que no se indexe ni comparta título
+    // con la página del organizador.
+    const robotsMeta = document.querySelector('meta[name="robots"]');
+    if (robotsMeta) robotsMeta.setAttribute('content', 'noindex, nofollow');
+    document.title = 'Tu amigo secreto 🎁 | Decídelo.app';
+
     const decryptedName = decryptName(encodedSecret);
     const revealedNameEl = document.getElementById('revealed-name');
-    if (revealedNameEl) {
-      revealedNameEl.textContent = decryptedName || "Enlace Inválido";
+
+    if (!decryptedName) {
+      // Un enlace roto no debe celebrar nada: se explica y no se abre el regalo.
+      const inviteBox = revealScreen && revealScreen.querySelector('.invite-box');
+      if (inviteBox) {
+        inviteBox.querySelector('h2').textContent = 'Este enlace no funciona';
+        inviteBox.querySelector('p').textContent = 'Puede que se haya copiado incompleto. Pídele a quien organizó el sorteo que te lo envíe de nuevo.';
+      }
+      if (giftContainer) giftContainer.style.display = 'none';
+      return;
     }
+
+    if (revealedNameEl) revealedNameEl.textContent = decryptedName;
 
     // Listener para abrir el regalo
     if (giftContainer) {
@@ -66,10 +90,23 @@ function initAmigoSecreto() {
   // Verificar que existen los elementos del organizador antes de continuar
   if (!textInput || !btnDraw || !tagsContainer) return;
 
+  // Si el organizador abre un enlace en la misma pestaña, solo cambia el
+  // fragmento y la página no se recarga: hay que recargar a mano para
+  // entrar en modo revelación.
+  if (!window.__amigoHashListener) {
+    window.__amigoHashListener = true;
+    window.addEventListener('hashchange', () => {
+      if (new URLSearchParams(window.location.hash.slice(1)).get('revelar')) {
+        window.location.reload();
+      }
+    });
+  }
+
   // Resetear estados al re-entrar
   participantsList = [];
   textInput.value = '';
   updateParticipantsUI();
+  offerSavedDraw();
 
   // Control de Pestañas
   const tabButtons = document.querySelectorAll('.tab-btn');
@@ -299,31 +336,70 @@ function initAmigoSecreto() {
       btnDraw.disabled = true;
       if (validationSection) validationSection.classList.remove('show');
       if (resultsSection) resultsSection.classList.remove('show');
+      updateDrawWarning([]);
       return;
     }
 
     participantsList.forEach(p => {
       const tag = document.createElement('span');
       tag.className = 'participant-tag';
-      tag.innerHTML = `${p.name} `;
+      // textContent, nunca innerHTML: el nombre lo escribe el usuario o llega
+      // de un CSV ajeno, y como HTML podría ejecutar código en la página.
+      tag.textContent = `${p.name} `;
 
       const removeSpan = document.createElement('span');
       removeSpan.className = 'tag-remove';
-      removeSpan.innerHTML = '&times;';
+      removeSpan.textContent = '×';
       removeSpan.addEventListener('click', () => removeParticipant(p.id));
 
       tag.appendChild(removeSpan);
       tagsContainer.appendChild(tag);
     });
 
-    btnDraw.disabled = participantsList.length < 2;
+    const duplicates = findDuplicateNames();
+    btnDraw.disabled = participantsList.length < 2 || duplicates.length > 0;
+    updateDrawWarning(duplicates);
   }
 
-  // Sorteo de Ciclo Hamiltoniano Cerrado (Todos regalan y todos reciben en un solo bucle)
+  // Dos personas con el mismo nombre reciben enlaces idénticos y una creerá
+  // que se tocó a sí misma: se bloquea el sorteo hasta que se distingan.
+  function findDuplicateNames() {
+    const seen = new Map();
+    participantsList.forEach(p => {
+      const key = p.name.toLocaleLowerCase('es').replace(/\s+/g, ' ');
+      if (!seen.has(key)) seen.set(key, { name: p.name, count: 0 });
+      seen.get(key).count++;
+    });
+    return [...seen.values()].filter(v => v.count > 1);
+  }
+
+  function updateDrawWarning(duplicates) {
+    if (!drawWarning) return;
+    let message = '';
+    if (duplicates.length > 0) {
+      const names = duplicates.map(d => `«${d.name}» (${d.count} veces)`).join(', ');
+      message = `Hay nombres repetidos: ${names}. Agrega una inicial o un apellido para distinguirlos; si no, quien reciba ese nombre creerá que se tocó a sí mismo.`;
+    } else if (participantsList.length === 2 || participantsList.length === 3) {
+      message = `Con ${participantsList.length} participantes cada uno puede deducir quién le regala. El sorteo funciona, pero la sorpresa es mejor desde 4 personas.`;
+    }
+    drawWarning.textContent = message;
+    drawWarning.hidden = !message;
+  }
+
+  // Sorteo de ciclo cerrado: todos regalan y todos reciben en una sola cadena,
+  // sin subgrupos. El resultado se guarda en el navegador porque el móvil
+  // descarga la pestaña al cambiar a WhatsApp y el organizador perdería los
+  // enlaces que le faltaba repartir.
   function runSorteo() {
     if (participantsList.length < 2) return;
 
-    // 1. Shuffling de participantes (Fisher-Yates)
+    const saved = loadSavedDraw();
+    const sentCount = saved ? saved.links.filter(l => l.sent).length : 0;
+    if (sentCount > 0 && !window.confirm(`Ya enviaste ${sentCount} enlace(s) del sorteo anterior. Si sorteas de nuevo, esos enlaces dejan de coincidir con los nuevos. ¿Sortear de nuevo?`)) {
+      return;
+    }
+
+    // 1. Barajado de participantes (Fisher-Yates)
     const shuffled = [...participantsList];
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -331,118 +407,191 @@ function initAmigoSecreto() {
     }
 
     // 2. Asignación secuencial cerrada (A -> B -> C -> ... -> A)
-    const assignments = [];
     const n = shuffled.length;
-    for (let i = 0; i < n; i++) {
-      const giver = shuffled[i];
-      const receiver = shuffled[(i + 1) % n];
-      assignments.push({ giver, receiver });
-    }
+    const assignments = shuffled.map((giver, i) => ({ giver, receiver: shuffled[(i + 1) % n] }));
 
-    // 3. Ofuscar identificadores para validación pública anónima
-    const anonymousIds = {};
+    // 3. Números anónimos para la matriz de validación
     const numberPool = Array.from({ length: n }, (_, idx) => idx + 1);
     for (let i = numberPool.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [numberPool[i], numberPool[j]] = [numberPool[j], numberPool[i]];
     }
-
+    const anonymousIds = {};
     participantsList.forEach((p, idx) => {
       anonymousIds[p.id] = `Participante #${numberPool[idx]}`;
     });
 
-    // 4. Renderizar Matriz de Validación
+    // Filas mezcladas para no revelar el orden de la cadena
+    const matrixRows = assignments.map(pair => ({
+      giverAnon: anonymousIds[pair.giver.id],
+      receiverAnon: anonymousIds[pair.receiver.id]
+    }));
+    for (let i = matrixRows.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [matrixRows[i], matrixRows[j]] = [matrixRows[j], matrixRows[i]];
+    }
+
+    const baseUrl = window.location.origin + window.location.pathname;
+    const links = assignments.map(pair => ({
+      name: pair.giver.name,
+      contact: pair.giver.contact,
+      url: `${baseUrl}#revelar=${encryptName(pair.receiver.name)}`,
+      sent: false
+    }));
+
+    currentDraw = { date: Date.now(), text: textInput.value, matrixRows, links };
+    saveDraw();
+    if (savedDrawBanner) savedDrawBanner.hidden = true;
+    renderDraw(true);
+  }
+
+  function renderDraw(scroll) {
+    if (!currentDraw) return;
+
     if (matrixTbody) {
       matrixTbody.innerHTML = '';
-      
-      // Mezclar filas de la matriz para evitar revelar la secuencia circular
-      const validationRows = assignments.map(pair => ({
-        giverAnon: anonymousIds[pair.giver.id],
-        receiverAnon: anonymousIds[pair.receiver.id]
-      }));
-
-      for (let i = validationRows.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [validationRows[i], validationRows[j]] = [validationRows[j], validationRows[i]];
-      }
-
-      validationRows.forEach(row => {
+      currentDraw.matrixRows.forEach(row => {
         const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td><strong>${row.giverAnon}</strong></td>
-          <td class="matrix-arrow">➔ Regala a ➔</td>
-          <td><strong>${row.receiverAnon}</strong></td>
-        `;
+        const cells = [row.giverAnon, '➔ Regala a ➔', row.receiverAnon];
+        cells.forEach((text, idx) => {
+          const td = document.createElement('td');
+          if (idx === 1) {
+            td.className = 'matrix-arrow';
+            td.textContent = text;
+          } else {
+            const strong = document.createElement('strong');
+            strong.textContent = text;
+            td.appendChild(strong);
+          }
+          tr.appendChild(td);
+        });
         matrixTbody.appendChild(tr);
       });
     }
+    if (validationSection) validationSection.classList.add('show');
 
-    if (validationSection) {
-      validationSection.classList.add('show');
-    }
-
-    // 5. Renderizar Enlaces de Intercambio Encriptados
     if (linksContainer) {
       linksContainer.innerHTML = '';
-      const baseUrl = window.location.origin + window.location.pathname;
-
-      assignments.forEach(pair => {
-        const encryptedReceiver = encryptName(pair.receiver.name);
-        const secretUrl = `${baseUrl}?revelar=${encryptedReceiver}`;
-
-        const row = document.createElement('div');
-        row.className = 'link-row';
-
-        const rowInfo = document.createElement('div');
-        rowInfo.className = 'row-info';
-        rowInfo.innerHTML = `
-          <div class="row-name">${pair.giver.name}</div>
-          <div class="row-contact">Contacto: ${pair.giver.contact || 'No especificado'}</div>
-        `;
-
-        const rowActions = document.createElement('div');
-        rowActions.className = 'row-actions';
-
-        const btnCopy = document.createElement('button');
-        btnCopy.className = 'btn-action';
-        btnCopy.innerHTML = '📋 Copiar Enlace';
-        btnCopy.addEventListener('click', () => {
-          navigator.clipboard.writeText(secretUrl).then(() => {
-            showToast("¡Enlace copiado al portapapeles!");
-          });
-        });
-
-        const btnWa = document.createElement('button');
-        btnWa.className = 'btn-action btn-wa';
-        btnWa.innerHTML = '💬 Compartir';
-        btnWa.addEventListener('click', () => {
-          const text = `¡Hola ${pair.giver.name}! Aquí tienes tu enlace secreto de Amigo Secreto. Haz clic para descubrir quién te tocó regalar: ${secretUrl}`;
-          const encodedText = encodeURIComponent(text);
-          let waUrl = '';
-          if (pair.giver.contact) {
-            const cleanNumber = pair.giver.contact.replace(/[^0-9+]/g, '');
-            waUrl = `https://wa.me/${cleanNumber}?text=${encodedText}`;
-          } else {
-            waUrl = `https://api.whatsapp.com/send?text=${encodedText}`;
-          }
-          window.open(waUrl, '_blank');
-        });
-
-        rowActions.appendChild(btnCopy);
-        rowActions.appendChild(btnWa);
-        row.appendChild(rowInfo);
-        row.appendChild(rowActions);
-        linksContainer.appendChild(row);
-      });
+      currentDraw.links.forEach(link => linksContainer.appendChild(buildLinkRow(link)));
     }
 
     if (resultsSection) {
       resultsSection.classList.add('show');
-      setTimeout(() => {
-        resultsSection.scrollIntoView({ behavior: 'smooth' });
-      }, 300);
+      if (scroll) {
+        setTimeout(() => {
+          resultsSection.scrollIntoView({ behavior: 'smooth' });
+        }, 300);
+      }
     }
   }
+
+  function buildLinkRow(link) {
+    const row = document.createElement('div');
+    row.className = 'link-row';
+
+    const rowInfo = document.createElement('div');
+    rowInfo.className = 'row-info';
+    const rowName = document.createElement('div');
+    rowName.className = 'row-name';
+    const rowContact = document.createElement('div');
+    rowContact.className = 'row-contact';
+    rowContact.textContent = `Contacto: ${link.contact || 'No especificado'}`;
+    rowInfo.append(rowName, rowContact);
+
+    const paintSent = () => {
+      rowName.textContent = link.sent ? `${link.name} · Enviado ✓` : link.name;
+    };
+    paintSent();
+    const markSent = () => {
+      link.sent = true;
+      saveDraw();
+      paintSent();
+    };
+
+    const rowActions = document.createElement('div');
+    rowActions.className = 'row-actions';
+
+    const btnCopy = document.createElement('button');
+    btnCopy.className = 'btn-action';
+    btnCopy.textContent = '📋 Copiar Enlace';
+    btnCopy.addEventListener('click', () => {
+      navigator.clipboard.writeText(link.url).then(() => {
+        showToast("¡Enlace copiado al portapapeles!");
+        markSent();
+      });
+    });
+
+    const btnWa = document.createElement('button');
+    btnWa.className = 'btn-action btn-wa';
+    btnWa.textContent = '💬 Compartir';
+    btnWa.addEventListener('click', () => {
+      const text = `¡Hola ${link.name}! Aquí tienes tu enlace secreto de Amigo Secreto. Haz clic para descubrir quién te tocó regalar: ${link.url}`;
+      const encodedText = encodeURIComponent(text);
+      let waUrl = '';
+      if (link.contact) {
+        const cleanNumber = link.contact.replace(/[^0-9+]/g, '');
+        waUrl = `https://wa.me/${cleanNumber}?text=${encodedText}`;
+      } else {
+        waUrl = `https://api.whatsapp.com/send?text=${encodedText}`;
+      }
+      markSent();
+      window.open(waUrl, '_blank');
+    });
+
+    rowActions.append(btnCopy, btnWa);
+    row.append(rowInfo, rowActions);
+    return row;
+  }
+
+  // localStorage puede no existir o lanzar (modo privado, datos bloqueados):
+  // en ese caso la herramienta funciona igual, solo que sin recuperar.
+  function saveDraw() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(currentDraw));
+    } catch (e) { /* sin almacenamiento disponible */ }
+  }
+
+  function loadSavedDraw() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      const data = raw ? JSON.parse(raw) : null;
+      if (data && Array.isArray(data.links) && Array.isArray(data.matrixRows)) return data;
+    } catch (e) { /* sin almacenamiento o dato corrupto */ }
+    return null;
+  }
+
+  function clearSavedDraw() {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch (e) { /* sin almacenamiento disponible */ }
+  }
+
+  function offerSavedDraw() {
+    const saved = loadSavedDraw();
+    if (!saved || !savedDrawBanner) return;
+
+    const sent = saved.links.filter(l => l.sent).length;
+    const date = new Date(saved.date).toLocaleString('es', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
+    const info = savedDrawBanner.querySelector('[data-saved-info]');
+    if (info) {
+      info.textContent = `Tienes un sorteo guardado del ${date}: ${saved.links.length} participantes, ${sent} enlace(s) ya enviados.`;
+    }
+    savedDrawBanner.hidden = false;
+
+    savedDrawBanner.querySelector('[data-saved-restore]').onclick = () => {
+      currentDraw = saved;
+      textInput.value = saved.text || '';
+      handleManualInput();
+      savedDrawBanner.hidden = true;
+      renderDraw(true);
+    };
+    savedDrawBanner.querySelector('[data-saved-clear]').onclick = () => {
+      if (!window.confirm('¿Borrar el sorteo guardado? Los enlaces que ya enviaste siguen funcionando, pero no podrás volver a verlos aquí.')) return;
+      clearSavedDraw();
+      savedDrawBanner.hidden = true;
+    };
+  }
+
 
   // Sintetizador de Web Audio para la animación mágica de revelado
   function playRevealSound() {
