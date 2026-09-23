@@ -142,7 +142,7 @@ leerla convierte el test en decoración.
 
 ```
 src/
-  pages/          Una ruta por herramienta (index.astro es la ruleta)
+  pages/          Una ruta por herramienta (index.astro es el hub; la ruleta vive en ruleta.astro)
   scripts/        La lógica de cada herramienta, JS vanilla, un archivo por página
   components/     Header, Footer, HubGrid, SeoArticle, AdSlot
   layouts/        Layout.astro (base) y BlogPost.astro

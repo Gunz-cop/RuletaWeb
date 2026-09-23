@@ -113,7 +113,7 @@ paleta "tinta nocturna" de la tabla de arriba), pero **sin degradados, sin
 glow, sin partículas y con un único acento cálido** en vez del trío neón.
 
 **Estado de la migración**: la home (`index.astro` y sus componentes
-`HomeHero`, `HomeHowItWorks`, `HomeToolsSection`) y `HubGrid` (el bloque
+`HomeHero`, `HomeUseCases`, `HomeHowItWorks`, `HomeToolsSection`) y `HubGrid` (el bloque
 "más herramientas", compartido por las 11 páginas que lo importan) ya usan
 el sistema nuevo. El resto de cada herramienta (la ruleta, los dados, la
 moneda...) sigue con los botones y tarjetas en degradado de la estética

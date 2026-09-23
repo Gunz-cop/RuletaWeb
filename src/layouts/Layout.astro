@@ -44,20 +44,20 @@ const siteUrl = 'https://decidelo.app';
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- SEO -->
+  {/* SEO */}
   <title>{title}</title>
   <meta name="description" content={description}>
   <meta name="keywords" content={keywords}>
   <meta name="robots" content={robots}>
   <link rel="canonical" href={canonical}>
   
-  <!-- Icons -->
+  {/* Icons */}
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="icon" type="image/png" href="/favicon.png" sizes="32x32" />
   <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
   <link rel="apple-touch-icon" href="/favicon.png" />
 
-  <!-- Open Graph -->
+  {/* Open Graph */}
   <meta property="og:title" content={title}>
   <meta property="og:description" content={description}>
   <meta property="og:type" content={ogType}>
@@ -67,32 +67,32 @@ const siteUrl = 'https://decidelo.app';
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
 
-  <!-- Twitter Cards -->
+  {/* Twitter Cards */}
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content={title}>
   <meta name="twitter:description" content={description}>
   <meta name="twitter:image" content="https://decidelo.app/social-share.png">
 
-  <!-- Fonts — Preload for performance -->
+  {/* Fonts — Preload for performance */}
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
 
-  <!-- Schema.org JSON-LD -->
+  {/* Schema.org JSON-LD */}
   {schemaLD && (
     <script type="application/ld+json" set:html={JSON.stringify(schemaLD)} />
   )}
 
-  <!-- View Transitions -->
+  {/* View Transitions */}
   <meta name="view-transition" content="same-origin">
 
   <slot name="head" />
 </head>
 <body class={bodyClass}>
-  <!-- Scroll Progress Indicator -->
+  {/* Scroll Progress Indicator */}
   <div class="scroll-progress" id="scroll-progress" aria-hidden="true"></div>
 
-  <!-- Screen Reader Announcer -->
+  {/* Screen Reader Announcer */}
   <div id="sr-announcer" class="sr-only" aria-live="assertive" aria-atomic="true"></div>
 
   <Header showHomeHeader={showHomeHeader} showRouletteControls={showRouletteControls} />
@@ -101,7 +101,7 @@ const siteUrl = 'https://decidelo.app';
 
   <Footer />
 
-  <!-- Scroll Progress Script -->
+  {/* Scroll Progress Script */}
   <script>
     const progressBar = document.getElementById('scroll-progress');
     if (progressBar) {
@@ -114,7 +114,7 @@ const siteUrl = 'https://decidelo.app';
     }
   </script>
 
-  <!-- Scroll Reveal Script -->
+  {/* Scroll Reveal Script */}
   <script>
     (function initScrollReveal() {
       const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
