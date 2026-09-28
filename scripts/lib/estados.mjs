@@ -581,4 +581,70 @@ export const ESTADOS = [
       },
     },
   ]),
+  // --- Oráculo sí o no -----------------------------------------------------
+  // Migrado al sistema editorial con la estructura de la moneda. El resultado
+  // y las filas del historial los pone si-o-no.js; el control de agitar solo
+  // aparece en pantallas táctiles con sensor de movimiento.
+  {
+    ruta: '/si-o-no',
+    nombre: 'consultada',
+    escribir: [{ sel: '#oracle-question', texto: '¿Pido pizza esta noche?' }],
+    clics: ['#btn-ask'],
+    esperarSelector: '#oracle-result.is-shown',
+    comprobar: [
+      { sel: '#oracle-result', props: ['opacity', 'textAlign'] },
+      { sel: '#oracle-result-main', props: ['fontFamily', 'fontWeight', 'color'] },
+      { sel: '#oracle-object', props: ['display'] },
+      { sel: '#oracle-die', props: ['opacity'] },
+      { sel: '.history-row', props: ['display', 'borderBottomWidth', 'borderBottomStyle'] },
+      { sel: '.history-label', props: ['color'] },
+      { sel: '.history-side', props: ['color', 'textAlign'] },
+      { sel: '#oracle-after', props: ['display'] },
+      { sel: '#oracle-shake', props: ['display'] },
+      { sel: '#btn-ask', props: ['backgroundColor', 'borderRadius', 'opacity'] },
+    ],
+  },
+  {
+    // Llega por un enlace compartido: la pregunta viene en la URL
+    ruta: '/si-o-no?pregunta=%C2%BFSalgo%20hoy%3F',
+    nombre: 'enlace-compartido',
+    viewport: { width: 393, height: 659 },
+    clics: ['#btn-ask'],
+    esperarSelector: '#oracle-result[data-estado="final"]',
+    comprobar: [
+      { sel: '#oracle-after', props: ['display'] },
+      { sel: '.history-row', props: ['gridTemplateColumns'] },
+      { sel: '.history-label', props: ['overflowWrap'] },
+    ],
+  },
+  {
+    // Móvil táctil: el control aparece y una sacudida (eventos sintéticos
+    // del sensor) consulta sin tocar el botón.
+    ruta: '/si-o-no',
+    nombre: 'agitar-movil',
+    viewport: { width: 393, height: 659 },
+    contexto: { hasTouch: true, isMobile: true },
+    verificarRelacion: async (pagina) => {
+      if (!(await pagina.isVisible('#btn-shake'))) {
+        return { ok: false, mensaje: '#btn-shake no se ve en un móvil táctil' };
+      }
+      await pagina.click('#btn-shake');
+      const mover = (x) => pagina.evaluate((x) => window.dispatchEvent(
+        new DeviceMotionEvent('devicemotion', { accelerationIncludingGravity: { x, y: 0, z: 9.8 } })), x);
+      for (const x of [0, 3, 0, 4, 1]) await mover(x);
+      await pagina.waitForTimeout(200);
+      if (await pagina.$('#oracle-result.is-shown')) {
+        return { ok: false, mensaje: 'un movimiento suave consultó al oráculo' };
+      }
+      for (const x of [0, 20, -5, 20, -5]) await mover(x);
+      try {
+        await pagina.waitForSelector('#oracle-result.is-shown', { timeout: 5000 });
+      } catch (e) {
+        return { ok: false, mensaje: 'una sacudida fuerte no consultó al oráculo' };
+      }
+      return { ok: true, mensaje: 'el movimiento suave no consulta y la sacudida sí' };
+    },
+  },
+  ...estadosAccionVisible('/si-o-no', '#btn-ask'),
+  ...estadosResponsive('/si-o-no', '#btn-ask'),
 ];

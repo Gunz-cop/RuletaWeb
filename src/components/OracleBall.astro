@@ -1,0 +1,132 @@
+---
+// Bola 8 del oráculo. Solo marcado y apariencia: si-o-no.js la agita con la
+// Web Animations API sobre .oracle-ball y hace emerger el dado (.oracle-die)
+// con la respuesta. Las clases de estado (.is-asking, .is-revealed) las pone
+// el JS sobre [data-oracle], por eso viven aquí como CSS propio y no como
+// utilidades: Tailwind no rastrea src/scripts/ (ver tailwind.css).
+//
+// Es un objeto ilustrado, no UI: lleva degradados y relieve porque sin
+// reflejos la esfera se lee como un círculo plano (ver DESIGN.md, "Excepción:
+// objetos ilustrados"). Nada de glow ni de los neón de la versión anterior:
+// el dado es el azul apagado del juguete real.
+---
+
+<div class="oracle-object relative flex flex-col items-center" data-oracle id="oracle-object">
+  <div class="oracle-ball relative grid place-items-center rounded-full cursor-pointer" id="oracle-ball" aria-hidden="true">
+    <span class="oracle-shine absolute rounded-full pointer-events-none"></span>
+    <div class="oracle-window relative grid place-items-center overflow-hidden rounded-full">
+      <div class="oracle-die relative grid place-items-center" id="oracle-die">
+        <svg class="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
+          <polygon class="oracle-die-face" points="50,8 94,86 6,86" />
+        </svg>
+        <span class="oracle-die-text relative text-center" id="oracle-die-text">?</span>
+      </div>
+      <span class="oracle-liquid absolute inset-0 pointer-events-none"></span>
+    </div>
+  </div>
+  <div class="oracle-floor rounded-full pointer-events-none" aria-hidden="true"></div>
+</div>
+
+<style>
+  .oracle-object {
+    /* Todo se deriva del diámetro: así la bola se puede compactar en
+       pantallas bajas cambiando un solo valor. */
+    --ball-size: 11.5rem;
+    --ball-hi: #4a4b57;
+    --ball: #15161c;
+    --ball-lo: #030304;
+    --ball-rim: #202230;
+    --die: #25316b;
+    --die-edge: #3b4a94;
+    --die-ink: #e9ecfb;
+    --liquid: #0a0f2a;
+  }
+
+  @media (min-width: 640px) {
+    .oracle-object { --ball-size: 13.5rem; }
+  }
+
+  /* Pantallas bajas (Android con Chrome, iPhone SE): la bola cede alto para
+     que el botón de consultar quepa sin scroll. */
+  @media (max-width: 639px) and (max-height: 620px) {
+    .oracle-object { --ball-size: 10rem; }
+  }
+
+  .oracle-ball {
+    width: var(--ball-size);
+    height: var(--ball-size);
+    background:
+      radial-gradient(circle at 32% 26%, var(--ball-hi) 0%, var(--ball) 42%, var(--ball-lo) 100%);
+    box-shadow:
+      inset -0.6rem -0.8rem 1.6rem rgb(0 0 0 / 0.75),
+      inset 0.3rem 0.3rem 0.8rem rgb(255 255 255 / 0.04);
+    will-change: transform;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .oracle-shine {
+    top: 8%;
+    left: 20%;
+    width: 34%;
+    height: 17%;
+    background: linear-gradient(to bottom, rgb(255 255 255 / 0.14), rgb(255 255 255 / 0));
+    transform: rotate(-24deg);
+  }
+
+  .oracle-window {
+    width: 50%;
+    height: 50%;
+    background: radial-gradient(circle at 50% 45%, #121a45 0%, var(--liquid) 70%);
+    box-shadow:
+      0 0 0 calc(var(--ball-size) * 0.022) var(--ball-rim),
+      inset 0 0.35rem 0.8rem rgb(0 0 0 / 0.8);
+  }
+
+  /* Reflejo del cristal sobre el líquido */
+  .oracle-liquid {
+    background: radial-gradient(circle at 35% 25%, rgb(255 255 255 / 0.08), rgb(255 255 255 / 0) 45%);
+  }
+
+  .oracle-die {
+    width: 88%;
+    height: 88%;
+    opacity: 0.35;
+  }
+
+  .oracle-die-face {
+    fill: var(--die);
+    stroke: var(--die-edge);
+    stroke-width: 2;
+    stroke-linejoin: round;
+  }
+
+  /* El texto va en la mitad ancha del triángulo, como en el juguete */
+  .oracle-die-text {
+    max-width: 66%;
+    margin-top: 24%;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: calc(var(--ball-size) * 0.04);
+    line-height: 1.1;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--die-ink);
+  }
+
+  .oracle-floor {
+    width: 72%;
+    height: calc(var(--ball-size) * 0.06);
+    margin-top: 0.5rem;
+    background: rgb(0 0 0 / 0.6);
+    filter: blur(6px);
+  }
+
+  /* Mientras se agita, el dado se hunde en el líquido */
+  [data-oracle].is-asking .oracle-die {
+    opacity: 0;
+  }
+
+  [data-oracle].is-revealed .oracle-die {
+    opacity: 1;
+  }
+</style>

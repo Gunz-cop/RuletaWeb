@@ -66,7 +66,12 @@ async function medir() {
     // Un contexto nuevo por estado. El modo foco se recuerda en el navegador,
     // así que compartir contexto lo filtraba al estado siguiente y la línea
     // base acababa grabando un "reposo" con el hero ya oculto.
-    const ctx = await nav.newContext({ viewport: est.viewport ?? { width: 1280, height: 900 } });
+    // `contexto` añade opciones del navegador que un estado necesita, como
+    // pantalla táctil para los controles que solo existen en el móvil.
+    const ctx = await nav.newContext({
+      viewport: est.viewport ?? { width: 1280, height: 900 },
+      ...est.contexto,
+    });
     // Sin red externa: las fuentes y los anuncios no cambian estas propiedades
     // y sí harían el resultado dependiente de la conexión.
     await ctx.route('**/*', (r) =>

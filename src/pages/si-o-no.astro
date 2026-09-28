@@ -3,6 +3,7 @@ import Layout from '../layouts/Layout.astro';
 import AdSlot from '../components/AdSlot.astro';
 import HubGrid from '../components/HubGrid.astro';
 import SeoArticle from '../components/SeoArticle.astro';
+import OracleBall from '../components/OracleBall.astro';
 import { getSocialImageUrl } from '../lib/heroImages';
 
 const title = 'Oráculo Sí o No Online — Tomar Decisiones Rápidas | Decídelo.app';
@@ -12,6 +13,10 @@ const keywords = 'oraculo si o no, bola magica si o no, bola 8 magica online, to
 // La imagen vive en src/assets y la optimiza Astro; el JSON-LD necesita
 // su URL absoluta ya generada, no la ruta pública que tenía antes.
 const socialImage = await getSocialImageUrl('/blog/si-o-no.png');
+
+// Botón de texto: acción secundaria, subrayada, nunca rellena. Se repite en
+// varios botones y así la lista de utilidades vive en un solo sitio.
+const textBtn = 'bg-transparent border-0 border-b border-(--divider-line) rounded-none px-0 py-1 font-sans text-base text-ink-primary cursor-pointer hover:text-warm hover:border-current focus-visible:text-warm focus-visible:border-current focus-visible:outline-none aria-pressed:text-warm aria-pressed:border-current';
 
 const schemaLD = {
   "@context": "https://schema.org",
@@ -68,73 +73,72 @@ const schemaLD = {
 ---
 
 <Layout title={title} description={description} keywords={keywords} schemaLD={schemaLD} showHomeHeader={false}>
-  <main class="wrap">
-    
-    <!-- Hero Section -->
-    <section class="hero slide-up delay-1">
-      <h1>Oráculo <span class="gradient-text">Sí o No</span></h1>
-      <p>¿Tienes dudas sobre una decisión? Formula tu pregunta cerrada (cuya respuesta sea Sí o No), consulta a la bola mística y despeja tu mente.</p>
-    </section>
+  <Fragment slot="head">
+    {/* Newsreader itálica: acento del sistema editorial (ver DESIGN.md) */}
+    <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@1,400&display=swap" rel="stylesheet">
+  </Fragment>
 
-    <AdSlot position="top" />
+  {/* El orden del HTML es el de móvil. Desde 1024px, dos columnas: a la
+      izquierda lo que se escribe, a la derecha la bola y el botón; así en
+      un portátil de 720px el botón no queda fuera de pantalla. */}
+  <main class="wrap max-w-2xl lg:max-w-5xl pt-5 pb-8 sm:pt-8 lg:grid lg:grid-cols-2 lg:grid-rows-[auto_auto_1fr_auto] lg:gap-x-16 lg:items-start">
 
-    <!-- Tablero del Oráculo -->
-    <section class="game-board slide-up delay-2" aria-label="Tablero del Oráculo">
-      
-      <!-- Entrada de Pregunta -->
-      <div class="question-panel">
-        <div class="form-group">
-          <label for="oracle-question">¿Cuál es tu pregunta?</label>
-          <input type="text" id="oracle-question" placeholder="Escribe aquí tu duda..." autocomplete="off" aria-label="Escribe aquí tu pregunta">
-        </div>
-      </div>
+    <div class="w-full text-center lg:text-left mb-4 sm:mb-6 lg:col-start-1 lg:row-start-1">
+      <h1 class="m-0 mb-2 sm:mb-4 font-display text-[1.7rem] sm:text-5xl lg:text-[2.75rem] leading-tight tracking-tight">Oráculo <em class="font-[Newsreader,Georgia,serif] italic font-normal text-warm">sí o no</em></h1>
+      {/* En pantallas bajas la entradilla cede su sitio al botón */}
+      <p class="m-0 mx-auto lg:mx-0 max-w-lg text-sm sm:text-base text-ink-secondary max-sm:[@media(max-height:620px)]:hidden">Escribe una pregunta que se responda con sí o no y consulta a la bola 8. En el móvil también puedes agitarlo.</p>
+    </div>
 
-      <!-- Área de la Bola Mágica -->
-      <div class="ball-scene">
-        <div class="oracle-ball" id="oracle-ball">
-          <!-- Brillo de iluminación 3D -->
-          <div class="ball-reflection"></div>
-          
-          <!-- Ventana de Líquido -->
-          <div class="oracle-window">
-            <!-- Contenedor del Triángulo Revelado -->
-            <div class="oracle-answer-container" id="oracle-answer-container">
-              <!-- Triángulo Místico SVG -->
-              <svg class="triangle-svg" viewBox="0 0 100 100">
-                <polygon points="50,15 15,80 85,80"></polygon>
-              </svg>
-              <!-- Texto de la Respuesta -->
-              <span class="answer-inner" id="oracle-answer-text"></span>
-            </div>
-            <!-- Efecto de niebla/humo en ventana -->
-            <div class="window-fog"></div>
+    <label class="flex flex-col gap-1.5 w-full mb-3 sm:mb-6 lg:mt-4 lg:col-start-1 lg:row-start-2">
+      <span class="text-xs font-semibold tracking-widest uppercase text-ink-tertiary">Tu pregunta</span>
+      <input id="oracle-question" type="text" maxlength="120" enterkeyhint="go" placeholder="¿Pido pizza esta noche?" autocomplete="off" class="w-full min-w-0 bg-transparent border-0 border-b border-(--divider-line) rounded-none px-0 py-1.5 font-sans text-lg text-ink-primary placeholder:text-ink-tertiary focus:outline-none focus:border-warm">
+    </label>
+
+    <section class="w-full flex flex-col items-center lg:col-start-2 lg:row-start-1 lg:row-span-3 lg:pt-8" aria-label="Consultar al oráculo">
+      <OracleBall />
+
+      <p class="oracle-result w-full text-center min-h-14 sm:min-h-18 mt-1 mb-2 sm:mt-3 sm:mb-4" id="oracle-result" aria-live="polite">
+        <span class="block font-display font-bold text-[1.7rem] sm:text-4xl leading-tight text-ink-primary [overflow-wrap:anywhere]" id="oracle-result-main"></span>
+        <span class="block mt-0.5 sm:mt-1.5 text-xs tracking-widest uppercase text-ink-tertiary" id="oracle-result-side"></span>
+      </p>
+
+      <button id="btn-ask" type="button" class="px-9 py-3.5 border-0 rounded-full bg-warm text-[#1a0e06] font-display font-bold text-lg cursor-pointer transition-transform duration-150 active:scale-95 disabled:opacity-55 disabled:cursor-default focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-warm">Consultar al oráculo</button>
+
+      {/* Después de la respuesta: la prueba del alivio y compartir */}
+      <div id="oracle-after" class="flex flex-col items-center gap-3 mt-6 w-full" hidden>
+        <div id="oracle-gut" class="flex flex-col items-center gap-2">
+          <p class="m-0 text-sm text-ink-secondary">¿Qué sentiste al leerlo?</p>
+          <div class="flex gap-6">
+            <button class={textBtn} id="gut-relief" type="button">Alivio</button>
+            <button class={textBtn} id="gut-disappoint" type="button">Decepción</button>
           </div>
+          <p class="oracle-gut-msg m-0 max-w-sm text-center text-ink-primary" id="gut-msg" aria-live="polite"></p>
+          <button class="bg-transparent border-0 p-1 font-sans text-xs text-ink-tertiary cursor-pointer hover:text-warm" id="gut-off" type="button">No preguntar más</button>
         </div>
-        <!-- Sombra proyectada en el suelo -->
-        <div class="ball-shadow"></div>
+        <button class={textBtn} id="btn-share" type="button">Compartir esta pregunta</button>
       </div>
 
-      <!-- Botón de Consulta -->
-      <button class="btn-spin" id="btn-spin">CONSULTAR AL ORÁCULO</button>
-
+      {/* Solo en móviles con sensor de movimiento; el JS lo muestra */}
+      <div id="oracle-shake" class="flex flex-col items-center gap-1 mt-6 w-full" hidden>
+        <button class={textBtn} id="btn-shake" type="button" aria-pressed="false">Agitar el móvil para consultar</button>
+        <p class="m-0 max-w-xs text-center text-xs text-ink-tertiary" id="shake-msg" aria-live="polite"></p>
+      </div>
     </section>
 
-    <!-- Historial de Preguntas -->
-    <section class="history-card slide-up delay-3" aria-label="Historial de consultas al oráculo">
-      <div class="history-header">
-        <h3>
-          <span>🕒</span> Consultas Recientes
-        </h3>
-        <button class="btn-clear" id="btn-clear">Borrar historial</button>
+    <section class="w-full mt-12 sm:mt-16 lg:col-span-2 lg:row-start-4" aria-label="Historial de consultas al oráculo">
+      <div class="flex flex-wrap items-baseline gap-4 pb-3 border-0 border-b border-(--divider-line)">
+        <h2 class="m-0 font-display text-lg">Últimas consultas</h2>
+        <span class="flex-1 text-sm text-ink-tertiary tabular-nums" id="history-count"></span>
+        <button class="bg-transparent border-0 border-b border-current rounded-none p-0 font-sans text-sm text-ink-secondary cursor-pointer hover:text-warm" id="btn-clear" type="button">Borrar</button>
       </div>
-      <div class="history-list-vertical" id="history-list">
-        <span class="history-empty">Sin preguntas aún</span>
-      </div>
+      <ol class="oracle-history list-none m-0 p-0" id="history-list">
+        <li class="history-empty">Sin consultas aún</li>
+      </ol>
     </section>
 
   </main>
 
-  <div class="toast" id="toast-message">Mensaje de alerta</div>
+  <AdSlot position="top" />
 
   <SeoArticle title="Oráculo Sí o No: ¿Cómo utilizarlo para destrabar tus decisiones cotidianas?">
     <p>A lo largo de la historia, la humanidad ha buscado métodos para reducir la incertidumbre del porvenir y facilitar la toma de decisiones difíciles. Desde el milenario oráculo de Delfos en Grecia, las lecturas del I Ching en Oriente, hasta los juegos lúdicos modernos como la clásica <strong>Bola 8 Mágica</strong> (Magic 8-Ball) patentada en los años 50 en Estados Unidos. El deseo de obtener una respuesta clara y binaria (Sí o No) es un reflejo de nuestra necesidad de superar la procrastinación y la parálisis decisional.</p>
@@ -142,16 +146,16 @@ const schemaLD = {
     <p>Nuestra versión del <strong>Oráculo de Sí o No Virtual</strong> fusiona la psicología de la toma de decisiones con una experiencia visual inmersiva. No pretendemos predecir el futuro de manera mística, sino proporcionarte un espejo cognitivo e interactivo.</p>
 
     <h2>La Psicología del Oráculo: Descubriendo tu Verdadera Preferencia</h2>
-    <p>¿Funciona realmente el oráculo para tomar una decisión seria? Curiosamente, los psicólogos señalan que las herramientas de azar actúan como catalizadores de nuestra **intuición inconsciente**. Cuando delegas una decisión importante en un elemento externo y el oráculo te responde con un rotundo "No", tu cerebro procesa instantáneamente una reacción afectiva:</p>
+    <p>¿Funciona realmente el oráculo para tomar una decisión seria? Curiosamente, los psicólogos señalan que las herramientas de azar actúan como catalizadores de nuestra <strong>intuición inconsciente</strong>. Cuando delegas una decisión importante en un elemento externo y el oráculo te responde con un rotundo "No", tu cerebro procesa instantáneamente una reacción afectiva:</p>
     <ul>
       <li><strong>Alivio:</strong> Si sientes tranquilidad al ver el resultado negativo, confirmas que esa era la opción adecuada.</li>
-      <li><strong>Decepción/Frustración:</strong> Si al leer un "No" sientes un deseo inmediato de volver a consultar o te enojas con la respuesta, tu mente te está indicando con absoluta certeza que **en realidad querías un Sí**.</li>
+      <li><strong>Decepción/Frustración:</strong> Si al leer un "No" sientes un deseo inmediato de volver a consultar o te enojas con la respuesta, tu mente te está indicando con absoluta certeza que <strong>en realidad querías un Sí</strong>.</li>
     </ul>
     <p>De este modo, forzar una respuesta aleatoria binaria desbloquea lo que tus emociones ya sabían, pero tu razonamiento analítico bloqueaba por exceso de dudas.</p>
 
-    <h2>Diseño Místico con Físicas de Fluido en Tres Dimensiones</h2>
-    <p>Hemos construido este oráculo utilizando herramientas de diseño avanzadas. La bola mágica está modelada con gradients radiales de profundidad que le otorgan un **aspecto tridimensional de baquelita pulida** bajo luces de ambiente neón. Al presionar "Consultar", la bola ejecuta una simulación física de vibración (shake animation) mientras escuchas el sutil movimiento del líquido en el que flota el dado triangular interno.</p>
-    <p>Al detenerse, la neblina azulada de la ventana se disipa dando paso a un dado en forma de triángulo equilátero que emerge desde la profundidad del fluido, revelando la respuesta final acompañada de una campanilla cristalina sintetizada.</p>
+    <h2>Cómo funciona este oráculo</h2>
+    <p>La bola se agita y el dado emerge con una de las <strong>15 respuestas clásicas de la bola 8</strong>: cinco afirmativas, cinco negativas y cinco que no se comprometen. Cada respuesta sale del generador aleatorio criptográfico del navegador (<code>crypto.getRandomValues</code>), así que ninguna es más probable que otra y ninguna depende de la anterior. En el móvil puedes activar &laquo;Agitar para consultar&raquo; y preguntar sacudiendo el teléfono, como con la bola de verdad.</p>
+    <p>Cuando la respuesta es un sí o un no, el oráculo te pregunta qué sentiste al leerla: alivio o decepción. Esa reacción es la pista de lo que ya preferías. Tu pregunta y el historial se quedan solo en tu navegador.</p>
   </SeoArticle>
 
   <AdSlot position="bottom" />
@@ -168,319 +172,88 @@ const schemaLD = {
 </Layout>
 
 <style>
-  /* Base compartida en global.css; aquí solo lo que cambia. */
-  .form-group input { text-align: center; }
+  /* Solo queda aquí lo que no puede ser utilidad: los estados que pone el
+     JS y las filas que crea (Tailwind no rastrea src/scripts/). El resto
+     de la página va en utilidades en el propio marcado. */
 
-  main {
-    padding: 3rem 0;
+  /* El sitio no carga el preflight de Tailwind, así que nada gana a `.flex`
+     cuando el JS pone `hidden`: sin esto, los bloques ocultos se verían */
+  [hidden] {
+    display: none !important;
   }
 
-  /* Formulario de Pregunta */
-  .question-panel {
-    margin-bottom: 2rem;
-  }
-
-  /* Escena de la Bola 8 */
-  .ball-scene {
-    position: relative;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin: 1.5rem 0 2.5rem;
-  }
-
-  .oracle-ball {
-    position: relative;
-    width: 280px;
-    height: 280px;
-    border-radius: 50%;
-    background: radial-gradient(circle at 30% 30%, #30313b 0%, #0e0f14 60%, #020203 100%);
-    box-shadow: inset -10px -10px 30px rgba(0,0,0,0.8),
-                10px 10px 30px rgba(0,0,0,0.6);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2;
-  }
-
-  .ball-reflection {
-    position: absolute;
-    top: 15px; left: 45px;
-    width: 90px;
-    height: 45px;
-    background: linear-gradient(to bottom, rgba(255,255,255,0.15), rgba(255,255,255,0));
-    border-radius: 50% / 100% 100% 0 0;
-    transform: rotate(-15deg);
-    pointer-events: none;
-  }
-
-  .oracle-window {
-    position: relative;
-    width: 130px;
-    height: 130px;
-    border-radius: 50%;
-    border: 5px solid #1c1d26;
-    background: radial-gradient(circle at center, #0a0b12 0%, #030305 100%);
-    box-shadow: inset 0 0 20px rgba(0, 229, 255, 0.18),
-                0 0 10px rgba(0,0,0,0.5);
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  /* Animación de Vibración */
-  @keyframes shake {
-    0% { transform: translate(0, 0) rotate(0deg); }
-    10% { transform: translate(-6px, 4px) rotate(-3deg); }
-    20% { transform: translate(5px, -4px) rotate(3deg); }
-    30% { transform: translate(-4px, 2px) rotate(-1deg); }
-    40% { transform: translate(4px, -2px) rotate(2deg); }
-    50% { transform: translate(-5px, 3px) rotate(-2deg); }
-    60% { transform: translate(3px, -2px) rotate(1deg); }
-    70% { transform: translate(-3px, 1px) rotate(-1deg); }
-    80% { transform: translate(2px, -1px) rotate(1deg); }
-    90% { transform: translate(-1px, 1px) rotate(0deg); }
-    100% { transform: translate(0, 0) rotate(0deg); }
-  }
-
-  .oracle-ball.shaking {
-    animation: shake 0.6s ease-in-out infinite;
-  }
-
-  .oracle-ball.shaking .oracle-answer-container {
+  .oracle-result {
     opacity: 0;
-    transform: scale(0.5);
-    transition: none;
+    transform: translateY(6px);
+    transition: opacity 0.25s ease-out, transform 0.25s ease-out;
   }
 
-  .oracle-ball.shaking .window-fog {
-    opacity: 0.8;
-  }
-
-  /* Contenedor del triángulo flotante */
-  .oracle-answer-container {
-    position: relative;
-    width: 110px;
-    height: 110px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transform: scale(0.6) rotate(-15deg);
-    transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1),
-                transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  .oracle-answer-container.revealed {
+  .oracle-result.is-shown {
     opacity: 1;
-    transform: scale(1) rotate(0deg);
+    transform: none;
   }
 
-  .triangle-svg {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    fill: #060810;
-    stroke: var(--accent-purple);
-    stroke-width: 2.5;
-    filter: drop-shadow(0 0 8px rgba(179, 102, 255, 0.3));
-    transition: stroke 0.4s ease, filter 0.4s ease;
+  .oracle-gut-msg:empty {
+    display: none;
   }
 
-  /* Si sale respuesta afirmativa cambiamos color del triangulo por JS o clases */
-  .oracle-answer-container:has(.cyan) .triangle-svg {
-    stroke: var(--accent-cyan);
-    filter: drop-shadow(0 0 8px rgba(0, 229, 255, 0.3));
-  }
-
-  .oracle-answer-container:has(.neutral) .triangle-svg {
-    stroke: var(--text-secondary);
-    filter: drop-shadow(0 0 5px rgba(255,255,255,0.1));
-  }
-
-  .answer-inner {
-    position: relative;
-    z-index: 10;
-    font-family: 'Outfit', sans-serif;
-    font-size: 0.72rem;
-    font-weight: 800;
-    text-align: center;
-    max-width: 65px;
-    line-height: 1.15;
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
-    padding-top: 15px; /* Ajuste para centrar sobre el triángulo invertido */
-    transition: var(--transition);
-  }
-
-  .answer-inner.cyan {
-    color: var(--accent-cyan);
-    text-shadow: 0 0 8px rgba(0, 229, 255, 0.4);
-  }
-
-  .answer-inner.purple {
-    color: var(--accent-purple);
-    text-shadow: 0 0 8px rgba(179, 102, 255, 0.4);
-  }
-
-  .answer-inner.neutral {
-    color: var(--text-primary);
-    text-shadow: 0 0 4px rgba(255,255,255,0.2);
-  }
-
-  /* Neblina */
-  .window-fog {
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(circle, rgba(0, 229, 255, 0.08) 0%, rgba(0,0,0,0) 80%);
-    opacity: 0.3;
-    pointer-events: none;
-    transition: opacity 0.8s ease;
-  }
-
-  /* Sombra del suelo */
-  .ball-shadow {
-    width: 200px;
-    height: 14px;
-    background: rgba(0, 0, 0, 0.65);
-    border-radius: 50%;
-    filter: blur(8px);
-    margin-top: 0.5rem;
-    transition: var(--transition);
-  }
-
-  .oracle-ball.shaking + .ball-shadow {
-    transform: scale(0.9);
-    opacity: 0.4;
-  }
-
-  /* Historial */
-  .history-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .history-list-vertical {
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-    margin-top: 1rem;
-    max-height: 280px;
-    overflow-y: auto;
-    padding-right: 0.4rem;
-  }
-
-  /* Scrollbar para historial */
-  .history-list-vertical::-webkit-scrollbar {
-    width: 6px;
-  }
-  .history-list-vertical::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  .history-list-vertical::-webkit-scrollbar-thumb {
-    background: rgba(255,255,255,0.06);
-    border-radius: 999px;
-  }
-
-  :global(.history-item-row.oracle-row) {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: var(--bg-surface-alt);
-    border: 1px solid var(--card-border);
-    border-radius: var(--radius-sm);
-    padding: 0.75rem 1.25rem;
-    gap: 1.5rem;
-    animation: slideInRow 0.25s ease-out forwards;
-  }
-
-  :global(.oracle-q-block) {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 0.2rem;
-  }
-
-  :global(.history-q-text) {
-    font-size: 0.88rem;
+  .oracle-gut-msg :global(em) {
+    font-family: 'Newsreader', Georgia, serif;
     font-style: italic;
-    color: var(--text-secondary);
-    line-height: 1.4;
+    color: var(--accent-warm);
   }
 
-  :global(.history-time) {
-    font-size: 0.7rem;
+  /* Historial: lista dividida por líneas de 1px. En móvil la respuesta va
+     debajo de la pregunta; desde 640px, en su columna. */
+  .oracle-history :global(.history-row) {
+    display: grid;
+    grid-template-columns: 2rem 1fr;
+    column-gap: 0.75rem;
+    row-gap: 0.2rem;
+    align-items: baseline;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid var(--divider-line);
+  }
+
+  .oracle-history :global(.history-num) {
+    grid-row: span 2;
     color: var(--text-tertiary);
+    font-variant-numeric: tabular-nums;
+    font-size: 0.85rem;
   }
 
-  :global(.history-value.cyan) {
-    color: var(--accent-cyan);
-    font-family: 'Outfit', sans-serif;
-    font-weight: 700;
-    font-size: 0.9rem;
-    text-shadow: 0 0 6px rgba(0, 229, 255, 0.15);
-  }
-
-  :global(.history-value.purple) {
-    color: var(--accent-purple);
-    font-family: 'Outfit', sans-serif;
-    font-weight: 700;
-    font-size: 0.9rem;
-    text-shadow: 0 0 6px rgba(179, 102, 255, 0.15);
-  }
-
-  :global(.history-value.neutral) {
+  .oracle-history :global(.history-label) {
     color: var(--text-primary);
-    font-family: 'Outfit', sans-serif;
-    font-weight: 700;
-    font-size: 0.9rem;
+    overflow-wrap: anywhere;
   }
 
-  .history-empty {
+  .oracle-history :global(.history-side) {
     color: var(--text-tertiary);
     font-size: 0.85rem;
-    font-style: italic;
-    text-align: center;
-    padding: 1rem 0;
   }
 
-  /* Hub Section Header */
+  .oracle-history :global(.history-empty) {
+    padding: 0.8rem 0;
+    color: var(--text-tertiary);
+    font-size: 0.9rem;
+  }
+
+  @media (min-width: 640px) {
+    .oracle-history :global(.history-row) {
+      grid-template-columns: 2.5rem 1fr auto;
+      column-gap: 1rem;
+    }
+
+    .oracle-history :global(.history-num) {
+      grid-row: auto;
+    }
+
+    .oracle-history :global(.history-side) {
+      text-align: right;
+    }
+  }
+
   .hub-section {
     padding: 3rem 0;
-  }
-
-  /* Responsive overrides */
-  @media (max-width: 600px) {
-    .oracle-ball {
-      width: 220px;
-      height: 220px;
-    }
-    .oracle-window {
-      width: 105px;
-      height: 105px;
-    }
-    .oracle-answer-container {
-      width: 90px;
-      height: 90px;
-    }
-    .answer-inner {
-      font-size: 0.62rem;
-      max-width: 50px;
-      padding-top: 10px;
-    }
-    .ball-shadow {
-      width: 160px;
-    }
-    :global(.history-item-row.oracle-row) {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 0.5rem;
-    }
-    :global(.history-value) {
-      align-self: flex-end;
-    }
   }
 </style>

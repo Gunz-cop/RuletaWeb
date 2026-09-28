@@ -114,7 +114,10 @@ Cubre amigo secreto —introduce participantes, hace el sorteo y comprueba
 las filas de enlaces, en escritorio y a 390px— y también los dados: sus caras, sus puntos y las tres variantes
 visuales las construye `dados.js` al lanzar, así que en reposo no existen y
 ninguna captura las ve. También cubre la moneda (lanza y mide el resultado
-y las filas del historial) y el **estándar móvil**: el invariante
+y las filas del historial), el oráculo sí o no (consulta, enlace
+compartido y una sacudida simulada con eventos `devicemotion` sintéticos
+en un contexto táctil: la opción `contexto` de un estado pasa opciones
+extra a `newContext`) y el **estándar móvil**: el invariante
 `accionPrincipalVisible` comprueba que el botón principal de cada
 herramienta migrada se ve sin scroll en los tres móviles de referencia (Android 360×560, iPhone SE 375×548, iPhone 393×659) (ver DESIGN.md,
 "Responsive: mobile first"). Si un estado no llega a producirse —porque el CSS

@@ -95,8 +95,8 @@ Dos familias, cargadas desde Google Fonts en `Layout.astro`:
 - **Outfit** (`--font-display`, utilidad `font-display`) — titulares,
   nombres de tarjeta, cualquier texto en mayúscula o con peso 700+.
 
-Una tercera, cargada solo en las páginas migradas que la usan (hoy la home
-y la moneda, cada una con su propio `<link>` en `slot="head"`; no en
+Una tercera, cargada solo en las páginas migradas que la usan (hoy la home,
+la moneda y el oráculo, cada una con su propio `<link>` en `slot="head"`; no en
 `Layout.astro` — ver "La estética: sistema editorial" más abajo):
 - **Newsreader**, itálica — acento de énfasis dentro de un titular en
   `Outfit` (`<em>`), nunca cuerpo de texto completo.
@@ -116,9 +116,11 @@ glow, sin partículas y con un único acento cálido** en vez del trío neón.
 **Estado de la migración**: ya usan el sistema nuevo la home (`index.astro`
 y sus componentes `HomeHero`, `HomeUseCases`, `HomeHowItWorks`,
 `HomeToolsSection`), `HubGrid` (el bloque "más herramientas", compartido
-por las 11 páginas que lo importan) y la moneda (`moneda.astro` +
+por las 11 páginas que lo importan), la moneda (`moneda.astro` +
 `Coin.astro`), que es además la **implementación de referencia** de una
-herramienta migrada (ver "Anatomía de una página de herramienta"). El resto
+herramienta migrada (ver "Anatomía de una página de herramienta"), y el
+oráculo sí o no (`si-o-no.astro` + `OracleBall.astro`), la primera
+herramienta con casi todo el marcado en utilidades de Tailwind. El resto
 de herramientas (la ruleta, los dados...) sigue con los botones y tarjetas
 en degradado de la estética anterior — migrarlas es una tarea aparte, una
 herramienta a la vez, porque toca UI interactiva con sus propios tests de
@@ -344,6 +346,17 @@ de arriba abajo:
    `.hub-row`), con un contador en texto plano. Acción secundaria ("Borrar")
    como texto subrayado.
 7. Debajo, sin cambios: `AdSlot`, `SeoArticle`, `HubGrid`.
+
+**Controles que dependen del dispositivo** (agitar el móvil en el oráculo):
+van ocultos en el HTML y el JS los muestra solo si el dispositivo los
+admite (`DeviceMotionEvent` y `pointer: coarse`), así en escritorio no hay
+un botón que no hace nada. Se activan siempre con un toque del visitante
+(iOS solo concede el permiso del sensor desde un gesto), van debajo de la
+acción principal como cualquier control secundario y nunca la sustituyen.
+
+**Resultados de más de dos tipos sin segundo color** (sí / no / ni sí ni
+no en el oráculo): la respuesta grande en `--text-primary` y el tipo debajo
+en texto terciario, igual que Cara/Cruz en la moneda.
 
 Movimiento: una sola animación con sentido (el volteo, el giro, la tirada),
 que termina en el resultado. Duración entre 1 y 2 segundos: más larga ya es
