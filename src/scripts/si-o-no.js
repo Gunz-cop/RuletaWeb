@@ -83,18 +83,27 @@ const SIN_PREGUNTA = [
   { bola: '¿Me hablas a mí?', texto: '¿Me hablas a mí? Escribe tu pregunta' },
   { bola: 'Estoy en blanco', texto: 'Estoy en blanco, como tu pregunta' },
   { bola: 'Nada que decir', texto: 'Sin pregunta no tengo nada que decir' },
+  { bola: 'Mucho silencio', texto: 'Mucho silencio por aquí. Escribe algo' },
+  { bola: 'Hoy no adivino', texto: 'Adivino respuestas, no preguntas' },
+  { bola: 'Error 404', texto: 'Error 404: pregunta no encontrada' },
 ];
 
-// A partir de la sexta consulta vacía seguida, ya no parece una persona
+// Frases de gato: la primera sale a la sexta consulta vacía seguida, y
+// después una cada vez que se agotan las diez normales. Las ya vistas se
+// recuerdan entre visitas y no se repiten hasta verlas todas: el contador
+// "Frase de gato 3 de 8" invita a seguir para descubrir el resto.
 const INSISTENCIA = 5;
 const GATO = [
   { bola: '¿Otra vez el gato?', texto: 'Otra vez alguien dejó al gato jugando con el móvil' },
   { bola: 'Hola, michi', texto: 'Hola, michi. Dile a tu humano que escriba una pregunta' },
   { bola: 'Miau no cuenta', texto: '«Miau» no cuenta como pregunta' },
   { bola: 'Suelta el móvil, gato', texto: 'Suelta el móvil, gato. Esto es para humanos' },
+  { bola: 'Ya te vi, gato', texto: 'Ya te vi, gato. Las patitas no escriben' },
+  { bola: '¿Hay atún? No sé', texto: 'Si preguntas por el atún: no lo sé' },
+  { bola: 'No soy un ovillo', texto: 'Deja la bola, michi: no soy un ovillo' },
+  { bola: 'A la siesta, gato', texto: 'A esta hora el gato debería estar en la siesta' },
 ];
-// La primera aparición del gato es siempre GATO[0]; después rotan las demás
-const GATO_RESTO = GATO.slice(1);
+const GATOS_KEY = 'decidelo_siono_gatos';
 
 // Tamaño del texto en el dado según lo que ocupa: un "Sí" se lee grande y
 // "Definitivamente no" cabe sin salirse del triángulo. La regla de cada
@@ -267,6 +276,7 @@ function initSiONo() {
     result.classList.remove('is-shown');
     delete result.dataset.estado;
     delete result.dataset.tipo;
+    delete result.dataset.gato;
     if (after) after.hidden = true;
     if (gutMsg) gutMsg.textContent = '';
     [btnRelief, btnDisappoint].forEach((b) => b?.setAttribute('aria-pressed', 'false'));
@@ -275,11 +285,12 @@ function initSiONo() {
   function mostrar(r) {
     resultMain.textContent = r.texto;
     // "Sí" / "No" a secas ya dicen su tipo: repetirlo debajo sobra
-    if (r.tipo === 'vacia') resultSide.textContent = 'Sin pregunta';
+    if (r.tipo === 'vacia') resultSide.textContent = r.lado;
     else resultSide.textContent = r.texto === TIPO[r.tipo] ? '' : TIPO[r.tipo];
     result.classList.add('is-shown');
     result.dataset.estado = 'final';
     result.dataset.tipo = r.tipo;
+    if (r.gato) result.dataset.gato = 'si';
   }
 
   // --- Consultas sin pregunta ---------------------------------------------------
@@ -303,12 +314,38 @@ function initSiONo() {
     return bolsa.ultima;
   }
 
+  // null mientras no ha salido ningún gato en esta racha; después, cuántas
+  // normales van desde el último
+  let desdeGato = null;
+
+  function gato() {
+    const vistos = new Set((readStore(GATOS_KEY, []) || []).filter((n) => GATO[n]));
+    const nuevos = GATO.map((_, n) => n).filter((n) => !vistos.has(n));
+    let n;
+    if (!vistos.size) n = 0; // la primera, siempre la del gato jugando
+    else if (nuevos.length) n = nuevos[Math.floor(Math.random() * nuevos.length)];
+    else n = Math.floor(Math.random() * GATO.length);
+    const nuevo = !vistos.has(n);
+    vistos.add(n);
+    writeStore(GATOS_KEY, [...vistos]);
+    const lado = nuevo
+      ? `Frase de gato ${vistos.size} de ${GATO.length}`
+      : `Tienes las ${GATO.length} frases de gato`;
+    return { ...GATO[n], tipo: 'vacia', gato: true, lado };
+  }
+
   function sinPregunta() {
     vacias += 1;
-    // La primera vez que aparece el gato, siempre la frase del gato
-    const b = vacias === INSISTENCIA + 1 ? GATO[0]
-      : burla(vacias > INSISTENCIA ? GATO_RESTO : SIN_PREGUNTA);
-    return { ...b, tipo: 'vacia' };
+    const tocaGato = desdeGato === null ? vacias > INSISTENCIA : desdeGato >= SIN_PREGUNTA.length;
+    if (tocaGato) {
+      desdeGato = 0;
+      // La bolsa de normales empieza de cero: salen las diez antes del
+      // siguiente gato
+      bolsas.delete(SIN_PREGUNTA);
+      return gato();
+    }
+    if (desdeGato !== null) desdeGato += 1;
+    return { ...burla(SIN_PREGUNTA), tipo: 'vacia', lado: 'Sin pregunta' };
   }
 
   // El campo se sacude un poco para señalar dónde va la pregunta
@@ -572,7 +609,10 @@ function initSiONo() {
     limpiarResultado();
 
     const pregunta = input?.value.trim().slice(0, QUESTION_MAX) ?? '';
-    if (pregunta) vacias = 0;
+    if (pregunta) {
+      vacias = 0;
+      desdeGato = null;
+    }
     // Sin pregunta la bola se agita igual, pero no responde: se burla, y eso
     // ni se guarda en el historial ni se comparte.
     const r = pregunta ? RESPUESTAS[randomIndex(RESPUESTAS.length)] : sinPregunta();

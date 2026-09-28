@@ -436,7 +436,7 @@
   "/si-o-no [gato]": {
     "relacion": {
       "ok": true,
-      "mensaje": "sexta consulta sin pregunta: «Otra vez alguien dejó al gato jugando con el móvil»"
+      "mensaje": "gatos en 17 consultas vacías: [{\"i\":6,\"gato\":true,\"texto\":\"Otra vez alguien dejó al gato jugando con el móvil\",\"lado\":\"Frase de gato 1 de 8\"},{\"i\":17,\"gato\":true,\"texto\":\"Deja la bola, michi: no soy un ovillo\",\"lado\":\"Frase de gato 2 de 8\"}]"
     }
   },
   "/si-o-no [agitar-movil]": {

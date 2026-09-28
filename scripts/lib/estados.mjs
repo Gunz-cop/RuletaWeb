@@ -631,20 +631,27 @@ export const ESTADOS = [
     ],
   },
   {
-    // A la sexta consulta vacía seguida, la bola culpa al gato
+    // A la sexta consulta vacía seguida sale el primer gato (siempre el
+    // mismo) y después uno cada diez normales, con su contador de colección
     ruta: '/si-o-no',
     nombre: 'gato',
     contexto: { reducedMotion: 'reduce' },
     verificarRelacion: async (pagina) => {
-      for (let i = 1; i <= 6; i++) {
+      const gatos = [];
+      for (let i = 1; i <= 17; i++) {
         await pagina.click('#btn-ask');
         await pagina.waitForSelector('#btn-ask:not([disabled])');
+        const r = await pagina.evaluate(() => ({
+          gato: document.getElementById('oracle-result').dataset.gato === 'si',
+          texto: document.getElementById('oracle-result-main').textContent,
+          lado: document.getElementById('oracle-result-side').textContent,
+        }));
+        if (r.gato) gatos.push({ i, ...r });
       }
-      const texto = await pagina.textContent('#oracle-result-main');
-      return {
-        ok: /gato/i.test(texto ?? ''),
-        mensaje: `sexta consulta sin pregunta: «${texto}»`,
-      };
+      const ok = gatos.length === 2
+        && gatos[0].i === 6 && /gato jugando/.test(gatos[0].texto) && gatos[0].lado === 'Frase de gato 1 de 8'
+        && gatos[1].i === 17 && gatos[1].lado === 'Frase de gato 2 de 8';
+      return { ok, mensaje: `gatos en 17 consultas vacías: ${JSON.stringify(gatos)}` };
     },
   },
   {
