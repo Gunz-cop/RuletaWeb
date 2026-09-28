@@ -7,9 +7,9 @@ import HubGrid from '../components/HubGrid.astro';
 import SeoArticle from '../components/SeoArticle.astro';
 import { getSocialImageUrl } from '../lib/heroImages';
 
-const title = 'Cara o Cruz y Cara o Sello Online — Lanzar Moneda | Decídelo.app';
-const description = 'Lanza una moneda online con tus dos opciones: cara o cruz, cara o sello, águila o sol. Una moneda, mejor de 3 o de 5, o varias a la vez. Gratis, sin registro y con enlace para compartir.';
-const keywords = 'cara o cruz online, lanzar moneda, tirar moneda, tira una moneda, cara o sello, moneda online, moneda virtual, lanzar una moneda, volado online, mejor de 3 moneda, lanzar varias monedas, escudo o corona, cara o escudo, cara o ceca, águila o sol, cara ou coroa';
+const title = 'Cara o Sello Online y Cara o Cruz — Lanzar Moneda Gratis';
+const description = 'Lanza una moneda online gratis: cara o sello, cara o cruz, volado águila o sol. Escribe tus dos opciones, juega al mejor de 3 o lanza varias monedas. Sin registro.';
+const keywords = 'cara o sello, cara o sello online, cara o cruz, cara o cruz online, lanzar moneda, tirar moneda, moneda online, volado, volado online, águila o sol, volado águila o sol, mejor de 3 moneda, lanzar varias monedas, escudo o corona, cara o ceca, cara ou coroa';
 
 // La imagen vive en src/assets y la optimiza Astro; el JSON-LD necesita
 // su URL absoluta ya generada, no la ruta pública que tenía antes.
@@ -21,8 +21,8 @@ const schemaLD = {
     {
       "@type": "WebApplication",
       "@id": "https://decidelo.app/moneda#webapp",
-      "name": "Lanzar Moneda Online — Decídelo.app",
-      "description": "Herramienta online para lanzar una moneda y decidir entre cara o cruz, cara o sello o dos opciones equivalentes. Gratis, sin registro y con historial local.",
+      "name": "Cara o sello online — Decídelo.app",
+      "description": "Moneda online para decidir entre dos opciones: cara o sello, cara o cruz o volado águila o sol. Una moneda, mejor de 3, mejor de 5 o varias a la vez. Gratis, sin registro y con historial local.",
       "url": "https://decidelo.app/moneda",
       "applicationCategory": "UtilityApplication",
       "operatingSystem": "All",
@@ -53,10 +53,10 @@ const schemaLD = {
       "mainEntity": [
         {
           "@type": "Question",
-          "name": "¿Cómo lanzar cara o cruz online?",
+          "name": "¿Cómo lanzar una moneda online?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Abre la herramienta, asigna una opción a cara y otra a cruz, pulsa Lanzar y espera el resultado. El historial local muestra los últimos lanzamientos."
+            "text": "Escribe una opción para cada lado de la moneda, pulsa «Lanzar moneda» y espera a que caiga. El resultado aparece debajo y queda guardado en el historial de tu navegador."
           }
         },
         {
@@ -64,7 +64,15 @@ const schemaLD = {
           "name": "¿Cara o sello es lo mismo que cara o cruz?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Sí. En muchos países se dice cara o sello, águila o sol, volado o cara o cruz. La dinámica es la misma: dos resultados posibles con probabilidad equivalente."
+            "text": "Sí. Es el mismo juego con otro nombre: cara o sello en Colombia, Chile, Perú y Ecuador; águila o sol (volado) en México; cara o ceca en Argentina y Uruguay; cara o cruz en España. Siempre hay dos resultados con la misma probabilidad."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Qué es un volado águila o sol?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Es el nombre que se usa en México para lanzar una moneda: «echar un volado». El águila es el lado del escudo nacional y el sol el del valor. En la herramienta eliges «Águila o sol» en «Cómo se dice»."
           }
         },
         {
@@ -72,15 +80,23 @@ const schemaLD = {
           "name": "¿Puedo lanzar al mejor de 3 o varias monedas a la vez?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Sí. En Modo puedes elegir una moneda, mejor de 3, mejor de 5 o varias monedas (de 2 a 5). En las series la moneda se lanza sola hasta que una opción consigue la mayoría."
+            "text": "Sí. En «Modo» eliges una moneda, mejor de 3, mejor de 5 o varias monedas (de 2 a 5). En las series la moneda se lanza sola hasta que una opción consigue la mayoría."
           }
         },
         {
           "@type": "Question",
-          "name": "¿La moneda online guarda mis resultados?",
+          "name": "¿La moneda online es realmente 50/50?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Solo se guarda un historial breve en tu navegador mediante almacenamiento local. No necesitas cuenta y tus decisiones no se envían a un servidor."
+            "text": "Sí. Cada lanzamiento usa el generador aleatorio criptográfico del navegador (crypto.getRandomValues), así que cara y sello tienen exactamente un 50 % cada uno y ningún resultado depende del anterior."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Se guardan mis resultados?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Solo un historial breve en tu propio navegador, que puedes borrar cuando quieras. No hace falta cuenta y tus opciones no se envían a ningún servidor."
           }
         }
       ]
@@ -117,7 +133,7 @@ const schemaLD = {
 
     <header class="coin-hero coin-area-hero text-center lg:text-left mb-5 sm:mb-6">
       <h1>Cara o cruz, <em>sin darle más vueltas</em></h1>
-      <p class="coin-intro my-0 mx-auto lg:mx-0 max-w-lg text-sm sm:text-base text-ink-secondary">Escribe tus dos opciones y lanza. Cara o sello, águila o sol, escudo o corona: como se diga donde vives.</p>
+      <p class="coin-intro my-0 mx-auto lg:mx-0 max-w-lg text-sm sm:text-base text-ink-secondary">Escribe tus dos opciones y lanza la moneda. Cara o sello, volado águila o sol, cara o ceca: como se diga donde vives.</p>
     </header>
 
     <div class="coin-area-options grid grid-cols-[1fr_auto_1fr] items-end gap-4 w-full mb-4 sm:mb-8">
@@ -208,78 +224,68 @@ const schemaLD = {
   <AdSlot position="top" />
 
   <!-- Sección de Artículo SEO -->
-  <SeoArticle title="¿Cómo funciona el Lanzamiento de Moneda Online y por qué usarlo?">
-    <p>El lanzamiento de una moneda al aire, conocido como <strong>cara o cruz</strong>, <strong>cara o sello</strong>, <strong>águila o sol</strong> o <strong>volado</strong> según el país, es una de las formas más rápidas de decidir entre dos opciones equivalentes. En Decídelo.app puedes tirar una moneda online desde el móvil o el ordenador sin instalar nada.</p>
-    
-    <p>La herramienta sirve para decisiones de baja consecuencia: quién empieza, qué opción probar primero, qué turno sigue, qué actividad hacer o cómo romper un empate amistoso. No está pensada para apuestas, decisiones legales, médicas, financieras o situaciones donde haga falta criterio profesional.</p>
+  <SeoArticle title="Cara o sello online: lanza una moneda en un segundo">
+    <p>Lanzar una moneda es la forma más rápida de decidir entre dos opciones que te valen igual. Según el país se dice <strong>cara o sello</strong>, <strong>cara o cruz</strong>, <strong>volado águila o sol</strong> o <strong>cara o ceca</strong>, pero el juego es el mismo: dos lados, un 50 % cada uno. Esta moneda online funciona en el móvil y en el ordenador, sin instalar nada y sin registro.</p>
 
-    <h2>Cómo usar cara o cruz online en 10 segundos</h2>
+    <p>Úsala para lo cotidiano: quién empieza la partida, qué comer, qué equipo saca, qué tarea haces primero o cómo romper un empate entre amigos. No la uses para apuestas ni para decisiones médicas, legales o de dinero.</p>
+
+    <h2>Cómo tirar una moneda online</h2>
     <ol>
-      <li><strong>Define las opciones:</strong> por ejemplo, Cara = pizza y Cruz = sushi.</li>
-      <li><strong>Comprueba que ambas opciones son aceptables:</strong> si una opción no te sirve, no uses azar.</li>
-      <li><strong>Pulsa Lanzar:</strong> la moneda girará y mostrará el resultado.</li>
-      <li><strong>Respeta el resultado o escucha tu reacción:</strong> si sientes alivio o decepción, quizá ya sabías qué preferías.</li>
+      <li><strong>Escribe tus dos opciones:</strong> por ejemplo, cara = pizza y sello = sushi.</li>
+      <li><strong>Elige el modo:</strong> una moneda, mejor de 3, mejor de 5 o varias monedas a la vez.</li>
+      <li><strong>Pulsa &laquo;Lanzar moneda&raquo;:</strong> la moneda gira, cae y muestra qué opción ganó.</li>
+      <li><strong>Fíjate en lo que sientes:</strong> si el resultado te da alivio o decepción, ya sabías qué preferías.</li>
     </ol>
 
-    <h2>Ideas rápidas para tirar una moneda</h2>
+    <h2>Cara o sello, cara o cruz, águila o sol: cómo se dice en cada país</h2>
+    <p>La herramienta usa el nombre de tu país automáticamente y puedes cambiarlo en &laquo;Cómo se dice&raquo;.</p>
     <table>
       <thead>
-        <tr>
-          <th>Situación</th>
-          <th>Cara</th>
-          <th>Cruz</th>
-        </tr>
+        <tr><th>País</th><th>Cómo se dice</th></tr>
       </thead>
       <tbody>
-        <tr>
-          <td>Comida</td>
-          <td>Pizza</td>
-          <td>Sushi</td>
-        </tr>
-        <tr>
-          <td>Turno inicial</td>
-          <td>Empieza equipo A</td>
-          <td>Empieza equipo B</td>
-        </tr>
-        <tr>
-          <td>Tareas</td>
-          <td>Responder correos</td>
-          <td>Preparar presentación</td>
-        </tr>
-        <tr>
-          <td>Casa</td>
-          <td>Lavar platos</td>
-          <td>Sacar basura</td>
-        </tr>
+        <tr><td>Colombia, Chile, Perú, Ecuador, Panamá</td><td>Cara o sello</td></tr>
+        <tr><td>México</td><td>Volado: águila o sol</td></tr>
+        <tr><td>Argentina, Uruguay</td><td>Cara o ceca</td></tr>
+        <tr><td>Costa Rica</td><td>Escudo o corona</td></tr>
+        <tr><td>Guatemala, Honduras, Bolivia</td><td>Cara o escudo</td></tr>
+        <tr><td>España</td><td>Cara o cruz</td></tr>
+        <tr><td>Brasil</td><td>Cara ou coroa</td></tr>
       </tbody>
     </table>
 
-    <h2>La ciencia detrás del 50/50 y la toma de decisiones</h2>
-    <p>Desde un punto de vista matemático, una moneda ideal ofrece un <strong>50% de probabilidad</strong> de obtener cara y un 50% de obtener cruz. En una moneda física influyen el impulso, la superficie, el lado inicial y la forma de atraparla. En esta moneda online el resultado se decide con aleatoriedad del navegador mediante <code>crypto.getRandomValues</code> cuando está disponible, y la animación 3D representa visualmente el resultado.</p>
+    <h2>Mejor de 3, mejor de 5 y varias monedas</h2>
+    <p>Si un solo lanzamiento te parece poco, elige <strong>mejor de 3</strong> o <strong>mejor de 5</strong>: la moneda se lanza sola hasta que una opción consigue la mayoría y el marcador queda en el historial. Con <strong>varias monedas</strong> lanzas de 2 a 5 a la vez, útil para juegos como las <a href="/blog/moneda/juego-chapas">chapas</a>.</p>
 
-    <h2>Ventajas de lanzar una moneda para indecisión cotidiana</h2>
-    <p>Para personas que sufren de fatiga por decisiones o con neurodivergencias como el <strong>TDAH</strong>, elegir entre dos opciones simples (¿debería empezar a estudiar ahora o tomar un vaso de agua?, ¿hago primero la tarea A o la tarea B?) puede provocar un bloqueo mental prolongado o parálisis por análisis. El lanzamiento de moneda actúa como un catalizador cognitivo:</p>
+    <h2>¿Es una moneda justa? El 50/50 explicado</h2>
+    <p>Una moneda física no es perfecta: influyen la fuerza del lanzamiento, el lado que mira hacia arriba al empezar y cómo la atrapas. Aquí no: cada resultado sale del generador aleatorio criptográfico del navegador (<code>crypto.getRandomValues</code>), con exactamente un <strong>50 % para cada lado</strong>. La animación solo muestra ese resultado; no lo decide. Y que haya salido sello tres veces seguidas no cambia nada la siguiente tirada.</p>
+
+    <h2>Por qué lanzar una moneda ayuda a decidir</h2>
+    <p>Cuando dos opciones pesan lo mismo, darle vueltas cansa más que elegir. Con fatiga de decisión o <strong>TDAH</strong>, una pregunta tan simple como &laquo;¿empiezo por la tarea A o por la B?&raquo; puede bloquearte un buen rato. La moneda corta ese bucle:</p>
     <ul>
-      <li><strong>Elimina el bloqueo inmediato:</strong> Reduce el abanico de infinitas opciones a un simple disparador binario externo.</li>
-      <li><strong>Filtra tus verdaderos deseos:</strong> A menudo, mientras la moneda está girando en el aire, tu mente experimenta una respuesta emocional espontánea. Sientes el deseo secreto de que salga "cara". En ese preciso segundo, descubres qué es lo que realmente querías elegir en tu fuero interno, independientemente de lo que muestre el resultado final.</li>
-      <li><strong>Historial breve:</strong> Puedes revisar los últimos resultados sin convertir la herramienta en una estadística complicada.</li>
+      <li><strong>Te saca del bloqueo:</strong> convierte la duda en un paso concreto en un segundo.</li>
+      <li><strong>Te muestra lo que ya querías:</strong> mientras la moneda gira, sueles desear que salga un lado. Ese deseo es la respuesta, salga lo que salga.</li>
+      <li><strong>Se comparte fácil:</strong> &laquo;Compartir esta decisión&raquo; crea un enlace con tus dos opciones para que otra persona lance la misma moneda.</li>
     </ul>
 
-    <h2>Preguntas frecuentes sobre cara o cruz online</h2>
+    <h2>Preguntas frecuentes</h2>
+    <h3>¿Cómo lanzar una moneda online?</h3>
+    <p>Escribe una opción para cada lado de la moneda, pulsa &laquo;Lanzar moneda&raquo; y espera a que caiga. El resultado aparece debajo y queda guardado en el historial de tu navegador.</p>
+
     <h3>¿Cara o sello es lo mismo que cara o cruz?</h3>
-    <p>Sí. La expresión cambia por país: cara o sello en Colombia, Chile, Perú, Ecuador y Panamá; águila o sol en México; escudo o corona en Costa Rica; cara o escudo en Guatemala, Honduras y Bolivia; cara o ceca en Argentina y Uruguay; cara ou coroa en Brasil, y cara o cruz en España. La moneda usa la de tu país automáticamente y puedes cambiarla en "Cómo se dice".</p>
+    <p>Sí. Es el mismo juego con otro nombre: cara o sello en Colombia, Chile, Perú y Ecuador; águila o sol (volado) en México; cara o ceca en Argentina y Uruguay; cara o cruz en España. Siempre hay dos resultados con la misma probabilidad.</p>
+
+    <h3>¿Qué es un volado águila o sol?</h3>
+    <p>Es el nombre que se usa en México para lanzar una moneda: &laquo;echar un volado&raquo;. El águila es el lado del escudo nacional y el sol el del valor. En la herramienta eliges &laquo;Águila o sol&raquo; en &laquo;Cómo se dice&raquo;.</p>
 
     <h3>¿Puedo lanzar al mejor de 3 o varias monedas a la vez?</h3>
-    <p>Sí. En Modo puedes elegir una moneda, mejor de 3, mejor de 5 o varias monedas (de 2 a 5). En las series la moneda se lanza sola hasta que una opción consigue la mayoría, y el marcador queda en el historial.</p>
+    <p>Sí. En &laquo;Modo&raquo; eliges una moneda, mejor de 3, mejor de 5 o varias monedas (de 2 a 5). En las series la moneda se lanza sola hasta que una opción consigue la mayoría.</p>
 
-    <h3>¿Puedo compartir el resultado?</h3>
-    <p>Sí. Después de lanzar, "Compartir esta decisión" genera un enlace con tus dos opciones ya escritas, para que otra persona lance la misma moneda. El enlace no incluye tu historial.</p>
+    <h3>¿La moneda online es realmente 50/50?</h3>
+    <p>Sí. Cada lanzamiento usa el generador aleatorio criptográfico del navegador (<code>crypto.getRandomValues</code>), así que cara y sello tienen exactamente un 50 % cada uno y ningún resultado depende del anterior.</p>
 
-    <h3>¿Puedo usarlo para sorteos importantes?</h3>
-    <p>Para decisiones importantes conviene usar reglas más formales y documentadas. Esta herramienta está pensada para decisiones rápidas, juegos, turnos y dinámicas recreativas.</p>
-
-    <h3>¿Dónde se guarda el historial?</h3>
-    <p>El historial se guarda localmente en tu navegador y puedes borrarlo desde el botón de la herramienta. No necesitas crear cuenta.</p>
+    <h3>¿Se guardan mis resultados?</h3>
+    <p>Solo un historial breve en tu propio navegador, que puedes borrar cuando quieras. No hace falta cuenta y tus opciones no se envían a ningún servidor.</p>
 
     <h2>Guías relacionadas</h2>
     <ul>
