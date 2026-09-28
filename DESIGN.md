@@ -247,13 +247,22 @@ es el de móvil y lo de pantallas grandes se añade encima.
   `@media (max-width: 639px)` para que corte exactamente donde `sm:`. No
   introduzcas cortes nuevos (600px, 768px…) en piezas migradas; las páginas
   sin migrar todavía tienen los suyos.
-- **Móvil de referencia: 393×659px** — lo que queda visible en un iPhone
-  15/16 con la barra de Safari. En una herramienta, **la acción principal
-  (el botón que produce el resultado) tiene que verse entera en esa primera
-  pantalla, con al menos 16px de holgura**, contando la cabecera del sitio.
-  Lo vigila `npm run test:estado` con el invariante
-  `accionPrincipalVisible` de `scripts/lib/estados.mjs`; cada herramienta
-  migrada añade ahí su estado `accion-principal-visible-393x659`.
+- **Móviles de referencia, no un solo teléfono.** Se mide la ventana
+  *útil* (sin barras del sistema ni del navegador) de tres casos:
+  **Android de gama media con Chrome, 360×560** (la mayor parte del
+  tráfico), **iPhone SE con Safari, 375×548** (el más bajo aún en uso) e
+  **iPhone 15/16 con Safari, 393×659**. En una herramienta, **la acción
+  principal (el botón que produce el resultado) tiene que verse entera en
+  la primera pantalla de los tres, con al menos 16px de holgura**, contando
+  la cabecera del sitio. Lo vigila `npm run test:estado`:
+  `estadosAccionVisible(ruta, selector)` de `scripts/lib/estados.mjs` crea
+  un invariante por móvil, y cada herramienta migrada lo añade.
+- **Pantallas bajas**: si no cabe, primero se compacta en móvil (márgenes,
+  tamaño del objeto) y como último recurso se oculta la entradilla con
+  `@media (max-width: 639px) and (max-height: 620px)`. Nunca se baja el
+  umbral ni se quita un móvil de la lista.
+- **Controles secundarios debajo de la acción principal** (modo, nombres,
+  cantidad): así crecen sin empujar el botón fuera de la pantalla.
 - **Nada de scroll horizontal a 360px.** Márgenes laterales los pone `.wrap`;
   no uses el atajo `padding: X 0` en un elemento que también lleva `.wrap`,
   porque le quita el margen lateral (usa `pt-*`/`pb-*` o `padding-block`).

@@ -116,7 +116,7 @@ visuales las construye `dados.js` al lanzar, así que en reposo no existen y
 ninguna captura las ve. También cubre la moneda (lanza y mide el resultado
 y las filas del historial) y el **estándar móvil**: el invariante
 `accionPrincipalVisible` comprueba que el botón principal de cada
-herramienta migrada se ve sin scroll en 393×659px (ver DESIGN.md,
+herramienta migrada se ve sin scroll en los tres móviles de referencia (Android 360×560, iPhone SE 375×548, iPhone 393×659) (ver DESIGN.md,
 "Responsive: mobile first"). Si un estado no llega a producirse —porque el CSS
 que lo hace visible dejó de llegar, por ejemplo— eso se anota como fallo de
 ese estado y los demás siguen corriendo, en vez de reventar el proceso.

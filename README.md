@@ -45,8 +45,8 @@ Resumen para quien tenga prisa:
   tipografía fina, 3D, degradados de objetos ilustrados y estados que pone
   el JS. Las reglas exactas están en DESIGN.md.
 - **Mobile first.** Un solo punto de corte (`sm:`, 640px). La acción
-  principal de cada herramienta tiene que verse sin scroll en un iPhone
-  (393×659px), y un test lo comprueba.
+  principal de cada herramienta tiene que verse sin scroll en Android (360×560),
+  iPhone SE (375×548) e iPhone (393×659), y un test lo comprueba.
 - **Referencia.** La moneda (`src/pages/moneda.astro`,
   `src/components/Coin.astro`, `src/scripts/moneda.js`) es la
   implementación modelo. Copia su estructura.

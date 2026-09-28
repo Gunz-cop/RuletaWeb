@@ -272,10 +272,54 @@
       "opacity": "1"
     }
   },
-  "/moneda [accion-principal-visible-393x659]": {
+  "/moneda?cara=Pizza&cruz=Sushi&modo=mejor3&nombres=sello [serie-mejor-de-3]": {
+    "#coin-single": {
+      "display": "block"
+    },
+    "#coin-multi": {
+      "display": "none"
+    },
+    "#coin-after": {
+      "display": "flex"
+    },
+    "#coin-gut": {
+      "display": "flex"
+    },
+    ".history-side": {
+      "textTransform": "uppercase"
+    }
+  },
+  "/moneda?modo=varias [varias-monedas]": {
+    "#coin-single": {
+      "display": "none"
+    },
+    "#coin-multi": {
+      "display": "flex",
+      "gap": "8px"
+    },
+    "#coin-count-field": {
+      "display": "flex"
+    },
+    "#coin-gut": {
+      "display": "none"
+    }
+  },
+  "/moneda [accion-principal-visible-android-360x560]": {
     "relacion": {
       "ok": true,
-      "mensaje": "#btn-flip.bottom=613.0px con 659px visibles (holgura 46.0px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+      "mensaje": "#btn-flip.bottom=514.0px con 560px visibles (holgura 46.0px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/moneda [accion-principal-visible-iphone-se-375x548]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#btn-flip.bottom=514.0px con 548px visibles (holgura 34.0px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/moneda [accion-principal-visible-iphone-393x659]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#btn-flip.bottom=554.0px con 659px visibles (holgura 105.0px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
     }
   }
 }

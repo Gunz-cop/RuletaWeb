@@ -33,7 +33,8 @@ Anota qué tiene hoy la herramienta:
 - Qué genera el JS con `innerHTML`: el marcado largo se muda al `.astro`.
 - Qué guarda en `localStorage` y con qué claves: el formato viejo se tiene
   que seguir leyendo.
-- Dónde termina el botón principal a 393×659px (móvil de referencia).
+- Dónde termina el botón principal en los tres móviles de referencia
+  (360×560, 375×548, 393×659).
 - Qué estados cubre ya `scripts/lib/estados.mjs` para esta página: si una
   clase o un id que usan desaparece, el estado se tiene que actualizar, no
   borrar.
@@ -86,12 +87,7 @@ Cada herramienta migrada añade como mínimo:
   esperarSelector: '<algo que solo existe tras el resultado>',
   comprobar: [/* resultado y filas creadas por el JS */],
 },
-{
-  ruta: '/<herramienta>',
-  nombre: 'accion-principal-visible-393x659',
-  viewport: VIEWPORT_MOVIL_REFERENCIA,
-  verificarRelacion: accionPrincipalVisible('#<boton-principal>'),
-},
+...estadosAccionVisible('/<herramienta>', '#<boton-principal>'),
 ```
 
 Si el invariante de móvil falla, compacta el hero o el objeto en móvil. No
@@ -112,7 +108,7 @@ versión que haya en `/opt/pw-browsers`) para `test:estado`.
 
 Además, a mano con `npm run build && npx astro preview`:
 
-- 393×659 y 1280×900: usar la herramienta varias veces y comprobar que el
+- 360×560, 375×548, 393×659 y 1280×900: usar la herramienta varias veces y comprobar que el
   resultado mostrado coincide con lo que enseña el objeto.
 - Sin scroll horizontal a 360px.
 - Que las entradas del usuario sobreviven a una recarga.

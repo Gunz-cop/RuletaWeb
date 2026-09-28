@@ -1,7 +1,9 @@
 ---
 // Moneda 3D con canto real. Solo marcado y apariencia: el volteo lo
-// anima moneda.js con la Web Animations API sobre #coin-flight (arco),
-// #coin (giro en X) y #coin-floor-shadow (sombra en el suelo).
+// anima moneda.js con la Web Animations API sobre .coin-flight (arco),
+// .coin (giro en X) y .coin-floor-shadow (sombra en el suelo). Cada moneda
+// lleva `data-coin` para que el script las encuentre; la grande conserva
+// además los id #coin, #coin-flight y #coin-floor-shadow.
 //
 // El canto son capas finas apiladas en translateZ: de frente no se ven,
 // pero cuando la moneda pasa de canto forman un borde sólido en vez de
@@ -10,7 +12,17 @@
 // La moneda es un objeto ilustrado, no UI: por eso sí lleva degradados
 // (el metal no se lee como metal sin reflejos), aunque el resto de la
 // página siga el sistema editorial sin degradados de DESIGN.md.
-const EDGE_LAYERS = 12;
+//
+// Las letras y nombres de las caras son los de "cara o cruz"; moneda.js los
+// cambia por el juego de nombres regional elegido (data-face-glyph /
+// data-face-label).
+interface Props {
+  size?: 'lg' | 'sm';
+  uid?: string;
+}
+const { size = 'lg', uid = 'main' } = Astro.props;
+const lg = size === 'lg';
+const EDGE_LAYERS = lg ? 12 : 6;
 const edge = Array.from({ length: EDGE_LAYERS }, (_, i) => i);
 const faces = [
   { side: 'heads', glyph: 'C', label: 'Cara' },
@@ -18,33 +30,37 @@ const faces = [
 ];
 ---
 
-<div class="coin-stage">
-  <div class="coin-flight" id="coin-flight">
-    <div class="coin" id="coin" style={`--coin-layers: ${EDGE_LAYERS}`}>
+<div class={`coin-stage coin-stage--${size}`} data-coin>
+  <div class="coin-flight" id={lg ? 'coin-flight' : undefined}>
+    <div class="coin" id={lg ? 'coin' : undefined} style={`--coin-layers: ${EDGE_LAYERS}`}>
       {edge.map((i) => (
         <span class="coin-edge" style={`--i: ${i}`} aria-hidden="true"></span>
       ))}
       {faces.map((f) => (
         <div class={`coin-face coin-face--${f.side}`} aria-hidden="true">
           <svg class="coin-engraving" viewBox="0 0 100 100">
-            <path id={`coin-arc-${f.side}`} d="M 19 50 A 31 31 0 0 1 81 50" fill="none" />
-            {/* Leyenda en bajorrelieve: copia clara desplazada + copia oscura */}
-            <text class="coin-legend coin-legend--light" dy="0.5">
-              <textPath href={`#coin-arc-${f.side}`} startOffset="50%" text-anchor="middle">DECÍDELO · 2026</textPath>
-            </text>
-            <text class="coin-legend">
-              <textPath href={`#coin-arc-${f.side}`} startOffset="50%" text-anchor="middle">DECÍDELO · 2026</textPath>
-            </text>
+            {lg && (
+              <>
+                <path id={`coin-arc-${uid}-${f.side}`} d="M 19 50 A 31 31 0 0 1 81 50" fill="none" />
+                {/* Leyenda en bajorrelieve: copia clara desplazada + copia oscura */}
+                <text class="coin-legend coin-legend--light" dy="0.5">
+                  <textPath href={`#coin-arc-${uid}-${f.side}`} startOffset="50%" text-anchor="middle">DECÍDELO · 2026</textPath>
+                </text>
+                <text class="coin-legend">
+                  <textPath href={`#coin-arc-${uid}-${f.side}`} startOffset="50%" text-anchor="middle">DECÍDELO · 2026</textPath>
+                </text>
+              </>
+            )}
             {/* Gráfila: el anillo de perlas que llevan casi todas las monedas */}
             <circle cx="50" cy="50" r="39" class="coin-beads" />
           </svg>
-          <span class="coin-glyph">{f.glyph}</span>
-          <span class="coin-label">{f.label}</span>
+          <span class="coin-glyph" data-face-glyph={f.side}>{f.glyph}</span>
+          {lg && <span class="coin-label" data-face-label={f.side}>{f.label}</span>}
         </div>
       ))}
     </div>
   </div>
-  <div class="coin-floor-shadow" id="coin-floor-shadow" aria-hidden="true"></div>
+  <div class="coin-floor-shadow" id={lg ? 'coin-floor-shadow' : undefined} aria-hidden="true"></div>
 </div>
 
 <style>
@@ -212,20 +228,41 @@ const faces = [
     will-change: transform, opacity;
   }
 
+  /* Monedas pequeñas del modo "varias": sin leyenda ni nombre, solo letra */
+  .coin-stage--sm {
+    --coin-size: 56px;
+    --coin-depth: 5px;
+    height: calc(var(--coin-size) + 0.75rem);
+    margin: 0;
+  }
+
+  .coin-stage--sm .coin-glyph {
+    font-size: 1.5rem;
+    margin-top: 0;
+  }
+
+  .coin-stage--sm .coin-floor-shadow {
+    height: 8px;
+  }
+
   @media (max-width: 639px) {
-    .coin-stage {
-      --coin-size: 128px;
-      --coin-depth: 9px;
-      height: calc(var(--coin-size) + 1.25rem);
+    .coin-stage--lg {
+      --coin-size: 112px;
+      --coin-depth: 8px;
+      height: calc(var(--coin-size) + 0.5rem);
     }
 
-    .coin-glyph {
-      font-size: 2.9rem;
-      margin-top: 0.4rem;
+    .coin-stage--lg .coin-glyph {
+      font-size: 2.5rem;
+      margin-top: 0.35rem;
     }
 
-    .coin-label {
-      font-size: 0.55rem;
+    .coin-stage--lg .coin-label {
+      font-size: 0.5rem;
+    }
+
+    .coin-stage--sm {
+      --coin-size: 52px;
     }
   }
 </style>

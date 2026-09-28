@@ -7,7 +7,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "test": "astro build && node scripts/token-parity.mjs && node scripts/class-collisions.mjs && node scripts/css-snapshot.mjs && node scripts/wheel-contrast.mjs",
+    "test": "astro build && node scripts/token-parity.mjs && node scripts/class-collisions.mjs && node scripts/css-snapshot.mjs && node scripts/wheel-contrast.mjs && node scripts/moneda-serie-check.mjs",
     "test:css": "node scripts/css-snapshot.mjs",
     "test:tokens": "node scripts/token-parity.mjs",
     "test:collisions": "node scripts/class-collisions.mjs",

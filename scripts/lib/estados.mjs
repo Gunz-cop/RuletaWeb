@@ -112,15 +112,35 @@ async function verificarBotonGirarSobrePanel(pagina) {
 
 // --- Estándar móvil: la acción principal se ve sin hacer scroll ---------
 // Regla de DESIGN.md ("Responsive: mobile first"): en una herramienta, el
-// botón que produce el resultado tiene que caber en la primera pantalla del
-// móvil de referencia. 393x659 es lo que queda visible en un iPhone 15/16
-// con la barra de Safari abajo (852px de pantalla menos barras del sistema y
-// del navegador). Nació de un caso real: el botón Lanzar de la moneda
-// terminaba en 807px y había que hacer scroll para usar la herramienta.
+// botón que produce el resultado tiene que caber en la primera pantalla de
+// cada móvil de referencia. Son altos de ventana *útil*, ya descontadas las
+// barras del sistema y del navegador, no el tamaño de la pantalla:
+//
+//   android-360x560   Android de gama media con Chrome (la mayor parte del
+//                     tráfico, que viene de Colombia)
+//   iphone-se-375x548 el iPhone más bajo aún en uso (SE / 8) con Safari
+//   iphone-393x659    iPhone 15/16 con la barra de Safari abajo
+//
+// Nació de un caso real: el botón Lanzar de la moneda terminaba en 807px y
+// había que hacer scroll para usar la herramienta.
 //
 // Misma holgura de un dedo que el invariante de la ruleta, por la misma
 // razón: con >= 0 solo avisaría cuando el botón ya está cortado.
-export const VIEWPORT_MOVIL_REFERENCIA = { width: 393, height: 659 };
+export const VIEWPORTS_MOVIL = {
+  'android-360x560': { width: 360, height: 560 },
+  'iphone-se-375x548': { width: 375, height: 548 },
+  'iphone-393x659': { width: 393, height: 659 },
+};
+
+// Un estado `accion-principal-visible-<móvil>` por cada móvil de referencia.
+export function estadosAccionVisible(ruta, selector) {
+  return Object.entries(VIEWPORTS_MOVIL).map(([nombre, viewport]) => ({
+    ruta,
+    nombre: `accion-principal-visible-${nombre}`,
+    viewport,
+    verificarRelacion: accionPrincipalVisible(selector),
+  }));
+}
 
 export function accionPrincipalVisible(selector) {
   return async (pagina) => {
@@ -468,9 +488,31 @@ export const ESTADOS = [
     ],
   },
   {
-    ruta: '/moneda',
-    nombre: 'accion-principal-visible-393x659',
-    viewport: VIEWPORT_MOVIL_REFERENCIA,
-    verificarRelacion: accionPrincipalVisible('#btn-flip'),
+    // Llega por un enlace compartido: prueba a la vez que la URL precarga
+    // opciones y modo, y que la serie termina con marcador.
+    ruta: '/moneda?cara=Pizza&cruz=Sushi&modo=mejor3&nombres=sello',
+    nombre: 'serie-mejor-de-3',
+    clics: ['#btn-flip'],
+    esperarSelector: '#coin-result[data-estado="final"]',
+    comprobar: [
+      { sel: '#coin-single', props: ['display'] },
+      { sel: '#coin-multi', props: ['display'] },
+      { sel: '#coin-after', props: ['display'] },
+      { sel: '#coin-gut', props: ['display'] },
+      { sel: '.history-side', props: ['textTransform'] },
+    ],
   },
+  {
+    ruta: '/moneda?modo=varias',
+    nombre: 'varias-monedas',
+    clics: ['#btn-flip'],
+    esperarSelector: '#coin-result[data-estado="final"]',
+    comprobar: [
+      { sel: '#coin-single', props: ['display'] },
+      { sel: '#coin-multi', props: ['display', 'gap'] },
+      { sel: '#coin-count-field', props: ['display'] },
+      { sel: '#coin-gut', props: ['display'] },
+    ],
+  },
+  ...estadosAccionVisible('/moneda', '#btn-flip'),
 ];

@@ -2,13 +2,14 @@
 import Layout from '../layouts/Layout.astro';
 import AdSlot from '../components/AdSlot.astro';
 import Coin from '../components/Coin.astro';
+import { NOMBRES } from '../scripts/moneda-serie.js';
 import HubGrid from '../components/HubGrid.astro';
 import SeoArticle from '../components/SeoArticle.astro';
 import { getSocialImageUrl } from '../lib/heroImages';
 
-const title = 'Cara o Cruz Online — Lanzar Moneda Gratis | Decídelo.app';
-const description = 'Lanza una moneda online para decidir entre cara o cruz, cara o sello, sí o no, turnos o pequeños dilemas. Gratis, rápido, sin registro y con historial.';
-const keywords = 'cara o cruz online, lanzar moneda, tirar moneda, tira una moneda, cara o sello, moneda online, moneda virtual, lanzar una moneda, volado online';
+const title = 'Cara o Cruz y Cara o Sello Online — Lanzar Moneda | Decídelo.app';
+const description = 'Lanza una moneda online con tus dos opciones: cara o cruz, cara o sello, águila o sol. Una moneda, mejor de 3 o de 5, o varias a la vez. Gratis, sin registro y con enlace para compartir.';
+const keywords = 'cara o cruz online, lanzar moneda, tirar moneda, tira una moneda, cara o sello, moneda online, moneda virtual, lanzar una moneda, volado online, mejor de 3 moneda, lanzar varias monedas, escudo o corona';
 
 // La imagen vive en src/assets y la optimiza Astro; el JSON-LD necesita
 // su URL absoluta ya generada, no la ruta pública que tenía antes.
@@ -68,6 +69,14 @@ const schemaLD = {
         },
         {
           "@type": "Question",
+          "name": "¿Puedo lanzar al mejor de 3 o varias monedas a la vez?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Sí. En Modo puedes elegir una moneda, mejor de 3, mejor de 5 o varias monedas (de 2 a 5). En las series la moneda se lanza sola hasta que una opción consigue la mayoría."
+          }
+        },
+        {
+          "@type": "Question",
           "name": "¿La moneda online guarda mis resultados?",
           "acceptedAnswer": {
             "@type": "Answer",
@@ -108,23 +117,28 @@ const schemaLD = {
 
     <header class="coin-hero text-center mb-5 sm:mb-10">
       <h1>Cara o cruz, <em>sin darle más vueltas</em></h1>
-      <p class="my-0 mx-auto max-w-lg text-sm sm:text-base text-ink-secondary">Escribe tus dos opciones y lanza. Gratis, sin registro y con historial local.</p>
+      <p class="coin-intro my-0 mx-auto max-w-lg text-sm sm:text-base text-ink-secondary">Escribe tus dos opciones y lanza. Cara o sello, águila o sol, escudo o corona: como se diga donde vives.</p>
     </header>
 
     <section class="flex flex-col items-center" aria-label="Lanzar moneda">
-      <div class="grid grid-cols-[1fr_auto_1fr] items-end gap-4 w-full mb-6 sm:mb-14">
+      <div class="grid grid-cols-[1fr_auto_1fr] items-end gap-4 w-full mb-4 sm:mb-14">
         <label class="coin-option flex flex-col gap-1.5 min-w-0">
-          <span>Cara</span>
+          <span data-name-label="heads">Cara</span>
           <input id="option-heads" type="text" maxlength="40" placeholder="Pizza" autocomplete="off">
         </label>
         <span class="coin-options-vs" aria-hidden="true">o</span>
         <label class="coin-option flex flex-col gap-1.5 min-w-0">
-          <span>Cruz</span>
+          <span data-name-label="tails">Cruz</span>
           <input id="option-tails" type="text" maxlength="40" placeholder="Sushi" autocomplete="off">
         </label>
       </div>
 
-      <Coin />
+      <div id="coin-single">
+        <Coin />
+      </div>
+      <div id="coin-multi" class="flex justify-center gap-2" hidden>
+        {[1, 2, 3, 4, 5].map((i) => <Coin size="sm" uid={`m${i}`} />)}
+      </div>
 
       <p class="coin-result" id="coin-result" aria-live="polite">
         <span class="coin-result-main" id="coin-result-main"></span>
@@ -132,6 +146,47 @@ const schemaLD = {
       </p>
 
       <button class="coin-flip-btn" id="btn-flip" type="button">Lanzar moneda</button>
+
+      {/* Después del resultado: la pregunta de intuición y compartir */}
+      <div id="coin-after" class="flex flex-col items-center gap-3 mt-6 w-full" hidden>
+        <div id="coin-gut" class="flex flex-col items-center gap-2">
+          <p class="coin-gut-q">¿Qué sentiste al verlo?</p>
+          <div class="flex gap-6">
+            <button class="coin-text-btn" id="gut-relief" type="button">Alivio</button>
+            <button class="coin-text-btn" id="gut-disappoint" type="button">Decepción</button>
+          </div>
+          <p class="coin-gut-msg" id="gut-msg" aria-live="polite"></p>
+          <button class="coin-mini-btn" id="gut-off" type="button">No preguntar más</button>
+        </div>
+        <button class="coin-text-btn" id="btn-share" type="button">Compartir esta decisión</button>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 w-full mt-10">
+        <label class="coin-field flex flex-col gap-1.5 min-w-0">
+          <span>Modo</span>
+          <select id="coin-mode">
+            <option value="una">Una moneda</option>
+            <option value="mejor3">Mejor de 3</option>
+            <option value="mejor5">Mejor de 5</option>
+            <option value="varias">Varias monedas</option>
+          </select>
+        </label>
+        <label class="coin-field flex flex-col gap-1.5 min-w-0">
+          <span>Cómo se dice</span>
+          <select id="coin-names">
+            {Object.entries(NOMBRES).map(([clave, n]) => <option value={clave}>{n.etiqueta}</option>)}
+          </select>
+        </label>
+        <label class="coin-field flex flex-col gap-1.5 min-w-0" id="coin-count-field" hidden>
+          <span>Monedas</span>
+          <select id="coin-count">
+            {[2, 3, 4, 5].map((n) => <option value={n}>{n}</option>)}
+          </select>
+        </label>
+      </div>
+      <p class="text-sm text-ink-tertiary mt-4 mb-0 w-full" id="coin-chapas" hidden>
+        Con dos monedas también se juega a las <a href="/blog/moneda/juego-chapas">chapas</a>.
+      </p>
     </section>
 
     <section class="mt-16" aria-label="Historial de lanzamientos">
@@ -211,6 +266,12 @@ const schemaLD = {
     <h3>¿Cara o sello es lo mismo que cara o cruz?</h3>
     <p>Sí. La expresión cambia por país: cara o cruz, cara o sello, águila o sol, volado o tirar moneda. En todos los casos se trata de elegir entre dos resultados posibles.</p>
 
+    <h3>¿Puedo lanzar al mejor de 3 o varias monedas a la vez?</h3>
+    <p>Sí. En Modo puedes elegir una moneda, mejor de 3, mejor de 5 o varias monedas (de 2 a 5). En las series la moneda se lanza sola hasta que una opción consigue la mayoría, y el marcador queda en el historial.</p>
+
+    <h3>¿Puedo compartir el resultado?</h3>
+    <p>Sí. Después de lanzar, "Compartir esta decisión" genera un enlace con tus dos opciones ya escritas, para que otra persona lance la misma moneda. El enlace no incluye tu historial.</p>
+
     <h3>¿Puedo usarlo para sorteos importantes?</h3>
     <p>Para decisiones importantes conviene usar reglas más formales y documentadas. Esta herramienta está pensada para decisiones rápidas, juegos, turnos y dinámicas recreativas.</p>
 
@@ -256,7 +317,8 @@ const schemaLD = {
   }
 
   /* Opciones: dos campos subrayados, sin cajas */
-  .coin-option span {
+  .coin-option span,
+  .coin-field span {
     font-size: 0.75rem;
     font-weight: 600;
     letter-spacing: 0.12em;
@@ -290,6 +352,80 @@ const schemaLD = {
     font-style: italic;
     color: var(--text-tertiary);
     padding-bottom: 0.45rem;
+  }
+
+  /* El sitio no carga el preflight de Tailwind, así que nada gana a `.flex`
+     cuando el JS pone `hidden`: sin esto, los bloques ocultos se verían */
+  [hidden] {
+    display: none !important;
+  }
+
+  /* Ajustes: selects nativos con el mismo subrayado que los campos */
+  .coin-field select {
+    width: 100%;
+    padding: 0.4rem 0;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--divider-line);
+    border-radius: 0;
+    color: var(--text-primary);
+    color-scheme: dark;
+    font: inherit;
+    font-size: 1rem;
+  }
+
+  .coin-field select:focus-visible {
+    outline: none;
+    border-bottom-color: var(--accent-warm);
+  }
+
+  /* Botones de texto: acción secundaria, subrayada, nunca rellena */
+  .coin-text-btn,
+  .coin-mini-btn {
+    background: none;
+    border: 0;
+    padding: 0.25rem 0;
+    color: var(--text-primary);
+    font: inherit;
+    border-bottom: 1px solid var(--divider-line);
+    cursor: pointer;
+  }
+
+  .coin-text-btn:hover,
+  .coin-text-btn:focus-visible,
+  .coin-text-btn[aria-pressed="true"] {
+    outline: none;
+    color: var(--accent-warm);
+    border-bottom-color: currentColor;
+  }
+
+  .coin-mini-btn {
+    font-size: 0.8rem;
+    color: var(--text-tertiary);
+    border-bottom: 0;
+  }
+
+  .coin-gut-q {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+  }
+
+  .coin-gut-msg {
+    margin: 0;
+    max-width: 30rem;
+    text-align: center;
+    color: var(--text-primary);
+  }
+
+  .coin-gut-msg:empty {
+    display: none;
+  }
+
+  .coin-gut-msg :global(em) {
+    font-family: 'Newsreader', Georgia, serif;
+    font-style: italic;
+    color: var(--accent-warm);
   }
 
   /* Resultado */
@@ -358,6 +494,7 @@ const schemaLD = {
 
   .coin-history-head {
     display: flex;
+    flex-wrap: wrap;
     align-items: baseline;
     gap: 1rem;
     padding-bottom: 0.75rem;
@@ -424,15 +561,23 @@ const schemaLD = {
 
   /* Móvil: el botón de lanzar debe quedar a la vista sin hacer scroll
      (unos 660px útiles en un iPhone con la barra de Safari) */
+  /* Pantallas bajas (Android con barra de Chrome, iPhone SE): la entradilla
+     cede su sitio para que el botón de lanzar quepa sin scroll */
+  @media (max-width: 639px) and (max-height: 620px) {
+    .coin-intro {
+      display: none;
+    }
+  }
+
   @media (max-width: 639px) {
     .coin-hero h1 {
-      font-size: 1.85rem;
+      font-size: 1.7rem;
       margin-bottom: 0.5rem;
     }
 
     .coin-result {
-      min-height: 3.75rem;
-      margin: 0.5rem 0 0.75rem;
+      min-height: 3.25rem;
+      margin: 0.25rem 0 0.5rem;
     }
 
     .coin-result-main {
