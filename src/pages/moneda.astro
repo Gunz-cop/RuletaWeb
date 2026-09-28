@@ -5,6 +5,7 @@ import Coin from '../components/Coin.astro';
 import { NOMBRES } from '../scripts/moneda-serie.js';
 import HubGrid from '../components/HubGrid.astro';
 import SeoArticle from '../components/SeoArticle.astro';
+import CoinDemo from '../components/CoinDemo.astro';
 import { getSocialImageUrl } from '../lib/heroImages';
 
 const title = 'Cara o Sello Online: Lanza la Moneda y Decide en 1 Segundo';
@@ -246,6 +247,7 @@ const schemaLD = {
     <p>Úsala para lo cotidiano (y <a href="#coin-single">pruébala ahora, está justo arriba</a>): quién empieza la partida, qué comer, qué equipo saca, qué tarea haces primero o cómo romper un empate entre amigos. No la uses para apuestas ni para decisiones médicas, legales o de dinero.</p>
 
     <h2>Cómo tirar una moneda online</h2>
+    <CoinDemo />
     <ol>
       <li><strong>Escribe tus dos opciones:</strong> por ejemplo, cara = pizza y sello = sushi.</li>
       <li><strong>Elige el modo:</strong> una moneda, mejor de 3, mejor de 5 o varias monedas a la vez.</li>
