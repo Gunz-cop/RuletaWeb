@@ -98,6 +98,22 @@ const schemaLD = {
             "@type": "Answer",
             "text": "Solo un historial breve en tu propio navegador, que puedes borrar cuando quieras. No hace falta cuenta y tus opciones no se envían a ningún servidor."
           }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Cómo se decide quién saca en el fútbol con una moneda?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "El árbitro lanza la moneda y el capitán visitante elige lado antes de que caiga. Quien gana elige portería o saque. Aquí puedes hacer lo mismo: escribe el nombre de cada equipo en un lado y lanza."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Puedo lanzar una moneda con alguien que está lejos?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Sí. Escribe las dos opciones, lanza y pulsa «Compartir esta decisión». La otra persona recibe un enlace con la misma moneda y las mismas opciones para lanzarla ella también."
+          }
         }
       ]
     },
@@ -225,9 +241,9 @@ const schemaLD = {
 
   <!-- Sección de Artículo SEO -->
   <SeoArticle title="Cara o sello online: cuando las dos opciones te valen, que decida la moneda">
-    <p>Lanzar una moneda es la forma más rápida de decidir entre dos opciones que te valen igual. Según el país se dice <strong>cara o sello</strong>, <strong>cara o cruz</strong>, <strong>volado águila o sol</strong> o <strong>cara o ceca</strong>, pero el juego es el mismo: dos lados, un 50 % cada uno. Esta moneda online funciona en el móvil y en el ordenador, sin instalar nada y sin registro.</p>
+    <p><strong>¿Llevas cinco minutos dudando entre dos opciones?</strong> Lanzar una moneda es la forma más rápida de decidir entre dos opciones que te valen igual. Según el país se dice <strong>cara o sello</strong>, <strong>cara o cruz</strong>, <strong>volado águila o sol</strong> o <strong>cara o ceca</strong>, pero el juego es el mismo: dos lados, un 50 % cada uno. Esta moneda online funciona en el móvil y en el ordenador, sin instalar nada y sin registro.</p>
 
-    <p>Úsala para lo cotidiano: quién empieza la partida, qué comer, qué equipo saca, qué tarea haces primero o cómo romper un empate entre amigos. No la uses para apuestas ni para decisiones médicas, legales o de dinero.</p>
+    <p>Úsala para lo cotidiano (y <a href="#coin-single">pruébala ahora, está justo arriba</a>): quién empieza la partida, qué comer, qué equipo saca, qué tarea haces primero o cómo romper un empate entre amigos. No la uses para apuestas ni para decisiones médicas, legales o de dinero.</p>
 
     <h2>Cómo tirar una moneda online</h2>
     <ol>
@@ -255,7 +271,13 @@ const schemaLD = {
     </table>
 
     <h2>Mejor de 3, mejor de 5 y varias monedas</h2>
-    <p>Si un solo lanzamiento te parece poco, elige <strong>mejor de 3</strong> o <strong>mejor de 5</strong>: la moneda se lanza sola hasta que una opción consigue la mayoría y el marcador queda en el historial. Con <strong>varias monedas</strong> lanzas de 2 a 5 a la vez, útil para juegos como las <a href="/blog/moneda/juego-chapas">chapas</a>.</p>
+    <p>Un solo lanzamiento es rápido, pero a veces el perdedor pide revancha. Para eso existen las series.</p>
+    <h3>Mejor de 3</h3>
+    <p>La moneda se lanza sola hasta que una opción gana dos veces. Es el formato ideal para discusiones entre dos personas: nadie puede quejarse de mala suerte en un único tiro.</p>
+    <h3>Mejor de 5</h3>
+    <p>Gana quien llega primero a tres. Úsalo para decisiones que importan un poco más, como el plan del fin de semana o quién elige la película durante un mes.</p>
+    <h3>Varias monedas a la vez</h3>
+    <p>Lanza de 2 a 5 monedas de golpe y verás cuántas caras y cuántos sellos salen. Sirve para juegos como las <a href="/blog/moneda/juego-chapas">chapas</a>, para clases de probabilidad o simplemente para ver el azar en acción. El marcador de cada serie queda guardado en el historial.</p>
 
     <h2>¿Es una moneda justa? El 50/50 explicado</h2>
     <p>Una moneda física no es perfecta: influyen la fuerza del lanzamiento, el lado que mira hacia arriba al empezar y cómo la atrapas. Aquí no: cada resultado sale del generador aleatorio criptográfico del navegador (<code>crypto.getRandomValues</code>), con exactamente un <strong>50 % para cada lado</strong>. La animación solo muestra ese resultado; no lo decide. Y que haya salido sello tres veces seguidas no cambia nada la siguiente tirada.</p>
@@ -267,6 +289,60 @@ const schemaLD = {
       <li><strong>Te muestra lo que ya querías:</strong> mientras la moneda gira, sueles desear que salga un lado. Ese deseo es la respuesta, salga lo que salga.</li>
       <li><strong>Se comparte fácil:</strong> &laquo;Compartir esta decisión&raquo; crea un enlace con tus dos opciones para que otra persona lance la misma moneda.</li>
     </ul>
+
+    <h2>Ideas para lanzar una moneda hoy mismo</h2>
+    <p>¿No sabes para qué usarla? Estas son las decisiones que más se resuelven con un volado. Cópialas en la moneda de arriba y <a href="#coin-single">lánzala ahora</a>.</p>
+    <table>
+      <thead>
+        <tr><th>Situación</th><th>Cara</th><th>Sello</th><th>Modo recomendado</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>¿Qué pedimos de comer?</td><td>Pizza</td><td>Hamburguesa</td><td>Una moneda</td></tr>
+        <tr><td>¿Quién saca en el partido?</td><td>Equipo A</td><td>Equipo B</td><td>Una moneda</td></tr>
+        <tr><td>¿Quién lava los platos?</td><td>Yo</td><td>Tú</td><td>Mejor de 3</td></tr>
+        <tr><td>Plan del fin de semana</td><td>Playa</td><td>Montaña</td><td>Mejor de 5</td></tr>
+        <tr><td>¿Qué serie vemos?</td><td>Comedia</td><td>Suspenso</td><td>Una moneda</td></tr>
+        <tr><td>¿Qué tarea hago primero?</td><td>Correos</td><td>Informe</td><td>Una moneda</td></tr>
+        <tr><td>Juego de chapas</td><td>Caras</td><td>Sellos</td><td>Varias monedas</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Trucos para decidir mejor con una moneda</h2>
+    <h3>1. Pon solo opciones que aceptarías</h3>
+    <p>La moneda es perfecta cuando las dos salidas te parecen bien. Si una opción te daría rabia, no la pongas: el azar no arregla una opción mala.</p>
+    <h3>2. Escribe las opciones, no te las guardes en la cabeza</h3>
+    <p>Poner nombre a cada lado evita el clásico &laquo;¿cara era la pizza o el sushi?&raquo;. En la herramienta el resultado aparece con tu opción escrita, así que nadie puede discutirlo.</p>
+    <h3>3. Usa la prueba del alivio</h3>
+    <p>Justo al ver el resultado, la herramienta te pregunta qué sentiste. Si sientes decepción, ya sabes que preferías la otra opción: puedes elegirla sin culpa. Si sientes alivio, adelante.</p>
+    <h3>4. Para decisiones de grupo, comparte el enlace</h3>
+    <p>Con &laquo;Compartir esta decisión&raquo; mandas la misma moneda por WhatsApp. Todos ven las mismas opciones y nadie puede decir que hiciste trampa.</p>
+    <h3>5. Si hay más de dos opciones, cambia de herramienta</h3>
+    <p>La moneda solo tiene dos lados. Para tres o más opciones usa la <a href="/ruleta">ruleta de decisiones</a>, que admite tantas como quieras.</p>
+
+    <h2>¿Moneda, ruleta, dados o sí o no? Elige la herramienta correcta</h2>
+    <p>Decídelo.app tiene una herramienta para cada tipo de duda. Todas son gratis, funcionan en el móvil y no piden registro.</p>
+    <table>
+      <thead>
+        <tr><th>Si necesitas…</th><th>Usa</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Elegir entre dos opciones</td><td>Esta moneda: cara o sello</td></tr>
+        <tr><td>Elegir entre tres o más opciones o nombres</td><td><a href="/ruleta">Ruleta aleatoria</a></td></tr>
+        <tr><td>Una respuesta rápida a una pregunta</td><td><a href="/si-o-no">Sí o no</a></td></tr>
+        <tr><td>Tirar dados para un juego de mesa</td><td><a href="/dados">Dados online</a></td></tr>
+        <tr><td>Un número al azar para un sorteo</td><td><a href="/numeros">Número aleatorio</a></td></tr>
+        <tr><td>Armar equipos parejos</td><td><a href="/equipos">Generador de equipos</a></td></tr>
+        <tr><td>Resolver un empate jugando</td><td><a href="/piedra-papel-tijera">Piedra, papel o tijera</a></td></tr>
+        <tr><td>Organizar el intercambio de regalos</td><td><a href="/amigo-secreto">Amigo secreto online</a></td></tr>
+        <tr><td>Medir tiempo por turnos</td><td><a href="/temporizador">Temporizador</a></td></tr>
+      </tbody>
+    </table>
+
+    <h2>¿Por qué se dice cara o sello?</h2>
+    <p>Lanzar una moneda para decidir es un juego muy antiguo: ya en la antigua Roma se jugaba a <em>capita aut navia</em>, &laquo;cabezas o barco&raquo;, por las dos caras de sus monedas. Cada país heredó el nombre de lo que mostraban sus propias monedas: la <strong>cara</strong> es el lado del rostro o la figura principal, y el <strong>sello</strong>, la <strong>cruz</strong> o el <strong>sol</strong> son el otro lado. En México, el águila del escudo nacional dio origen al famoso <strong>volado águila o sol</strong>. Cambia el nombre, pero la regla es idéntica en todas partes: dos lados, la misma oportunidad.</p>
+
+    <h2>Deja de dudar: lanza la moneda ahora</h2>
+    <p>Llevas leyendo un buen rato y la decisión sigue ahí esperando. Sube a la <a href="#coin-single">moneda online</a>, escribe tus dos opciones y pulsa &laquo;Lanzar moneda&raquo;. En un segundo tendrás tu respuesta y, con la prueba del alivio, sabrás si de verdad era la que querías. Y si la duda tiene más de dos caminos, gira la <a href="/ruleta">ruleta</a> o pregunta al <a href="/si-o-no">oráculo de sí o no</a>.</p>
 
     <h2>Preguntas frecuentes</h2>
     <h3>¿Cómo lanzar una moneda online?</h3>
@@ -287,11 +363,19 @@ const schemaLD = {
     <h3>¿Se guardan mis resultados?</h3>
     <p>Solo un historial breve en tu propio navegador, que puedes borrar cuando quieras. No hace falta cuenta y tus opciones no se envían a ningún servidor.</p>
 
+    <h3>¿Cómo se decide quién saca en el fútbol con una moneda?</h3>
+    <p>El árbitro lanza la moneda y el capitán visitante elige lado antes de que caiga. Quien gana elige portería o saque. Aquí puedes hacer lo mismo: escribe el nombre de cada equipo en un lado y lanza.</p>
+
+    <h3>¿Puedo lanzar una moneda con alguien que está lejos?</h3>
+    <p>Sí. Escribe las dos opciones, lanza y pulsa &laquo;Compartir esta decisión&raquo;. La otra persona recibe un enlace con la misma moneda y las mismas opciones para lanzarla ella también.</p>
+
     <h2>Guías relacionadas</h2>
     <ul>
       <li><a href="/blog/moneda/decision-moneda">Cómo decidir con cara o cruz sin arrepentirte</a></li>
       <li><a href="/blog/moneda/cara-o-cruz-lanzamiento-probabilidad">Probabilidad al lanzar una moneda</a></li>
       <li><a href="/blog/moneda/cara-o-cruz-ciencia">La ciencia detrás de cara o cruz</a></li>
+      <li><a href="/blog/moneda/juego-chapas">Cómo jugar a las chapas con dos monedas</a></li>
+      <li><a href="/blog/moneda/dinamicas-pareja-aleatoriedad-relacion">Dinámicas de pareja con azar</a></li>
     </ul>
 
   </SeoArticle>
