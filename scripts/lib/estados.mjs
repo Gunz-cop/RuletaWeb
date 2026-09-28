@@ -623,7 +623,9 @@ export const ESTADOS = [
     ruta: '/si-o-no',
     nombre: 'agitar-movil',
     viewport: { width: 393, height: 659 },
-    contexto: { hasTouch: true, isMobile: true },
+    // Chrome 153 añadió DeviceMotionEvent.requestPermission(), como Safari;
+    // sin conceder los sensores, el navegador sin pantalla lo deniega.
+    contexto: { hasTouch: true, isMobile: true, permissions: ['accelerometer', 'gyroscope'] },
     verificarRelacion: async (pagina) => {
       if (!(await pagina.isVisible('#btn-shake'))) {
         return { ok: false, mensaje: '#btn-shake no se ve en un móvil táctil' };
