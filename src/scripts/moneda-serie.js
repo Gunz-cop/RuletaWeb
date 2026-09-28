@@ -12,7 +12,7 @@
 // de búsqueda. Antes de usarlos como valor por defecto en más países,
 // revisar las consultas reales en Search Console.
 export const NOMBRES = {
-  cruz: { etiqueta: 'Cara o cruz', heads: 'Cara', tails: 'Cruz', headsPl: 'caras', tailsPl: 'cruces' },
+  cruz: { etiqueta: 'Cara o cruz', heads: 'Cara', tails: 'Cruz', glifos: ['C', 'X'], headsPl: 'caras', tailsPl: 'cruces' },
   sello: { etiqueta: 'Cara o sello', heads: 'Cara', tails: 'Sello', headsPl: 'caras', tailsPl: 'sellos' },
   corona: { etiqueta: 'Escudo o corona', heads: 'Escudo', tails: 'Corona', headsPl: 'escudos', tailsPl: 'coronas', verificar: true },
   aguila: { etiqueta: 'Águila o sol', heads: 'Águila', tails: 'Sol', headsPl: 'águilas', tailsPl: 'soles' },
@@ -28,14 +28,18 @@ export function nombresPorIdioma(idioma) {
   return POR_PAIS[pais] || 'cruz';
 }
 
+// Object.hasOwn y no NOMBRES[clave]: la clave puede venir de un enlace, y
+// '__proto__' o 'constructor' existen en cualquier objeto y romperían la página.
 export function juegoDeNombres(clave) {
-  return NOMBRES[clave] ? clave : 'cruz';
+  return typeof clave === 'string' && Object.hasOwn(NOMBRES, clave) ? clave : 'cruz';
 }
 
-// Letra de cada cara. Si los dos nombres empiezan igual (Cara / Ceca) se
-// usan dos letras en la cruz para que las caras no sean idénticas.
+// Letra de cada cara: la inicial, salvo que el juego declare las suyas
+// (la cruz se marca con una X, no con "Cr"). Si las dos iniciales coinciden
+// (Cara / Ceca) la cruz lleva dos letras para que las caras no sean iguales.
 export function glifos(clave) {
   const n = NOMBRES[juegoDeNombres(clave)];
+  if (n.glifos) return { heads: n.glifos[0], tails: n.glifos[1] };
   const h = n.heads[0];
   const t = n.tails[0] === h ? n.tails.slice(0, 2) : n.tails[0];
   return { heads: h, tails: t };

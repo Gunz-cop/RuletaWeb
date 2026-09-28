@@ -9,7 +9,7 @@
  */
 import { webcrypto } from 'node:crypto';
 import {
-  jugarSerie, lanzarVarias, resumenVarias, nombresPorIdioma, glifos, modoValido,
+  jugarSerie, lanzarVarias, resumenVarias, nombresPorIdioma, glifos, modoValido, juegoDeNombres,
 } from '../src/scripts/moneda-serie.js';
 
 const fallos = [];
@@ -46,7 +46,13 @@ check(nombresPorIdioma('es-CR') === 'corona', 'es-CR → corona');
 check(nombresPorIdioma('es-ES') === 'cruz', 'es-ES → cruz');
 check(nombresPorIdioma(undefined) === 'cruz', 'sin idioma → cruz');
 check(glifos('ceca').tails === 'Ce', 'cara/ceca con glifos distintos');
+check(glifos('cruz').tails === 'X', 'la cruz se marca con X');
 check(modoValido('<script>') === 'una', 'modo inválido');
+for (const k of ['__proto__', 'constructor', 'toString', 'hasOwnProperty']) {
+  check(juegoDeNombres(k) === 'cruz', `nombres=${k} debe caer en cruz`);
+  check(glifos(k).tails === 'X', `glifos(${k}) no debe lanzar`);
+}
+check(modoValido('constructor') === 'una', 'modo=constructor');
 
 if (fallos.length) {
   for (const f of fallos.slice(0, 20)) console.error(`FALLA  ${f}`);
