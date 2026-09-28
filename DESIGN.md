@@ -257,6 +257,20 @@ es el de móvil y lo de pantallas grandes se añade encima.
   la cabecera del sitio. Lo vigila `npm run test:estado`:
   `estadosAccionVisible(ruta, selector)` de `scripts/lib/estados.mjs` crea
   un invariante por móvil, y cada herramienta migrada lo añade.
+- **El resto de formatos también se prueba** (`estadosResponsive` en
+  `scripts/lib/estados.mjs`): Galaxy Z Fold cerrado (344×680) y abierto
+  (673×760), tablet vertical (768×960) y horizontal (1024×700), escritorio
+  (1280×720 y 1920×1000) y móvil en horizontal (740×340). En todos se exige
+  que no haya scroll horizontal y, salvo en el móvil en horizontal (340px de
+  alto no admiten ninguna herramienta entera), que la acción principal se
+  vea sin scroll. Oppo, Xiaomi, Motorola y compañía no llevan fila propia:
+  sus ventanas útiles (360–412px de ancho) ya las cubren los móviles de
+  referencia.
+- **Desde 1024px, dos columnas.** Una sola columna en escritorio deja el
+  botón fuera de un portátil de 720px de alto. La moneda usa
+  `grid-template-areas` (lo que se escribe y se ajusta a la izquierda, el
+  objeto y el botón a la derecha) sin cambiar el orden del HTML, que sigue
+  siendo el de móvil.
 - **Pantallas bajas**: si no cabe, primero se compacta en móvil (márgenes,
   tamaño del objeto) y como último recurso se oculta la entradilla con
   `@media (max-width: 639px) and (max-height: 620px)`. Nunca se baja el
@@ -268,6 +282,26 @@ es el de móvil y lo de pantallas grandes se añade encima.
   porque le quita el margen lateral (usa `pt-*`/`pb-*` o `padding-block`).
 - **Campos de texto a 16px o más** (`1rem`): por debajo, Safari en iPhone
   hace zoom al enfocarlos.
+
+## Variantes regionales sin pedir ubicación
+
+Cuando una herramienta cambia según el país (la moneda: cara o sello en
+Colombia, águila o sol en México, cara o cruz en España), la región se
+deduce **sin pedir permisos ni usar servidor**:
+
+1. Un enlace compartido que ya trae la variante (`?nombres=`) manda.
+2. Después, lo que el visitante eligió antes (guardado en `localStorage`).
+3. Después, la **zona horaria del sistema**
+   (`Intl.DateTimeFormat().resolvedOptions().timeZone`, p. ej.
+   `America/Bogota`): no dispara ningún aviso, no sale del navegador y
+   funciona aunque el navegador esté en inglés.
+4. Después, la región del idioma del navegador (`es-CO`).
+5. Si nada coincide, la variante neutra (cara o cruz).
+
+Nunca `navigator.geolocation`: pide permiso y la gente desconfía. Tampoco
+geolocalización por IP: exige servidor y el sitio es estático a propósito.
+El visitante siempre puede cambiar la variante a mano. Implementación de
+referencia: `nombresPorDefecto` en `src/scripts/moneda-serie.js`.
 
 ## Anatomía de una página de herramienta
 

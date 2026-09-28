@@ -19,13 +19,55 @@ export const NOMBRES = {
   ceca: { etiqueta: 'Cara o ceca', heads: 'Cara', tails: 'Ceca', headsPl: 'caras', tailsPl: 'cecas' },
 };
 
-// Idioma del navegador → juego de nombres por defecto. Solo países donde
-// el término está claro; el resto usa "cara o cruz".
-const POR_PAIS = { CO: 'sello', CR: 'corona', MX: 'aguila', AR: 'ceca' };
+// País → juego de nombres por defecto. Solo países con término claro; el
+// resto usa "cara o cruz" (también España, donde es lo que se dice).
+// VERIFICAR con Search Console: CL, PE, VE, BO (sello) y CR (corona) salen
+// de uso conocido, no de datos de búsqueda propios.
+const POR_PAIS = {
+  CO: 'sello', CL: 'sello', PE: 'sello', VE: 'sello', BO: 'sello',
+  CR: 'corona', MX: 'aguila', AR: 'ceca',
+};
+
+// Zona horaria del sistema → país. Es la forma de saber la región sin pedir
+// ubicación: no dispara ningún permiso, no sale del navegador y funciona
+// aunque el navegador esté en inglés o en "es" a secas. El sitio es
+// estático, así que no hay servidor que pueda leer el país de la petición.
+const ZONAS = {
+  'America/Bogota': 'CO',
+  'America/Costa_Rica': 'CR',
+  'America/Santiago': 'CL', 'America/Punta_Arenas': 'CL', 'Pacific/Easter': 'CL',
+  'America/Lima': 'PE',
+  'America/Caracas': 'VE',
+  'America/La_Paz': 'BO',
+  'America/Mexico_City': 'MX', 'America/Monterrey': 'MX', 'America/Tijuana': 'MX',
+  'America/Cancun': 'MX', 'America/Merida': 'MX', 'America/Chihuahua': 'MX',
+  'America/Hermosillo': 'MX', 'America/Mazatlan': 'MX', 'America/Matamoros': 'MX',
+  'America/Bahia_Banderas': 'MX', 'America/Ojinaga': 'MX', 'America/Ciudad_Juarez': 'MX',
+  'America/Buenos_Aires': 'AR', 'America/Cordoba': 'AR', 'America/Mendoza': 'AR',
+  'Europe/Madrid': 'ES', 'Atlantic/Canary': 'ES', 'Africa/Ceuta': 'ES',
+};
+
+export function paisPorZona(zona) {
+  const z = String(zona || '');
+  if (z.startsWith('America/Argentina/')) return 'AR';
+  return Object.hasOwn(ZONAS, z) ? ZONAS[z] : null;
+}
+
+function paisPorIdioma(idioma) {
+  return String(idioma || '').split('-')[1]?.toUpperCase() || null;
+}
+
+// Zona horaria primero (dice dónde está el visitante), región del idioma
+// después (dice de dónde es su navegador), "cara o cruz" si nada coincide.
+export function nombresPorDefecto({ zona, idioma } = {}) {
+  for (const pais of [paisPorZona(zona), paisPorIdioma(idioma)]) {
+    if (pais && Object.hasOwn(POR_PAIS, pais)) return POR_PAIS[pais];
+  }
+  return 'cruz';
+}
 
 export function nombresPorIdioma(idioma) {
-  const pais = String(idioma || '').split('-')[1]?.toUpperCase();
-  return POR_PAIS[pais] || 'cruz';
+  return nombresPorDefecto({ idioma });
 }
 
 // Object.hasOwn y no NOMBRES[clave]: la clave puede venir de un enlace, y

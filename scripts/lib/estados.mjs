@@ -161,6 +161,62 @@ export function accionPrincipalVisible(selector) {
   };
 }
 
+// --- Matriz responsive: el resto de formatos ------------------------------
+// Además de los móviles de referencia, la página se prueba en los formatos
+// que no son "un teléfono en vertical": plegables, tablets, escritorio y
+// móvil en horizontal. Oppo, Xiaomi o Motorola no necesitan fila propia:
+// sus ventanas útiles (360–412px de ancho) ya las cubren los de referencia.
+//
+// `accion: false` exime del invariante de acción visible: un móvil en
+// horizontal deja ~340px de alto, donde ninguna herramienta cabe entera; ahí
+// solo se exige que no haya scroll horizontal.
+export const VIEWPORTS_RESPONSIVE = {
+  'fold-cerrado-344x680': { viewport: { width: 344, height: 680 }, accion: true },
+  'fold-abierto-673x760': { viewport: { width: 673, height: 760 }, accion: true },
+  'tablet-vertical-768x960': { viewport: { width: 768, height: 960 }, accion: true },
+  'tablet-horizontal-1024x700': { viewport: { width: 1024, height: 700 }, accion: true },
+  'movil-horizontal-740x340': { viewport: { width: 740, height: 340 }, accion: false },
+  'escritorio-1280x720': { viewport: { width: 1280, height: 720 }, accion: true },
+  'escritorio-1920x1000': { viewport: { width: 1920, height: 1000 }, accion: true },
+};
+
+// Sin scroll horizontal, y (si se pide) la acción principal visible. Con
+// `preparar` el estado puede cambiar de modo antes de medir (p. ej. cinco
+// monedas pequeñas en un Fold cerrado, el caso más ancho de la moneda).
+function sinScrollHorizontal(selector, { accion, preparar } = {}) {
+  return async (pagina) => {
+    if (preparar) await preparar(pagina);
+    const { ancho, scroll } = await pagina.evaluate(() => ({
+      ancho: window.innerWidth,
+      scroll: document.documentElement.scrollWidth,
+    }));
+    if (scroll > ancho + TOLERANCIA_PX) {
+      return {
+        ok: false,
+        mensaje: `scroll horizontal: el documento mide ${scroll}px en una ventana de ${ancho}px. Algo tiene un ancho fijo o un min-width mayor que la pantalla.`,
+      };
+    }
+    if (accion) return accionPrincipalVisible(selector)(pagina);
+    return { ok: true, mensaje: `sin scroll horizontal (${scroll}px en ${ancho}px)` };
+  };
+}
+
+export function estadosResponsive(ruta, selector, extras = []) {
+  const base = Object.entries(VIEWPORTS_RESPONSIVE).map(([nombre, { viewport, accion }]) => ({
+    ruta,
+    nombre: `responsive-${nombre}`,
+    viewport,
+    verificarRelacion: sinScrollHorizontal(selector, { accion }),
+  }));
+  const conModo = extras.map(({ nombre, viewport, preparar }) => ({
+    ruta,
+    nombre: `responsive-${nombre}`,
+    viewport,
+    verificarRelacion: sinScrollHorizontal(selector, { accion: true, preparar }),
+  }));
+  return [...base, ...conModo];
+}
+
 export const ESTADOS = [
   {
     // La ruleta se mudó a /ruleta (ver AGENTS.md): el modo foco es un
@@ -515,4 +571,14 @@ export const ESTADOS = [
     ],
   },
   ...estadosAccionVisible('/moneda', '#btn-flip'),
+  ...estadosResponsive('/moneda', '#btn-flip', [
+    {
+      nombre: 'cinco-monedas-fold-cerrado-344x680',
+      viewport: { width: 344, height: 680 },
+      preparar: async (pagina) => {
+        await pagina.selectOption('#coin-mode', 'varias');
+        await pagina.selectOption('#coin-count', '5');
+      },
+    },
+  ]),
 ];

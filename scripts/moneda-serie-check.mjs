@@ -9,7 +9,7 @@
  */
 import { webcrypto } from 'node:crypto';
 import {
-  jugarSerie, lanzarVarias, resumenVarias, nombresPorIdioma, glifos, modoValido, juegoDeNombres,
+  jugarSerie, lanzarVarias, resumenVarias, nombresPorIdioma, nombresPorDefecto, paisPorZona, glifos, modoValido, juegoDeNombres,
 } from '../src/scripts/moneda-serie.js';
 
 const fallos = [];
@@ -45,6 +45,15 @@ check(nombresPorIdioma('es-CO') === 'sello', 'es-CO → sello');
 check(nombresPorIdioma('es-CR') === 'corona', 'es-CR → corona');
 check(nombresPorIdioma('es-ES') === 'cruz', 'es-ES → cruz');
 check(nombresPorIdioma(undefined) === 'cruz', 'sin idioma → cruz');
+const zona = (z, i) => nombresPorDefecto({ zona: z, idioma: i });
+check(zona('America/Bogota', 'en-US') === 'sello', 'Bogotá con navegador en inglés → sello');
+check(zona('Europe/Madrid', 'es') === 'cruz', 'Madrid → cruz');
+check(zona('America/Costa_Rica', 'es-419') === 'corona', 'Costa Rica → corona');
+check(zona('America/Argentina/Salta') === 'ceca', 'zona argentina → ceca');
+check(zona('Asia/Tokyo', 'es-MX') === 'aguila', 'zona desconocida → idioma de respaldo');
+check(zona('Asia/Tokyo', 'ja-JP') === 'cruz', 'nada coincide → cruz');
+check(zona('constructor', 'es-constructor') === 'cruz', 'claves heredadas no cuelan');
+check(paisPorZona(undefined) === null, 'sin zona');
 check(glifos('ceca').tails === 'Ce', 'cara/ceca con glifos distintos');
 check(glifos('cruz').tails === 'X', 'la cruz se marca con X');
 check(modoValido('<script>') === 'una', 'modo inválido');

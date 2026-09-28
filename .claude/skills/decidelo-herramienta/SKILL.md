@@ -88,6 +88,7 @@ Cada herramienta migrada añade como mínimo:
   comprobar: [/* resultado y filas creadas por el JS */],
 },
 ...estadosAccionVisible('/<herramienta>', '#<boton-principal>'),
+...estadosResponsive('/<herramienta>', '#<boton-principal>'),
 ```
 
 Si el invariante de móvil falla, compacta el hero o el objeto en móvil. No
@@ -108,7 +109,8 @@ versión que haya en `/opt/pw-browsers`) para `test:estado`.
 
 Además, a mano con `npm run build && npx astro preview`:
 
-- 360×560, 375×548, 393×659 y 1280×900: usar la herramienta varias veces y comprobar que el
+- Los móviles de referencia (360×560, 375×548, 393×659), Fold cerrado y
+  abierto, tablet y un portátil de 1280×720: usar la herramienta varias veces y comprobar que el
   resultado mostrado coincide con lo que enseña el objeto.
 - Sin scroll horizontal a 360px.
 - Que las entradas del usuario sobreviven a una recarga.

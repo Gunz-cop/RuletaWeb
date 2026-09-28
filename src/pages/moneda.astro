@@ -113,15 +113,14 @@ const schemaLD = {
     <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@1,400&display=swap" rel="stylesheet">
   </Fragment>
 
-  <main class="wrap max-w-2xl pt-5 pb-8 sm:pt-12">
+  <main class="coin-layout wrap max-w-2xl lg:max-w-5xl pt-5 pb-8 sm:pt-8">
 
-    <header class="coin-hero text-center mb-5 sm:mb-10">
+    <header class="coin-hero coin-area-hero text-center lg:text-left mb-5 sm:mb-6">
       <h1>Cara o cruz, <em>sin darle más vueltas</em></h1>
-      <p class="coin-intro my-0 mx-auto max-w-lg text-sm sm:text-base text-ink-secondary">Escribe tus dos opciones y lanza. Cara o sello, águila o sol, escudo o corona: como se diga donde vives.</p>
+      <p class="coin-intro my-0 mx-auto lg:mx-0 max-w-lg text-sm sm:text-base text-ink-secondary">Escribe tus dos opciones y lanza. Cara o sello, águila o sol, escudo o corona: como se diga donde vives.</p>
     </header>
 
-    <section class="flex flex-col items-center" aria-label="Lanzar moneda">
-      <div class="grid grid-cols-[1fr_auto_1fr] items-end gap-4 w-full mb-4 sm:mb-14">
+    <div class="coin-area-options grid grid-cols-[1fr_auto_1fr] items-end gap-4 w-full mb-4 sm:mb-8">
         <label class="coin-option flex flex-col gap-1.5 min-w-0">
           <span data-name-label="heads">Cara</span>
           <input id="option-heads" type="text" maxlength="40" placeholder="Pizza" autocomplete="off">
@@ -133,6 +132,7 @@ const schemaLD = {
         </label>
       </div>
 
+    <section class="coin-area-stage flex flex-col items-center" aria-label="Lanzar moneda">
       <div id="coin-single">
         <Coin />
       </div>
@@ -161,7 +161,10 @@ const schemaLD = {
         <button class="coin-text-btn" id="btn-share" type="button">Compartir esta decisión</button>
       </div>
 
-      <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 w-full mt-10">
+    </section>
+
+    <div class="coin-area-settings w-full">
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 w-full mt-10 lg:mt-2">
         <label class="coin-field flex flex-col gap-1.5 min-w-0">
           <span>Modo</span>
           <select id="coin-mode">
@@ -187,9 +190,9 @@ const schemaLD = {
       <p class="text-sm text-ink-tertiary mt-4 mb-0 w-full" id="coin-chapas" hidden>
         Con dos monedas también se juega a las <a href="/blog/moneda/juego-chapas">chapas</a>.
       </p>
-    </section>
+    </div>
 
-    <section class="mt-16" aria-label="Historial de lanzamientos">
+    <section class="coin-area-history mt-16" aria-label="Historial de lanzamientos">
       <div class="coin-history-head">
         <h2 class="m-0 font-display text-lg">Últimos lanzamientos</h2>
         <span class="flex-1 text-sm text-ink-tertiary tabular-nums" id="history-count"></span>
@@ -430,7 +433,7 @@ const schemaLD = {
 
   /* Resultado */
   .coin-result {
-    min-height: 5.5rem;
+    min-height: 4.5rem;
     margin: 1.5rem 0 1rem;
     text-align: center;
     opacity: 0;
@@ -561,6 +564,40 @@ const schemaLD = {
 
   /* Móvil: el botón de lanzar debe quedar a la vista sin hacer scroll
      (unos 660px útiles en un iPhone con la barra de Safari) */
+  /* Escritorio y tablet horizontal: dos columnas. A la izquierda lo que se
+     escribe y se ajusta, a la derecha la moneda y el botón. En una sola
+     columna la página medía ~900px y en un portátil de 720px de alto el
+     botón quedaba fuera de pantalla. El orden del HTML sigue siendo el de
+     móvil; las áreas solo recolocan. */
+  @media (min-width: 1024px) {
+    .coin-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      grid-template-areas:
+        "hero stage"
+        "options stage"
+        "settings stage"
+        "history history";
+      grid-template-rows: auto auto 1fr auto;
+      column-gap: 4rem;
+      align-items: start;
+    }
+
+    .coin-area-hero { grid-area: hero; }
+    .coin-area-options { grid-area: options; }
+    .coin-area-settings { grid-area: settings; }
+    .coin-area-history { grid-area: history; }
+
+    .coin-area-stage {
+      grid-area: stage;
+      padding-top: 4rem;
+    }
+
+    .coin-hero h1 {
+      font-size: 2.75rem;
+    }
+  }
+
   /* Pantallas bajas (Android con barra de Chrome, iPhone SE): la entradilla
      cede su sitio para que el botón de lanzar quepa sin scroll */
   @media (max-width: 639px) and (max-height: 620px) {

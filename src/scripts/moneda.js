@@ -8,7 +8,7 @@
 // así que caen a la vez.
 
 import {
-  NOMBRES, nombresPorIdioma, juegoDeNombres, glifos, modoValido,
+  NOMBRES, nombresPorDefecto, juegoDeNombres, glifos, modoValido,
   jugarSerie, lanzarVarias, resumenVarias,
 } from './moneda-serie.js';
 
@@ -50,6 +50,14 @@ function randomUnit() {
     return values[0] / 4294967296;
   }
   return Math.random();
+}
+
+function zonaHoraria() {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone;
+  } catch (e) {
+    return '';
+  }
 }
 
 const esperar = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -180,7 +188,7 @@ function initMoneda() {
   if (inputTails) inputTails.value = clip(params.get('cruz') ?? saved.tails ?? '');
 
   let nombres = juegoDeNombres(
-    params.get('nombres') ?? readStore(NAMES_KEY, null) ?? nombresPorIdioma(navigator.language)
+    params.get('nombres') ?? readStore(NAMES_KEY, null) ?? nombresPorDefecto({ zona: zonaHoraria(), idioma: navigator.language })
   );
   let modo = modoValido(params.get('modo') ?? readStore(MODE_KEY, 'una'));
   let cuantas = Math.min(5, Math.max(2, Number(readStore('decidelo_moneda_cuantas', 2)) || 2));

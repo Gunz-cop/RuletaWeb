@@ -38,7 +38,7 @@
 .coin-gut-msg[S]{text-align:center;max-width:30rem;color:var(--text-primary);margin:0}
 .coin-gut-msg[S]:empty{display:none}
 .coin-gut-msg[S] em{color:var(--accent-warm);font-family:Newsreader,Georgia,serif;font-style:italic}
-.coin-result[S]{text-align:center;opacity:0;min-height:5.5rem;margin:1.5rem 0 1rem;transition:opacity .25s ease-out,transform .25s ease-out;transform:translateY(6px)}
+.coin-result[S]{text-align:center;opacity:0;min-height:4.5rem;margin:1.5rem 0 1rem;transition:opacity .25s ease-out,transform .25s ease-out;transform:translateY(6px)}
 .coin-result[S].is-shown{opacity:1;transform:none}
 .coin-result-main[S]{color:var(--text-primary);overflow-wrap:anywhere;font-family:Outfit,sans-serif;font-size:clamp(2rem,7vw,3rem);font-weight:700;line-height:1.1;display:block}
 .coin-result-side[S]{letter-spacing:.14em;text-transform:uppercase;color:var(--text-tertiary);margin-top:.35rem;font-size:.8rem;display:block}
@@ -56,6 +56,7 @@
 .history-list[S] .history-side{color:var(--text-tertiary);letter-spacing:.1em;text-transform:uppercase;font-size:.8rem}
 .history-list[S] .history-empty{color:var(--text-tertiary);padding:.8rem 0;font-size:.9rem}
 .hub-section[S]{padding:3rem 0}
+@media (width>=1024px){.coin-layout[S]{grid-template:"hero stage""options stage""settings stage"1fr"history history"/minmax(0,1fr) minmax(0,1fr);align-items:start;column-gap:4rem;display:grid}.coin-area-hero[S]{grid-area:hero}.coin-area-options[S]{grid-area:options}.coin-area-settings[S]{grid-area:settings}.coin-area-history[S]{grid-area:history}.coin-area-stage[S]{grid-area:stage;padding-top:4rem}.coin-hero[S] h1[S]{font-size:2.75rem}}
 @media (width<=639px) and (height<=620px){.coin-intro[S]{display:none}}
 @media (width<=639px){.coin-hero[S] h1[S]{margin-bottom:.5rem;font-size:1.7rem}.coin-result[S]{min-height:3.25rem;margin:.25rem 0 .5rem}.coin-result-main[S]{font-size:1.75rem}.coin-result-side[S]{margin-top:.15rem}}
 .hub-list[S]{border-top:1px solid var(--divider-line);flex-direction:column;width:100%;display:flex}

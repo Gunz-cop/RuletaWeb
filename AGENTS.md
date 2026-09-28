@@ -279,6 +279,9 @@ nueva o migrada cumple esto:
 - **`localStorage` siempre dentro de `try/catch`** (modo privado de Safari
   lanza excepción) y con claves `decidelo_<herramienta>_<dato>`. Si cambias
   el formato de lo guardado, lee también el formato viejo.
+- **Región sin permisos**: si la herramienta varía por país, se deduce por
+  zona horaria e idioma (ver DESIGN.md, "Variantes regionales sin pedir
+  ubicación"). Nunca `navigator.geolocation`.
 - **Sin sonidos ni efectos de premio.** La página es para decidir, no un
   casino. Como mucho `navigator.vibrate` corto al terminar.
 - **Clases de Tailwind añadidas por JS no funcionan** (ver regla 2): si el
