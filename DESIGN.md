@@ -358,6 +358,16 @@ acción principal como cualquier control secundario y nunca la sustituyen.
 no en el oráculo): la respuesta grande en `--text-primary` y el tipo debajo
 en texto terciario, igual que Cara/Cruz en la moneda.
 
+**Excepción de movimiento: el oráculo** (pedida por el propietario). La
+bola 8 tiene más de una animación porque su gracia es el objeto: entra
+rodando al cargar (el 8 gira hasta quedar de frente), flota en reposo,
+en la primera consulta rueda del 8 a la ventana (las dos caras nunca se
+ven a la vez, como en la bola real) y en cada consulta se agita con
+burbujas antes de que el dado emerja desenfocado y se asiente. La ilusión
+de esfera sale de dejar la luz fija por encima de las caras. Todo con
+`element.animate()` y todo desactivado con `prefers-reduced-motion`. No es
+precedente para las demás herramientas: la regla general sigue abajo.
+
 Movimiento: una sola animación con sentido (el volteo, el giro, la tirada),
 que termina en el resultado. Duración entre 1 y 2 segundos: más larga ya es
 suspense de tragamonedas. Con `prefers-reduced-motion`, un fundido de 200ms.

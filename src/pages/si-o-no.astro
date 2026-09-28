@@ -81,7 +81,7 @@ const schemaLD = {
   {/* El orden del HTML es el de móvil. Desde 1024px, dos columnas: a la
       izquierda lo que se escribe, a la derecha la bola y el botón; así en
       un portátil de 720px el botón no queda fuera de pantalla. */}
-  <main class="wrap max-w-2xl lg:max-w-5xl pt-5 pb-8 sm:pt-8 lg:grid lg:grid-cols-2 lg:grid-rows-[auto_auto_1fr_auto] lg:gap-x-16 lg:items-start">
+  <main class="wrap max-w-2xl lg:max-w-5xl pt-5 pb-8 sm:pt-8 lg:grid lg:grid-cols-2 lg:grid-rows-[auto_auto_1fr] lg:gap-x-16 lg:items-start">
 
     <div class="w-full text-center lg:text-left mb-4 sm:mb-6 lg:col-start-1 lg:row-start-1">
       <h1 class="m-0 mb-2 sm:mb-4 font-display text-[1.7rem] sm:text-5xl lg:text-[2.75rem] leading-tight tracking-tight">Oráculo <em class="font-[Newsreader,Georgia,serif] italic font-normal text-warm">sí o no</em></h1>
@@ -125,7 +125,7 @@ const schemaLD = {
       </div>
     </section>
 
-    <section class="w-full mt-12 sm:mt-16 lg:col-span-2 lg:row-start-4" aria-label="Historial de consultas al oráculo">
+    <section class="w-full mt-12 sm:mt-16 lg:mt-10 lg:col-start-1 lg:row-start-3" aria-label="Historial de consultas al oráculo">
       <div class="flex flex-wrap items-baseline gap-4 pb-3 border-0 border-b border-(--divider-line)">
         <h2 class="m-0 font-display text-lg">Últimas consultas</h2>
         <span class="flex-1 text-sm text-ink-tertiary tabular-nums" id="history-count"></span>
@@ -182,15 +182,18 @@ const schemaLD = {
     display: none !important;
   }
 
+  /* La respuesta se enfoca al aparecer, como el dado dentro de la bola */
   .oracle-result {
     opacity: 0;
-    transform: translateY(6px);
-    transition: opacity 0.25s ease-out, transform 0.25s ease-out;
+    transform: translateY(8px);
+    filter: blur(6px);
+    transition: opacity 0.35s ease-out, transform 0.35s cubic-bezier(0.2, 0.7, 0.3, 1), filter 0.35s ease-out;
   }
 
   .oracle-result.is-shown {
     opacity: 1;
     transform: none;
+    filter: none;
   }
 
   .oracle-gut-msg:empty {
@@ -230,6 +233,19 @@ const schemaLD = {
   .oracle-history :global(.history-side) {
     color: var(--text-tertiary);
     font-size: 0.85rem;
+  }
+
+  .oracle-history :global(.history-row.is-new) {
+    animation: oracle-row-in 0.4s cubic-bezier(0.2, 0.7, 0.3, 1);
+  }
+
+  @keyframes oracle-row-in {
+    from { opacity: 0; transform: translateY(-6px); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .oracle-result { transform: none; filter: none; }
+    .oracle-history :global(.history-row.is-new) { animation: none; }
   }
 
   .oracle-history :global(.history-empty) {

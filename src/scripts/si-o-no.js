@@ -2,8 +2,10 @@
 // ORÁCULO SÍ O NO — la bola 8 responde a una pregunta
 // ==========================================================
 // La apariencia vive en OracleBall.astro y si-o-no.astro. Aquí se elige la
-// respuesta, se agita la bola con la Web Animations API y se escribe el
-// texto. También se puede consultar agitando el móvil (DeviceMotionEvent),
+// respuesta, se anima la bola con la Web Animations API y se escribe el
+// texto. La bola tiene cuatro movimientos: entra rodando al cargar, flota en
+// reposo, gira del 8 a la ventana en la primera consulta, y en cada consulta
+// se agita (con burbujas) antes de que el dado emerja. También se puede consultar agitando el móvil (DeviceMotionEvent),
 // siempre con un gesto previo del visitante: iOS no deja leer el sensor sin
 // pedir permiso desde un toque.
 
@@ -14,11 +16,29 @@ const SHAKE_KEY = 'decidelo_siono_agitar';
 const HISTORY_MAX = 10;
 const QUESTION_MAX = 120;
 
-// Agitado + dado que emerge: 1,6 s en total, dentro del margen de DESIGN.md
-// (más largo ya es suspense de tragamonedas).
-const SHAKE_MS = 1100;
-const EMERGE_MS = 500;
+// Tiempos de la consulta: giro (solo la primera vez, solapado con el
+// agitado) + agitado + dado que emerge. Unos 1,7 s en total, dentro del
+// margen de DESIGN.md: más largo ya es suspense de tragamonedas.
+const ENTRY_MS = 1100;
+const ROLL_MS = 760;
+const SINK_MS = 220;
+const SHAKE_MS = 850;
+const SHAKE_DELAY_MS = 250;
+const EMERGE_MS = 750;
+const FLOAT_MS = 2800;
+const BOB_MS = 3200;
 const REDUCED_MS = 200;
+const PLACEHOLDER_MS = 3200;
+
+// Ejemplos que rotan en el campo vacío: enseñan qué tipo de pregunta sirve
+const EJEMPLOS = [
+  '¿Pido pizza esta noche?',
+  '¿Le escribo primero?',
+  '¿Salgo hoy?',
+  '¿Veo otro capítulo?',
+  '¿Voy al gimnasio hoy?',
+  '¿Me corto el pelo?',
+];
 
 // Detección de sacudida: variación de aceleración (m/s², con gravedad) entre
 // dos lecturas seguidas. Caminar o girar el móvil ronda 3–8; una sacudida
@@ -111,7 +131,12 @@ function initSiONo() {
   const input = $('oracle-question');
   const btnAsk = $('btn-ask');
   const object = $('oracle-object');
+  const rig = $('oracle-rig');
   const ball = $('oracle-ball');
+  const eight = $('oracle-eight');
+  const win = $('oracle-window');
+  const floor = $('oracle-floor');
+  const bubbles = [...(object?.querySelectorAll('.oracle-bubble') ?? [])];
   const die = $('oracle-die');
   const dieText = $('oracle-die-text');
   const result = $('oracle-result');
@@ -187,6 +212,8 @@ function initSiONo() {
     if (history.length > HISTORY_MAX) history = history.slice(-HISTORY_MAX);
     writeStore(HISTORY_KEY, history);
     renderHistory();
+    // La fila nueva entra deslizándose (regla .is-new en si-o-no.astro)
+    historyList?.firstElementChild?.classList.add('is-new');
   }
 
   btnClear?.addEventListener('click', () => {
@@ -280,42 +307,175 @@ function initSiONo() {
   let busy = false;
   let ultimaConsulta = 0;
 
-  async function agitar(r) {
-    const reducido = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    object.classList.remove('is-revealed');
-    object.classList.add('is-asking');
+  const reducido = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const fin = (a) => a?.finished.catch(() => {});
 
-    if (!reducido) {
-      // Sacudida amortiguada: cada vaivén más corto que el anterior
-      const shake = ball.animate([
-        { transform: 'translate(0, 0) rotate(0deg)' },
-        { transform: 'translate(-7px, 4px) rotate(-4deg)' },
-        { transform: 'translate(6px, -4px) rotate(4deg)' },
-        { transform: 'translate(-6px, 3px) rotate(-3deg)' },
-        { transform: 'translate(5px, -2px) rotate(3deg)' },
-        { transform: 'translate(-3px, 2px) rotate(-2deg)' },
-        { transform: 'translate(2px, -1px) rotate(1deg)' },
-        { transform: 'translate(0, 0) rotate(0deg)' },
-      ], { duration: SHAKE_MS, easing: 'ease-in-out' });
-      await shake.finished.catch(() => {});
+  // --- Movimiento en reposo: flota la bola y, con respuesta, el dado --------
+  let flotando = [];
+  let meciendo = null;
+
+  function flotar() {
+    parar();
+    if (reducido() || !rig) return;
+    const opts = { duration: FLOAT_MS, direction: 'alternate', iterations: Infinity, easing: 'ease-in-out' };
+    flotando = [
+      rig.animate([{ transform: 'translateY(0)' }, { transform: 'translateY(-6px)' }], opts),
+      floor?.animate([{ transform: 'scale(1)', opacity: 1 }, { transform: 'scale(0.9)', opacity: 0.75 }], opts),
+    ].filter(Boolean);
+  }
+
+  function parar() {
+    flotando.forEach((a) => a.cancel());
+    flotando = [];
+  }
+
+  function mecer() {
+    meciendo?.cancel();
+    meciendo = null;
+    if (reducido() || !die) return;
+    // El dado real nunca queda quieto: flota en el líquido
+    meciendo = die.animate([
+      { transform: 'translateY(0) rotate(0deg)' },
+      { transform: 'translateY(-1.5%) rotate(1.5deg)' },
+      { transform: 'translateY(0.5%) rotate(-1deg)' },
+      { transform: 'translateY(0) rotate(0deg)' },
+    ], { duration: BOB_MS, iterations: Infinity, easing: 'ease-in-out' });
+  }
+
+  // --- Entrada: la bola llega rodando y el 8 gira hasta quedar de frente ----
+  function entrar() {
+    if (reducido()) {
+      rig?.animate([{ opacity: 0 }, { opacity: 1 }], { duration: REDUCED_MS });
+      return;
     }
+    const d = ball.offsetWidth;
+    const rebote = 'cubic-bezier(0.3, 0.75, 0.35, 1.08)';
+    rig?.animate([
+      { opacity: 0, transform: `translate(${-0.35 * d}px, ${-0.12 * d}px)` },
+      { opacity: 1, offset: 0.35 },
+      { transform: `translate(${0.02 * d}px, 0)`, offset: 0.8 },
+      { opacity: 1, transform: 'none' },
+    ], { duration: ENTRY_MS, easing: rebote });
+    eight?.animate([
+      { transform: `translateX(${-0.4 * d}px) scaleX(0.25)` },
+      { transform: `translateX(${0.03 * d}px) scaleX(0.97)`, offset: 0.8 },
+      { transform: 'none' },
+    ], { duration: ENTRY_MS, easing: rebote });
+    const llegada = floor?.animate([
+      { opacity: 0, transform: 'scale(0.4)' },
+      { opacity: 1, transform: 'none' },
+    ], { duration: ENTRY_MS, easing: 'ease-out' });
+    fin(llegada).then(() => { if (!busy) flotar(); });
+  }
 
+  // --- Consultar: giro, agitado, burbujas y el dado que emerge ---------------
+  function girar() {
+    // Del 8 a la ventana: el 8 se va hacia el borde derecho y la ventana
+    // entra por el izquierdo, comprimidos cerca del borde como en una esfera.
+    // La clase .is-open fija el estado final; la animación solo lo recorre.
+    const d = ball.offsetWidth * 0.42;
+    object.classList.add('is-open');
+    if (reducido()) {
+      return Promise.all([
+        fin(eight?.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'none' }], { duration: REDUCED_MS })),
+        fin(win?.animate([{ opacity: 0, transform: 'none' }, { opacity: 1, transform: 'none' }], { duration: REDUCED_MS })),
+      ]);
+    }
+    return Promise.all([
+      // En la bola real el 8 y la ventana están en caras opuestas: nunca se
+      // ven a la vez. El 8 termina de irse antes de que asome la ventana.
+      fin(eight?.animate([
+        { opacity: 1, transform: 'translateX(0) scaleX(1)', easing: 'cubic-bezier(0.45, 0, 0.9, 0.5)' },
+        { opacity: 0, transform: `translateX(${d}px) scaleX(0.15)`, offset: 0.48 },
+        { opacity: 0, transform: `translateX(${d}px) scaleX(0.15)` },
+      ], { duration: ROLL_MS })),
+      fin(win?.animate([
+        { opacity: 0, transform: `translateX(${-d}px) scaleX(0.15)` },
+        { opacity: 0, transform: `translateX(${-d}px) scaleX(0.15)`, offset: 0.46, easing: 'cubic-bezier(0.1, 0.6, 0.3, 1)' },
+        { opacity: 1, transform: 'translateX(0) scaleX(1)' },
+      ], { duration: ROLL_MS })),
+    ]);
+  }
+
+  function hundir() {
+    // Una respuesta anterior se hunde en el líquido antes de agitar
+    object.classList.add('is-asking');
+    if (reducido() || !object.classList.contains('is-revealed')) return Promise.resolve();
+    return fin(die?.animate([
+      { opacity: 1, transform: 'none', filter: 'blur(0)' },
+      { opacity: 0, transform: 'translateY(12%) scale(0.7) rotate(12deg)', filter: 'blur(3px)' },
+    ], { duration: SINK_MS, easing: 'ease-in' }));
+  }
+
+  function sacudir(retraso) {
+    if (reducido()) return Promise.resolve();
+    // Sacudida amortiguada: cada vaivén más corto que el anterior
+    const s = ball.offsetWidth / 208;
+    const t = (x, y, r) => `translate(${x * s}px, ${y * s}px) rotate(${r}deg)`;
+    const shake = ball.animate([
+      { transform: t(0, 0, 0) },
+      { transform: t(-9, 5, -7) },
+      { transform: t(8, -6, 6) },
+      { transform: t(-8, 4, -5) },
+      { transform: t(6, -3, 4) },
+      { transform: t(-4, 2, -2.5) },
+      { transform: t(2, -1, 1) },
+      { transform: t(0, 0, 0) },
+    ], { duration: SHAKE_MS, delay: retraso, easing: 'ease-in-out' });
+    floor?.animate([
+      { transform: 'scale(1)' }, { transform: 'scale(0.86, 0.8)' }, { transform: 'scale(1.04)' },
+      { transform: 'scale(0.92)' }, { transform: 'scale(1)' },
+    ], { duration: SHAKE_MS, delay: retraso, easing: 'ease-in-out' });
+    // Burbujas que suben por el líquido mientras se agita (solo decoración:
+    // su azar no decide nada, por eso basta Math.random)
+    bubbles.forEach((b) => {
+      const deriva = (Math.random() - 0.5) * 30;
+      b.animate([
+        { opacity: 0, transform: 'translate(0, 0) scale(0.5)' },
+        { opacity: 0.9, offset: 0.25 },
+        { opacity: 0, transform: `translate(${deriva}%, -${320 + Math.random() * 260}%) scale(1.1)` },
+      ], {
+        duration: 500 + Math.random() * 400,
+        delay: retraso + 120 + Math.random() * 420,
+        easing: 'cubic-bezier(0.3, 0, 0.6, 1)',
+      });
+    });
+    return fin(shake);
+  }
+
+  function emerger(r) {
     if (dieText) dieText.textContent = r.texto;
     object.classList.remove('is-asking');
     object.classList.add('is-revealed');
-
-    // El dado sube desde el fondo del líquido; su estado final lo fija la
-    // clase .is-revealed, así que la animación no necesita `fill`.
-    const emerge = die?.animate(
-      reducido
+    // El dado sube desenfocado desde el fondo, gira un poco de más y se
+    // asienta; su estado final lo fija .is-revealed, sin `fill`.
+    return fin(die?.animate(
+      reducido()
         ? [{ opacity: 0 }, { opacity: 1 }]
         : [
-            { opacity: 0, transform: 'scale(0.6) rotate(-14deg)' },
-            { opacity: 1, transform: 'scale(1) rotate(0deg)' },
+            { opacity: 0, transform: 'translateY(18%) scale(0.45) rotate(-32deg)', filter: 'blur(5px)' },
+            { opacity: 0.85, transform: 'translateY(-3%) scale(1.06) rotate(5deg)', filter: 'blur(0.5px)', offset: 0.65 },
+            { opacity: 1, transform: 'translateY(1%) scale(0.98) rotate(-2deg)', filter: 'blur(0)', offset: 0.85 },
+            { opacity: 1, transform: 'none', filter: 'blur(0)' },
           ],
-      { duration: reducido ? REDUCED_MS : EMERGE_MS, easing: 'cubic-bezier(0.16, 1, 0.3, 1)' }
-    );
-    await emerge?.finished.catch(() => {});
+      { duration: reducido() ? REDUCED_MS : EMERGE_MS, easing: 'cubic-bezier(0.2, 0.7, 0.3, 1)' }
+    ));
+  }
+
+  async function agitar(r) {
+    parar();
+    meciendo?.cancel();
+    if (!object.classList.contains('is-open')) {
+      // Primera consulta: el giro y el agitado se solapan
+      object.classList.add('is-asking');
+      await Promise.all([girar(), sacudir(SHAKE_DELAY_MS)]);
+    } else {
+      await hundir();
+      await sacudir(0);
+    }
+    await emerger(r);
+    mecer();
+    flotar();
   }
 
   async function consultar() {
@@ -323,6 +483,7 @@ function initSiONo() {
     busy = true;
     btnAsk.disabled = true;
     btnAsk.setAttribute('aria-busy', 'true');
+    btnAsk.textContent = 'Consultando…';
     // En el móvil, cerrar el teclado para que se vea la bola
     input?.blur();
     limpiarResultado();
@@ -341,6 +502,7 @@ function initSiONo() {
     busy = false;
     btnAsk.disabled = false;
     btnAsk.removeAttribute('aria-busy');
+    btnAsk.textContent = 'Consultar de nuevo';
   }
 
   btnAsk.addEventListener('click', consultar);
@@ -436,7 +598,17 @@ function initSiONo() {
     document.addEventListener('astro:before-swap', () => desactivarAgitar(), { once: true });
   }
 
+  // --- Ejemplos que rotan en el campo vacío ------------------------------------
+  let ejemplo = 0;
+  const rotar = setInterval(() => {
+    if (!input || !input.isConnected) return clearInterval(rotar);
+    if (input.value || document.activeElement === input) return;
+    ejemplo = (ejemplo + 1) % EJEMPLOS.length;
+    input.placeholder = EJEMPLOS[ejemplo];
+  }, PLACEHOLDER_MS);
+
   renderHistory();
+  entrar();
 }
 
 if (document.readyState === 'loading') {

@@ -1,49 +1,87 @@
 ---
-// Bola 8 del oráculo. Solo marcado y apariencia: si-o-no.js la agita con la
-// Web Animations API sobre .oracle-ball y hace emerger el dado (.oracle-die)
-// con la respuesta. Las clases de estado (.is-asking, .is-revealed) las pone
-// el JS sobre [data-oracle], por eso viven aquí como CSS propio y no como
-// utilidades: Tailwind no rastrea src/scripts/ (ver tailwind.css).
+// Bola 8 del oráculo. Solo marcado y apariencia: si-o-no.js la anima con la
+// Web Animations API (entrada rodando, flotación, giro del 8 a la ventana,
+// agitado, burbujas y el dado que emerge). Las clases de estado
+// (.is-open, .is-asking, .is-revealed) las pone el JS sobre [data-oracle],
+// por eso viven aquí como CSS propio y no como utilidades: Tailwind no
+// rastrea src/scripts/ (ver tailwind.css).
 //
-// Es un objeto ilustrado, no UI: lleva degradados y relieve porque sin
-// reflejos la esfera se lee como un círculo plano (ver DESIGN.md, "Excepción:
-// objetos ilustrados"). Nada de glow ni de los neón de la versión anterior:
-// el dado es el azul apagado del juguete real.
+// Es un objeto ilustrado, no UI: lleva degradados, relieve y sombras porque
+// sin ellos la esfera se lee como un círculo plano (ver DESIGN.md,
+// "Excepción: objetos ilustrados"). La ilusión de giro funciona porque la
+// luz (.oracle-shade, .oracle-shine) está por encima de las caras y no se
+// mueve: las caras se deslizan por debajo y se comprimen al llegar al borde,
+// como una marca sobre una esfera que rota.
+const BUBBLES = 7;
 ---
 
 <div class="oracle-object relative flex flex-col items-center" data-oracle id="oracle-object">
-  <div class="oracle-ball relative grid place-items-center rounded-full cursor-pointer" id="oracle-ball" aria-hidden="true">
-    <span class="oracle-shine absolute rounded-full pointer-events-none"></span>
-    <div class="oracle-window relative grid place-items-center overflow-hidden rounded-full">
-      <div class="oracle-die relative grid place-items-center" id="oracle-die">
-        <svg class="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
-          <polygon class="oracle-die-face" points="50,8 94,86 6,86" />
-        </svg>
-        <span class="oracle-die-text relative text-center" id="oracle-die-text">?</span>
+  <div class="oracle-rig relative" id="oracle-rig">
+    <div class="oracle-ball relative grid place-items-center overflow-hidden rounded-full cursor-pointer" id="oracle-ball" aria-hidden="true">
+
+      {/* Cara del 8: lo que se ve mientras no hay respuesta */}
+      <div class="oracle-eight absolute grid place-items-center rounded-full" id="oracle-eight">
+        <span class="oracle-eight-num">8</span>
       </div>
-      <span class="oracle-liquid absolute inset-0 pointer-events-none"></span>
+
+      {/* Ventana con líquido y el dado de la respuesta */}
+      <div class="oracle-window absolute grid place-items-center overflow-hidden rounded-full" id="oracle-window">
+        {Array.from({ length: BUBBLES }, (_, i) => (
+          <span class="oracle-bubble absolute rounded-full" style={`--b: ${i}`}></span>
+        ))}
+        <div class="oracle-die relative grid place-items-center" id="oracle-die">
+          <svg class="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
+            <polygon class="oracle-die-face" points="50,6 95,88 5,88" />
+            <polygon class="oracle-die-bevel" points="50,17 85,82 15,82" />
+          </svg>
+          <span class="oracle-die-text relative text-center" id="oracle-die-text"></span>
+        </div>
+        <span class="oracle-glass absolute inset-0 rounded-full pointer-events-none"></span>
+      </div>
+
+      {/* Luz fija por encima de las caras: sombreado esférico y reflejos */}
+      <span class="oracle-shade absolute inset-0 rounded-full pointer-events-none"></span>
+      <span class="oracle-shine absolute rounded-full pointer-events-none"></span>
+      <span class="oracle-spec absolute rounded-full pointer-events-none"></span>
     </div>
   </div>
-  <div class="oracle-floor rounded-full pointer-events-none" aria-hidden="true"></div>
+  <div class="oracle-floor relative pointer-events-none" id="oracle-floor" aria-hidden="true"></div>
 </div>
 
 <style>
   .oracle-object {
-    /* Todo se deriva del diámetro: así la bola se puede compactar en
-       pantallas bajas cambiando un solo valor. */
-    --ball-size: 11.5rem;
-    --ball-hi: #4a4b57;
-    --ball: #15161c;
-    --ball-lo: #030304;
-    --ball-rim: #202230;
-    --die: #25316b;
-    --die-edge: #3b4a94;
-    --die-ink: #e9ecfb;
-    --liquid: #0a0f2a;
+    /* Todo se deriva del diámetro: así la bola se compacta en pantallas
+       bajas cambiando un solo valor. */
+    --ball-size: 13rem;
+    --ball-hi: #5a5c6b;
+    --ball: #17181f;
+    --ball-lo: #020203;
+    --ivory-hi: #ffffff;
+    --ivory: #eeece6;
+    --ivory-lo: #c8c5bc;
+    --liquid-hi: #1d2966;
+    --liquid: #0b1034;
+    --liquid-lo: #03051a;
+    --die: #26337a;
+    --die-edge: #4b5cb3;
+    --die-ink: #eef0ff;
+    /* Reflejo del acento del sitio en el borde de la bola, como si hubiera
+       una lámpara terracota al lado: une el objeto con la paleta. */
+    --rim: 226 144 90;
   }
 
   @media (min-width: 640px) {
-    .oracle-object { --ball-size: 13.5rem; }
+    .oracle-object { --ball-size: 15rem; }
+  }
+
+  /* Tablet o plegable abierto con poca altura (Fold abierto, 673×760): una
+     sola columna con la bola grande empuja el botón fuera de pantalla */
+  @media (min-width: 640px) and (max-width: 1023px) and (max-height: 820px) {
+    .oracle-object { --ball-size: 13rem; }
+  }
+
+  @media (min-width: 1024px) {
+    .oracle-object { --ball-size: 16.5rem; }
   }
 
   /* Pantallas bajas (Android con Chrome, iPhone SE): la bola cede alto para
@@ -52,81 +90,168 @@
     .oracle-object { --ball-size: 10rem; }
   }
 
+  .oracle-rig {
+    will-change: transform;
+  }
+
   .oracle-ball {
     width: var(--ball-size);
     height: var(--ball-size);
-    background:
-      radial-gradient(circle at 32% 26%, var(--ball-hi) 0%, var(--ball) 42%, var(--ball-lo) 100%);
-    box-shadow:
-      inset -0.6rem -0.8rem 1.6rem rgb(0 0 0 / 0.75),
-      inset 0.3rem 0.3rem 0.8rem rgb(255 255 255 / 0.04);
+    background: radial-gradient(circle at 34% 28%, var(--ball-hi) 0%, var(--ball) 38%, var(--ball-lo) 100%);
     will-change: transform;
     -webkit-tap-highlight-color: transparent;
+    /* Safari no recorta bien los hijos transformados con overflow + radius
+       sin su propia capa de composición */
+    isolation: isolate;
   }
 
-  .oracle-shine {
-    top: 8%;
-    left: 20%;
-    width: 34%;
-    height: 17%;
-    background: linear-gradient(to bottom, rgb(255 255 255 / 0.14), rgb(255 255 255 / 0));
-    transform: rotate(-24deg);
-  }
-
-  .oracle-window {
-    width: 50%;
-    height: 50%;
-    background: radial-gradient(circle at 50% 45%, #121a45 0%, var(--liquid) 70%);
+  /* --- Cara del 8 ------------------------------------------------------ */
+  .oracle-eight {
+    width: 47%;
+    height: 47%;
+    background: radial-gradient(circle at 38% 30%, var(--ivory-hi) 0%, var(--ivory) 45%, var(--ivory-lo) 100%);
     box-shadow:
-      0 0 0 calc(var(--ball-size) * 0.022) var(--ball-rim),
-      inset 0 0.35rem 0.8rem rgb(0 0 0 / 0.8);
+      inset 0 -0.2rem 0.5rem rgb(0 0 0 / 0.18),
+      0 0 0 calc(var(--ball-size) * 0.008) rgb(0 0 0 / 0.35);
+    will-change: transform, opacity;
   }
 
-  /* Reflejo del cristal sobre el líquido */
-  .oracle-liquid {
-    background: radial-gradient(circle at 35% 25%, rgb(255 255 255 / 0.08), rgb(255 255 255 / 0) 45%);
+  .oracle-eight-num {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 800;
+    font-size: calc(var(--ball-size) * 0.31);
+    line-height: 1;
+    color: #0b0b0f;
+    /* El 8 del juguete está algo más arriba del centro óptico */
+    transform: translateY(-3%);
+  }
+
+  /* --- Ventana ----------------------------------------------------------- */
+  .oracle-window {
+    width: 52%;
+    height: 52%;
+    background: radial-gradient(circle at 50% 38%, var(--liquid-hi) 0%, var(--liquid) 58%, var(--liquid-lo) 100%);
+    box-shadow:
+      0 0 0 calc(var(--ball-size) * 0.018) #0c0d12,
+      0 0 0 calc(var(--ball-size) * 0.026) #2a2c38,
+      inset 0 0.45rem 1rem rgb(0 0 0 / 0.85);
+    will-change: transform, opacity;
+    /* Oculta hasta que la bola gira: fuera, junto al borde izquierdo */
+    opacity: 0;
+    transform: translateX(calc(var(--ball-size) * -0.42)) scaleX(0.2);
+  }
+
+  .oracle-glass {
+    background:
+      radial-gradient(ellipse 55% 35% at 40% 18%, rgb(255 255 255 / 0.16), rgb(255 255 255 / 0) 70%),
+      radial-gradient(circle at 50% 50%, rgb(0 0 0 / 0) 62%, rgb(0 0 0 / 0.45) 100%);
+  }
+
+  .oracle-bubble {
+    left: calc(18% + var(--b) * 10%);
+    bottom: 0;
+    width: calc(var(--ball-size) * 0.022);
+    height: calc(var(--ball-size) * 0.022);
+    background: radial-gradient(circle at 35% 30%, rgb(255 255 255 / 0.7), rgb(170 190 255 / 0.15) 70%);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .oracle-bubble:nth-child(even) {
+    width: calc(var(--ball-size) * 0.014);
+    height: calc(var(--ball-size) * 0.014);
   }
 
   .oracle-die {
-    width: 88%;
-    height: 88%;
-    opacity: 0.35;
+    width: 86%;
+    height: 86%;
+    opacity: 0;
+    will-change: transform, opacity, filter;
   }
 
   .oracle-die-face {
     fill: var(--die);
     stroke: var(--die-edge);
-    stroke-width: 2;
+    stroke-width: 1.5;
+    stroke-linejoin: round;
+  }
+
+  .oracle-die-bevel {
+    fill: none;
+    stroke: rgb(255 255 255 / 0.12);
+    stroke-width: 1;
     stroke-linejoin: round;
   }
 
   /* El texto va en la mitad ancha del triángulo, como en el juguete */
   .oracle-die-text {
-    max-width: 66%;
-    margin-top: 24%;
+    max-width: 62%;
+    margin-top: 26%;
     font-family: 'Outfit', sans-serif;
     font-weight: 700;
-    font-size: calc(var(--ball-size) * 0.04);
-    line-height: 1.1;
-    letter-spacing: 0.02em;
+    font-size: calc(var(--ball-size) * 0.034);
+    line-height: 1.12;
+    letter-spacing: 0.03em;
     text-transform: uppercase;
     color: var(--die-ink);
+    text-shadow: 0 0 0.35rem rgb(120 140 255 / 0.35);
   }
 
+  /* --- Luz ---------------------------------------------------------------- */
+  .oracle-shade {
+    z-index: 2;
+    background: radial-gradient(circle at 36% 30%, rgb(0 0 0 / 0) 38%, rgb(0 0 0 / 0.5) 74%, rgb(0 0 0 / 0.88) 100%);
+    box-shadow:
+      inset calc(var(--ball-size) * -0.03) calc(var(--ball-size) * -0.035) calc(var(--ball-size) * 0.06) calc(var(--ball-size) * -0.02) rgb(var(--rim) / 0.28),
+      inset 0 0 0 1px rgb(255 255 255 / 0.04);
+  }
+
+  .oracle-shine {
+    z-index: 3;
+    top: 6%;
+    left: 16%;
+    width: 44%;
+    height: 26%;
+    background: radial-gradient(ellipse at 50% 40%, rgb(255 255 255 / 0.2), rgb(255 255 255 / 0) 70%);
+    transform: rotate(-28deg);
+  }
+
+  .oracle-spec {
+    z-index: 3;
+    top: 15%;
+    left: 27%;
+    width: 7%;
+    height: 4.5%;
+    background: rgb(255 255 255 / 0.75);
+    filter: blur(1.5px);
+    transform: rotate(-30deg);
+  }
+
+  /* --- Suelo -------------------------------------------------------------- */
   .oracle-floor {
-    width: 72%;
-    height: calc(var(--ball-size) * 0.06);
-    margin-top: 0.5rem;
-    background: rgb(0 0 0 / 0.6);
-    filter: blur(6px);
+    width: calc(var(--ball-size) * 0.78);
+    height: calc(var(--ball-size) * 0.09);
+    margin-top: calc(var(--ball-size) * 0.03);
+    background: radial-gradient(ellipse at 50% 50%, rgb(0 0 0 / 0.85) 0%, rgb(0 0 0 / 0.4) 45%, rgb(0 0 0 / 0) 72%);
+    will-change: transform, opacity;
   }
 
-  /* Mientras se agita, el dado se hunde en el líquido */
-  [data-oracle].is-asking .oracle-die {
+  /* --- Estados que pone el JS -------------------------------------------- */
+  [data-oracle].is-open .oracle-eight {
     opacity: 0;
+    transform: translateX(calc(var(--ball-size) * 0.42)) scaleX(0.2);
+  }
+
+  [data-oracle].is-open .oracle-window {
+    opacity: 1;
+    transform: none;
   }
 
   [data-oracle].is-revealed .oracle-die {
     opacity: 1;
+  }
+
+  [data-oracle].is-asking .oracle-die {
+    opacity: 0;
   }
 </style>
