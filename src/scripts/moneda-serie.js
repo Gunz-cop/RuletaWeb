@@ -8,24 +8,29 @@
 // Los lados se modelan siempre como 'heads' / 'tails'; el nombre que ve el
 // visitante sale del juego de nombres elegido.
 
-// `verificar: true` marca regionalismos que no están confirmados con datos
-// de búsqueda. Antes de usarlos como valor por defecto en más países,
-// revisar las consultas reales en Search Console.
+// Juegos de nombres. La correspondencia país → expresión la confirmó el
+// propietario del sitio (tabla en DESIGN.md, "Variantes regionales").
 export const NOMBRES = {
   cruz: { etiqueta: 'Cara o cruz', heads: 'Cara', tails: 'Cruz', glifos: ['C', 'X'], headsPl: 'caras', tailsPl: 'cruces' },
   sello: { etiqueta: 'Cara o sello', heads: 'Cara', tails: 'Sello', headsPl: 'caras', tailsPl: 'sellos' },
-  corona: { etiqueta: 'Escudo o corona', heads: 'Escudo', tails: 'Corona', headsPl: 'escudos', tailsPl: 'coronas', verificar: true },
+  escudo: { etiqueta: 'Cara o escudo', heads: 'Cara', tails: 'Escudo', headsPl: 'caras', tailsPl: 'escudos' },
+  corona: { etiqueta: 'Escudo o corona', heads: 'Escudo', tails: 'Corona', headsPl: 'escudos', tailsPl: 'coronas' },
+  caracorona: { etiqueta: 'Cara o corona', heads: 'Cara', tails: 'Corona', headsPl: 'caras', tailsPl: 'coronas' },
   aguila: { etiqueta: 'Águila o sol', heads: 'Águila', tails: 'Sol', headsPl: 'águilas', tailsPl: 'soles' },
   ceca: { etiqueta: 'Cara o ceca', heads: 'Cara', tails: 'Ceca', headsPl: 'caras', tailsPl: 'cecas' },
+  coroa: { etiqueta: 'Cara ou coroa', heads: 'Cara', tails: 'Coroa', headsPl: 'caras', tailsPl: 'coroas' },
 };
 
-// País → juego de nombres por defecto. Solo países con término claro; el
-// resto usa "cara o cruz" (también España, donde es lo que se dice).
-// VERIFICAR con Search Console: CL, PE, VE, BO (sello) y CR (corona) salen
-// de uso conocido, no de datos de búsqueda propios.
+// País → juego de nombres por defecto. Lo que no está aquí (España, Puerto
+// Rico, Paraguay, Venezuela y cualquier otro país) usa "cara o cruz".
 const POR_PAIS = {
-  CO: 'sello', CL: 'sello', PE: 'sello', VE: 'sello', BO: 'sello',
-  CR: 'corona', MX: 'aguila', AR: 'ceca',
+  CO: 'sello', CL: 'sello', PE: 'sello', EC: 'sello', PA: 'sello',
+  GT: 'escudo', BO: 'escudo', HN: 'escudo',
+  CR: 'corona',
+  SV: 'caracorona',
+  MX: 'aguila',
+  AR: 'ceca', UY: 'ceca',
+  BR: 'coroa',
 };
 
 // Zona horaria del sistema → país. Es la forma de saber la región sin pedir
@@ -34,16 +39,30 @@ const POR_PAIS = {
 // estático, así que no hay servidor que pueda leer el país de la petición.
 const ZONAS = {
   'America/Bogota': 'CO',
-  'America/Costa_Rica': 'CR',
   'America/Santiago': 'CL', 'America/Punta_Arenas': 'CL', 'Pacific/Easter': 'CL',
   'America/Lima': 'PE',
-  'America/Caracas': 'VE',
+  'America/Guayaquil': 'EC', 'Pacific/Galapagos': 'EC',
+  'America/Panama': 'PA',
+  'America/Guatemala': 'GT',
   'America/La_Paz': 'BO',
+  'America/Tegucigalpa': 'HN',
+  'America/Costa_Rica': 'CR',
+  'America/El_Salvador': 'SV',
   'America/Mexico_City': 'MX', 'America/Monterrey': 'MX', 'America/Tijuana': 'MX',
   'America/Cancun': 'MX', 'America/Merida': 'MX', 'America/Chihuahua': 'MX',
   'America/Hermosillo': 'MX', 'America/Mazatlan': 'MX', 'America/Matamoros': 'MX',
   'America/Bahia_Banderas': 'MX', 'America/Ojinaga': 'MX', 'America/Ciudad_Juarez': 'MX',
   'America/Buenos_Aires': 'AR', 'America/Cordoba': 'AR', 'America/Mendoza': 'AR',
+  'America/Montevideo': 'UY',
+  'America/Sao_Paulo': 'BR', 'America/Bahia': 'BR', 'America/Fortaleza': 'BR',
+  'America/Recife': 'BR', 'America/Belem': 'BR', 'America/Manaus': 'BR',
+  'America/Cuiaba': 'BR', 'America/Campo_Grande': 'BR', 'America/Porto_Velho': 'BR',
+  'America/Boa_Vista': 'BR', 'America/Rio_Branco': 'BR', 'America/Maceio': 'BR',
+  'America/Araguaina': 'BR', 'America/Santarem': 'BR', 'America/Noronha': 'BR',
+  'America/Eirunepe': 'BR',
+  'America/Caracas': 'VE',
+  'America/Asuncion': 'PY',
+  'America/Puerto_Rico': 'PR',
   'Europe/Madrid': 'ES', 'Atlantic/Canary': 'ES', 'Africa/Ceuta': 'ES',
 };
 

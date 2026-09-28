@@ -54,6 +54,15 @@ check(zona('Asia/Tokyo', 'es-MX') === 'aguila', 'zona desconocida → idioma de 
 check(zona('Asia/Tokyo', 'ja-JP') === 'cruz', 'nada coincide → cruz');
 check(zona('constructor', 'es-constructor') === 'cruz', 'claves heredadas no cuelan');
 check(paisPorZona(undefined) === null, 'sin zona');
+for (const [z, esperado] of [
+  ['America/Guatemala', 'escudo'], ['America/La_Paz', 'escudo'], ['America/Tegucigalpa', 'escudo'],
+  ['America/El_Salvador', 'caracorona'], ['America/Montevideo', 'ceca'],
+  ['America/Guayaquil', 'sello'], ['America/Panama', 'sello'], ['America/Lima', 'sello'],
+  ['America/Sao_Paulo', 'coroa'], ['America/Manaus', 'coroa'],
+  ['America/Caracas', 'cruz'], ['America/Asuncion', 'cruz'], ['America/Puerto_Rico', 'cruz'],
+]) check(zona(z, 'en-US') === esperado, `${z} → ${esperado}`);
+check(zona('Asia/Tokyo', 'pt-BR') === 'coroa', 'pt-BR → coroa');
+check(glifos('caracorona').tails === 'Co', 'cara/corona con glifos distintos');
 check(glifos('ceca').tails === 'Ce', 'cara/ceca con glifos distintos');
 check(glifos('cruz').tails === 'X', 'la cruz se marca con X');
 check(modoValido('<script>') === 'una', 'modo inválido');

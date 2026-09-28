@@ -325,8 +325,10 @@ function initMoneda() {
   function despues(ganador) {
     if (!after) return;
     after.hidden = false;
-    // La pregunta de intuición solo tiene sentido cuando hay un ganador
-    const preguntar = ganador && readStore(GUT_KEY, 'on') !== 'off';
+    // Solo cuando hay ganador y el visitante escribió sus dos opciones: sin
+    // opciones reales no hay nada que preferir ("ya lo tenías claro: Corona")
+    const escritas = inputHeads?.value.trim() && inputTails?.value.trim();
+    const preguntar = ganador && escritas && readStore(GUT_KEY, 'on') !== 'off';
     if (gut) gut.hidden = !preguntar;
   }
 

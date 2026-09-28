@@ -298,6 +298,20 @@ deduce **sin pedir permisos ni usar servidor**:
 4. Después, la región del idioma del navegador (`es-CO`).
 5. Si nada coincide, la variante neutra (cara o cruz).
 
+Tabla vigente (confirmada por el propietario; vive en `POR_PAIS` de
+`moneda-serie.js`):
+
+| Países | Expresión |
+|---|---|
+| Colombia, Chile, Perú, Ecuador, Panamá | Cara o sello |
+| México | Águila o sol |
+| Costa Rica | Escudo o corona |
+| El Salvador | Cara o corona |
+| Guatemala, Honduras, Bolivia | Cara o escudo |
+| Argentina, Uruguay | Cara o ceca |
+| Brasil | Cara ou coroa |
+| España, Puerto Rico, Paraguay y cualquier país no listado | Cara o cruz |
+
 Nunca `navigator.geolocation`: pide permiso y la gente desconfía. Tampoco
 geolocalización por IP: exige servidor y el sitio es estático a propósito.
 El visitante siempre puede cambiar la variante a mano. Implementación de
