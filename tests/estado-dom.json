@@ -421,6 +421,24 @@
       "overflowWrap": "anywhere"
     }
   },
+  "/si-o-no [sin-pregunta]": {
+    "#oracle-result": {
+      "opacity": "1"
+    },
+    "#oracle-after": {
+      "display": "none"
+    },
+    ".history-row": "NO EXISTE EN EL DOM",
+    ".history-empty": {
+      "display": "list-item"
+    }
+  },
+  "/si-o-no [gato]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "sexta consulta sin pregunta: «Otra vez alguien dejó al gato jugando con el móvil»"
+    }
+  },
   "/si-o-no [agitar-movil]": {
     "relacion": {
       "ok": true,
@@ -430,43 +448,43 @@
   "/si-o-no [accion-principal-visible-android-360x560]": {
     "relacion": {
       "ok": true,
-      "mensaje": "#btn-ask.bottom=518.2px con 560px visibles (holgura 41.8px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+      "mensaje": "#btn-ask.bottom=519.8px con 560px visibles (holgura 40.3px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
     }
   },
   "/si-o-no [accion-principal-visible-iphone-se-375x548]": {
     "relacion": {
       "ok": true,
-      "mensaje": "#btn-ask.bottom=518.2px con 548px visibles (holgura 29.8px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+      "mensaje": "#btn-ask.bottom=519.8px con 548px visibles (holgura 28.3px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
     }
   },
   "/si-o-no [accion-principal-visible-iphone-393x659]": {
     "relacion": {
       "ok": true,
-      "mensaje": "#btn-ask.bottom=603.6px con 659px visibles (holgura 55.4px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+      "mensaje": "#btn-ask.bottom=633.5px con 659px visibles (holgura 25.5px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
     }
   },
   "/si-o-no [responsive-fold-cerrado-344x680]": {
     "relacion": {
       "ok": true,
-      "mensaje": "#btn-ask.bottom=603.6px con 680px visibles (holgura 76.4px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+      "mensaje": "#btn-ask.bottom=633.5px con 680px visibles (holgura 46.5px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
     }
   },
   "/si-o-no [responsive-fold-abierto-673x760]": {
     "relacion": {
       "ok": true,
-      "mensaje": "#btn-ask.bottom=724.5px con 760px visibles (holgura 35.5px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+      "mensaje": "#btn-ask.bottom=720.5px con 760px visibles (holgura 39.5px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
     }
   },
   "/si-o-no [responsive-tablet-vertical-768x960]": {
     "relacion": {
       "ok": true,
-      "mensaje": "#btn-ask.bottom=724.5px con 960px visibles (holgura 235.5px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+      "mensaje": "#btn-ask.bottom=756.3px con 960px visibles (holgura 203.7px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
     }
   },
   "/si-o-no [responsive-tablet-horizontal-1024x700]": {
     "relacion": {
       "ok": true,
-      "mensaje": "#btn-ask.bottom=520.5px con 700px visibles (holgura 179.5px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+      "mensaje": "#btn-ask.bottom=579.2px con 700px visibles (holgura 120.8px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
     }
   },
   "/si-o-no [responsive-movil-horizontal-740x340]": {
@@ -478,13 +496,13 @@
   "/si-o-no [responsive-escritorio-1280x720]": {
     "relacion": {
       "ok": true,
-      "mensaje": "#btn-ask.bottom=520.5px con 720px visibles (holgura 199.5px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+      "mensaje": "#btn-ask.bottom=579.2px con 720px visibles (holgura 140.8px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
     }
   },
   "/si-o-no [responsive-escritorio-1920x1000]": {
     "relacion": {
       "ok": true,
-      "mensaje": "#btn-ask.bottom=520.5px con 1000px visibles (holgura 479.5px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+      "mensaje": "#btn-ask.bottom=579.2px con 1000px visibles (holgura 420.8px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
     }
   }
 }

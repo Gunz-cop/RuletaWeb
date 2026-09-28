@@ -14,7 +14,11 @@
 .oracle-die[S]{opacity:0;will-change:transform, opacity, filter;width:86%;height:86%}
 .oracle-die-face[S]{fill:var(--die);stroke:var(--die-edge);stroke-width:1.5px;stroke-linejoin:round}
 .oracle-die-bevel[S]{fill:none;stroke:#ffffff1f;stroke-width:1px;stroke-linejoin:round}
-.oracle-die-text[S]{max-width:62%;font-family:Outfit,sans-serif;font-weight:700;font-size:calc(var(--ball-size) * .034);letter-spacing:.03em;text-transform:uppercase;color:var(--die-ink);text-shadow:0 0 .35rem #788cff59;margin-top:26%;line-height:1.12}
+.oracle-die-text[S]{max-width:62%;font-family:Outfit,sans-serif;font-weight:700;font-size:calc(var(--ball-size) * .034);letter-spacing:.03em;text-transform:uppercase;color:var(--die-ink);hyphens:manual;text-shadow:0 0 .35rem #788cff59;margin-top:26%;line-height:1.12}
+.oracle-die-text[S][data-largo=corto]{font-size:calc(var(--ball-size) * .075);letter-spacing:.02em}
+.oracle-die-text[S][data-largo=medio]{font-size:calc(var(--ball-size) * .041);letter-spacing:.02em}
+.oracle-die-text[S][data-largo=largo]{font-size:calc(var(--ball-size) * .038);letter-spacing:.01em}
+.oracle-die-text[S][data-largo=muy-largo]{font-size:calc(var(--ball-size) * .033);letter-spacing:0}
 .oracle-shade[S]{z-index:2;box-shadow:inset calc(var(--ball-size) * -.03) calc(var(--ball-size) * -.035) calc(var(--ball-size) * .06) calc(var(--ball-size) * -.02) rgb(var(--rim) / .28), inset 0 0 0 1px #ffffff0a;background:radial-gradient(circle at 36% 30%,#0000 38%,#00000080 74%,#000000e0 100%)}
 .oracle-shine[S]{z-index:3;background:radial-gradient(at 50% 40%,#fff3,#fff0 70%);width:44%;height:26%;top:6%;left:16%;transform:rotate(-28deg)}
 .oracle-spec[S]{z-index:3;filter:blur(1.5px);background:#ffffffbf;width:7%;height:4.5%;top:15%;left:27%;transform:rotate(-30deg)}

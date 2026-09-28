@@ -52,7 +52,9 @@ const SHAKE_COOLDOWN_MS = 1000;
 // Las 15 respuestas clásicas de la bola 8: cinco de cada tipo.
 const RESPUESTAS = [
   { texto: 'Sí', tipo: 'si' },
-  { texto: 'Definitivamente sí', tipo: 'si' },
+  // En el dado, "Definitivamente" se parte con un guion opcional (\u00AD):
+  // entera no cabe en el triángulo sin encoger hasta ser ilegible.
+  { texto: 'Definitivamente sí', bola: 'Definiti\u00ADvamente sí', tipo: 'si' },
   { texto: 'Sin duda alguna', tipo: 'si' },
   { texto: 'Todo apunta a que sí', tipo: 'si' },
   { texto: 'Es muy probable', tipo: 'si' },
@@ -62,13 +64,49 @@ const RESPUESTAS = [
   { texto: 'Mejor no te lo digo ahora', tipo: 'neutra' },
   { texto: 'Concéntrate y pregunta', tipo: 'neutra' },
   { texto: 'No', tipo: 'no' },
-  { texto: 'Definitivamente no', tipo: 'no' },
+  { texto: 'Definitivamente no', bola: 'Definiti\u00ADvamente no', tipo: 'no' },
   { texto: 'Poco probable', tipo: 'no' },
   { texto: 'Las fuentes dicen que no', tipo: 'no' },
   { texto: 'No cuentes con ello', tipo: 'no' },
 ];
 
 const TIPO = { si: 'Sí', no: 'No', neutra: 'Ni sí ni no' };
+
+// Si se consulta sin escribir nada (con el botón o agitando el móvil) la
+// bola no responde: se burla con cariño. `bola` es lo que cabe en el dado;
+// `texto`, la frase completa que sale debajo en grande.
+const SIN_PREGUNTA = [
+  { bola: '¿Y la pregunta?', texto: '¿Y la pregunta?' },
+  { bola: 'No leo mentes', texto: 'No leo mentes. Escríbela arriba.' },
+  { bola: 'Pregunta primero', texto: 'Primero la pregunta, luego la magia' },
+  { bola: 'Así no se puede', texto: 'Así no se puede: escribe algo' },
+  { bola: '¿Me hablas a mí?', texto: '¿Me hablas a mí? Escribe tu pregunta' },
+  { bola: 'Estoy en blanco', texto: 'Estoy en blanco, como tu pregunta' },
+  { bola: 'Nada que decir', texto: 'Sin pregunta no tengo nada que decir' },
+];
+
+// A partir de la sexta consulta vacía seguida, ya no parece una persona
+const INSISTENCIA = 5;
+const GATO = [
+  { bola: '¿Otra vez el gato?', texto: 'Otra vez alguien dejó al gato jugando con el móvil' },
+  { bola: 'Hola, michi', texto: 'Hola, michi. Dile a tu humano que escriba una pregunta' },
+  { bola: 'Miau no cuenta', texto: '«Miau» no cuenta como pregunta' },
+  { bola: 'Suelta el móvil, gato', texto: 'Suelta el móvil, gato. Esto es para humanos' },
+];
+// La primera aparición del gato es siempre GATO[0]; después rotan las demás
+const GATO_RESTO = GATO.slice(1);
+
+// Tamaño del texto en el dado según lo que ocupa: un "Sí" se lee grande y
+// "Definitivamente no" cabe sin salirse del triángulo. La regla de cada
+// tamaño vive en OracleBall.astro.
+function largoEnDado(texto) {
+  const palabra = Math.max(...texto.split(/[\s\u00AD]+/).map((w) => w.length));
+  const total = texto.replace(/\u00AD/g, '').length;
+  if (palabra <= 5 && total <= 8) return 'corto';
+  if (palabra <= 9 && total <= 20) return 'medio';
+  if (palabra <= 12) return 'largo';
+  return 'muy-largo';
+}
 
 // La versión anterior guardaba el color en vez del tipo
 const TIPO_VIEJO = { cyan: 'si', purple: 'no', neutral: 'neutra' };
@@ -228,6 +266,7 @@ function initSiONo() {
   function limpiarResultado() {
     result.classList.remove('is-shown');
     delete result.dataset.estado;
+    delete result.dataset.tipo;
     if (after) after.hidden = true;
     if (gutMsg) gutMsg.textContent = '';
     [btnRelief, btnDisappoint].forEach((b) => b?.setAttribute('aria-pressed', 'false'));
@@ -236,9 +275,49 @@ function initSiONo() {
   function mostrar(r) {
     resultMain.textContent = r.texto;
     // "Sí" / "No" a secas ya dicen su tipo: repetirlo debajo sobra
-    resultSide.textContent = r.texto === TIPO[r.tipo] ? '' : TIPO[r.tipo];
+    if (r.tipo === 'vacia') resultSide.textContent = 'Sin pregunta';
+    else resultSide.textContent = r.texto === TIPO[r.tipo] ? '' : TIPO[r.tipo];
     result.classList.add('is-shown');
     result.dataset.estado = 'final';
+    result.dataset.tipo = r.tipo;
+  }
+
+  // --- Consultas sin pregunta ---------------------------------------------------
+  let vacias = 0;
+  const bolsas = new Map();
+
+  // Bolsa barajada: no se repite ninguna burla hasta agotar la lista, y la
+  // primera de la bolsa nueva nunca es la última de la anterior. El azar
+  // aquí no decide nada, por eso basta Math.random.
+  function burla(lista) {
+    let bolsa = bolsas.get(lista);
+    if (!bolsa?.restantes.length) {
+      const restantes = lista.slice().sort(() => Math.random() - 0.5);
+      if (bolsa && restantes.length > 1 && restantes[restantes.length - 1] === bolsa.ultima) {
+        restantes.unshift(restantes.pop());
+      }
+      bolsa = { restantes, ultima: null };
+      bolsas.set(lista, bolsa);
+    }
+    bolsa.ultima = bolsa.restantes.pop();
+    return bolsa.ultima;
+  }
+
+  function sinPregunta() {
+    vacias += 1;
+    // La primera vez que aparece el gato, siempre la frase del gato
+    const b = vacias === INSISTENCIA + 1 ? GATO[0]
+      : burla(vacias > INSISTENCIA ? GATO_RESTO : SIN_PREGUNTA);
+    return { ...b, tipo: 'vacia' };
+  }
+
+  // El campo se sacude un poco para señalar dónde va la pregunta
+  function senalarCampo() {
+    if (!input || reducido()) return;
+    input.animate([
+      { transform: 'translateX(0)' }, { transform: 'translateX(-6px)' }, { transform: 'translateX(5px)' },
+      { transform: 'translateX(-3px)' }, { transform: 'translateX(0)' },
+    ], { duration: 360, easing: 'ease-out' });
   }
 
   function despues() {
@@ -444,7 +523,11 @@ function initSiONo() {
   }
 
   function emerger(r) {
-    if (dieText) dieText.textContent = r.texto;
+    if (dieText) {
+      const enDado = r.bola ?? r.texto;
+      dieText.textContent = enDado;
+      dieText.dataset.largo = largoEnDado(enDado);
+    }
     object.classList.remove('is-asking');
     object.classList.add('is-revealed');
     // El dado sube desenfocado desde el fondo, gira un poco de más y se
@@ -489,14 +572,22 @@ function initSiONo() {
     limpiarResultado();
 
     const pregunta = input?.value.trim().slice(0, QUESTION_MAX) ?? '';
-    const r = RESPUESTAS[randomIndex(RESPUESTAS.length)];
+    if (pregunta) vacias = 0;
+    // Sin pregunta la bola se agita igual, pero no responde: se burla, y eso
+    // ni se guarda en el historial ni se comparte.
+    const r = pregunta ? RESPUESTAS[randomIndex(RESPUESTAS.length)] : sinPregunta();
     await agitar(r);
 
     mostrar(r);
-    ultimo = { pregunta, respuesta: r.texto, tipo: r.tipo };
-    guardar({ pregunta, respuesta: r.texto, tipo: r.tipo });
     if (navigator.vibrate) navigator.vibrate(12);
-    despues();
+    if (pregunta) {
+      ultimo = { pregunta, respuesta: r.texto, tipo: r.tipo };
+      guardar({ pregunta, respuesta: r.texto, tipo: r.tipo });
+      despues();
+    } else {
+      ultimo = null;
+      senalarCampo();
+    }
 
     ultimaConsulta = Date.now();
     busy = false;

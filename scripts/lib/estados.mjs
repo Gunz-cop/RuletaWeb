@@ -618,6 +618,36 @@ export const ESTADOS = [
     ],
   },
   {
+    // Sin pregunta la bola se burla: no guarda historial ni ofrece compartir
+    ruta: '/si-o-no',
+    nombre: 'sin-pregunta',
+    clics: ['#btn-ask'],
+    esperarSelector: '#oracle-result[data-tipo="vacia"]',
+    comprobar: [
+      { sel: '#oracle-result', props: ['opacity'] },
+      { sel: '#oracle-after', props: ['display'] },
+      { sel: '.history-row', props: ['display'] },
+      { sel: '.history-empty', props: ['display'] },
+    ],
+  },
+  {
+    // A la sexta consulta vacía seguida, la bola culpa al gato
+    ruta: '/si-o-no',
+    nombre: 'gato',
+    contexto: { reducedMotion: 'reduce' },
+    verificarRelacion: async (pagina) => {
+      for (let i = 1; i <= 6; i++) {
+        await pagina.click('#btn-ask');
+        await pagina.waitForSelector('#btn-ask:not([disabled])');
+      }
+      const texto = await pagina.textContent('#oracle-result-main');
+      return {
+        ok: /gato/i.test(texto ?? ''),
+        mensaje: `sexta consulta sin pregunta: «${texto}»`,
+      };
+    },
+  },
+  {
     // Móvil táctil: el control aparece y una sacudida (eventos sintéticos
     // del sensor) consulta sin tocar el botón.
     ruta: '/si-o-no',

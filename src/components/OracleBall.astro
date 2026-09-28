@@ -194,7 +194,31 @@ const BUBBLES = 7;
     letter-spacing: 0.03em;
     text-transform: uppercase;
     color: var(--die-ink);
+    /* El guion opcional de "Definiti-vamente" solo se usa si hace falta */
+    hyphens: manual;
     text-shadow: 0 0 0.35rem rgb(120 140 255 / 0.35);
+  }
+
+  /* El JS marca cuánto ocupa el texto (data-largo): lo corto se lee grande
+     y lo largo cabe sin salirse del triángulo. */
+  .oracle-die-text[data-largo='corto'] {
+    font-size: calc(var(--ball-size) * 0.075);
+    letter-spacing: 0.02em;
+  }
+
+  .oracle-die-text[data-largo='medio'] {
+    font-size: calc(var(--ball-size) * 0.041);
+    letter-spacing: 0.02em;
+  }
+
+  .oracle-die-text[data-largo='largo'] {
+    font-size: calc(var(--ball-size) * 0.038);
+    letter-spacing: 0.01em;
+  }
+
+  .oracle-die-text[data-largo='muy-largo'] {
+    font-size: calc(var(--ball-size) * 0.033);
+    letter-spacing: 0;
   }
 
   /* --- Luz ---------------------------------------------------------------- */
