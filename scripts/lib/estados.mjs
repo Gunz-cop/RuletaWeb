@@ -640,7 +640,26 @@ export const ESTADOS = [
       try {
         await pagina.waitForSelector('#oracle-result.is-shown', { timeout: 5000 });
       } catch (e) {
-        return { ok: false, mensaje: 'una sacudida fuerte no consultó al oráculo' };
+        // Diagnóstico: qué ve el navegador de CI (otra versión de Chrome que
+        // la local) al construir el evento y si le llegan eventos reales del
+        // sensor emulado que se mezclan con los sintéticos.
+        const diag = await pagina.evaluate(async () => {
+          const ev = new DeviceMotionEvent('devicemotion', { accelerationIncludingGravity: { x: 20, y: 0, z: 9.8 } });
+          const reales = [];
+          const oir = (e) => reales.push(e.isTrusted ? JSON.stringify([e.accelerationIncludingGravity?.x, e.accelerationIncludingGravity?.y, e.accelerationIncludingGravity?.z]) : 'sintetico');
+          window.addEventListener('devicemotion', oir);
+          await new Promise((r) => setTimeout(r, 300));
+          window.removeEventListener('devicemotion', oir);
+          return {
+            ua: navigator.userAgent,
+            x: ev.accelerationIncludingGravity?.x ?? null,
+            pressed: document.querySelector('#btn-shake')?.getAttribute('aria-pressed'),
+            msg: document.querySelector('#shake-msg')?.textContent,
+            reales: reales.length,
+            muestra: reales.slice(0, 3),
+          };
+        });
+        return { ok: false, mensaje: `una sacudida fuerte no consultó al oráculo; diagnóstico: ${JSON.stringify(diag)}` };
       }
       return { ok: true, mensaje: 'el movimiento suave no consulta y la sacudida sí' };
     },
