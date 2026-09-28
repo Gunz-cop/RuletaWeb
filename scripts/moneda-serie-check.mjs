@@ -59,7 +59,7 @@ for (const [z, esperado] of [
   ['America/El_Salvador', 'caracorona'], ['America/Montevideo', 'ceca'],
   ['America/Guayaquil', 'sello'], ['America/Panama', 'sello'], ['America/Lima', 'sello'],
   ['America/Sao_Paulo', 'coroa'], ['America/Manaus', 'coroa'],
-  ['America/Caracas', 'cruz'], ['America/Asuncion', 'cruz'], ['America/Puerto_Rico', 'cruz'],
+  ['America/Caracas', 'sello'], ['America/Asuncion', 'cruz'], ['America/Puerto_Rico', 'cruz'],
 ]) check(zona(z, 'en-US') === esperado, `${z} → ${esperado}`);
 check(zona('Asia/Tokyo', 'pt-BR') === 'coroa', 'pt-BR → coroa');
 check(glifos('caracorona').tails === 'Co', 'cara/corona con glifos distintos');

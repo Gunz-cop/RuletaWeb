@@ -51,7 +51,9 @@ herramienta. Estructura probada:
 
 1. **Gancho** en la primera frase, en negrita, con la duda del usuario.
 2. **Cómo usarla** en pasos (`<ol>`), con los nombres reales de los botones.
-3. **Tabla de ideas**: situación → opciones → modo recomendado.
+3. **Tabla de ideas**: situación → opciones → modo recomendado. **Máximo tres
+   columnas**: con cuatro, la tabla desborda el móvil plegable de 344px y
+   falla el invariante de scroll horizontal de `npm run test:estado`.
 4. **Secciones por función o modo**, cada una con su H3.
 5. **Trucos** numerados en H3.
 6. **Tabla «¿qué herramienta usar?»**, que enlaza a todas las demás

@@ -303,7 +303,7 @@ Tabla vigente (confirmada por el propietario; vive en `POR_PAIS` de
 
 | Países | Expresión |
 |---|---|
-| Colombia, Chile, Perú, Ecuador, Panamá | Cara o sello |
+| Colombia, Chile, Perú, Ecuador, Panamá, Venezuela | Cara o sello |
 | México | Águila o sol |
 | Costa Rica | Escudo o corona |
 | El Salvador | Cara o corona |

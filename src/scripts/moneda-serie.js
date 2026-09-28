@@ -22,9 +22,9 @@ export const NOMBRES = {
 };
 
 // País → juego de nombres por defecto. Lo que no está aquí (España, Puerto
-// Rico, Paraguay, Venezuela y cualquier otro país) usa "cara o cruz".
+// Rico, Paraguay y cualquier otro país) usa "cara o cruz".
 const POR_PAIS = {
-  CO: 'sello', CL: 'sello', PE: 'sello', EC: 'sello', PA: 'sello',
+  CO: 'sello', CL: 'sello', PE: 'sello', EC: 'sello', PA: 'sello', VE: 'sello',
   GT: 'escudo', BO: 'escudo', HN: 'escudo',
   CR: 'corona',
   SV: 'caracorona',
