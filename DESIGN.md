@@ -120,6 +120,13 @@ el sistema nuevo. El resto de cada herramienta (la ruleta, los dados...) sigue c
 anterior — migrarlos es una tarea aparte, más grande, porque toca UI
 interactiva con sus propios tests de estado (`npm run test:estado`).
 
+**Excepción: objetos ilustrados.** La moneda de `Coin.astro` sí lleva
+degradados (reflejo cónico, estriado del borde, relieve con `text-shadow`):
+es la representación de un objeto físico, no UI, y sin reflejos el metal se
+lee como un disco plano. La regla de "sin degradados" aplica a botones,
+tarjetas y texto; la paleta de latón vive como variables locales
+(`--metal-*`) dentro del componente, no como tokens globales.
+
 ### El acento: `--accent-warm`
 
 Un solo acento (`#e2905a`, terracota cálido — ver tabla de tokens) hace lo

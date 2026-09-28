@@ -104,21 +104,21 @@ const schemaLD = {
     <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@1,400&display=swap" rel="stylesheet">
   </Fragment>
 
-  <main class="wrap coin-page">
+  <main class="wrap max-w-2xl pt-5 pb-8 sm:pt-12">
 
-    <header class="coin-hero">
+    <header class="coin-hero text-center mb-5 sm:mb-10">
       <h1>Cara o cruz, <em>sin darle más vueltas</em></h1>
-      <p>Escribe tus dos opciones y lanza. Gratis, sin registro y con historial local.</p>
+      <p class="my-0 mx-auto max-w-lg text-sm sm:text-base text-ink-secondary">Escribe tus dos opciones y lanza. Gratis, sin registro y con historial local.</p>
     </header>
 
-    <section class="coin-tool" aria-label="Lanzar moneda">
-      <div class="coin-options">
-        <label class="coin-option">
+    <section class="flex flex-col items-center" aria-label="Lanzar moneda">
+      <div class="grid grid-cols-[1fr_auto_1fr] items-end gap-4 w-full mb-6 sm:mb-14">
+        <label class="coin-option flex flex-col gap-1.5 min-w-0">
           <span>Cara</span>
           <input id="option-heads" type="text" maxlength="40" placeholder="Pizza" autocomplete="off">
         </label>
         <span class="coin-options-vs" aria-hidden="true">o</span>
-        <label class="coin-option">
+        <label class="coin-option flex flex-col gap-1.5 min-w-0">
           <span>Cruz</span>
           <input id="option-tails" type="text" maxlength="40" placeholder="Sushi" autocomplete="off">
         </label>
@@ -134,10 +134,10 @@ const schemaLD = {
       <button class="coin-flip-btn" id="btn-flip" type="button">Lanzar moneda</button>
     </section>
 
-    <section class="coin-history" aria-label="Historial de lanzamientos">
+    <section class="mt-16" aria-label="Historial de lanzamientos">
       <div class="coin-history-head">
-        <h2>Últimos lanzamientos</h2>
-        <span class="coin-history-count" id="history-count"></span>
+        <h2 class="m-0 font-display text-lg">Últimos lanzamientos</h2>
+        <span class="flex-1 text-sm text-ink-tertiary tabular-nums" id="history-count"></span>
         <button class="coin-clear-btn" id="btn-clear" type="button">Borrar</button>
       </div>
       <ol class="history-list" id="history-list">
@@ -239,18 +239,7 @@ const schemaLD = {
   <script src="../scripts/moneda.js"></script>
 </Layout>
 
-
 <style>
-  .coin-page {
-    padding-block: 3rem 2rem;
-    max-width: 640px;
-  }
-
-  .coin-hero {
-    text-align: center;
-    margin-bottom: 2.5rem;
-  }
-
   .coin-hero h1 {
     font-family: 'Outfit', sans-serif;
     font-size: clamp(2.2rem, 6vw, 3.6rem);
@@ -266,35 +255,7 @@ const schemaLD = {
     color: var(--accent-warm);
   }
 
-  .coin-hero p {
-    color: var(--text-secondary);
-    max-width: 34rem;
-    margin: 0 auto;
-  }
-
-  .coin-tool {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
   /* Opciones: dos campos subrayados, sin cajas */
-  .coin-options {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    align-items: end;
-    gap: 1rem;
-    width: 100%;
-    margin-bottom: 3.5rem;
-  }
-
-  .coin-option {
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-    min-width: 0;
-  }
-
   .coin-option span {
     font-size: 0.75rem;
     font-weight: 600;
@@ -394,9 +355,6 @@ const schemaLD = {
   }
 
   /* Historial: lista dividida por líneas de 1px */
-  .coin-history {
-    margin-top: 4rem;
-  }
 
   .coin-history-head {
     display: flex;
@@ -404,19 +362,6 @@ const schemaLD = {
     gap: 1rem;
     padding-bottom: 0.75rem;
     border-bottom: 1px solid var(--divider-line);
-  }
-
-  .coin-history-head h2 {
-    font-family: 'Outfit', sans-serif;
-    font-size: 1.1rem;
-    margin: 0;
-  }
-
-  .coin-history-count {
-    flex: 1;
-    font-size: 0.85rem;
-    color: var(--text-tertiary);
-    font-variant-numeric: tabular-nums;
   }
 
   .coin-clear-btn {
@@ -479,26 +424,10 @@ const schemaLD = {
 
   /* Móvil: el botón de lanzar debe quedar a la vista sin hacer scroll
      (unos 660px útiles en un iPhone con la barra de Safari) */
-  @media (max-width: 600px) {
-    .coin-page {
-      padding-block-start: 1.25rem;
-    }
-
-    .coin-hero {
-      margin-bottom: 1.25rem;
-    }
-
+  @media (max-width: 639px) {
     .coin-hero h1 {
       font-size: 1.85rem;
       margin-bottom: 0.5rem;
-    }
-
-    .coin-hero p {
-      font-size: 0.9rem;
-    }
-
-    .coin-options {
-      margin-bottom: 1.5rem;
     }
 
     .coin-result {

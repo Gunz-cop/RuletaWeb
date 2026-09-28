@@ -6,8 +6,16 @@
 // El canto son capas finas apiladas en translateZ: de frente no se ven,
 // pero cuando la moneda pasa de canto forman un borde sólido en vez de
 // desaparecer como una hoja de papel.
+//
+// La moneda es un objeto ilustrado, no UI: por eso sí lleva degradados
+// (el metal no se lee como metal sin reflejos), aunque el resto de la
+// página siga el sistema editorial sin degradados de DESIGN.md.
 const EDGE_LAYERS = 12;
 const edge = Array.from({ length: EDGE_LAYERS }, (_, i) => i);
+const faces = [
+  { side: 'heads', glyph: 'C', label: 'Cara' },
+  { side: 'tails', glyph: 'X', label: 'Cruz' },
+];
 ---
 
 <div class="coin-stage">
@@ -16,14 +24,24 @@ const edge = Array.from({ length: EDGE_LAYERS }, (_, i) => i);
       {edge.map((i) => (
         <span class="coin-edge" style={`--i: ${i}`} aria-hidden="true"></span>
       ))}
-      <div class="coin-face coin-face--heads" aria-hidden="true">
-        <span class="coin-glyph">C</span>
-        <span class="coin-label">Cara</span>
-      </div>
-      <div class="coin-face coin-face--tails" aria-hidden="true">
-        <span class="coin-glyph">X</span>
-        <span class="coin-label">Cruz</span>
-      </div>
+      {faces.map((f) => (
+        <div class={`coin-face coin-face--${f.side}`} aria-hidden="true">
+          <svg class="coin-engraving" viewBox="0 0 100 100">
+            <path id={`coin-arc-${f.side}`} d="M 19 50 A 31 31 0 0 1 81 50" fill="none" />
+            {/* Leyenda en bajorrelieve: copia clara desplazada + copia oscura */}
+            <text class="coin-legend coin-legend--light" dy="0.5">
+              <textPath href={`#coin-arc-${f.side}`} startOffset="50%" text-anchor="middle">DECÍDELO · 2026</textPath>
+            </text>
+            <text class="coin-legend">
+              <textPath href={`#coin-arc-${f.side}`} startOffset="50%" text-anchor="middle">DECÍDELO · 2026</textPath>
+            </text>
+            {/* Gráfila: el anillo de perlas que llevan casi todas las monedas */}
+            <circle cx="50" cy="50" r="39" class="coin-beads" />
+          </svg>
+          <span class="coin-glyph">{f.glyph}</span>
+          <span class="coin-label">{f.label}</span>
+        </div>
+      ))}
     </div>
   </div>
   <div class="coin-floor-shadow" id="coin-floor-shadow" aria-hidden="true"></div>
@@ -33,6 +51,12 @@ const edge = Array.from({ length: EDGE_LAYERS }, (_, i) => i);
   .coin-stage {
     --coin-size: 184px;
     --coin-depth: 12px;
+    /* Latón dorado, sesgado hacia el terracota del sitio */
+    --metal-hi: #f7dc9c;
+    --metal: #dca656;
+    --metal-mid: #bf8638;
+    --metal-lo: #8a5a1f;
+    --metal-ink: #7a4f18;
     position: relative;
     width: var(--coin-size);
     height: calc(var(--coin-size) + 2.5rem);
@@ -55,6 +79,7 @@ const edge = Array.from({ length: EDGE_LAYERS }, (_, i) => i);
     height: 100%;
     transform-style: preserve-3d;
     will-change: transform;
+    cursor: pointer;
   }
 
   .coin-edge,
@@ -64,27 +89,54 @@ const edge = Array.from({ length: EDGE_LAYERS }, (_, i) => i);
     border-radius: 50%;
   }
 
-  /* Capas del canto, repartidas entre las dos caras */
+  /* Canto: capas alternas claro/oscuro que de lado se leen como estriado */
   .coin-edge {
-    background: #9a5a30;
+    background: var(--metal-mid);
     transform: translateZ(calc(
       (var(--i) / (var(--coin-layers) - 1) - 0.5) * (var(--coin-depth) - 2px)
     ));
+  }
+
+  .coin-edge:nth-child(odd) {
+    background: var(--metal-lo);
   }
 
   .coin-face {
     display: grid;
     place-items: center;
     align-content: center;
-    gap: 0.15rem;
-    background: var(--accent-warm);
-    color: #2a1608;
-    /* Anillo interior grabado: un borde de 1px, sin brillos */
-    box-shadow:
-      inset 0 0 0 9px var(--accent-warm),
-      inset 0 0 0 10px rgba(42, 22, 8, 0.35);
+    background:
+      radial-gradient(circle at 30% 24%, rgb(255 250 230 / 0.6), rgb(255 250 230 / 0) 36%),
+      radial-gradient(circle at 72% 80%, rgb(80 45 8 / 0.35), rgb(80 45 8 / 0) 48%),
+      conic-gradient(from 215deg, var(--metal), var(--metal-hi), var(--metal), var(--metal-mid), var(--metal-lo), var(--metal-mid), var(--metal));
+    box-shadow: inset 0 0 0 1px rgb(80 45 8 / 0.7);
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
+  }
+
+  /* Borde estriado */
+  .coin-face::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 30% 24%, rgb(255 250 230 / 0.45), rgb(255 250 230 / 0) 45%),
+      repeating-conic-gradient(var(--metal-mid) 0deg 2deg, var(--metal-hi) 2deg 4deg);
+    -webkit-mask: radial-gradient(closest-side, transparent 93%, #000 93.5%);
+    mask: radial-gradient(closest-side, transparent 93%, #000 93.5%);
+  }
+
+  /* Canto interior del listel: el campo queda hundido respecto al borde */
+  .coin-face::after {
+    content: '';
+    position: absolute;
+    inset: 7%;
+    border-radius: 50%;
+    box-shadow:
+      inset 0 3px 4px rgb(70 38 4 / 0.5),
+      inset 0 -2px 3px rgb(255 238 195 / 0.45),
+      0 0 0 1px rgb(255 238 195 / 0.35);
   }
 
   .coin-face--heads {
@@ -95,20 +147,57 @@ const edge = Array.from({ length: EDGE_LAYERS }, (_, i) => i);
     transform: rotateX(180deg) translateZ(calc(var(--coin-depth) / 2));
   }
 
-  .coin-glyph {
+  .coin-engraving {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .coin-legend {
     font-family: 'Outfit', sans-serif;
+    font-size: 6.4px;
+    font-weight: 700;
+    letter-spacing: 1.4px;
+    fill: var(--metal-ink);
+  }
+
+  .coin-legend--light {
+    fill: rgb(255 240 200 / 0.7);
+  }
+
+  .coin-beads {
+    fill: none;
+    stroke: var(--metal-ink);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-dasharray: 0 3.05;
+    opacity: 0.55;
+  }
+
+  /* Relieve: luz arriba, sombra abajo */
+  .coin-glyph,
+  .coin-label {
+    position: relative;
+    font-family: 'Outfit', sans-serif;
+    color: var(--metal-ink);
+    text-shadow:
+      0 1px 0 rgb(255 240 200 / 0.75),
+      0 -1px 1px rgb(60 32 4 / 0.45);
+  }
+
+  .coin-glyph {
     font-weight: 800;
-    font-size: 4.5rem;
+    font-size: 4.2rem;
     line-height: 1;
+    margin-top: 0.6rem;
   }
 
   .coin-label {
-    font-family: 'Outfit', sans-serif;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     font-weight: 700;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
-    opacity: 0.7;
   }
 
   /* Sombra ya difuminada de origen; solo se anima scale/opacity */
@@ -119,11 +208,11 @@ const edge = Array.from({ length: EDGE_LAYERS }, (_, i) => i);
     bottom: 0;
     height: 18px;
     border-radius: 50%;
-    background: radial-gradient(closest-side, rgba(0, 0, 0, 0.55), transparent);
+    background: radial-gradient(closest-side, rgb(0 0 0 / 0.55), transparent);
     will-change: transform, opacity;
   }
 
-  @media (max-width: 600px) {
+  @media (max-width: 639px) {
     .coin-stage {
       --coin-size: 128px;
       --coin-depth: 9px;
@@ -131,7 +220,12 @@ const edge = Array.from({ length: EDGE_LAYERS }, (_, i) => i);
     }
 
     .coin-glyph {
-      font-size: 3rem;
+      font-size: 2.9rem;
+      margin-top: 0.4rem;
+    }
+
+    .coin-label {
+      font-size: 0.55rem;
     }
   }
 </style>
