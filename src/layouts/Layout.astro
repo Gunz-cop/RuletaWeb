@@ -133,7 +133,11 @@ const siteUrl = 'https://decidelo.app';
             observer.unobserve(entry.target);
           }
         });
-      }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+      // threshold 0, no un porcentaje: el umbral es fracción del elemento, y
+      // un artículo SEO largo (el de la moneda mide ~11.000px en móvil) nunca
+      // llegaba a tener un 8 % visible en una pantalla de 660px, así que se
+      // quedaba invisible para siempre. El rootMargin ya retrasa la aparición.
+      }, { threshold: 0, rootMargin: '0px 0px -40px 0px' });
       document.querySelectorAll('.reveal, .reveal-scale').forEach(el => observer.observe(el));
     })();
   </script>

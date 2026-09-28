@@ -75,6 +75,11 @@ Enlaces internos:
   tabla.
 - Comprueba que el `id` del ancla existe en la página.
 
+Un artículo largo mide más de 10.000px en móvil. `<SeoArticle>` lleva la
+clase `reveal`, que aparece al entrar en pantalla: comprueba en un móvil
+simulado que el texto se ve al hacer scroll (el observador de
+`Layout.astro` usa `threshold: 0` justo por esto).
+
 Mide el total con el build (`dist/<pagina>/index.html`), quitando las
 etiquetas del `<article>`.
 
