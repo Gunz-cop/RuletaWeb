@@ -9,7 +9,7 @@
 .coin-glyph[S]{font-family:Outfit,sans-serif;font-size:4.5rem;font-weight:800;line-height:1}
 .coin-label[S]{letter-spacing:.18em;text-transform:uppercase;opacity:.7;font-family:Outfit,sans-serif;font-size:.75rem;font-weight:700}
 .coin-floor-shadow[S]{will-change:transform, opacity;background:radial-gradient(closest-side,#0000008c,#0000);border-radius:50%;height:18px;position:absolute;bottom:0;left:10%;right:10%}
-@media (width<=600px){.coin-stage[S]{--coin-size:152px;--coin-depth:10px}.coin-glyph[S]{font-size:3.6rem}}
+@media (width<=600px){.coin-stage[S]{--coin-size:128px;--coin-depth:9px;height:calc(var(--coin-size) + 1.25rem)}.coin-glyph[S]{font-size:3rem}}
 .coin-page[S]{max-width:640px;padding-block:3rem 2rem}
 .coin-hero[S]{text-align:center;margin-bottom:2.5rem}
 .coin-hero[S] h1[S]{letter-spacing:-.02em;margin:0 0 1rem;font-family:Outfit,sans-serif;font-size:clamp(2.2rem,6vw,3.6rem);line-height:1.05}
@@ -44,7 +44,7 @@
 .history-list[S] .history-side{color:var(--text-tertiary);letter-spacing:.1em;text-transform:uppercase;font-size:.8rem}
 .history-list[S] .history-empty{color:var(--text-tertiary);padding:.8rem 0;font-size:.9rem}
 .hub-section[S]{padding:3rem 0}
-@media (width<=600px){.coin-page[S]{padding-block-start:2rem}.coin-options[S]{margin-bottom:2.5rem}}
+@media (width<=600px){.coin-page[S]{padding-block-start:1.25rem}.coin-hero[S]{margin-bottom:1.25rem}.coin-hero[S] h1[S]{margin-bottom:.5rem;font-size:1.85rem}.coin-hero[S] p[S]{font-size:.9rem}.coin-options[S]{margin-bottom:1.5rem}.coin-result[S]{min-height:3.75rem;margin:.5rem 0 .75rem}.coin-result-main[S]{font-size:1.75rem}.coin-result-side[S]{margin-top:.15rem}}
 .hub-list[S]{border-top:1px solid var(--divider-line);flex-direction:column;width:100%;display:flex}
 .hub-row[S]{border-bottom:1px solid var(--divider-line);transition:transform .16s var(--ease-out);align-items:center;gap:1.5rem;padding:1.4rem 0;text-decoration:none;display:flex}
 .hub-row[S]:active{transform:scale(.99)}

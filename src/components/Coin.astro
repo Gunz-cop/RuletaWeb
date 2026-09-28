@@ -125,12 +125,13 @@ const edge = Array.from({ length: EDGE_LAYERS }, (_, i) => i);
 
   @media (max-width: 600px) {
     .coin-stage {
-      --coin-size: 152px;
-      --coin-depth: 10px;
+      --coin-size: 128px;
+      --coin-depth: 9px;
+      height: calc(var(--coin-size) + 1.25rem);
     }
 
     .coin-glyph {
-      font-size: 3.6rem;
+      font-size: 3rem;
     }
   }
 </style>

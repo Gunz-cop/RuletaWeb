@@ -108,7 +108,7 @@ const schemaLD = {
 
     <header class="coin-hero">
       <h1>Cara o cruz, <em>sin darle más vueltas</em></h1>
-      <p>Escribe tus dos opciones, lanza la moneda y sigue con tu día. Gratis, sin registro y con historial local.</p>
+      <p>Escribe tus dos opciones y lanza. Gratis, sin registro y con historial local.</p>
     </header>
 
     <section class="coin-tool" aria-label="Lanzar moneda">
@@ -477,13 +477,41 @@ const schemaLD = {
     padding: 3rem 0;
   }
 
+  /* Móvil: el botón de lanzar debe quedar a la vista sin hacer scroll
+     (unos 660px útiles en un iPhone con la barra de Safari) */
   @media (max-width: 600px) {
     .coin-page {
-      padding-block-start: 2rem;
+      padding-block-start: 1.25rem;
+    }
+
+    .coin-hero {
+      margin-bottom: 1.25rem;
+    }
+
+    .coin-hero h1 {
+      font-size: 1.85rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .coin-hero p {
+      font-size: 0.9rem;
     }
 
     .coin-options {
-      margin-bottom: 2.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .coin-result {
+      min-height: 3.75rem;
+      margin: 0.5rem 0 0.75rem;
+    }
+
+    .coin-result-main {
+      font-size: 1.75rem;
+    }
+
+    .coin-result-side {
+      margin-top: 0.15rem;
     }
   }
 </style>
