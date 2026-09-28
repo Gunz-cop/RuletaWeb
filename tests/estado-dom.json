@@ -243,5 +243,39 @@
       "width": "290px",
       "justifyContent": "flex-end"
     }
+  },
+  "/moneda [lanzada]": {
+    "#coin-result": {
+      "opacity": "1",
+      "textAlign": "center"
+    },
+    "#coin-result-main": {
+      "fontFamily": "Outfit, sans-serif",
+      "fontWeight": "700",
+      "color": "rgb(240, 240, 245)"
+    },
+    ".history-row": {
+      "display": "grid",
+      "borderBottomWidth": "1px",
+      "borderBottomStyle": "solid"
+    },
+    ".history-label": {
+      "color": "rgb(240, 240, 245)"
+    },
+    ".history-side": {
+      "textTransform": "uppercase",
+      "color": "rgb(90, 90, 110)"
+    },
+    "#btn-flip": {
+      "backgroundColor": "rgb(226, 144, 90)",
+      "borderRadius": "999px",
+      "opacity": "1"
+    }
+  },
+  "/moneda [accion-principal-visible-393x659]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#btn-flip.bottom=613.0px con 659px visibles (holgura 46.0px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
   }
 }

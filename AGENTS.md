@@ -113,7 +113,11 @@ compartir contexto lo filtraba al estado siguiente.
 Cubre amigo secreto —introduce participantes, hace el sorteo y comprueba
 las filas de enlaces, en escritorio y a 390px— y también los dados: sus caras, sus puntos y las tres variantes
 visuales las construye `dados.js` al lanzar, así que en reposo no existen y
-ninguna captura las ve. Si un estado no llega a producirse —porque el CSS
+ninguna captura las ve. También cubre la moneda (lanza y mide el resultado
+y las filas del historial) y el **estándar móvil**: el invariante
+`accionPrincipalVisible` comprueba que el botón principal de cada
+herramienta migrada se ve sin scroll en 393×659px (ver DESIGN.md,
+"Responsive: mobile first"). Si un estado no llega a producirse —porque el CSS
 que lo hace visible dejó de llegar, por ejemplo— eso se anota como fallo de
 ese estado y los demás siguen corriendo, en vez de reventar el proceso.
 
@@ -144,7 +148,7 @@ leerla convierte el test en decoración.
 src/
   pages/          Una ruta por herramienta (index.astro es el hub; la ruleta vive en ruleta.astro)
   scripts/        La lógica de cada herramienta, JS vanilla, un archivo por página
-  components/     Header, Footer, HubGrid, SeoArticle, AdSlot
+  components/     Header, Footer, HubGrid, SeoArticle, AdSlot y los objetos de cada herramienta (Coin…)
   layouts/        Layout.astro (base) y BlogPost.astro
   content/blog/   52 posts en Markdown, organizados por categoría
   assets/blog/    Imágenes de cabecera, procesadas por Astro
@@ -211,9 +215,15 @@ resumen:
   genera esa utilidad -- tiene que aparecer también en el marcado de algún
   `.astro` para que Tailwind la emita.
 
-Las páginas de herramientas siguen con su CSS propio y su bloque `<style>`.
-La migración a Tailwind es gradual, una herramienta a la vez, verificando
-visualmente cada una. No hagas una migración masiva.
+La migración al sistema editorial y a Tailwind es gradual, una herramienta
+a la vez, verificando cada una. No hagas una migración masiva. La moneda
+(`moneda.astro` + `Coin.astro` + `moneda.js`) ya está migrada y es la
+**implementación de referencia**: cuando migres o crees una herramienta,
+cópiale la estructura, no la inventes. El procedimiento paso a paso es la
+skill del proyecto `decidelo-herramienta`
+(`.claude/skills/decidelo-herramienta/SKILL.md`); qué va en utilidad y qué
+en CSS propio lo deciden las reglas de DESIGN.md, sección "Cómo decidir
+entre CSS propio y utilidad de Tailwind".
 
 ### 3. Despliegue: Cloudflare Workers desde `main`
 
@@ -225,7 +235,9 @@ En `wrangler.jsonc`, el campo `name` es `azares` — un nombre heredado que
 Worker real al que está atado el dominio. Renombrarlo crearía un Worker
 nuevo y vacío y dejaría decidelo.app apuntando al viejo.
 
-No hay workflows de GitHub Actions y no hacen falta.
+GitHub Actions (`.github/workflows/ci.yml`) corre en cada push `npm test` y
+`npm run test:estado`, pero **no despliega**: solo avisa. El despliegue lo
+hace Cloudflare por su cuenta.
 
 ### 4. El sitemap está filtrado a mano
 
@@ -242,6 +254,49 @@ en build y desarrollo, y **nada de eso llega al navegador**: las únicas
 dependencias de producción son `astro` y `@astrojs/sitemap`, y el resultado
 del build es HTML estático. No fuerces `npm audit fix --force`: rompería
 Astro sin ganar seguridad real.
+
+### 6. Lógica de las herramientas (JS)
+
+Implementación de referencia: `src/scripts/moneda.js`. Cada herramienta
+nueva o migrada cumple esto:
+
+- **Un archivo por página en `src/scripts/`**, JS vanilla, sin dependencias
+  de npm en el navegador. Se carga con `<script src="../scripts/x.js">` al
+  final de la página y se inicializa en `DOMContentLoaded` **y** en
+  `astro:page-load`, con una marca (`dataset.ready`) para no enganchar los
+  eventos dos veces.
+- **El JS decide y escribe; no dibuja.** El marcado vive en la página o en
+  un componente `.astro`, la apariencia en CSS. El JS solo elige el
+  resultado, anima y escribe texto. Nada de `innerHTML` con SVG o HTML
+  largo dentro del script.
+- **Azar con `crypto.getRandomValues`** (con `Math.random` solo como
+  respaldo). La página lo promete en el texto SEO.
+- **Animación con la Web Animations API** (`element.animate()`), y el
+  resultado se muestra al resolver `animation.finished`, nunca con un
+  `setTimeout` que adivina la duración. Nada de librerías de animación
+  (GSAP, Three.js, Lottie): el peso de página es requisito de producto.
+- **`prefers-reduced-motion`**: sin vuelo ni giro, un fundido corto.
+- **`localStorage` siempre dentro de `try/catch`** (modo privado de Safari
+  lanza excepción) y con claves `decidelo_<herramienta>_<dato>`. Si cambias
+  el formato de lo guardado, lee también el formato viejo.
+- **Sin sonidos ni efectos de premio.** La página es para decidir, no un
+  casino. Como mucho `navigator.vibrate` corto al terminar.
+- **Clases de Tailwind añadidas por JS no funcionan** (ver regla 2): si el
+  JS tiene que cambiar el aspecto, pon una clase de estado propia
+  (`is-shown`) con su regla en el `<style>` de la página.
+
+### 7. Skills de diseño: las del proyecto mandan
+
+`.claude/skills/` tiene skills de terceros instaladas (`skills-lock.json`):
+`gpt-taste`, `high-end-visual-design`, `industrial-brutalist-ui`,
+`minimalist-ui` y otras. Cada una trae **su propia estética** (fuentes,
+paletas, GSAP, layouts) y ninguna conoce este sitio. Sirven como consulta
+técnica (por ejemplo `animate` o `review-animations` para decidir curvas y
+duraciones), pero **nunca por encima de DESIGN.md**: si una skill propone
+otra fuente, otro acento, degradados, tarjetas o una librería, se ignora esa
+parte. El orden de precedencia es: lo que pida el propietario → DESIGN.md y
+este archivo → la skill del proyecto `decidelo-herramienta` → skills de
+terceros.
 
 ---
 

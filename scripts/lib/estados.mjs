@@ -110,6 +110,37 @@ async function verificarBotonGirarSobrePanel(pagina) {
   };
 }
 
+// --- Estándar móvil: la acción principal se ve sin hacer scroll ---------
+// Regla de DESIGN.md ("Responsive: mobile first"): en una herramienta, el
+// botón que produce el resultado tiene que caber en la primera pantalla del
+// móvil de referencia. 393x659 es lo que queda visible en un iPhone 15/16
+// con la barra de Safari abajo (852px de pantalla menos barras del sistema y
+// del navegador). Nació de un caso real: el botón Lanzar de la moneda
+// terminaba en 807px y había que hacer scroll para usar la herramienta.
+//
+// Misma holgura de un dedo que el invariante de la ruleta, por la misma
+// razón: con >= 0 solo avisaría cuando el botón ya está cortado.
+export const VIEWPORT_MOVIL_REFERENCIA = { width: 393, height: 659 };
+
+export function accionPrincipalVisible(selector) {
+  return async (pagina) => {
+    const r = await medirRect(pagina, selector);
+    if (!r) return { ok: false, mensaje: `${selector} no existe en el DOM` };
+    if (r.bottom - r.top <= 0 || r.right - r.left <= 0) {
+      return { ok: false, mensaje: `${selector} tiene un rect degenerado -- no es un botón visible real.` };
+    }
+    const alto = await pagina.evaluate(() => window.innerHeight);
+    const holgura = alto - r.bottom;
+    return {
+      ok: holgura >= HOLGURA_MINIMA_PX,
+      mensaje:
+        `${selector}.bottom=${r.bottom.toFixed(1)}px con ${alto}px visibles (holgura ${holgura.toFixed(1)}px, ` +
+        `mínimo ${HOLGURA_MINIMA_PX}px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: ` +
+        `compacta el hero o el objeto en móvil, no bajes el umbral.`,
+    };
+  };
+}
+
 export const ESTADOS = [
   {
     // La ruleta se mudó a /ruleta (ver AGENTS.md): el modo foco es un
@@ -412,5 +443,34 @@ export const ESTADOS = [
       { sel: '.link-row', props: ['flexDirection', 'alignItems'] },
       { sel: '.row-actions', props: ['width', 'justifyContent'] },
     ],
+  },
+  // --- Moneda -------------------------------------------------------------
+  // Implementación de referencia del sistema editorial (ver DESIGN.md,
+  // "Anatomía de una página de herramienta"). El resultado se muestra con
+  // una clase que pone el JS y las filas del historial las crea moneda.js,
+  // así que en reposo ninguna de las dos cosas existe.
+  {
+    ruta: '/moneda',
+    nombre: 'lanzada',
+    escribir: [
+      { sel: '#option-heads', texto: 'Pizza' },
+      { sel: '#option-tails', texto: 'Sushi' },
+    ],
+    clics: ['#btn-flip'],
+    esperarSelector: '#coin-result.is-shown',
+    comprobar: [
+      { sel: '#coin-result', props: ['opacity', 'textAlign'] },
+      { sel: '#coin-result-main', props: ['fontFamily', 'fontWeight', 'color'] },
+      { sel: '.history-row', props: ['display', 'borderBottomWidth', 'borderBottomStyle'] },
+      { sel: '.history-label', props: ['color'] },
+      { sel: '.history-side', props: ['textTransform', 'color'] },
+      { sel: '#btn-flip', props: ['backgroundColor', 'borderRadius', 'opacity'] },
+    ],
+  },
+  {
+    ruta: '/moneda',
+    nombre: 'accion-principal-visible-393x659',
+    viewport: VIEWPORT_MOVIL_REFERENCIA,
+    verificarRelacion: accionPrincipalVisible('#btn-flip'),
   },
 ];

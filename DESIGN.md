@@ -95,8 +95,9 @@ Dos familias, cargadas desde Google Fonts en `Layout.astro`:
 - **Outfit** (`--font-display`, utilidad `font-display`) — titulares,
   nombres de tarjeta, cualquier texto en mayúscula o con peso 700+.
 
-Una tercera, cargada solo en la home (no en `Layout.astro` — ver "La
-estética: sistema editorial" más abajo):
+Una tercera, cargada solo en las páginas migradas que la usan (hoy la home
+y la moneda, cada una con su propio `<link>` en `slot="head"`; no en
+`Layout.astro` — ver "La estética: sistema editorial" más abajo):
 - **Newsreader**, itálica — acento de énfasis dentro de un titular en
   `Outfit` (`<em>`), nunca cuerpo de texto completo.
 
@@ -112,13 +113,17 @@ editorial: la misma base oscura del sitio (no cambia — sigue siendo la
 paleta "tinta nocturna" de la tabla de arriba), pero **sin degradados, sin
 glow, sin partículas y con un único acento cálido** en vez del trío neón.
 
-**Estado de la migración**: la home (`index.astro` y sus componentes
-`HomeHero`, `HomeUseCases`, `HomeHowItWorks`, `HomeToolsSection`), `HubGrid` y la herramienta de la moneda
-(`moneda.astro` + `Coin.astro`) (el bloque
-"más herramientas", compartido por las 11 páginas que lo importan) ya usan
-el sistema nuevo. El resto de cada herramienta (la ruleta, los dados...) sigue con los botones y tarjetas en degradado de la estética
-anterior — migrarlos es una tarea aparte, más grande, porque toca UI
-interactiva con sus propios tests de estado (`npm run test:estado`).
+**Estado de la migración**: ya usan el sistema nuevo la home (`index.astro`
+y sus componentes `HomeHero`, `HomeUseCases`, `HomeHowItWorks`,
+`HomeToolsSection`), `HubGrid` (el bloque "más herramientas", compartido
+por las 11 páginas que lo importan) y la moneda (`moneda.astro` +
+`Coin.astro`), que es además la **implementación de referencia** de una
+herramienta migrada (ver "Anatomía de una página de herramienta"). El resto
+de herramientas (la ruleta, los dados...) sigue con los botones y tarjetas
+en degradado de la estética anterior — migrarlas es una tarea aparte, una
+herramienta a la vez, porque toca UI interactiva con sus propios tests de
+estado (`npm run test:estado`). El procedimiento está en la skill del
+proyecto `decidelo-herramienta` (`.claude/skills/decidelo-herramienta/`).
 
 **Excepción: objetos ilustrados.** La moneda de `Coin.astro` sí lleva
 degradados (reflejo cónico, estriado del borde, relieve con `text-shadow`):
@@ -198,6 +203,97 @@ migración — las piezas nuevas siguen usando `.reveal`.
 
 ---
 
+## Color: qué usar para qué
+
+La tabla de equivalencias de arriba dice **qué colores existen**. Esta dice
+**cuál usar en cada papel**. En una pieza nueva o migrada solo se usan los
+de la columna "Sistema editorial"; los de la última fila existen porque las
+páginas sin migrar todavía los necesitan.
+
+| Papel | Sistema editorial (usar) | CSS propio | Utilidad |
+|---|---|---|---|
+| Fondo de página | tinta nocturna `#07070a` | `--bg-body` | `bg-ink` |
+| Superficie elevada (solo si hace falta separar un objeto) | `#0f0f15` / `#14141d` | `--bg-surface` / `--bg-surface-alt` | `bg-surface` / `bg-surface-alt` |
+| Texto principal | `#f0f0f5` | `--text-primary` | `text-ink-primary` |
+| Texto de apoyo (entradillas, descripciones) | `#8b8b9e` | `--text-secondary` | `text-ink-secondary` |
+| Metadatos, etiquetas, contadores, placeholders | `#5a5a6e` | `--text-tertiary` | `text-ink-tertiary` |
+| Acento único: énfasis, acción principal, foco, hover, estado activo | terracota `#e2905a` | `--accent-warm` | `text-warm` / `bg-warm` |
+| Separadores de lista (en vez de tarjetas) | `rgba(240,240,245,0.12)` | `--divider-line` | — (CSS propio) |
+| Error / éxito (solo semántico, nunca decorativo) | `#ef4444` / `#39ff14` | `--accent-danger` / `--accent-success` | `text-danger` / `text-success` |
+| **Legado arcade — no usar en piezas nuevas** | coral, menta/cyan, púrpura, melocotón, `--accent-gradient` | `--accent-coral`… | `text-coral`… |
+
+Reglas:
+
+- **Un solo acento por pantalla.** Si parece que hace falta un segundo
+  color para distinguir dos cosas (Cara/Cruz, equipo A/B), distínguelas con
+  tipografía, posición o texto, no con otro color. La moneda lo resuelve así:
+  el historial dice "Cara"/"Cruz" en texto terciario, sin chips de color.
+- **Texto sobre `--accent-warm`**: tinta muy oscura (`#1a0e06`), nunca
+  blanco — el blanco sobre terracota no llega a contraste AA.
+- **Colores nuevos**: no se añaden a `:root` ni a `@theme` por una sola
+  pieza. Si un objeto ilustrado necesita su paleta (el latón de la moneda),
+  vive como variables locales del componente (`--metal-*` en `Coin.astro`).
+  Un color que vayan a usar dos o más páginas se añade en los dos archivos
+  de tokens, a la tabla de equivalencias y a esta tabla, en el mismo commit.
+
+## Responsive: mobile first
+
+La mayor parte del tráfico es móvil (ver AGENTS.md), así que el estilo base
+es el de móvil y lo de pantallas grandes se añade encima.
+
+- **Un solo punto de corte: 640px** (`sm:` de Tailwind). En utilidades:
+  base = móvil, `sm:` = tablet y escritorio (`mb-5 sm:mb-10`). En CSS propio,
+  cuando una regla no puede ser utilidad, su media query es
+  `@media (max-width: 639px)` para que corte exactamente donde `sm:`. No
+  introduzcas cortes nuevos (600px, 768px…) en piezas migradas; las páginas
+  sin migrar todavía tienen los suyos.
+- **Móvil de referencia: 393×659px** — lo que queda visible en un iPhone
+  15/16 con la barra de Safari. En una herramienta, **la acción principal
+  (el botón que produce el resultado) tiene que verse entera en esa primera
+  pantalla, con al menos 16px de holgura**, contando la cabecera del sitio.
+  Lo vigila `npm run test:estado` con el invariante
+  `accionPrincipalVisible` de `scripts/lib/estados.mjs`; cada herramienta
+  migrada añade ahí su estado `accion-principal-visible-393x659`.
+- **Nada de scroll horizontal a 360px.** Márgenes laterales los pone `.wrap`;
+  no uses el atajo `padding: X 0` en un elemento que también lleva `.wrap`,
+  porque le quita el margen lateral (usa `pt-*`/`pb-*` o `padding-block`).
+- **Campos de texto a 16px o más** (`1rem`): por debajo, Safari en iPhone
+  hace zoom al enfocarlos.
+
+## Anatomía de una página de herramienta
+
+Implementación de referencia: `src/pages/moneda.astro`, `Coin.astro` y
+`src/scripts/moneda.js`. Una herramienta nueva o migrada sigue este orden,
+de arriba abajo:
+
+1. **Hero corto**: `<h1>` en Outfit con una palabra o frase de énfasis en
+   `<em>` Newsreader itálica y color `--accent-warm`; una entradilla de una
+   o dos líneas en `text-ink-secondary`. Sin imagen, sin badges, sin emojis.
+   Lo que dice es lo que el visitante va a decidir, no marketing.
+2. **Entradas del usuario** (opciones, participantes…): campos subrayados
+   con `--divider-line`, etiqueta en mayúsculas pequeñas `text-ink-tertiary`,
+   foco en `--accent-warm`. Se recuerdan en `localStorage`.
+3. **El objeto** (moneda, dado, ruleta): su propio componente en
+   `src/components/`. Es el único sitio donde se permiten degradados,
+   relieve y sombras, porque representa un objeto físico (ver "Excepción:
+   objetos ilustrados").
+4. **El resultado**: grande, en Outfit, y expresado en las palabras del
+   usuario ("Sushi"), con el valor técnico debajo en pequeño ("Cruz"). Nada
+   de "¡Ha salido…!", confeti, brillos ni sonidos de premio: la página es
+   para decidir, no un casino.
+5. **Acción principal**: un botón píldora `--accent-warm` con texto oscuro,
+   verbo + objeto ("Lanzar moneda"). Único botón relleno de la página.
+6. **Historial**: lista numerada dividida por líneas de 1px (patrón
+   `.hub-row`), con un contador en texto plano. Acción secundaria ("Borrar")
+   como texto subrayado.
+7. Debajo, sin cambios: `AdSlot`, `SeoArticle`, `HubGrid`.
+
+Movimiento: una sola animación con sentido (el volteo, el giro, la tirada),
+que termina en el resultado. Duración entre 1 y 2 segundos: más larga ya es
+suspense de tragamonedas. Con `prefers-reduced-motion`, un fundido de 200ms.
+Las reglas de implementación del JS están en AGENTS.md ("Lógica de las
+herramientas").
+
 ## Cómo decidir entre CSS propio y utilidad de Tailwind
 
 Esta es la pregunta que te vas a hacer en cada línea al migrar una página.
@@ -249,6 +345,19 @@ Reglas, en orden:
    arriba, la regla entera se queda en CSS. Un selector medio en cada sitio
    es más difícil de leer que cualquiera de las dos opciones puras — y es
    la manera más fácil de dejar un valor a medio migrar sin que se note.
+
+### Ejemplo aplicado: la moneda
+
+Cómo quedó repartida la implementación de referencia, regla por regla:
+
+| Qué | Dónde | Por qué |
+|---|---|---|
+| Layout del hero, del bloque de opciones, de la herramienta y del historial (`flex`, `grid`, `gap-4`, `mb-5 sm:mb-10`, `max-w-2xl`, `mt-16`) | Utilidades | Regla 5 |
+| Colores por token (`text-ink-secondary`, `text-ink-tertiary`) y tamaños de la escala (`text-sm`, `text-lg`) | Utilidades | Regla 5 |
+| Moneda 3D, degradados del metal, canto | CSS propio en `Coin.astro` | Regla 1 |
+| Tamaño del `<h1>` con `clamp()`, `letter-spacing` de etiquetas | CSS propio | Regla 3 |
+| Resultado (`.is-shown`) y filas del historial | CSS propio | Regla 2: los pone o los crea el JS |
+| Botón principal y campos de texto (estados `:focus`, `:disabled`, `::placeholder`) | CSS propio | Regla 6: mezcla color literal y estados en una sola regla |
 
 ### Verificación
 
