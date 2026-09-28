@@ -113,10 +113,10 @@ paleta "tinta nocturna" de la tabla de arriba), pero **sin degradados, sin
 glow, sin partículas y con un único acento cálido** en vez del trío neón.
 
 **Estado de la migración**: la home (`index.astro` y sus componentes
-`HomeHero`, `HomeUseCases`, `HomeHowItWorks`, `HomeToolsSection`) y `HubGrid` (el bloque
+`HomeHero`, `HomeUseCases`, `HomeHowItWorks`, `HomeToolsSection`), `HubGrid` y la herramienta de la moneda
+(`moneda.astro` + `Coin.astro`) (el bloque
 "más herramientas", compartido por las 11 páginas que lo importan) ya usan
-el sistema nuevo. El resto de cada herramienta (la ruleta, los dados, la
-moneda...) sigue con los botones y tarjetas en degradado de la estética
+el sistema nuevo. El resto de cada herramienta (la ruleta, los dados...) sigue con los botones y tarjetas en degradado de la estética
 anterior — migrarlos es una tarea aparte, más grande, porque toca UI
 interactiva con sus propios tests de estado (`npm run test:estado`).
 

@@ -1,0 +1,136 @@
+---
+// Moneda 3D con canto real. Solo marcado y apariencia: el volteo lo
+// anima moneda.js con la Web Animations API sobre #coin-flight (arco),
+// #coin (giro en X) y #coin-floor-shadow (sombra en el suelo).
+//
+// El canto son capas finas apiladas en translateZ: de frente no se ven,
+// pero cuando la moneda pasa de canto forman un borde sólido en vez de
+// desaparecer como una hoja de papel.
+const EDGE_LAYERS = 12;
+const edge = Array.from({ length: EDGE_LAYERS }, (_, i) => i);
+---
+
+<div class="coin-stage">
+  <div class="coin-flight" id="coin-flight">
+    <div class="coin" id="coin" style={`--coin-layers: ${EDGE_LAYERS}`}>
+      {edge.map((i) => (
+        <span class="coin-edge" style={`--i: ${i}`} aria-hidden="true"></span>
+      ))}
+      <div class="coin-face coin-face--heads" aria-hidden="true">
+        <span class="coin-glyph">C</span>
+        <span class="coin-label">Cara</span>
+      </div>
+      <div class="coin-face coin-face--tails" aria-hidden="true">
+        <span class="coin-glyph">X</span>
+        <span class="coin-label">Cruz</span>
+      </div>
+    </div>
+  </div>
+  <div class="coin-floor-shadow" id="coin-floor-shadow" aria-hidden="true"></div>
+</div>
+
+<style>
+  .coin-stage {
+    --coin-size: 184px;
+    --coin-depth: 12px;
+    position: relative;
+    width: var(--coin-size);
+    height: calc(var(--coin-size) + 2.5rem);
+    margin: 0 auto;
+    perspective: 900px;
+  }
+
+  .coin-flight {
+    position: relative;
+    z-index: 1;
+    width: var(--coin-size);
+    height: var(--coin-size);
+    transform-style: preserve-3d;
+    will-change: transform;
+  }
+
+  .coin {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    will-change: transform;
+  }
+
+  .coin-edge,
+  .coin-face {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+  }
+
+  /* Capas del canto, repartidas entre las dos caras */
+  .coin-edge {
+    background: #9a5a30;
+    transform: translateZ(calc(
+      (var(--i) / (var(--coin-layers) - 1) - 0.5) * (var(--coin-depth) - 2px)
+    ));
+  }
+
+  .coin-face {
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 0.15rem;
+    background: var(--accent-warm);
+    color: #2a1608;
+    /* Anillo interior grabado: un borde de 1px, sin brillos */
+    box-shadow:
+      inset 0 0 0 9px var(--accent-warm),
+      inset 0 0 0 10px rgba(42, 22, 8, 0.35);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  .coin-face--heads {
+    transform: translateZ(calc(var(--coin-depth) / 2));
+  }
+
+  .coin-face--tails {
+    transform: rotateX(180deg) translateZ(calc(var(--coin-depth) / 2));
+  }
+
+  .coin-glyph {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 800;
+    font-size: 4.5rem;
+    line-height: 1;
+  }
+
+  .coin-label {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    opacity: 0.7;
+  }
+
+  /* Sombra ya difuminada de origen; solo se anima scale/opacity */
+  .coin-floor-shadow {
+    position: absolute;
+    left: 10%;
+    right: 10%;
+    bottom: 0;
+    height: 18px;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(0, 0, 0, 0.55), transparent);
+    will-change: transform, opacity;
+  }
+
+  @media (max-width: 600px) {
+    .coin-stage {
+      --coin-size: 152px;
+      --coin-depth: 10px;
+    }
+
+    .coin-glyph {
+      font-size: 3.6rem;
+    }
+  }
+</style>

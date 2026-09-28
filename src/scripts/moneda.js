@@ -1,294 +1,221 @@
 // ==========================================================
-// LANZAR MONEDA — LÓGICA DE JUEGO & FÍSICAS DE GIRO
+// LANZAR MONEDA — decide entre dos opciones
 // ==========================================================
+// La apariencia vive en Coin.astro y moneda.astro. Aquí solo se elige el
+// resultado, se anima el volteo con la Web Animations API y se escribe el
+// texto. Arco, giro y sombra comparten duración, así que caen a la vez.
+
+const HISTORY_KEY = 'decidelo_moneda_history';
+const OPTIONS_KEY = 'decidelo_moneda_opciones';
+const HISTORY_MAX = 10;
+const FLIP_MS = 1600;
+
+function readStore(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch (e) {
+    return fallback;
+  }
+}
+
+function writeStore(key, value) {
+  try {
+    if (value === null) localStorage.removeItem(key);
+    else localStorage.setItem(key, JSON.stringify(value));
+  } catch (e) {
+    // Modo privado o almacenamiento bloqueado: la herramienta sigue funcionando
+  }
+}
+
+function randomUnit() {
+  if (window.crypto && window.crypto.getRandomValues) {
+    const values = new Uint32Array(1);
+    window.crypto.getRandomValues(values);
+    return values[0] / 4294967296;
+  }
+  return Math.random();
+}
 
 function initMoneda() {
   const coin = document.getElementById('coin');
-  const coinWrapper = document.getElementById('coin-wrapper');
-  const coinShadow = document.getElementById('coin-shadow');
-  const btnSpin = document.getElementById('btn-spin');
-  const resultDisplay = document.getElementById('result-display');
-  const selectorButtons = document.querySelectorAll('#coin-selector .selector-btn');
+  const flight = document.getElementById('coin-flight');
+  const floorShadow = document.getElementById('coin-floor-shadow');
+  const btnFlip = document.getElementById('btn-flip');
+  const result = document.getElementById('coin-result');
+  const resultMain = document.getElementById('coin-result-main');
+  const resultSide = document.getElementById('coin-result-side');
+  const inputHeads = document.getElementById('option-heads');
+  const inputTails = document.getElementById('option-tails');
   const historyList = document.getElementById('history-list');
+  const historyCount = document.getElementById('history-count');
   const btnClear = document.getElementById('btn-clear');
 
-  if (!coin || !btnSpin || !resultDisplay) return;
+  if (!coin || !flight || !btnFlip || !result || coin.dataset.ready) return;
+  coin.dataset.ready = 'true';
 
-  let currentRotationX = 0;
-  let currentRotationY = 0;
-  let isTossing = false;
-  let currentStyle = localStorage.getItem('decidelo_moneda_style') || 'classic';
-  let launchHistory = [];
+  // Restos de la versión anterior con monedas temáticas
+  writeStore('decidelo_moneda_style', null);
 
-  // Web Audio API Synthesizer (Efectos de sonido metálicos de alta calidad sin ficheros externos)
-  let audioCtx = null;
+  // Historial: entradas { side: 'Cara'|'Cruz', label }. Las antiguas eran
+  // strings sueltos ('Cara'/'Cruz') y se convierten al leerlas.
+  let history = readStore(HISTORY_KEY, [])
+    .map((h) => (typeof h === 'string' ? { side: h, label: h } : h))
+    .filter((h) => h && (h.side === 'Cara' || h.side === 'Cruz'));
 
-  function playFlipSound() {
-    try {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
-      
-      const now = audioCtx.currentTime;
+  const saved = readStore(OPTIONS_KEY, {});
+  if (inputHeads && saved.heads) inputHeads.value = saved.heads;
+  if (inputTails && saved.tails) inputTails.value = saved.tails;
 
-      // Frecuencias inarmónicas para recrear un timbre metálico resonante
-      const freqs = [880, 1100, 1500, 1850];
-      
-      freqs.forEach((freq, idx) => {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, now);
-        
-        // Ligero desajuste aleatorio de frecuencia (detuning) para emular imperfecciones del metal
-        osc.detune.setValueAtTime((Math.random() - 0.5) * 20, now);
-        
-        // Volumen inicial y decaimiento exponencial
-        const initGain = idx === 0 ? 0.3 : 0.15;
-        gain.gain.setValueAtTime(initGain, now);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.2);
-        
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        
-        osc.start(now);
-        osc.stop(now + 1.2);
-      });
+  function saveOptions() {
+    writeStore(OPTIONS_KEY, {
+      heads: inputHeads ? inputHeads.value.trim() : '',
+      tails: inputTails ? inputTails.value.trim() : '',
+    });
+  }
+  inputHeads?.addEventListener('input', saveOptions);
+  inputTails?.addEventListener('input', saveOptions);
 
-      // Oscilador de percusión de baja frecuencia para emular el golpe físico del pulgar
-      const oscClick = audioCtx.createOscillator();
-      const gainClick = audioCtx.createGain();
-      oscClick.frequency.setValueAtTime(140, now);
-      gainClick.gain.setValueAtTime(0.4, now);
-      gainClick.gain.exponentialRampToValueAtTime(0.0001, now + 0.08);
-      
-      oscClick.connect(gainClick);
-      gainClick.connect(audioCtx.destination);
-      
-      oscClick.start(now);
-      oscClick.stop(now + 0.08);
-
-    } catch (e) {
-      console.warn("La reproducción de audio fue bloqueada o no está soportada en el dispositivo.");
-    }
+  function labelFor(side) {
+    const input = side === 'Cara' ? inputHeads : inputTails;
+    const value = input ? input.value.trim() : '';
+    return value || side;
   }
 
-  function playLandSound() {
-    try {
-      if (!audioCtx) return;
-      const now = audioCtx.currentTime;
-
-      // Sonido de caída (Thud / Click metálico seco)
-      const oscThud = audioCtx.createOscillator();
-      const gainThud = audioCtx.createGain();
-      oscThud.frequency.setValueAtTime(120, now);
-      oscThud.frequency.exponentialRampToValueAtTime(60, now + 0.12);
-      
-      gainThud.gain.setValueAtTime(0.35, now);
-      gainThud.gain.exponentialRampToValueAtTime(0.0001, now + 0.15);
-      
-      oscThud.connect(gainThud);
-      gainThud.connect(audioCtx.destination);
-      
-      oscThud.start(now);
-      oscThud.stop(now + 0.15);
-
-      // Agudo metálico final del choque contra la superficie
-      const oscRing = audioCtx.createOscillator();
-      const gainRing = audioCtx.createGain();
-      oscRing.frequency.setValueAtTime(1200, now);
-      gainRing.gain.setValueAtTime(0.12, now);
-      gainRing.gain.exponentialRampToValueAtTime(0.0001, now + 0.06);
-      
-      oscRing.connect(gainRing);
-      gainRing.connect(audioCtx.destination);
-      
-      oscRing.start(now);
-      oscRing.stop(now + 0.06);
-
-    } catch (e) {
-      console.warn(e);
-    }
-  }
-
-  // Inicializar historial desde LocalStorage
-  function initHistory() {
-    const stored = localStorage.getItem('decidelo_moneda_history');
-    if (stored) {
-      try {
-        launchHistory = JSON.parse(stored);
-      } catch (e) {
-        launchHistory = [];
-      }
-    }
-    renderHistory();
-  }
-
-  // Dibujar historial en la interfaz
   function renderHistory() {
     if (!historyList) return;
-    historyList.innerHTML = '';
-    if (launchHistory.length === 0) {
-      historyList.innerHTML = '<span class="history-empty">Sin lanzamientos aún</span>';
-      return;
+    historyList.replaceChildren();
+
+    if (history.length === 0) {
+      const empty = document.createElement('li');
+      empty.className = 'history-empty';
+      empty.textContent = 'Sin lanzamientos aún';
+      historyList.appendChild(empty);
+    } else {
+      history.slice().reverse().forEach((h, i) => {
+        const row = document.createElement('li');
+        row.className = 'history-row';
+        const n = document.createElement('span');
+        n.className = 'history-num';
+        n.textContent = String(history.length - i).padStart(2, '0');
+        const label = document.createElement('span');
+        label.className = 'history-label';
+        label.textContent = h.label;
+        const side = document.createElement('span');
+        side.className = 'history-side';
+        side.textContent = h.side;
+        row.append(n, label, side);
+        historyList.appendChild(row);
+      });
     }
 
-    launchHistory.slice(-5).reverse().forEach(res => {
-      const item = document.createElement('div');
-      item.className = `history-item ${res.toLowerCase()}`;
-      item.textContent = res === 'Cara' ? 'C' : 'X';
-      item.title = res;
-      historyList.appendChild(item);
-    });
+    if (historyCount) {
+      const heads = history.filter((h) => h.side === 'Cara').length;
+      historyCount.textContent = history.length
+        ? `Cara ${heads} · Cruz ${history.length - heads}`
+        : '';
+    }
   }
 
-  // Guardar resultado en historial
-  function addResultToHistory(result) {
-    launchHistory.push(result);
-    if (launchHistory.length > 10) {
-      launchHistory.shift(); // Mantener un máximo para no saturar memoria
-    }
-    localStorage.setItem('decidelo_moneda_history', JSON.stringify(launchHistory));
+  // Ángulo acumulado en X: 0 mod 360 = cara arriba, 180 mod 360 = cruz
+  let angle = 0;
+  let busy = false;
+
+  function showResult(side) {
+    const label = labelFor(side);
+    resultMain.textContent = label;
+    resultSide.textContent = label === side ? '' : side;
+    result.classList.add('is-shown');
+
+    history.push({ side, label });
+    if (history.length > HISTORY_MAX) history = history.slice(-HISTORY_MAX);
+    writeStore(HISTORY_KEY, history);
     renderHistory();
   }
 
-  // Configurar estilo inicial de la moneda
-  function setCoinStyle(style) {
-    if (isTossing) return;
-    
-    // Quitar activo de todos y poner en el indicado
-    selectorButtons.forEach(btn => {
-      if (btn.getAttribute('data-style') === style) {
-        btn.classList.add('active');
-      } else {
-        btn.classList.remove('active');
-      }
-    });
-    
-    // Cambiar clases en la moneda
-    coin.className = `coin ${style}`;
-    currentStyle = style;
-    localStorage.setItem('decidelo_moneda_style', style);
+  async function flip() {
+    if (busy) return;
+    busy = true;
+    btnFlip.setAttribute('aria-busy', 'true');
+    btnFlip.disabled = true;
+    result.classList.remove('is-shown');
 
-    // Resetear visualización de resultado y posición a reposo
-    if (resultDisplay) resultDisplay.classList.remove('show');
-    currentRotationX = 0;
-    currentRotationY = 0;
-    coin.style.transform = `rotateX(0deg) rotateY(0deg)`;
+    const side = randomUnit() < 0.5 ? 'Cara' : 'Cruz';
+    const from = angle;
+    const turns = 4 + Math.floor(randomUnit() * 2); // 4 o 5 vueltas
+    const base = from - (from % 360) + turns * 360;
+    angle = base + (side === 'Cruz' ? 180 : 0);
+
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    try {
+      if (reduced) {
+        await coin.animate(
+          [
+            { transform: `rotateX(${from}deg)`, opacity: 1 },
+            { transform: `rotateX(${from}deg)`, opacity: 0, offset: 0.5 },
+            { transform: `rotateX(${angle}deg)`, opacity: 0, offset: 0.5 },
+            { transform: `rotateX(${angle}deg)`, opacity: 1 },
+          ],
+          { duration: 200, fill: 'forwards' }
+        ).finished;
+      } else {
+        const opts = { duration: FLIP_MS, fill: 'forwards' };
+        // Altura del arco proporcional a la moneda, para no tapar las opciones en móvil
+        const peak = Math.round(flight.offsetHeight * 0.6);
+        // Giro: rápido al salir, frena al caer
+        const spin = coin.animate(
+          [{ transform: `rotateX(${from}deg)` }, { transform: `rotateX(${angle}deg)` }],
+          { ...opts, easing: 'cubic-bezier(0.25, 0.6, 0.3, 1)' }
+        );
+        // Arco: sube frenando, baja acelerando y un rebote mínimo al tocar
+        flight.animate(
+          [
+            { transform: 'translateY(0)', easing: 'cubic-bezier(0.2, 0.6, 0.4, 1)' },
+            { transform: `translateY(-${peak}px)`, offset: 0.45, easing: 'cubic-bezier(0.6, 0, 0.8, 0.4)' },
+            { transform: 'translateY(0)', offset: 0.88, easing: 'ease-out' },
+            { transform: 'translateY(-8px)', offset: 0.94, easing: 'ease-in' },
+            { transform: 'translateY(0)' },
+          ],
+          opts
+        );
+        floorShadow?.animate(
+          [
+            { transform: 'scale(1)', opacity: 1, easing: 'cubic-bezier(0.2, 0.6, 0.4, 1)' },
+            { transform: 'scale(0.45)', opacity: 0.35, offset: 0.45, easing: 'cubic-bezier(0.6, 0, 0.8, 0.4)' },
+            { transform: 'scale(1)', opacity: 1, offset: 0.88 },
+            { transform: 'scale(0.92)', opacity: 0.9, offset: 0.94 },
+            { transform: 'scale(1)', opacity: 1 },
+          ],
+          opts
+        );
+        await spin.finished;
+      }
+    } catch (e) {
+      // Animación cancelada (navegación): el resultado sigue siendo válido
+      coin.style.transform = `rotateX(${angle}deg)`;
+    }
+
+    if (navigator.vibrate) navigator.vibrate(12);
+    showResult(side);
+
+    busy = false;
+    btnFlip.disabled = false;
+    btnFlip.removeAttribute('aria-busy');
   }
 
-  // Cambiar estilo visual de la moneda por clicks en botones
-  selectorButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const style = btn.getAttribute('data-style');
-      setCoinStyle(style);
-    });
+  btnFlip.addEventListener('click', flip);
+  coin.addEventListener('click', flip);
+
+  btnClear?.addEventListener('click', () => {
+    history = [];
+    writeStore(HISTORY_KEY, null);
+    renderHistory();
   });
 
-  // Lógica de lanzamiento al pulsar LANZAR o la moneda misma
-  function randomUnit() {
-    if (window.crypto && window.crypto.getRandomValues) {
-      const values = new Uint32Array(1);
-      window.crypto.getRandomValues(values);
-      return values[0] / 4294967296;
-    }
-    return Math.random();
-  }
-
-  function launchCoin() {
-    if (isTossing) return;
-
-    isTossing = true;
-    btnSpin.disabled = true;
-    if (resultDisplay) resultDisplay.classList.remove('show');
-
-    // 1. Reproducir sonido metálico del lanzamiento
-    playFlipSound();
-
-    // 2. Añadir clases CSS de lanzamiento físico (Animación vertical y sombras)
-    if (coinWrapper) coinWrapper.classList.add('tossing');
-    if (coinShadow) coinShadow.classList.add('tossing');
-
-    // 3. Decidir aleatoriamente (50% de probabilidad)
-    const result = randomUnit() < 0.5 ? 'Cara' : 'Cruz';
-
-    // 4. Calcular los giros 3D aleatorios acumulativos
-    // Generamos entre 5 y 9 vueltas completas sobre el eje X e Y para dar sensación caótica
-    const spinsX = Math.floor(randomUnit() * 4) + 6; // 6 a 9 giros
-    const spinsY = Math.floor(randomUnit() * 4) + 6; // 6 a 9 giros
-
-    // Cara (C) finaliza en un múltiplo de 360° en el eje Y (0, 360, 720...)
-    // Cruz (X) finaliza en un múltiplo impar de 180° en el eje Y (180, 540, 900...)
-    const targetModY = (result === 'Cruz') ? 180 : 0;
-    const currentModY = currentRotationY % 360;
-    
-    // Ajustamos targetY de modo que targetY % 360 sea exactamente targetModY
-    // y que gire hacia adelante por lo menos spinsY * 360 grados
-    let targetY = currentRotationY + (spinsY * 360) + (targetModY - currentModY);
-    
-    // Garantizar que la rotación en X termine exactamente alineada plana (múltiplo de 360°)
-    const currentModX = currentRotationX % 360;
-    let targetX = currentRotationX + (spinsX * 360) - currentModX;
-
-    // Actualizar valores de rotación actuales
-    currentRotationX = targetX;
-    currentRotationY = targetY;
-
-    // Aplicar transformación 3D
-    coin.style.transform = `rotateX(${targetX}deg) rotateY(${targetY}deg)`;
-
-    // 5. Al terminar la animación de giro (3 segundos = 3000ms)
-    setTimeout(() => {
-      // Detener animación de salto
-      if (coinWrapper) coinWrapper.classList.remove('tossing');
-      if (coinShadow) coinShadow.classList.remove('tossing');
-
-      // Reproducir sonido metálico de parada
-      playLandSound();
-
-      // Mostrar el resultado final con animación de entrada usando textContent
-      if (resultDisplay) {
-        resultDisplay.innerHTML = '';
-        const span = document.createElement('span');
-        span.className = result === 'Cara' ? 'cyan' : 'purple';
-        span.textContent = result === 'Cara' ? '¡Ha salido CARA!' : '¡Ha salido CRUZ!';
-        resultDisplay.appendChild(span);
-        resultDisplay.classList.add('show');
-      }
-
-      // Agregar al historial
-      addResultToHistory(result);
-
-      // Desbloquear controles
-      isTossing = false;
-      btnSpin.disabled = false;
-
-    }, 3000);
-  }
-
-  // Event listeners de lanzamiento
-  btnSpin.addEventListener('click', launchCoin);
-  coin.addEventListener('click', launchCoin);
-
-  // Borrar historial
-  if (btnClear) {
-    btnClear.addEventListener('click', () => {
-      launchHistory = [];
-      localStorage.removeItem('decidelo_moneda_history');
-      renderHistory();
-    });
-  }
-
-  // Iniciar
-  setCoinStyle(currentStyle);
-  initHistory();
+  renderHistory();
 }
 
-// Inicializar en carga o transiciones
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initMoneda);
 } else {
