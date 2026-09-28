@@ -88,11 +88,14 @@ const SIN_PREGUNTA = [
   { bola: 'Error 404', texto: 'Error 404: pregunta no encontrada' },
 ];
 
-// Frases de gato: la primera sale a la sexta consulta vacía seguida, y
-// después una cada vez que se agotan las diez normales. Las ya vistas se
-// recuerdan entre visitas y no se repiten hasta verlas todas: el contador
-// "Frase de gato 3 de 8" invita a seguir para descubrir el resto.
-const INSISTENCIA = 5;
+// Frases de gato: cada quinta consulta sin pregunta (5, 10, 15…) es un
+// gato. La cuenta se guarda en el navegador, así que ni recargar ni
+// escribir una pregunta entre medias la reinicia: con la regla anterior
+// (sexta seguida y luego cada once) el contador se perdía y en uso real
+// el segundo gato no llegaba nunca. Las frases ya vistas tampoco se
+// repiten hasta verlas todas: el contador "Frase de gato 3 de 8" invita a
+// seguir para descubrir el resto.
+const CADA_GATO = 5;
 const GATO = [
   { bola: '¿Otra vez el gato?', texto: 'Otra vez alguien dejó al gato jugando con el móvil' },
   { bola: 'Hola, michi', texto: 'Hola, michi. Dile a tu humano que escriba una pregunta' },
@@ -104,6 +107,7 @@ const GATO = [
   { bola: 'A la siesta, gato', texto: 'A esta hora el gato debería estar en la siesta' },
 ];
 const GATOS_KEY = 'decidelo_siono_gatos';
+const VACIAS_KEY = 'decidelo_siono_vacias';
 
 // Tamaño del texto en el dado según lo que ocupa: un "Sí" se lee grande y
 // "Definitivamente no" cabe sin salirse del triángulo. La regla de cada
@@ -294,7 +298,6 @@ function initSiONo() {
   }
 
   // --- Consultas sin pregunta ---------------------------------------------------
-  let vacias = 0;
   const bolsas = new Map();
 
   // Bolsa barajada: no se repite ninguna burla hasta agotar la lista, y la
@@ -303,7 +306,12 @@ function initSiONo() {
   function burla(lista) {
     let bolsa = bolsas.get(lista);
     if (!bolsa?.restantes.length) {
-      const restantes = lista.slice().sort(() => Math.random() - 0.5);
+      // Fisher-Yates: sort() con un comparador aleatorio no baraja parejo
+      const restantes = lista.slice();
+      for (let i = restantes.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [restantes[i], restantes[j]] = [restantes[j], restantes[i]];
+      }
       if (bolsa && restantes.length > 1 && restantes[restantes.length - 1] === bolsa.ultima) {
         restantes.unshift(restantes.pop());
       }
@@ -314,17 +322,30 @@ function initSiONo() {
     return bolsa.ultima;
   }
 
-  // null mientras no ha salido ningún gato en esta racha; después, cuántas
-  // normales van desde el último
-  let desdeGato = null;
+  // Cuenta de consultas vacías y gatos ya vistos: se leen una vez y viven en
+  // memoria, guardándose en cada cambio. Si el almacenamiento falla (modo
+  // privado de Safari), la visita sigue funcionando igual con la copia en
+  // memoria en vez de volver a empezar en cada consulta. Con dos pestañas
+  // abiertas cada una cuenta por su lado y gana la última en guardar: como
+  // mucho adelanta o retrasa un gato unas consultas.
+  // La cuenta va de 0 a CADA_GATO - 1: solo importa cuánto falta.
+  let vacias = Math.floor(Number(readStore(VACIAS_KEY, 0)) || 0);
+  if (vacias < 0 || vacias >= CADA_GATO) vacias = 0;
+  const leidos = readStore(GATOS_KEY, []);
+  const vistos = new Set(Array.isArray(leidos) ? leidos.filter((n) => Number.isInteger(n) && GATO[n]) : []);
+
+  let ultimoGato = null;
 
   function gato() {
-    const vistos = new Set((readStore(GATOS_KEY, []) || []).filter((n) => GATO[n]));
     const nuevos = GATO.map((_, n) => n).filter((n) => !vistos.has(n));
     let n;
     if (!vistos.size) n = 0; // la primera, siempre la del gato jugando
     else if (nuevos.length) n = nuevos[Math.floor(Math.random() * nuevos.length)];
-    else n = Math.floor(Math.random() * GATO.length);
+    else {
+      // Colección completa: cualquiera salvo el que acaba de salir
+      do n = Math.floor(Math.random() * GATO.length); while (n === ultimoGato);
+    }
+    ultimoGato = n;
     const nuevo = !vistos.has(n);
     vistos.add(n);
     writeStore(GATOS_KEY, [...vistos]);
@@ -335,16 +356,10 @@ function initSiONo() {
   }
 
   function sinPregunta() {
-    vacias += 1;
-    const tocaGato = desdeGato === null ? vacias > INSISTENCIA : desdeGato >= SIN_PREGUNTA.length;
-    if (tocaGato) {
-      desdeGato = 0;
-      // La bolsa de normales empieza de cero: salen las diez antes del
-      // siguiente gato
-      bolsas.delete(SIN_PREGUNTA);
-      return gato();
-    }
-    if (desdeGato !== null) desdeGato += 1;
+    vacias = (vacias + 1) % CADA_GATO;
+    writeStore(VACIAS_KEY, vacias);
+    if (vacias === 0) return gato();
+    // Las normales siguen su propia bolsa, sin repetirse entre gatos
     return { ...burla(SIN_PREGUNTA), tipo: 'vacia', lado: 'Sin pregunta' };
   }
 
@@ -609,10 +624,6 @@ function initSiONo() {
     limpiarResultado();
 
     const pregunta = input?.value.trim().slice(0, QUESTION_MAX) ?? '';
-    if (pregunta) {
-      vacias = 0;
-      desdeGato = null;
-    }
     // Sin pregunta la bola se agita igual, pero no responde: se burla, y eso
     // ni se guarda en el historial ni se comparte.
     const r = pregunta ? RESPUESTAS[randomIndex(RESPUESTAS.length)] : sinPregunta();
