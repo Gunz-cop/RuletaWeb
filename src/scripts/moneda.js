@@ -172,11 +172,14 @@ async function entrar(m) {
   const vueltas = Math.round(d / (Math.PI * m.stage.offsetWidth)) * 360 || 360;
   const opts = { duration: ENTRADA_MS, easing: 'cubic-bezier(0.25, 0.8, 0.3, 1)' };
   m.shadow?.animate([{ opacity: 0, transform: 'scale(0.3)' }, { opacity: 1, transform: 'scale(1)' }], opts);
-  await fin(m.flight.animate([
+  const rodar = m.flight.animate([
     { transform: `translateX(${-d}px) rotateZ(${-vueltas}deg)`, opacity: 0 },
     { opacity: 1, offset: 0.25 },
     { transform: 'translateX(0) rotateZ(0deg)', opacity: 1 },
-  ], opts));
+  ], opts);
+  await fin(rodar);
+  // Si un lanzamiento interrumpió la entrada, no se asienta ni brilla encima
+  if (rodar.playState !== 'finished') return;
   await asentar(m);
   destello(m);
 }
