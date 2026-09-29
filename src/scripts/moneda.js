@@ -70,8 +70,135 @@ function monedaDe(stage) {
     coin: stage.querySelector('.coin'),
     flight: stage.querySelector('.coin-flight'),
     shadow: stage.querySelector('.coin-floor-shadow'),
+    tilt: stage.querySelector('.coin-tilt'),
+    glint: {
+      heads: stage.querySelector('.coin-face--heads .coin-glint'),
+      tails: stage.querySelector('.coin-face--tails .coin-glint'),
+    },
     angle: 0,
+    reposo: [],
   };
+}
+
+// ==========================================================
+// Movimiento del objeto (mismo vocabulario que el oráculo)
+// ==========================================================
+// Entrada, reposo, anticipación, aterrizaje y reflejo. Todo es decoración:
+// ningún azar de aquí decide nada, y ninguna animación toca el transform de
+// .coin (que dice qué cara está arriba): el balanceo y los tambaleos van en
+// .coin-tilt y el vuelo en .coin-flight.
+
+const reducido = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const fin = (a) => a?.finished.catch(() => {});
+
+const ENTRADA_MS = 950;
+const BALANCEO_MS = 3200;
+const REFLEJO_MS = 1100;
+const REFLEJO_CADA_MS = 7000;
+
+const caraArriba = (m) => (((m.angle % 360) + 360) % 360 === 180 ? 'tails' : 'heads');
+
+// Una franja de luz cruza la cara que se ve, una vez.
+function destello(m, retraso = 0) {
+  const band = m.glint[caraArriba(m)];
+  if (reducido() || !band) return Promise.resolve();
+  return fin(band.animate(
+    [{ backgroundPosition: '100% 0' }, { backgroundPosition: '0% 0' }],
+    { duration: REFLEJO_MS, delay: retraso, easing: 'cubic-bezier(0.4, 0, 0.2, 1)' }
+  ));
+}
+
+// Reposo: balanceo lento en Y (se ve el canto) y un reflejo de vez en cuando.
+function reposar(m) {
+  pararReposo(m);
+  if (reducido() || !m.tilt || m.siguiendo) return;
+  m.reposo.push(m.tilt.animate(
+    [{ transform: 'rotateY(-5deg)' }, { transform: 'rotateY(5deg)' }],
+    { duration: BALANCEO_MS, direction: 'alternate', iterations: Infinity, easing: 'ease-in-out' }
+  ));
+  const ciclo = () => {
+    m.reflejo = setTimeout(() => { destello(m); ciclo(); }, REFLEJO_CADA_MS);
+  };
+  ciclo();
+}
+
+function pararReposo(m) {
+  m.reposo.forEach((a) => a.cancel());
+  m.reposo = [];
+  clearTimeout(m.reflejo);
+}
+
+// Anticipación: el pulgar carga la moneda antes de lanzarla.
+function anticipar(m, retraso = 0) {
+  if (reducido()) return Promise.resolve();
+  const opts = { duration: 140, delay: retraso, easing: 'ease-out' };
+  m.shadow?.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.08, 0.85)' }, { transform: 'scale(1)' }], opts);
+  return fin(m.flight.animate(
+    [{ transform: 'translateY(0)' }, { transform: 'translateY(5%) scale(0.97)' }, { transform: 'translateY(0)' }],
+    opts
+  ));
+}
+
+// Aterrizaje: el tambaleo de una moneda que se asienta sobre la mesa, con
+// amplitud que decrece. `corto` para las series, que encadenan tiros.
+function asentar(m, corto = false) {
+  if (reducido() || !m.tilt) return Promise.resolve();
+  const k = corto ? 0.5 : 1;
+  const opts = { duration: corto ? 320 : 620, easing: 'ease-out' };
+  m.shadow?.animate([
+    { transform: 'scale(1)' }, { transform: `scale(${1 - 0.06 * k})` },
+    { transform: `scale(${1 + 0.03 * k})` }, { transform: 'scale(1)' },
+  ], opts);
+  return fin(m.tilt.animate([
+    { transform: 'rotateX(0deg)' },
+    { transform: `rotateX(${6 * k}deg)` },
+    { transform: `rotateX(${-3.5 * k}deg)` },
+    { transform: `rotateX(${1.5 * k}deg)` },
+    { transform: `rotateX(${-0.5 * k}deg)` },
+    { transform: 'rotateX(0deg)' },
+  ], opts));
+}
+
+// Entrada: la moneda llega rodando de canto desde la izquierda, frena y se
+// asienta de frente. Solo desde fuera del contenido por la izquierda: un
+// desplazamiento negativo no crea scroll horizontal.
+async function entrar(m) {
+  if (!m.flight) return;
+  if (reducido()) {
+    await fin(m.stage.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200 }));
+    return;
+  }
+  const d = m.stage.getBoundingClientRect().left + m.stage.offsetWidth;
+  const vueltas = Math.round(d / (Math.PI * m.stage.offsetWidth)) * 360 || 360;
+  const opts = { duration: ENTRADA_MS, easing: 'cubic-bezier(0.25, 0.8, 0.3, 1)' };
+  m.shadow?.animate([{ opacity: 0, transform: 'scale(0.3)' }, { opacity: 1, transform: 'scale(1)' }], opts);
+  await fin(m.flight.animate([
+    { transform: `translateX(${-d}px) rotateZ(${-vueltas}deg)`, opacity: 0 },
+    { opacity: 1, offset: 0.25 },
+    { transform: 'translateX(0) rotateZ(0deg)', opacity: 1 },
+  ], opts));
+  await asentar(m);
+  destello(m);
+}
+
+// Escritorio: la moneda se inclina hacia el cursor (solo con ratón; nunca
+// giroscopio, que en iPhone pide permiso).
+function seguirCursor(m, ocupada) {
+  if (!m.tilt || !window.matchMedia('(pointer: fine)').matches) return;
+  m.stage.addEventListener('pointermove', (e) => {
+    if (reducido() || ocupada()) return;
+    if (!m.siguiendo) { m.siguiendo = true; pararReposo(m); }
+    const r = m.stage.getBoundingClientRect();
+    const x = (e.clientX - r.left) / r.width - 0.5;
+    const y = (e.clientY - r.top) / r.width - 0.5;
+    m.tilt.style.transform = `rotateY(${(x * 20).toFixed(1)}deg) rotateX(${(-y * 20).toFixed(1)}deg)`;
+  });
+  m.stage.addEventListener('pointerleave', () => {
+    if (!m.siguiendo) return;
+    m.siguiendo = false;
+    m.tilt.style.transform = '';
+    if (!ocupada()) reposar(m);
+  });
 }
 
 // Deja fijado el estado final y suelta la animación: con `fill: forwards`
@@ -86,7 +213,7 @@ async function terminar(anim, el, transform) {
   anim.cancel();
 }
 
-async function voltear(m, side, duracion, retraso = 0) {
+async function voltear(m, side, duracion, retraso = 0, { cargar = true, corto = false } = {}) {
   const from = m.angle;
   const turns = 4 + Math.floor(randomUnit() * 2); // 4 o 5 vueltas
   const to = from - (from % 360) + turns * 360 + (side === 'tails' ? 180 : 0);
@@ -106,7 +233,8 @@ async function voltear(m, side, duracion, retraso = 0) {
     return terminar(a, m.coin, final);
   }
 
-  const opts = { duration: duracion, delay: retraso, fill: 'both' };
+  if (cargar) await anticipar(m, retraso);
+  const opts = { duration: duracion, delay: cargar ? 0 : retraso, fill: 'both' };
   // Altura del arco proporcional a la moneda, para no tapar las opciones en móvil
   const peak = Math.round(m.flight.offsetHeight * 0.6);
   // Giro: rápido al salir, frena al caer
@@ -140,6 +268,7 @@ async function voltear(m, side, duracion, retraso = 0) {
     terminar(arc, m.flight),
     shadow ? terminar(shadow, m.shadow) : null,
   ]);
+  await asentar(m, corto);
 }
 
 function initMoneda() {
@@ -405,7 +534,7 @@ function initMoneda() {
     const cuenta = { heads: 0, tails: 0 };
     for (let i = 0; i < tiros.length; i++) {
       if (i > 0) await esperar(PAUSA_SERIE_MS);
-      await voltear(grande, tiros[i], FLIP_MS.serie);
+      await voltear(grande, tiros[i], FLIP_MS.serie, 0, { cargar: i === 0, corto: true });
       cuenta[tiros[i]] += 1;
       mostrar(
         `${opcion('heads')} ${cuenta.heads} – ${cuenta.tails} ${opcion('tails')}`,
@@ -432,9 +561,26 @@ function initMoneda() {
     return null;
   }
 
+  // Monedas que se ven ahora mismo (la grande o las pequeñas activas)
+  const visibles = () => (modo === 'varias' ? pequenas.slice(0, cuantas) : [grande]);
+  const todas = [grande, ...pequenas];
+  let enPantalla = true;
+
+  function reposoSegunEstado() {
+    todas.forEach(pararReposo);
+    if (busy || !enPantalla || document.hidden) return;
+    visibles().forEach(reposar);
+  }
+
   async function flip() {
     if (busy) return;
     busy = true;
+    todas.forEach(pararReposo);
+    // Corta la entrada o un tambaleo en curso para que el lanzamiento no
+    // compita con ellos (el giro de .coin no se toca: dice qué cara está arriba)
+    todas.forEach((m) => [m.flight, m.tilt, m.shadow, m.stage].forEach((el) => {
+      el?.getAnimations().forEach((a) => a.cancel());
+    }));
     btnFlip.setAttribute('aria-busy', 'true');
     btnFlip.disabled = true;
     limpiarResultado();
@@ -447,8 +593,11 @@ function initMoneda() {
 
     if (navigator.vibrate) navigator.vibrate(12);
     despues(ganador);
+    // Un único reflejo sobre la moneda (o monedas) que quedaron arriba
+    visibles().forEach((m, i) => destello(m, i * 60));
 
     busy = false;
+    reposoSegunEstado();
     btnFlip.disabled = false;
     btnFlip.removeAttribute('aria-busy');
   }
@@ -465,6 +614,22 @@ function initMoneda() {
 
   aplicarNombres();
   aplicarModo();
+
+  // --- Movimiento: entrada, reposo y cursor ---------------------------------
+  // El reposo se pausa fuera de pantalla y con la pestaña oculta: son
+  // animaciones infinitas y no deben gastar batería mientras nadie mira.
+  todas.forEach((m) => seguirCursor(m, () => busy));
+  document.addEventListener('visibilitychange', reposoSegunEstado);
+  selMode?.addEventListener('change', reposoSegunEstado);
+  selCount?.addEventListener('change', reposoSegunEstado);
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver((entradas) => {
+      enPantalla = entradas.some((e) => e.isIntersecting);
+      reposoSegunEstado();
+    }).observe(single.parentElement);
+  }
+  // Pulsar durante la entrada no espera: flip() la interrumpe
+  Promise.all(visibles().map(entrar)).finally(reposoSegunEstado);
 }
 
 if (document.readyState === 'loading') {

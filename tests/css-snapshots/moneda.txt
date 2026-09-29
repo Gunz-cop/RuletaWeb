@@ -1,5 +1,6 @@
 .coin-stage[S]{--coin-size:184px;--coin-depth:12px;--metal-hi:#f7dc9c;--metal:#dca656;--metal-mid:#bf8638;--metal-lo:#8a5a1f;--metal-ink:#7a4f18;width:var(--coin-size);height:calc(var(--coin-size) + 2.5rem);perspective:900px;margin:0 auto;position:relative}
 .coin-flight[S]{z-index:1;width:var(--coin-size);height:var(--coin-size);transform-style:preserve-3d;will-change:transform;position:relative}
+.coin-tilt[S]{width:100%;height:100%;transform-style:preserve-3d;will-change:transform}
 .coin[S]{width:100%;height:100%;transform-style:preserve-3d;will-change:transform;cursor:pointer;position:relative}
 .coin-edge[S],.coin-face[S]{border-radius:50%;position:absolute;inset:0}
 .coin-edge[S]{background:var(--metal-mid);transform:translateZ(calc((var(--i) / (var(--coin-layers) - 1) - .5) * (var(--coin-depth) - 2px)))}
@@ -9,6 +10,7 @@
 .coin-face[S]:after{content:"";border-radius:50%;position:absolute;inset:7%;box-shadow:inset 0 3px 4px #46260480,inset 0 -2px 3px #ffeec373,0 0 0 1px #ffeec359}
 .coin-face--heads[S]{transform:translateZ(calc(var(--coin-depth) / 2))}
 .coin-face--tails[S]{transform:rotateX(180deg) translateZ(calc(var(--coin-depth) / 2))}
+.coin-glint[S]{pointer-events:none;background:linear-gradient(105deg,#fffaeb00 44%,#fffaeb59 48%,#fffdf5e6 50%,#fffaeb59 52%,#fffaeb00 56%) 100% 0/300% 100% no-repeat;border-radius:50%;position:absolute;inset:0}
 .coin-engraving[S]{width:100%;height:100%;position:absolute;inset:0}
 .coin-legend[S]{letter-spacing:1.4px;fill:var(--metal-ink);font-family:Outfit,sans-serif;font-size:6.4px;font-weight:700}
 .coin-legend--light[S]{fill:#fff0c8b3}
