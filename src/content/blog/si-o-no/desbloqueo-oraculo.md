@@ -1,6 +1,6 @@
 ---
-title: 'Oráculo Sí o No: El origen de las decisiones binarias y cómo ayuda a desbloquear tu mente'
-description: 'Descubre la historia de los oráculos binarios y cómo forzar una respuesta de Sí o No ayuda a superar bloqueos mentales y tomar decisiones rápidas.'
+title: 'Preguntas de Sí o No: el origen de las decisiones binarias y cómo te desbloquean'
+description: 'Descubre la historia de las decisiones de sí o no y cómo forzar una respuesta de Sí o No ayuda a superar bloqueos mentales y tomar decisiones rápidas.'
 pubDate: '2026-06-02'
 tags: ['psicologia', 'oraculo', 'si-o-no', 'bienestar']
 author: 'Decídelo.app'

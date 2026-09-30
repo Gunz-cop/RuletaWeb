@@ -394,7 +394,7 @@ function initSiONo() {
       gutMsg.append('Entonces ya lo tenías claro: ', em, '.');
     } else {
       em.textContent = otro;
-      gutMsg.append('Parece que en el fondo querías un ', em, '. El oráculo te ayudó a descubrirlo; puedes elegirlo sin culpa.');
+      gutMsg.append('Parece que en el fondo querías un ', em, '. La bola te ayudó a descubrirlo; puedes elegirlo sin culpa.');
     }
   }
 
@@ -416,12 +416,12 @@ function initSiONo() {
     const url = enlace();
     const q = input?.value.trim();
     const texto = ultimo && q
-      ? `Le pregunté al oráculo «${q}» y me dijo: ${ultimo.respuesta}. Pregúntale tú:`
-      : 'Pregúntale al oráculo:';
+      ? `Le pregunté a la bola 8 «${q}» y me dijo: ${ultimo.respuesta}. Pregúntale tú:`
+      : 'Hazle tu pregunta a la bola 8:';
     const original = 'Compartir esta pregunta';
     try {
       if (navigator.share) {
-        await navigator.share({ title: 'Decídelo.app — oráculo sí o no', text: texto, url });
+        await navigator.share({ title: 'Decídelo.app — pregunta sí o no', text: texto, url });
         return;
       }
       await navigator.clipboard.writeText(`${texto} ${url}`);

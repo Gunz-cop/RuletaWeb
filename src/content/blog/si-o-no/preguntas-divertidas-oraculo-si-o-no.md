@@ -1,6 +1,6 @@
 ---
-title: 'Preguntas Divertidas para Hacerle al Oráculo de Sí o No en Fiestas y con Amigos'
-description: 'Anima tus reuniones sociales con estas preguntas absurdas, graciosas y creativas para hacerle a la Bola 8 o al Oráculo de Sí o No.'
+title: 'Preguntas Divertidas de Sí o No para Fiestas y Reuniones con Amigos'
+description: 'Anima tus reuniones sociales con estas preguntas absurdas, graciosas y creativas para hacerle a la bola 8 de sí o no.'
 pubDate: '2026-05-24'
 tags: ['si-o-no', 'juegos', 'fiestas', 'entretenimiento', 'oraculo']
 author: 'Decídelo.app'

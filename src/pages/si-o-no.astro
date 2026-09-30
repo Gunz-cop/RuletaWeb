@@ -6,9 +6,9 @@ import SeoArticle from '../components/SeoArticle.astro';
 import OracleBall from '../components/OracleBall.astro';
 import { getSocialImageUrl } from '../lib/heroImages';
 
-const title = 'Oráculo Sí o No Online: Pregúntale a la Bola 8 Mágica';
-const description = '¿No te decides? Escribe tu pregunta y la bola 8 mágica te responde sí o no al instante. Oráculo online gratis, sin registro y hasta agitando el móvil.';
-const keywords = 'oraculo si o no, bola 8 magica online, bola magica si o no, pregunta si o no, oraculo virtual gratis, responder si o no al azar, tomar decisiones';
+const title = 'Pregunta Sí o No Online: la Bola 8 Responde al Instante';
+const description = '¿No te decides? Escribe tu pregunta y la bola 8 mágica te responde sí o no al instante. Gratis, sin registro, para jugar solo o con amigos.';
+const keywords = 'pregunta si o no, si o no online, bola 8 magica online, bola magica si o no, pregunta si o no, preguntas de si o no para jugar, responder si o no al azar, tomar decisiones';
 
 // La imagen vive en src/assets y la optimiza Astro; el JSON-LD necesita
 // su URL absoluta ya generada, no la ruta pública que tenía antes.
@@ -24,8 +24,8 @@ const schemaLD = {
     {
       "@type": "WebApplication",
       "@id": "https://decidelo.app/si-o-no#webapp",
-      "name": "Oráculo Sí o No Online — Decídelo.app",
-      "description": "Oráculo interactivo virtual inspirado en la clásica bola 8 para resolver preguntas binarias (sí o no) con respuestas animadas y místicas.",
+      "name": "Pregunta Sí o No Online — Decídelo.app",
+      "description": "Juego interactivo inspirado en la clásica bola 8: escribes una pregunta de sí o no y la bola responde al instante. Para decidir o jugar en grupo.",
       "url": "https://decidelo.app/si-o-no",
       "applicationCategory": "UtilityApplication",
       "operatingSystem": "All",
@@ -56,15 +56,15 @@ const schemaLD = {
       "mainEntity": [
         {
           "@type": "Question",
-          "name": "¿Cómo funciona el oráculo sí o no?",
+          "name": "¿Cómo funciona la pregunta sí o no?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Escribes una pregunta que se responda con sí o no y pulsas «Consultar al oráculo». La bola se agita y muestra una de 15 respuestas elegida al azar: cinco afirmativas, cinco negativas y cinco neutrales."
+            "text": "Escribes una pregunta que se responda con sí o no y pulsas «Preguntar». La bola se agita y muestra una de 15 respuestas elegida al azar: cinco afirmativas, cinco negativas y cinco neutrales."
           }
         },
         {
           "@type": "Question",
-          "name": "¿El oráculo sí o no es real o es al azar?",
+          "name": "¿La bola 8 adivina de verdad?",
           "acceptedAnswer": {
             "@type": "Answer",
             "text": "Es al azar. No adivina el futuro: cada respuesta sale del generador aleatorio del navegador y todas tienen la misma probabilidad. Su utilidad es ayudarte a notar qué respuesta esperabas."
@@ -83,7 +83,7 @@ const schemaLD = {
           "name": "¿Sale más veces sí que no?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "No. Este oráculo tiene cinco respuestas afirmativas, cinco negativas y cinco neutrales, así que el sí y el no tienen la misma probabilidad. La bola 8 de juguete, en cambio, tiene diez respuestas afirmativas de veinte."
+            "text": "No. Esta bola 8 tiene cinco respuestas afirmativas, cinco negativas y cinco neutrales, así que el sí y el no tienen la misma probabilidad. La bola 8 de juguete, en cambio, tiene diez respuestas afirmativas de veinte."
           }
         },
         {
@@ -115,7 +115,7 @@ const schemaLD = {
           "name": "¿Puedo compartir mi pregunta con amigos?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Sí. Pulsa «Compartir esta pregunta» y envía el enlace. Quien lo abre ve tu pregunta ya escrita y puede consultar al oráculo por su cuenta."
+            "text": "Sí. Pulsa «Compartir esta pregunta» y envía el enlace. Quien lo abre ve tu pregunta ya escrita y puede preguntarle a la bola por su cuenta."
           }
         }
       ]
@@ -133,7 +133,7 @@ const schemaLD = {
         {
           "@type": "ListItem",
           "position": 2,
-          "name": "Oráculo Sí o No",
+          "name": "Pregunta Sí o No",
           "item": "https://decidelo.app/si-o-no"
         }
       ]
@@ -154,7 +154,7 @@ const schemaLD = {
   <main class="wrap max-w-2xl lg:max-w-5xl pt-5 pb-8 sm:pt-8 lg:grid lg:grid-cols-2 lg:grid-rows-[auto_auto_1fr] lg:gap-x-16 lg:items-start">
 
     <div class="w-full text-center lg:text-left mb-4 sm:mb-6 lg:col-start-1 lg:row-start-1">
-      <h1 class="m-0 mb-2 sm:mb-4 font-display text-[1.7rem] sm:text-5xl lg:text-[2.75rem] leading-tight tracking-tight">Oráculo <em class="font-[Newsreader,Georgia,serif] italic font-normal text-warm">sí o no</em></h1>
+      <h1 class="m-0 mb-2 sm:mb-4 font-display text-[1.7rem] sm:text-5xl lg:text-[2.75rem] leading-tight tracking-tight">Pregunta <em class="font-[Newsreader,Georgia,serif] italic font-normal text-warm">sí o no</em></h1>
       {/* En pantallas bajas la entradilla cede su sitio al botón */}
       <p class="m-0 mx-auto lg:mx-0 max-w-lg text-sm sm:text-base text-ink-secondary max-sm:[@media(max-height:620px)]:hidden">Escribe una pregunta que se responda con sí o no y consulta a la bola 8. En el móvil también puedes agitarlo.</p>
     </div>
@@ -164,7 +164,7 @@ const schemaLD = {
       <input id="oracle-question" type="text" maxlength="120" enterkeyhint="go" placeholder="¿Pido pizza esta noche?" autocomplete="off" class="w-full min-w-0 bg-transparent border-0 border-b border-(--divider-line) rounded-none px-0 py-1.5 font-sans text-lg text-ink-primary placeholder:text-ink-tertiary focus:outline-none focus:border-warm">
     </label>
 
-    <section class="w-full flex flex-col items-center lg:col-start-2 lg:row-start-1 lg:row-span-3 lg:pt-8" aria-label="Consultar al oráculo">
+    <section class="w-full flex flex-col items-center lg:col-start-2 lg:row-start-1 lg:row-span-3 lg:pt-8" aria-label="Preguntar a la bola 8">
       <OracleBall />
 
       <p class="oracle-result w-full text-center min-h-14 sm:min-h-18 mt-1 mb-2 sm:mt-3 sm:mb-4" id="oracle-result" aria-live="polite">
@@ -172,7 +172,7 @@ const schemaLD = {
         <span class="block mt-0.5 sm:mt-1.5 text-xs tracking-widest uppercase text-ink-tertiary" id="oracle-result-side"></span>
       </p>
 
-      <button id="btn-ask" type="button" class="px-9 py-3.5 border-0 rounded-full bg-warm text-[#1a0e06] font-display font-bold text-lg cursor-pointer transition-transform duration-150 active:scale-95 disabled:opacity-55 disabled:cursor-default focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-warm">Consultar al oráculo</button>
+      <button id="btn-ask" type="button" class="px-9 py-3.5 border-0 rounded-full bg-warm text-[#1a0e06] font-display font-bold text-lg cursor-pointer transition-transform duration-150 active:scale-95 disabled:opacity-55 disabled:cursor-default focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-warm">Preguntar</button>
 
       {/* Después de la respuesta: la prueba del alivio y compartir */}
       <div id="oracle-after" class="flex flex-col items-center gap-3 mt-6 w-full" hidden>
@@ -195,7 +195,7 @@ const schemaLD = {
       </div>
     </section>
 
-    <section class="w-full mt-12 sm:mt-16 lg:mt-10 lg:col-start-1 lg:row-start-3" aria-label="Historial de consultas al oráculo">
+    <section class="w-full mt-12 sm:mt-16 lg:mt-10 lg:col-start-1 lg:row-start-3" aria-label="Historial de preguntas">
       <div class="flex flex-wrap items-baseline gap-4 pb-3 border-0 border-b border-(--divider-line)">
         <h2 class="m-0 font-display text-lg">Últimas consultas</h2>
         <span class="flex-1 text-sm text-ink-tertiary tabular-nums" id="history-count"></span>
@@ -210,21 +210,21 @@ const schemaLD = {
 
   <AdSlot position="top" />
 
-  <SeoArticle title="Oráculo sí o no online: cuando no te decides, pregúntale a la bola 8">
-    <p><strong>¿Llevas un rato dándole vueltas a una pregunta que solo tiene dos respuestas?</strong> ¿Le escribo o no? ¿Salgo hoy o me quedo? ¿Pido pizza otra vez? Este oráculo de sí o no es una <strong>bola 8 mágica online</strong>: escribes tu duda, la bola se agita y te da una respuesta al instante. Funciona en el móvil y en el ordenador, es gratis y no pide registro.</p>
+  <SeoArticle title="Pregunta sí o no online: cuando no te decides, que responda la bola 8">
+    <p><strong>¿Llevas un rato dándole vueltas a una pregunta que solo tiene dos respuestas?</strong> ¿Le escribo o no? ¿Salgo hoy o me quedo? ¿Pido pizza otra vez? Esta herramienta de <strong>preguntas de sí o no</strong> es una <strong>bola 8 mágica online</strong>: escribes tu duda, la bola se agita y te da una respuesta al instante. Funciona en el móvil y en el ordenador, es gratis y no pide registro.</p>
 
-    <p>No predice el futuro ni lo pretende. Lo que sí hace, y bien, es cortar el bucle de dudas y mostrarte qué respuesta esperabas en el fondo. <a href="#oracle-question">Escribe tu pregunta arriba</a> y compruébalo. Úsalo para lo cotidiano; para decisiones médicas, legales o de dinero, mejor habla con alguien que sepa del tema.</p>
+    <p>No adivina nada ni lo pretende: es un juego. Lo que sí hace, y bien, es cortar el bucle de dudas y mostrarte qué respuesta esperabas en el fondo. <a href="#oracle-question">Escribe tu pregunta arriba</a> y compruébalo. Úsalo para lo cotidiano; para decisiones médicas, legales o de dinero, mejor habla con alguien que sepa del tema.</p>
 
-    <h2>Cómo consultar al oráculo sí o no</h2>
+    <h2>Cómo hacer una pregunta de sí o no</h2>
     <ol>
       <li><strong>Escribe tu pregunta</strong> en el campo &laquo;Tu pregunta&raquo;. Tiene que poder responderse con sí o no: &laquo;¿Voy al gimnasio hoy?&raquo; sirve; &laquo;¿Qué hago hoy?&raquo;, no.</li>
-      <li><strong>Pulsa &laquo;Consultar al oráculo&raquo;</strong> o la tecla Intro. La bola se agita y el dado sube a la ventana con la respuesta.</li>
+      <li><strong>Pulsa &laquo;Preguntar&raquo;</strong> o la tecla Intro. La bola se agita y el dado sube a la ventana con la respuesta.</li>
       <li><strong>Lee la respuesta</strong> en grande debajo de la bola. Bajo ella aparece si cuenta como sí, como no o como ni sí ni no.</li>
-      <li><strong>Fíjate en lo que sientes.</strong> Si la respuesta es un sí o un no, el oráculo te pregunta si sentiste alivio o decepción. Esa reacción es la pista de lo que ya preferías.</li>
+      <li><strong>Fíjate en lo que sientes.</strong> Si la respuesta es un sí o un no, la bola te pregunta si sentiste alivio o decepción. Esa reacción es la pista de lo que ya preferías.</li>
     </ol>
     <p>Si consultas sin escribir nada, la bola no responde: se burla con cariño. Y si insistes muchas veces seguidas, sospechará que el gato anda jugando con tu móvil.</p>
 
-    <h2>Las 15 respuestas del oráculo</h2>
+    <h2>Las 15 respuestas de la bola 8</h2>
     <p>Cada consulta elige al azar una de estas 15 respuestas. Hay cinco de cada tipo, así que un sí, un no y un &laquo;ni sí ni no&raquo; tienen <strong>la misma probabilidad</strong>.</p>
     <table>
       <thead>
@@ -240,7 +240,7 @@ const schemaLD = {
     </table>
     <p>La bola 8 original, la de juguete, tiene 20 respuestas: diez afirmativas, cinco neutrales y cinco negativas<sup><a href="#fuente-1">[1]</a></sup>. Es decir, la de plástico dice que sí la mitad de las veces. Aquí quitamos esa ventaja: el sí y el no pesan igual, para que la respuesta no te empuje hacia ningún lado.</p>
 
-    <h2>Preguntas para hacerle al oráculo hoy mismo</h2>
+    <h2>Preguntas de sí o no para hacer hoy mismo</h2>
     <p>¿No sabes qué preguntar? Estas son dudas típicas que se resuelven con un sí o un no. Copia una en el <a href="#oracle-question">campo de arriba</a> y consulta.</p>
     <table>
       <thead>
@@ -257,40 +257,40 @@ const schemaLD = {
       </tbody>
     </table>
 
-    <h2>Funciones del oráculo</h2>
+    <h2>Funciones de la bola 8</h2>
     <h3>La prueba del alivio</h3>
     <p>Después de un sí o un no, aparecen dos botones: &laquo;Alivio&raquo; y &laquo;Decepción&raquo;. Si sentiste alivio, ya lo tenías claro. Si sentiste decepción, en el fondo querías la respuesta contraria y puedes elegirla sin culpa. Si no quieres que te lo pregunte, pulsa &laquo;No preguntar más&raquo;. Ante un &laquo;Es incierto&raquo; no aparece, porque no hay nada que preferir.</p>
     <h3>Agitar el móvil para consultar</h3>
     <p>En móviles con sensor de movimiento aparece el botón &laquo;Agitar el móvil para consultar&raquo;. Actívalo, piensa tu pregunta y sacude el teléfono, como con la bola de verdad. Un golpe suelto, como dejar el móvil en la mesa, no cuenta: hace falta una sacudida clara.</p>
     <h3>Compartir la pregunta</h3>
-    <p>Con &laquo;Compartir esta pregunta&raquo; mandas un enlace por WhatsApp o donde quieras. Quien lo abre encuentra tu pregunta ya escrita y puede consultar al oráculo por su cuenta. Así se resuelve un &laquo;¿vamos o no?&raquo; en el grupo.</p>
+    <p>Con &laquo;Compartir esta pregunta&raquo; mandas un enlace por WhatsApp o donde quieras. Quien lo abre encuentra tu pregunta ya escrita y puede preguntarle a la bola por su cuenta. Así se resuelve un &laquo;¿vamos o no?&raquo; en el grupo.</p>
     <h3>Historial de consultas</h3>
     <p>Debajo de la bola ves tus últimas diez consultas con su respuesta. Se guardan solo en tu navegador y las borras con &laquo;Borrar&raquo;.</p>
 
     <h2>Por qué una respuesta al azar te ayuda a decidir</h2>
-    <p>Parece raro que una respuesta aleatoria sirva para algo, pero hay estudios que lo respaldan. En un experimento publicado en <em>PLOS ONE</em>, a quienes se les asignaba una opción lanzando una moneda sentían con más fuerza lo que preferían, incluso si luego no le hacían caso a la moneda<sup><a href="#fuente-2">[2]</a></sup>. El oráculo funciona igual: la respuesta no decide por ti, pero te obliga a notar tu reacción.</p>
+    <p>Parece raro que una respuesta aleatoria sirva para algo, pero hay estudios que lo respaldan. En un experimento publicado en <em>PLOS ONE</em>, a quienes se les asignaba una opción lanzando una moneda sentían con más fuerza lo que preferían, incluso si luego no le hacían caso a la moneda<sup><a href="#fuente-2">[2]</a></sup>. La bola 8 funciona igual: la respuesta no decide por ti, pero te obliga a notar tu reacción.</p>
     <p>El economista Steven Levitt pidió a miles de personas indecisas que lanzaran una moneda para decidir cosas como dejar un trabajo. Quienes hicieron el cambio que indicó la moneda se declaraban más felices seis meses después<sup><a href="#fuente-3">[3]</a></sup>. Es decir, muchas veces el problema no es elegir mal, sino no elegir.</p>
 
-    <h2>Trucos para sacarle partido al oráculo</h2>
+    <h2>Trucos para sacarle partido a la bola 8</h2>
     <h3>1. Haz preguntas cerradas</h3>
     <p>Si la pregunta no se responde con sí o no, la respuesta no te dirá nada. En vez de &laquo;¿Qué ceno?&raquo;, pregunta &laquo;¿Ceno fuera?&raquo;.</p>
     <h3>2. Una pregunta, una consulta</h3>
-    <p>&laquo;¿Salgo y me pongo la camisa azul?&raquo; son dos preguntas. Si el oráculo dice que sí, ¿a cuál respondió? Sepáralas.</p>
+    <p>&laquo;¿Salgo y me pongo la camisa azul?&raquo; son dos preguntas. Si la bola dice que sí, ¿a cuál respondió? Sepáralas.</p>
     <h3>3. No preguntes hasta que salga lo que quieres</h3>
     <p>Si consultas cinco veces esperando un sí, ya tienes tu respuesta: querías un sí. Es la prueba del alivio en versión rápida.</p>
     <h3>4. Pregunta solo lo que aceptarías</h3>
-    <p>Si una de las dos respuestas te parecería inaceptable, no la dejes en manos del azar. El oráculo es para dudas en las que las dos salidas te valen.</p>
+    <p>Si una de las dos respuestas te parecería inaceptable, no la dejes en manos del azar. La bola 8 es para dudas en las que las dos salidas te valen.</p>
     <h3>5. Si tienes más de dos opciones, usa otra herramienta</h3>
     <p>El sí o no sirve para una pregunta. Para elegir entre varias opciones gira la <a href="/ruleta">ruleta de decisiones</a>, y para dos opciones con nombre, lanza la <a href="/moneda">moneda</a>.</p>
 
-    <h2>¿Oráculo, ruleta, moneda o dados? Elige la herramienta correcta</h2>
+    <h2>¿Sí o no, ruleta, moneda o dados? Elige la herramienta correcta</h2>
     <p>Decídelo.app tiene una herramienta para cada tipo de duda. Todas son gratis, funcionan en el móvil y no piden registro.</p>
     <table>
       <thead>
         <tr><th>Si necesitas…</th><th>Usa</th></tr>
       </thead>
       <tbody>
-        <tr><td>Una respuesta rápida a una pregunta</td><td>Este oráculo sí o no</td></tr>
+        <tr><td>Una respuesta rápida a una pregunta</td><td>Esta pregunta sí o no</td></tr>
         <tr><td>Elegir entre dos opciones con nombre</td><td><a href="/moneda">Cara o sello</a></td></tr>
         <tr><td>Elegir entre tres o más opciones o nombres</td><td><a href="/ruleta">Ruleta aleatoria</a></td></tr>
         <tr><td>Tirar dados para un juego de mesa</td><td><a href="/dados">Dados online</a></td></tr>
@@ -302,28 +302,27 @@ const schemaLD = {
       </tbody>
     </table>
 
-    <h2>De Delfos a la bola 8: de dónde viene el oráculo</h2>
-    <p>Preguntar a un oráculo es una costumbre muy antigua. En la Antigua Grecia, el oráculo de Delfos, en el santuario de Apolo, fue uno de los más importantes y durante siglos recibió consultas de todo tipo<sup><a href="#fuente-4">[4]</a></sup>.</p>
-    <p>La versión moderna nació en Cincinnati. En 1946, Albert C. Carter y Abe Bookman inventaron el mecanismo: un dado de 20 caras flotando en un líquido azul oscuro, que sube a una ventana con la respuesta. En 1950 le dieron la forma de la bola 8 del billar, y así se quedó. Las 20 respuestas las escribió un profesor de psicología de la Universidad de Cincinnati<sup><a href="#fuente-1">[1]</a></sup>. Nuestra bola copia ese gesto, el dado que emerge, pero con respuestas equilibradas.</p>
+    <h2>De dónde viene la bola 8</h2>
+    <p>La bola 8 nació en Cincinnati. En 1946, Albert C. Carter y Abe Bookman inventaron el mecanismo: un dado de 20 caras flotando en un líquido azul oscuro, que sube a una ventana con la respuesta. En 1950 le dieron la forma de la bola 8 del billar, y así se quedó. Las 20 respuestas las escribió un profesor de psicología de la Universidad de Cincinnati<sup><a href="#fuente-1">[1]</a></sup>. Nuestra bola copia ese gesto, el dado que emerge, pero con respuestas equilibradas.</p>
 
     <h2>¿Cómo funciona por dentro?</h2>
-    <p>Cada respuesta sale del generador de valores aleatorios criptográficamente fuertes del navegador (<code>crypto.getRandomValues</code>)<sup><a href="#fuente-5">[5]</a></sup>, con la misma probabilidad para las 15. La animación solo muestra la respuesta; no la decide. Cada consulta es independiente: lo que salió antes no cambia lo que sale ahora.</p>
+    <p>Cada respuesta sale del generador de valores aleatorios criptográficamente fuertes del navegador (<code>crypto.getRandomValues</code>)<sup><a href="#fuente-4">[4]</a></sup>, con la misma probabilidad para las 15. La animación solo muestra la respuesta; no la decide. Cada consulta es independiente: lo que salió antes no cambia lo que sale ahora.</p>
 
-    <h2>Deja de dudar: pregúntale al oráculo ahora</h2>
-    <p>La pregunta sigue ahí, esperando. Sube a la <a href="#oracle-question">bola 8</a>, escríbela y pulsa &laquo;Consultar al oráculo&raquo;. En dos segundos tendrás tu respuesta y, con la prueba del alivio, sabrás si era la que querías. Si tu duda tiene más de dos caminos, gira la <a href="/ruleta">ruleta</a>.</p>
+    <h2>Deja de dudar: haz tu pregunta ahora</h2>
+    <p>La pregunta sigue ahí, esperando. Sube a la <a href="#oracle-question">bola 8</a>, escríbela y pulsa &laquo;Preguntar&raquo;. En dos segundos tendrás tu respuesta y, con la prueba del alivio, sabrás si era la que querías. Si tu duda tiene más de dos caminos, gira la <a href="/ruleta">ruleta</a>.</p>
 
     <h2>Preguntas frecuentes</h2>
-    <h3>¿Cómo funciona el oráculo sí o no?</h3>
-    <p>Escribes una pregunta que se responda con sí o no y pulsas &laquo;Consultar al oráculo&raquo;. La bola se agita y muestra una de 15 respuestas elegida al azar: cinco afirmativas, cinco negativas y cinco neutrales.</p>
+    <h3>¿Cómo funciona la pregunta sí o no?</h3>
+    <p>Escribes una pregunta que se responda con sí o no y pulsas &laquo;Preguntar&raquo;. La bola se agita y muestra una de 15 respuestas elegida al azar: cinco afirmativas, cinco negativas y cinco neutrales.</p>
 
-    <h3>¿El oráculo sí o no es real o es al azar?</h3>
+    <h3>¿La bola 8 adivina de verdad?</h3>
     <p>Es al azar. No adivina el futuro: cada respuesta sale del generador aleatorio del navegador y todas tienen la misma probabilidad. Su utilidad es ayudarte a notar qué respuesta esperabas.</p>
 
     <h3>¿Qué es la bola 8 mágica?</h3>
     <p>Es un juguete creado en 1946 en Cincinnati: una bola con forma de bola 8 de billar que tiene dentro un dado de 20 caras flotando en líquido. Le haces una pregunta, la giras y aparece una respuesta en la ventana.</p>
 
     <h3>¿Sale más veces sí que no?</h3>
-    <p>No. Este oráculo tiene cinco respuestas afirmativas, cinco negativas y cinco neutrales, así que el sí y el no tienen la misma probabilidad. La bola 8 de juguete, en cambio, tiene diez respuestas afirmativas de veinte.</p>
+    <p>No. Esta bola 8 tiene cinco respuestas afirmativas, cinco negativas y cinco neutrales, así que el sí y el no tienen la misma probabilidad. La bola 8 de juguete, en cambio, tiene diez respuestas afirmativas de veinte.</p>
 
     <h3>¿Puedo consultar agitando el móvil?</h3>
     <p>Sí, si tu móvil tiene sensor de movimiento. Pulsa «Agitar el móvil para consultar», acepta el permiso si te lo pide y sacude el teléfono.</p>
@@ -335,14 +334,14 @@ const schemaLD = {
     <p>Solo en tu propio navegador: la última pregunta y un historial de las diez últimas consultas, que borras con «Borrar». No se envían a ningún servidor y no hace falta cuenta.</p>
 
     <h3>¿Puedo compartir mi pregunta con amigos?</h3>
-    <p>Sí. Pulsa «Compartir esta pregunta» y envía el enlace. Quien lo abre ve tu pregunta ya escrita y puede consultar al oráculo por su cuenta.</p>
+    <p>Sí. Pulsa «Compartir esta pregunta» y envía el enlace. Quien lo abre ve tu pregunta ya escrita y puede preguntarle a la bola por su cuenta.</p>
 
     <h2>Guías relacionadas</h2>
     <ul>
-      <li><a href="/blog/si-o-no/preguntas-divertidas-oraculo-si-o-no">Preguntas divertidas para hacerle al oráculo</a></li>
+      <li><a href="/blog/si-o-no/preguntas-divertidas-oraculo-si-o-no">Preguntas divertidas de sí o no</a></li>
       <li><a href="/blog/si-o-no/bola-8-decisiones-binarias-neurologia">Bola 8 mágica online para desbloquear decisiones</a></li>
       <li><a href="/blog/si-o-no/desbloqueo-oraculo">El origen de las decisiones binarias</a></li>
-      <li><a href="/blog/si-o-no/fatiga-de-decision-y-oraculo">Fatiga de decisión y el oráculo</a></li>
+      <li><a href="/blog/si-o-no/fatiga-de-decision-y-oraculo">Fatiga de decisión: cómo ayuda el sí o no</a></li>
       <li><a href="/blog/si-o-no/tarot-si-no">Cómo hacer preguntas claras de sí o no</a></li>
       <li><a href="/blog/si-o-no/ia-toma-decisiones-carrera-profesional">IA y decisiones de carrera</a></li>
     </ul>
@@ -352,8 +351,7 @@ const schemaLD = {
       <li id="fuente-1">Wikipedia. «Magic 8 Ball» (historia, dado de 20 caras y reparto de respuestas). <a href="https://en.wikipedia.org/wiki/Magic_8_Ball" rel="noopener" target="_blank">en.wikipedia.org</a></li>
       <li id="fuente-2">Jaffé, M. E., Reutner, L. y Greifeneder, R. (2019). «Catalyzing decisions: How a coin flip strengthens affective reactions». <em>PLOS ONE</em>, 14(8): e0220736. <a href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0220736" rel="noopener" target="_blank">journals.plos.org</a></li>
       <li id="fuente-3">Levitt, S. D. (2016). «Heads or Tails: The Impact of a Coin Toss on Major Life Decisions and Subsequent Happiness». NBER Working Paper 22487; publicado en <em>The Review of Economic Studies</em> (2021). <a href="https://www.nber.org/papers/w22487" rel="noopener" target="_blank">www.nber.org</a></li>
-      <li id="fuente-4">Wikipedia. «Oráculo de Delfos». <a href="https://es.wikipedia.org/wiki/Or%C3%A1culo_de_Delfos" rel="noopener" target="_blank">es.wikipedia.org</a></li>
-      <li id="fuente-5">MDN Web Docs. «Crypto.getRandomValues()». <a href="https://developer.mozilla.org/es/docs/Web/API/Crypto/getRandomValues" rel="noopener" target="_blank">developer.mozilla.org</a></li>
+      <li id="fuente-4">MDN Web Docs. «Crypto.getRandomValues()». <a href="https://developer.mozilla.org/es/docs/Web/API/Crypto/getRandomValues" rel="noopener" target="_blank">developer.mozilla.org</a></li>
     </ol>
   </SeoArticle>
 

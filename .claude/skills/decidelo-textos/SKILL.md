@@ -41,8 +41,9 @@ persiguen la misma consulta, Google alterna entre ellas y ninguna sube.
 
 | Página | Es dueña de | No persigue |
 |---|---|---|
+| `/` (inicio) | Consultas genéricas sin herramienta: «decide por mí», «tomador de decisiones», «ayúdame a decidir», «de forma aleatoria» | Nombres de herramientas concretas |
 | `/moneda` | Elegir entre **dos opciones con nombre**: cara o sello, cara o cruz, águila o sol, volado | Preguntas de sí o no |
-| `/si-o-no` | **Una pregunta** que se responde sí o no; bola 8; preguntas para jugar | Elegir entre dos opciones |
+| `/si-o-no` (Pregunta sí o no) | **Una pregunta** que se responde sí o no; bola 8; preguntas de sí o no para jugar | Elegir entre dos opciones |
 | `/ruleta` | **Tres o más** opciones o nombres; ruleta de nombres, de premios, de retos | Dos opciones; números |
 | `/numeros` | Número aleatorio en un rango; sorteo por número | Nombres (eso es ruleta) |
 | `/dados` | Tirar dados para juegos de mesa y rol | Números en rango |

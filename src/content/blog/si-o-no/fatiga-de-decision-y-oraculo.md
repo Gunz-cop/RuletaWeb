@@ -1,5 +1,5 @@
 ---
-title: 'Fatiga de Decisión: Cómo el Oráculo de Sí o No te Ayuda a Desbloquear tu Mente'
+title: 'Fatiga de Decisión: Cómo una Pregunta de Sí o No te Ayuda a Desbloquear tu Mente'
 description: '¿Te cuesta elegir qué cenar, qué ver en Netflix o qué ponerte hoy? Conoce qué es la fatiga de decisión y cómo combatirla con el azar.'
 pubDate: '2026-05-24'
 tags: ['si-o-no', 'psicologia', 'productividad', 'fatiga-de-decision', 'oraculo']
