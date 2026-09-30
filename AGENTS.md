@@ -287,6 +287,13 @@ nueva o migrada cumple esto:
   ubicación"). Nunca `navigator.geolocation`.
 - **Sin sonidos ni efectos de premio.** La página es para decidir, no un
   casino. Como mucho `navigator.vibrate` corto al terminar.
+  **Excepción: el temporizador** (pedida por el propietario). Un
+  temporizador tiene que avisar mientras la gente está en otra cosa
+  (pasando el móvil, con los ojos cerrados), así que lleva un cuenco
+  sintetizado con Web Audio, **activado por defecto y silenciable** con un
+  botón que se recuerda. Nunca suena solo: el aviso sale siempre también
+  en pantalla (DESIGN.md, "Aviso a pantalla completa"), porque el móvil
+  puede estar en silencio. Tampoco celebra: ni explosiones ni fanfarrias.
 - **Clases de Tailwind añadidas por JS no funcionan** (ver regla 2): si el
   JS tiene que cambiar el aspecto, pon una clase de estado propia
   (`is-shown`) con su regla en el `<style>` de la página.

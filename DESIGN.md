@@ -120,7 +120,9 @@ por las 11 páginas que lo importan), la moneda (`moneda.astro` +
 `Coin.astro`), que es además la **implementación de referencia** de una
 herramienta migrada (ver "Anatomía de una página de herramienta"), y el
 oráculo sí o no (`si-o-no.astro` + `OracleBall.astro`), la primera
-herramienta con casi todo el marcado en utilidades de Tailwind. El resto
+herramienta con casi todo el marcado en utilidades de Tailwind, piedra,
+papel o tijera (`piedra-papel-tijera.astro` + `PptHands.astro`) y el
+temporizador (`temporizador.astro` + `TimerObject.astro`). El resto
 de herramientas (la ruleta, los dados...) sigue con los botones y tarjetas
 en degradado de la estética anterior — migrarlas es una tarea aparte, una
 herramienta a la vez, porque toca UI interactiva con sus propios tests de
@@ -412,6 +414,23 @@ Lógica pura en `src/scripts/ppt-reto.js`, probada con node
 (`scripts/ppt-reto-check.mjs`). Límites y la alternativa con servidor:
 `docs/propuesta-backend-retos.md`.
 
+**Aviso a pantalla completa** (temporizador): cuando algo termina mientras
+la gente no mira la página (pasan el móvil, respiran con los ojos
+cerrados), el final no puede depender del sonido. Toda la pantalla se
+vuelve `--accent-warm` con la palabra grande en tinta oscura
+(`#timer-alert`, `role="alertdialog"`), parpadea tres veces con `opacity`
+y **se queda hasta que alguien la cierra**; el foco va a su botón. Si la
+pestaña está oculta, además cambia el `<title>`. Los avisos intermedios
+(avisos al azar) son un destello del mismo color que se va solo y no
+bloquea. Mientras corre el tiempo se pide `navigator.wakeLock` para que la
+pantalla no se apague.
+
+**Nombre del juego por país** (temporizador): el modo de grupo se llama
+como lo busca cada país (tingo, tingo, tango en Colombia; la papa se quema
+en México; patata caliente en España; papa caliente en el resto), con la
+misma deducción que la moneda y un selector para cambiarlo. Tabla en
+`JUEGO_POR_PAIS` de `src/scripts/temporizador-logica.js`.
+
 **Resultados de más de dos tipos sin segundo color** (sí / no / ni sí ni
 no en el oráculo; ganar / perder / empate en piedra, papel o tijera): la
 respuesta grande en `--text-primary` y el tipo o el motivo debajo en texto
@@ -432,6 +451,14 @@ migrada o nueva tiene **objeto vivo**, con estas fases, todas con
 | **Anticipación** | Gesto previo que anuncia la acción | 0,1–0,3 s | Se agacha antes de saltar | Se hunde el dado anterior | La mano se echa atrás en cada golpe |
 | **Acción** | La animación con sentido que produce el resultado | 1–2 s en total | Volteo | Agitado + dado que emerge | "Piedra… papel… tijera…" (3 golpes) |
 | **Aterrizaje** | Se asienta con un pequeño rebote o aplastamiento y aparece el resultado | 0,3–0,4 s | Asienta | El dado se asienta | Aplastamiento al abrir la mano |
+
+El temporizador sigue las mismas fases, con una diferencia: su **acción
+dura lo que dura la ronda**, no 1–2 s. La papa cae desde arriba, flota,
+se aplasta al pulsar, tiembla más rápido y se calienta mientras corre el
+tiempo (el color sigue al máximo del rango, no a la duración elegida, para
+no delatar cuánto falta) y rebota al sonar. En el modo impulso la acción
+es la guía de respiración (4 s entra, 6 s sale); en avisos, el cuenco se
+mece y suelta ondas en cada aviso.
 
 Reglas:
 

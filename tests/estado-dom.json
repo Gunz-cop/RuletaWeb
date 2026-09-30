@@ -606,5 +606,130 @@
       "ok": true,
       "mensaje": "#ppt-choices.bottom=571.7px con 1000px visibles (holgura 428.3px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
     }
+  },
+  "/temporizador?modo=papa&min=1&max=2 [papa-quemada]": {
+    "#timer-alert": {
+      "display": "flex",
+      "position": "fixed",
+      "backgroundColor": "rgb(226, 144, 90)",
+      "color": "rgb(26, 14, 6)"
+    },
+    "#timer-alert-title": {
+      "fontFamily": "Outfit, sans-serif",
+      "fontWeight": "800",
+      "color": "rgb(26, 14, 6)"
+    },
+    "#timer-alert-close": {
+      "display": "block"
+    },
+    "#timer-alert-ganas": {
+      "display": "none"
+    },
+    "#timer-result": {
+      "display": "block",
+      "textAlign": "center"
+    },
+    "#timer-result-stake": {
+      "display": "block"
+    },
+    ".history-row": {
+      "display": "grid",
+      "borderBottomWidth": "1px",
+      "borderBottomStyle": "solid"
+    },
+    ".history-label": {
+      "color": "rgb(240, 240, 245)"
+    },
+    "#timer-start": {
+      "backgroundColor": "rgb(226, 144, 90)",
+      "borderRadius": "999px"
+    },
+    "#timer-fieldset": {
+      "opacity": "1"
+    }
+  },
+  "/temporizador?modo=papa&min=1&max=2 [papa-nombre-colombia]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "en Colombia el aviso dice {\"titulo\":\"¡Tango!\",\"texto\":\"A quien le caiga: canta una canción\",\"modo\":\"Tingo tango\"}"
+    }
+  },
+  "/temporizador?modo=impulso&min=1&max=1 [impulso-registrado]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "fila del historial: «01Ganas de mirar el móvilGanas 7 → 3 · 1 s · 22:07»"
+    }
+  },
+  "/temporizador?modo=avisos&min=1&max=1 [avisos-repetidos]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "aviso bloqueante durante la sesión: false; resultado: «2 avisos»"
+    }
+  },
+  "/temporizador [accion-principal-visible-android-360x560]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#timer-start.bottom=420.9px con 560px visibles (holgura 139.1px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/temporizador [accion-principal-visible-iphone-se-375x548]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#timer-start.bottom=420.9px con 548px visibles (holgura 127.1px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/temporizador [accion-principal-visible-iphone-393x659]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#timer-start.bottom=460.9px con 659px visibles (holgura 198.1px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/temporizador [responsive-fold-cerrado-344x680]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#timer-start.bottom=494.9px con 680px visibles (holgura 185.1px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/temporizador [responsive-fold-abierto-673x760]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#timer-start.bottom=571.9px con 760px visibles (holgura 188.1px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/temporizador [responsive-tablet-vertical-768x960]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#timer-start.bottom=571.9px con 960px visibles (holgura 388.1px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/temporizador [responsive-tablet-horizontal-1024x700]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#timer-start.bottom=426.9px con 700px visibles (holgura 273.1px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/temporizador [responsive-movil-horizontal-740x340]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "sin scroll horizontal (740px en 740px)"
+    }
+  },
+  "/temporizador [responsive-escritorio-1280x720]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#timer-start.bottom=426.9px con 720px visibles (holgura 293.1px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/temporizador [responsive-escritorio-1920x1000]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#timer-start.bottom=426.9px con 1000px visibles (holgura 573.1px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/temporizador [responsive-impulso-android-360x560]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#timer-start.bottom=420.9px con 560px visibles (holgura 139.1px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
   }
 }

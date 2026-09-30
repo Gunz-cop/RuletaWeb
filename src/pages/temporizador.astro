@@ -3,15 +3,58 @@ import Layout from '../layouts/Layout.astro';
 import AdSlot from '../components/AdSlot.astro';
 import HubGrid from '../components/HubGrid.astro';
 import SeoArticle from '../components/SeoArticle.astro';
+import TimerObject from '../components/TimerObject.astro';
+import { MODOS, JUEGOS, formatoRango } from '../scripts/temporizador-logica.js';
 import { getSocialImageUrl } from '../lib/heroImages';
 
-const title = 'Temporizador Aleatorio Online — Cuenta Regresiva Sorpresa | Decídelo.app';
-const description = 'Establece un rango de tiempo mínimo y máximo, y deja que el temporizador finalice en un segundo aleatorio. Ideal para juegos de mesa, retos y dinámicas de grupo.';
-const keywords = 'temporizador aleatorio, timer sorpresa, pass the bomb online, patata caliente juego, cuenta regresiva sorpresa, temporizador bomba, decidir al azar';
+const title = 'Temporizador Aleatorio: Papa Caliente y Tingo Tango Online';
+const description = '¿Juegan papa caliente o tingo tingo tango? Este temporizador suena en un segundo sorpresa. También para aguantar un impulso o meditar. Gratis.';
+const keywords = 'temporizador aleatorio, papa caliente online, tingo tingo tango, la papa se quema, patata caliente, temporizador sorpresa, campana de meditación aleatoria, aguantar impulsos';
 
 // La imagen vive en src/assets y la optimiza Astro; el JSON-LD necesita
 // su URL absoluta ya generada, no la ruta pública que tenía antes.
 const socialImage = await getSocialImageUrl('/blog/temporizador.png');
+
+// Botón de texto: acción secundaria, subrayada, nunca rellena. Igual que en
+// si-o-no.astro; aria-pressed marca la opción elegida.
+const textBtn = 'bg-transparent border-0 border-b border-(--divider-line) rounded-none px-0 py-1 font-sans text-base text-ink-primary cursor-pointer hover:text-warm hover:border-current focus-visible:text-warm focus-visible:border-current focus-visible:outline-none aria-pressed:text-warm aria-pressed:border-current';
+// Etiqueta de campo en mayúsculas pequeñas (DESIGN.md, "Entradas del usuario")
+const fieldLabel = 'block mb-2 text-xs font-semibold tracking-widest uppercase text-ink-tertiary';
+
+// Lo que se pinta antes de que cargue el JS: papa caliente con su rango
+// por defecto. El JS lo cambia por el nombre del país y lo recordado.
+const papa = MODOS.papa;
+
+const faq = [
+  {
+    q: '¿Cómo funciona el temporizador aleatorio?',
+    a: 'Eliges un modo y un rango de tiempo, por ejemplo entre 20 segundos y 1 minuto, y pulsas «Empezar». La duración exacta sale al azar dentro de ese rango y no se muestra: solo lo sabes cuando suena.',
+  },
+  {
+    q: '¿Cómo se juega a la papa caliente con el móvil?',
+    a: 'Pongan el modo Papa caliente, pulsen «Empezar» y pásense el móvil de mano en mano. Cuando suene, a quien lo tenga le toca: cumple la prueba que escribieron en «A quien se le queme» o queda eliminado.',
+  },
+  {
+    q: '¿Cómo se llama este juego en cada país?',
+    a: 'En Colombia se juega como tingo, tingo, tango; en México se dice «la papa se quema»; en España, patata caliente, y en casi toda Latinoamérica, papa caliente. El temporizador usa el nombre de tu país y puedes cambiarlo.',
+  },
+  {
+    q: '¿Para qué sirve el modo Aguantar un impulso?',
+    a: 'Para cuando te dan ganas de algo que prefieres no hacer ya: comer algo dulce, fumar, mirar el móvil o comprar. Anotas cuántas ganas tienes, esperas sin saber cuánto falta mientras respiras con el círculo y, al sonar, anotas cuántas ganas quedan. No sustituye la ayuda de un profesional.',
+  },
+  {
+    q: '¿Qué pasa si tengo el sonido apagado?',
+    a: 'El aviso también sale en pantalla: al terminar, toda la pantalla cambia de color con un mensaje grande que se queda hasta que lo cierras. En los móviles que lo permiten, además vibra. El sonido se apaga o se enciende con el botón «Sonido».',
+  },
+  {
+    q: '¿Se apaga la pantalla mientras corre el tiempo?',
+    a: 'No en los navegadores que lo permiten: mientras el temporizador corre, la página pide mantener la pantalla encendida. Si cambias de aplicación o bloqueas el móvil, el aviso puede llegar tarde.',
+  },
+  {
+    q: '¿Se guardan mis datos?',
+    a: 'Solo en tu propio navegador: el modo, el rango, los textos que escribiste y las diez últimas rondas. No se envían a ningún servidor y no hace falta cuenta.',
+  },
+];
 
 const schemaLD = {
   "@context": "https://schema.org",
@@ -19,13 +62,13 @@ const schemaLD = {
     {
       "@type": "WebApplication",
       "@id": "https://decidelo.app/temporizador#webapp",
-      "name": "Temporizador Aleatorio Online — Decídelo.app",
-      "description": "Temporizador interactivo con cuenta regresiva aleatoria y modo bomba oculta para juegos de mesa, dinámicas de grupo y retos.",
+      "name": "Temporizador Aleatorio — Decídelo.app",
+      "description": "Temporizador que suena en un momento sorpresa: papa caliente (tingo tingo tango), aguantar un impulso y avisos al azar para meditar o jugar.",
       "url": "https://decidelo.app/temporizador",
       "applicationCategory": "UtilityApplication",
       "operatingSystem": "All",
       "browserRequirements": "Requires JavaScript",
-      "softwareVersion": "2.0.0",
+      "softwareVersion": "3.0.0",
       "inLanguage": "es",
       "offers": {
         "@type": "Offer",
@@ -44,6 +87,15 @@ const schemaLD = {
           "url": "https://decidelo.app/favicon.svg"
         }
       }
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://decidelo.app/temporizador#faq",
+      "mainEntity": faq.map(({ q, a }) => ({
+        "@type": "Question",
+        "name": q,
+        "acceptedAnswer": { "@type": "Answer", "text": a }
+      }))
     },
     {
       "@type": "BreadcrumbList",
@@ -68,135 +120,292 @@ const schemaLD = {
 ---
 
 <Layout title={title} description={description} keywords={keywords} schemaLD={schemaLD} showHomeHeader={false}>
-  <main class="wrap">
-    
-    <!-- Hero Section -->
-    <section class="hero slide-up delay-1">
-      <h1>Temporizador <span class="gradient-text">Aleatorio</span></h1>
-      <p>Configura un rango de tiempo y deja que el cronómetro se detenga en un segundo al azar. ¡Añade adrenalina y sorpresa a tus dinámicas!</p>
+  <Fragment slot="head">
+    {/* Newsreader itálica: acento del sistema editorial (ver DESIGN.md) */}
+    <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@1,400&display=swap" rel="stylesheet">
+  </Fragment>
+
+  {/* El orden del HTML es el de móvil: título y modo, objeto, estado y
+      botón; los ajustes van debajo del botón para que crezcan sin
+      empujarlo fuera de pantalla. Desde 1024px, dos columnas: a la
+      izquierda título, ajustes e historial; a la derecha el objeto y el
+      botón, así en un portátil de 720px el botón no queda fuera. */}
+  <main class="wrap max-w-2xl lg:max-w-5xl pt-5 pb-8 sm:pt-8 lg:grid lg:grid-cols-2 lg:grid-rows-[auto_auto_1fr] lg:gap-x-16 lg:items-start">
+
+    <div class="w-full text-center lg:text-left mb-3 sm:mb-6 lg:col-start-1 lg:row-start-1">
+      <h1 class="m-0 mb-2 sm:mb-4 font-display text-[1.7rem] sm:text-5xl lg:text-[2.75rem] leading-tight tracking-tight">Temporizador <em class="font-[Newsreader,Georgia,serif] italic font-normal text-warm">aleatorio</em></h1>
+      {/* En pantallas bajas la entradilla cede su sitio al botón */}
+      <p class="m-0 mx-auto lg:mx-0 max-w-lg text-sm sm:text-base text-ink-secondary max-sm:[@media(max-height:620px)]:hidden">Suena cuando nadie lo espera. Para jugar en grupo, aguantar un impulso o meditar.</p>
+      {/* El modo es lo primero que se decide: arriba, en una sola pieza */}
+      <div class="timer-modes mt-4" id="timer-modes" role="group" aria-label="Para qué lo usas">
+        <button type="button" data-mode="papa" aria-pressed="true"><span id="timer-mode-papa">{JUEGOS.papa.corto}</span></button>
+        <button type="button" data-mode="impulso" aria-pressed="false">Impulso</button>
+        <button type="button" data-mode="avisos" aria-pressed="false">Avisos</button>
+      </div>
+    </div>
+
+    <section id="temporizador" class="w-full flex flex-col items-center lg:col-start-2 lg:row-start-1 lg:row-span-3 lg:pt-8" aria-label="Temporizador">
+      <TimerObject />
+
+      {/* Qué está pasando (corriendo, cuántos avisos) y, al terminar, el
+          resultado en las palabras del usuario */}
+      <p class="m-0 mt-2 mb-1 min-h-6 text-sm sm:text-base text-ink-secondary text-center [overflow-wrap:anywhere]" id="timer-status" aria-live="polite"></p>
+      <p class="timer-result w-full text-center mb-2" id="timer-result" aria-live="polite">
+        <span class="block font-display font-bold text-[1.7rem] sm:text-4xl leading-tight text-ink-primary [overflow-wrap:anywhere]" id="timer-result-main"></span>
+        <span class="timer-result-stake block mt-1 text-base sm:text-lg text-ink-primary [overflow-wrap:anywhere]" id="timer-result-stake"></span>
+        <span class="block mt-0.5 sm:mt-1.5 text-xs tracking-widest uppercase text-ink-tertiary" id="timer-result-side"></span>
+      </p>
+
+      <button id="timer-start" type="button" class="timer-start mt-1">Empezar</button>
+
+      <button class={`${textBtn} mt-4 text-sm`} id="timer-sound" type="button" aria-pressed="true">Sonido activado</button>
     </section>
 
-    <AdSlot position="top" />
+    <section class="w-full mt-8 sm:mt-10 lg:mt-6 lg:col-start-1 lg:row-start-2" id="timer-ajustes" aria-label="Ajustes del temporizador">
+      <p class="m-0 mb-6 text-sm sm:text-base text-ink-secondary" id="timer-mode-desc">Pasen el móvil de mano en mano. Nadie sabe cuándo suena: a quien lo tenga, le toca.</p>
 
-    <!-- Tablero de Juego -->
-    <section class="game-board slide-up delay-2" aria-label="Tablero del Temporizador">
-      
-      <!-- Selectores de Modo -->
-      <div class="selector-container" id="timer-mode-selector">
-        <button class="selector-btn active" data-mode="normal" aria-label="Modo normal revelado">
-          👁️ Revelar Cuenta
-        </button>
-        <button class="selector-btn" data-mode="secret" aria-label="Modo bomba secreta">
-          💣 Bomba Secreta
-        </button>
-      </div>
-
-      <!-- Configuración del Rango -->
-      <div class="settings-panel">
-        <div class="range-sliders">
-          <div class="slider-group">
-            <div class="slider-header">
-              <label for="timer-min-slider">Rango Mínimo</label>
-              <span class="value-display" id="min-value-display">10 segundos</span>
-            </div>
-            <input 
-              type="range" 
-              id="timer-min-slider" 
-              min="5" 
-              max="300" 
-              step="5" 
-              value="10" 
-              aria-valuemin="5" 
-              aria-valuemax="300" 
-              aria-valuenow="10"
-            />
+      <fieldset class="timer-fieldset flex flex-col gap-7" id="timer-fieldset">
+        <div>
+          <span class={fieldLabel} id="timer-range-label">¿Cuánto tiempo?</span>
+          <div class="flex flex-wrap items-baseline gap-x-6 gap-y-2" id="timer-presets" role="group" aria-labelledby="timer-range-label">
+            {papa.presets.map((r, i) => (
+              <button type="button" class={textBtn} data-preset={i} aria-pressed={i === papa.porDefecto ? 'true' : 'false'}>{formatoRango(r)}</button>
+            ))}
+            <button type="button" class={textBtn} id="timer-custom-btn" aria-pressed="false" aria-controls="timer-custom">Personalizar</button>
           </div>
-
-          <div class="slider-group">
-            <div class="slider-header">
-              <label for="timer-max-slider">Rango Máximo</label>
-              <span class="value-display" id="max-value-display">60 segundos</span>
-            </div>
-            <input 
-              type="range" 
-              id="timer-max-slider" 
-              min="5" 
-              max="600" 
-              step="5" 
-              value="60" 
-              aria-valuemin="5" 
-              aria-valuemax="600" 
-              aria-valuenow="60"
-            />
+          <div class="flex flex-wrap items-baseline gap-x-2 gap-y-2 mt-4 text-ink-secondary" id="timer-custom" hidden>
+            <label for="timer-min">Entre</label>
+            <input class="timer-input w-16" id="timer-min" type="number" inputmode="decimal" min="1" step="1">
+            <label for="timer-max">y</label>
+            <input class="timer-input w-16" id="timer-max" type="number" inputmode="decimal" min="1" step="1">
+            <span id="timer-unit">segundos</span>
           </div>
         </div>
-      </div>
 
-      <!-- Visualizador del Timer -->
-      <div class="timer-display-scene">
-        <div class="timer-ring-container">
-          <svg class="progress-ring" width="220" height="220" viewBox="0 0 220 220">
-            <circle class="progress-ring-bg" stroke="rgba(255, 255, 255, 0.05)" stroke-width="8" fill="transparent" r="95" cx="110" cy="110" />
-            <circle class="progress-ring-fill" id="timer-progress-fill" stroke="url(#timer-gradient)" stroke-width="8" stroke-linecap="round" fill="transparent" r="95" cx="110" cy="110" />
-            <defs>
-              <linearGradient id="timer-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#00e5ff" />
-                <stop offset="100%" stop-color="#b366ff" />
-              </linearGradient>
-            </defs>
-          </svg>
-          <div class="timer-text-container">
-            <span class="timer-icon" id="timer-icon">⏳</span>
-            <span class="timer-time" id="timer-time">00:00</span>
-            <span class="timer-status" id="timer-status">Configurado</span>
+        {/* Solo en papa caliente: cómo lo llaman y qué se juega */}
+        <div class="flex flex-col gap-7" data-solo="papa">
+          <label class="block">
+            <span class={fieldLabel}>Cómo lo llaman</span>
+            <select class="timer-input w-full max-w-xs" id="timer-juego">
+              {Object.entries(JUEGOS).map(([clave, j]) => (
+                <option value={clave}>{j.nombre}</option>
+              ))}
+            </select>
+          </label>
+          <label class="flex items-baseline gap-2 w-full max-w-sm">
+            <span class="shrink-0 text-sm text-ink-secondary" id="timer-stake-label">{JUEGOS.papa.perder}</span>
+            <input class="timer-input flex-1 min-w-0" id="timer-stake" type="text" maxlength="60" placeholder={JUEGOS.papa.ejemplo} autocomplete="off" enterkeyhint="done">
+          </label>
+        </div>
+
+        {/* Solo en aguantar un impulso: de qué son las ganas y cuántas */}
+        <div class="flex flex-col gap-7" data-solo="impulso" hidden>
+          <label class="flex items-baseline gap-2 w-full max-w-sm">
+            <span class="shrink-0 text-sm text-ink-secondary">Tengo ganas de</span>
+            <input class="timer-input flex-1 min-w-0" id="timer-urge" type="text" maxlength="60" placeholder="comer algo dulce" autocomplete="off" enterkeyhint="done">
+          </label>
+          <div>
+            <span class={fieldLabel} id="timer-ganas-label">¿Cuántas ganas? (1 = pocas, 10 = muchas)</span>
+            <div class="timer-ganas grid grid-cols-10 gap-1 max-w-sm" id="timer-ganas" role="group" aria-labelledby="timer-ganas-label">
+              {Array.from({ length: 10 }, (_, i) => (
+                <button type="button" data-ganas={i + 1} aria-pressed="false">{i + 1}</button>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Botón de Control -->
-      <button class="btn-spin" id="btn-spin">INICIAR TEMPORIZADOR</button>
+        {/* Solo en avisos al azar: cuánto dura la sesión */}
+        <div data-solo="avisos" hidden>
+          <span class={fieldLabel} id="timer-total-label">¿Cuánto dura la sesión?</span>
+          <div class="flex flex-wrap items-baseline gap-x-6 gap-y-2" id="timer-totales" role="group" aria-labelledby="timer-total-label">
+            <button type="button" class={textBtn} data-total="0" aria-pressed="true">Hasta que pare</button>
+            <button type="button" class={textBtn} data-total="300" aria-pressed="false">5 min</button>
+            <button type="button" class={textBtn} data-total="600" aria-pressed="false">10 min</button>
+            <button type="button" class={textBtn} data-total="1200" aria-pressed="false">20 min</button>
+          </div>
+        </div>
 
+        <div class="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+          <button type="button" class={`${textBtn} text-sm`} id="timer-share">Copiar enlace con estos ajustes</button>
+          <span class="text-xs text-ink-tertiary" id="timer-share-msg" aria-live="polite"></span>
+        </div>
+      </fieldset>
     </section>
 
-    <!-- Historial de Tiempos -->
-    <section class="history-card slide-up delay-3" aria-label="Historial de tiempos del temporizador">
-      <div class="history-header">
-        <h3>
-          <span>🕒</span> Rondas Recientes
-        </h3>
-        <button class="btn-clear" id="btn-clear">Borrar historial</button>
+    <section class="w-full mt-12 sm:mt-16 lg:mt-10 lg:col-start-1 lg:row-start-3" aria-label="Historial de rondas">
+      <div class="flex flex-wrap items-baseline gap-4 pb-3 border-0 border-b border-(--divider-line)">
+        <h2 class="m-0 font-display text-lg">Últimas rondas</h2>
+        <span class="flex-1 text-sm text-ink-tertiary tabular-nums" id="history-count"></span>
+        <button class="bg-transparent border-0 border-b border-current rounded-none p-0 font-sans text-sm text-ink-secondary cursor-pointer hover:text-warm" id="btn-clear" type="button">Borrar</button>
       </div>
-      <div class="history-list-vertical" id="history-list">
-        <span class="history-empty">Sin rondas iniciadas aún</span>
-      </div>
+      <ol class="timer-history list-none m-0 p-0" id="history-list">
+        <li class="history-empty">Sin rondas aún</li>
+      </ol>
     </section>
 
   </main>
 
-  <div class="toast" id="toast-message">Mensaje de alerta</div>
+  {/* Aviso final a pantalla completa. Sale siempre, suene o no: con el
+      móvil en silencio es la única forma de saber que terminó. */}
+  <div class="timer-alert" id="timer-alert" role="alertdialog" aria-modal="true" aria-labelledby="timer-alert-title" aria-describedby="timer-alert-text" hidden>
+    <p class="timer-alert-kicker" id="timer-alert-kicker"></p>
+    <h2 class="timer-alert-title" id="timer-alert-title"></h2>
+    <p class="timer-alert-text" id="timer-alert-text"></p>
+    <div class="timer-alert-ganas" id="timer-alert-ganas" hidden>
+      <p class="m-0 mb-2" id="timer-alert-ganas-label">¿Y ahora, cuántas ganas?</p>
+      <div class="timer-ganas grid grid-cols-5 sm:grid-cols-10 gap-1.5" role="group" aria-labelledby="timer-alert-ganas-label">
+        {Array.from({ length: 10 }, (_, i) => (
+          <button type="button" data-ganas-despues={i + 1} aria-pressed="false">{i + 1}</button>
+        ))}
+      </div>
+    </div>
+    <div class="timer-alert-actions">
+      <button type="button" class="timer-alert-main" id="timer-alert-again">Otra ronda</button>
+      <button type="button" class="timer-alert-close" id="timer-alert-close">Cerrar</button>
+    </div>
+  </div>
 
-  <SeoArticle title="Temporizador Aleatorio: El ingrediente perfecto para dinamizar tus juegos y retos">
-    <p>¿Alguna vez has jugado a un juego de mesa donde el factor tiempo era predecible? Saber exactamente cuándo va a sonar la alarma reduce drásticamente la tensión y la adrenalina del momento. Para resolver esto, existe el **Temporizador Aleatorio Online**, una herramienta interactiva diseñada para dinamizar actividades grupales, entrenamientos, dinámicas en el aula y retos divertidos.</p>
+  {/* Destello de cada aviso al azar: no bloquea, se va solo */}
+  <div class="timer-flash" id="timer-flash" aria-hidden="true">
+    <span class="timer-flash-text" id="timer-flash-text"></span>
+  </div>
 
-    <p>El concepto es tan simple como emocionante: en lugar de configurar una duración fija (por ejemplo, 30 segundos), estableces un límite **mínimo** y uno **máximo** de tiempo. El sistema calculará una duración secreta en segundos comprendida en ese intervalo y la cuenta regresiva comenzará a correr. Nadie sabrá cuándo va a terminar el tiempo hasta que suene la alarma final.</p>
+  <AdSlot position="top" />
 
-    <h2>Modos de Juego: Adaptado para cada Dinámica</h2>
-    <p>Nuestra aplicación incorpora dos formas únicas de experimentar el paso de los segundos:</p>
+  <SeoArticle title="Temporizador aleatorio: papa caliente, impulsos y avisos que llegan por sorpresa">
+    <p><strong>¿Quieres un temporizador que suene cuando nadie lo espera?</strong> Un reloj normal avisa cuando tú dices. Este <strong>temporizador aleatorio</strong> elige el segundo por su cuenta dentro del rango que le das, y no te lo enseña hasta que suena. Esa sorpresa es la gracia del juego de la <strong>papa caliente</strong> (el <strong>tingo, tingo, tango</strong> en Colombia), y también sirve para aguantar un impulso sin mirar el reloj o para una campana de meditación que llegue por sorpresa. Funciona en el móvil y en el ordenador, es gratis y no pide registro.</p>
+
+    <p>Tiene tres modos, uno por cada uso. Elige el tuyo <a href="#temporizador">arriba</a>, pulsa &laquo;Empezar&raquo; y olvídate del tiempo: ya te avisará.</p>
+
+    <h2>Cómo usar el temporizador aleatorio</h2>
+    <ol>
+      <li><strong>Elige para qué lo usas</strong> en la fila de arriba: el juego de la papa caliente, &laquo;Impulso&raquo; o &laquo;Avisos&raquo;.</li>
+      <li><strong>Elige cuánto tiempo</strong> en &laquo;¿Cuánto tiempo?&raquo;. Cada modo trae tres rangos pensados para él; con &laquo;Personalizar&raquo; escribes los tuyos.</li>
+      <li><strong>Pulsa &laquo;Empezar&raquo;.</strong> La duración sale al azar dentro del rango y queda oculta.</li>
+      <li><strong>Espera el aviso.</strong> Suena una campana, el móvil vibra si puede y la pantalla entera cambia de color con un mensaje grande. Aunque tengas el sonido apagado, lo verás.</li>
+    </ol>
+
+    <h2>Tres modos para tres momentos</h2>
+    <table>
+      <thead>
+        <tr><th>Modo</th><th>Para qué</th><th>Rangos</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Papa caliente</td><td>Pasar el móvil en grupo; a quien le suene, le toca</td><td>10–30 s, 20 s – 1 min, 1–2 min</td></tr>
+        <tr><td>Impulso</td><td>Esperar antes de hacer algo que te tienta</td><td>2–5, 5–10 y 10–20 min</td></tr>
+        <tr><td>Avisos</td><td>Varios avisos por sorpresa: meditar, juego de la silla, estatuas</td><td>Cada 20 s – 1 min, 1–3 o 3–10 min</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Papa caliente: pasa el móvil antes de que se queme</h3>
+    <p>Se sientan en círculo, alguien pulsa &laquo;Empezar&raquo; y el móvil pasa de mano en mano, rápido. La papa del dibujo se va poniendo roja y echa vapor, pero no dice cuánto falta: su color sigue al rango, no a la duración elegida. Cuando suena, a quien tenga el móvil le toca. Si escriben algo en &laquo;A quien se le queme&raquo; (&laquo;canta una canción&raquo;, &laquo;lava los platos&raquo;), el aviso lo repite al terminar, para que nadie discuta.</p>
+    <p>El tictac se acelera a medida que pasa el tiempo, como en el juego de siempre. Si prefieren jugar en silencio, apaguen el sonido: el aviso en pantalla basta, porque todos están mirando el móvil.</p>
+
+    <h3>Aguantar un impulso: espera sin mirar el reloj</h3>
+    <p>Te dan ganas de comer algo dulce, de fumar, de abrir otra vez las redes o de comprar algo que viste. En vez de pelear con las ganas, las observas. Escribe de qué son, marca cuántas tienes del 1 al 10 y pulsa &laquo;Empezar&raquo;. Mientras esperas, un círculo crece y se encoge: inhala mientras crece y exhala mientras se encoge. No hay cuenta atrás que mirar. Cuando suena, marcas cuántas ganas te quedan y el historial guarda el antes y el después.</p>
+    <p>La idea viene de una técnica llamada <em>urge surfing</em>, &laquo;surfear las ganas&raquo;: observar el impulso como una ola que sube y baja, sin obedecerla ni pelearla. En un estudio con 123 estudiantes fumadores, quienes recibieron unas instrucciones breves de este tipo no sintieron menos ganas, pero sí fumaron menos cigarrillos en la semana siguiente que el grupo de control<sup><a href="#fuente-4">[4]</a></sup>. Es decir, las ganas no desaparecen, pero cambia lo que haces con ellas. Esta herramienta es un apoyo para lo cotidiano; si un impulso te preocupa, habla con alguien que sepa del tema.</p>
+
+    <h3>Avisos al azar: una campana que te pilla desprevenido</h3>
+    <p>En este modo el temporizador no para al primer aviso: suena una y otra vez, cada vez en un momento distinto dentro del rango, hasta que pulses &laquo;Parar&raquo; o se acabe la duración que elegiste. Cada aviso es un destello en pantalla y un toque de cuenco. Sirve para varias cosas:</p>
     <ul>
-      <li><strong>Modo Revelado (👁️ Cuenta Visible):</strong> Muestra los minutos y segundos transcurriendo en tiempo real en la pantalla y la barra de progreso se va vaciando de forma continua. Ideal para debates rápidos, turnos de palabra limitados, o ejercicios físicos donde cada segundo de concentración cuenta.</li>
-      <li><strong>Modo Secreto (💣 Bomba de Tiempo):</strong> El temporizador oculta por completo el reloj en pantalla y la barra de progreso. La única pista del avance es un sutil parpadeo de la bola de luz y un sonido de "tictac" que se acelera gradualmente a medida que se acerca al final del intervalo aleatorio. Este modo simula la mítica dinámica del juego **"Pass the Bomb"** o **"La Patata Caliente"**, donde el objeto debe pasarse rápido antes de que explote en tus manos.</li>
+      <li><strong>Meditar o hacer pausas.</strong> En la tradición de Plum Village, la campana sirve para volver al cuerpo, a la respiración y al momento presente<sup><a href="#fuente-5">[5]</a></sup>. Con avisos al azar, la campana llega cuando menos la esperas, que es justo cuando más te ayuda a notar dónde estaba tu atención.</li>
+      <li><strong>El juego de la silla o las estatuas.</strong> Pongan música, y cuando suene el aviso, a buscar silla o a quedarse quietos. Nadie puede adivinar el momento, ni siquiera quien maneja el móvil.</li>
+      <li><strong>Pausas activas.</strong> Estudiando o trabajando, cada aviso es una señal para estirarte o beber agua.</li>
     </ul>
 
-    <h2>Beneficios de Usar un Timer Sorpresa en Educación y Dinámicas de Team Building</h2>
-    <p>En ámbitos corporativos y educativos, el control del tiempo aleatorio es un gran aliado pedagógico:</p>
+    <h2>Ideas para usarlo</h2>
+    <table>
+      <thead>
+        <tr><th>Situación</th><th>Modo</th><th>Rango</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Fiesta infantil o reunión familiar</td><td>Papa caliente</td><td>10–30 s</td></tr>
+        <tr><td>Juego de preguntas: responde antes de que se queme</td><td>Papa caliente</td><td>20 s – 1 min</td></tr>
+        <tr><td>Clase: quién comparte su respuesta</td><td>Papa caliente</td><td>1–2 min</td></tr>
+        <tr><td>Ganas de picar algo entre comidas</td><td>Impulso</td><td>5–10 min</td></tr>
+        <tr><td>Ganas de mirar el móvil mientras estudias</td><td>Impulso</td><td>2–5 min</td></tr>
+        <tr><td>Juego de la silla o de las estatuas</td><td>Avisos</td><td>Cada 20 s – 1 min</td></tr>
+        <tr><td>Meditación de 10 minutos con campanas</td><td>Avisos</td><td>Cada 1–3 min, 10 min</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Cómo se llama este juego en cada país</h2>
+    <p>Pasarse un objeto hasta que alguien diga basta es un juego que existe en todas partes, pero cada país lo llama a su manera. El temporizador <a href="#temporizador">usa el nombre de tu país</a> (lo deduce de la zona horaria de tu dispositivo, sin pedirte ubicación) y puedes cambiarlo en &laquo;Cómo lo llaman&raquo;.</p>
+    <table>
+      <thead>
+        <tr><th>País</th><th>Nombre</th><th>Cuándo pierdes</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Colombia</td><td>Tingo, tingo, tango</td><td>Cuando se oye &laquo;¡tango!&raquo;</td></tr>
+        <tr><td>México</td><td>La papa se quema</td><td>Cuando &laquo;se quemó la papa&raquo;</td></tr>
+        <tr><td>España</td><td>Patata caliente</td><td>Cuando se quema la patata</td></tr>
+        <tr><td>Resto de Latinoamérica</td><td>Papa caliente</td><td>Cuando se quema la papa</td></tr>
+      </tbody>
+    </table>
+    <p>En el tingo, tingo, tango colombiano, alguien con los ojos tapados repite &laquo;tingo, tingo&raquo; mientras el resto se pasa la pelota, y grita &laquo;¡tango!&raquo; cuando quiere: quien la tenga, cumple una prueba<sup><a href="#fuente-2">[2]</a></sup>. En México se canta &laquo;se quema la papa, se quema la papa&raquo; hasta que alguien dice &laquo;se quemó&raquo;<sup><a href="#fuente-3">[3]</a></sup>. La papa o patata caliente de toda la vida usa música: cuando se para, pierde quien tenga el objeto<sup><a href="#fuente-1">[1]</a></sup>. Con el temporizador nadie tiene que taparse los ojos ni manejar la música: todos juegan y nadie hace trampa.</p>
+
+    <h2>Trucos para sacarle partido</h2>
+    <h3>1. Rangos cortos para grupos grandes</h3>
+    <p>Con muchas personas, un rango de 10 a 30 segundos hace que la papa dé pocas vueltas y todos estén atentos. Con cuatro o cinco personas, sube a un minuto.</p>
+    <h3>2. Que lo que se juega esté escrito antes</h3>
+    <p>Escribir la prueba antes de empezar evita discusiones al final. El aviso la repite y el historial la guarda.</p>
+    <h3>3. En el modo impulso, no mires la pantalla</h3>
+    <p>Respira con el círculo o deja el móvil boca abajo. La idea es que no sepas cuánto falta: si empiezas a contar, las ganas se vuelven una cuenta atrás.</p>
+    <h3>4. Comparte los ajustes</h3>
+    <p>Con &laquo;Copiar enlace con estos ajustes&raquo; mandas el modo y el rango por WhatsApp. Quien lo abre encuentra el temporizador listo para empezar.</p>
+
+    <h2>¿Qué herramienta usar?</h2>
+    <table>
+      <thead>
+        <tr><th>Si necesitas…</th><th>Usa</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Un momento sorpresa para jugar o para parar</td><td>Este temporizador aleatorio</td></tr>
+        <tr><td>Elegir a una persona o una opción entre varias</td><td><a href="/ruleta">Ruleta aleatoria</a></td></tr>
+        <tr><td>Elegir entre dos opciones con nombre</td><td><a href="/moneda">Cara o sello</a></td></tr>
+        <tr><td>Una respuesta rápida a una pregunta</td><td><a href="/si-o-no">Pregunta sí o no</a></td></tr>
+        <tr><td>Tirar dados para un juego de mesa</td><td><a href="/dados">Dados online</a></td></tr>
+        <tr><td>Un número al azar para un sorteo</td><td><a href="/numeros">Número aleatorio</a></td></tr>
+        <tr><td>Armar equipos parejos</td><td><a href="/equipos">Generador de equipos</a></td></tr>
+        <tr><td>Resolver un empate jugando</td><td><a href="/piedra-papel-tijera">Piedra, papel o tijera</a></td></tr>
+        <tr><td>Organizar el intercambio de regalos</td><td><a href="/amigo-secreto">Amigo secreto online</a></td></tr>
+      </tbody>
+    </table>
+
+    <h2>¿Cómo funciona por dentro?</h2>
+    <p>La duración sale del generador de valores aleatorios criptográficamente fuertes del navegador (<code>crypto.getRandomValues</code>)<sup><a href="#fuente-6">[6]</a></sup>: cada segundo del rango tiene la misma probabilidad. Mientras corre, la página pide al navegador que no apague la pantalla (<em>Screen Wake Lock</em>)<sup><a href="#fuente-7">[7]</a></sup>, porque un móvil bloqueado puede retrasar el aviso. El sonido se genera en el momento, sin descargar archivos, y todo ocurre en tu dispositivo.</p>
+
+    <h2>Empieza ahora</h2>
+    <p>Reúne al grupo, elige el nombre de tu juego y <a href="#temporizador">pulsa &laquo;Empezar&raquo;</a>. O, si lo que tienes son ganas de algo, prueba a esperarlas con el modo impulso: en unos minutos sabrás si seguían ahí.</p>
+
+    <h2>Preguntas frecuentes</h2>
+    {faq.map(({ q, a }) => (
+      <>
+        <h3>{q}</h3>
+        <p>{a}</p>
+      </>
+    ))}
+
+    <h2>Guías relacionadas</h2>
     <ul>
-      <li><strong>Fomenta la agilidad mental:</strong> En dinámicas de lluvia de ideas (brainstorming), el reloj oculto obliga a los participantes a expresarse con rapidez, rompiendo filtros mentales e ideas preconcebidas.</li>
-      <li><strong>Igualdad de condiciones:</strong> Al evitar la predicción del reloj tradicional, ningún participante puede jugar de manera táctica para quemar los segundos finales, asegurando que las dinámicas sean 100% justas y espontáneas.</li>
-      <li><strong>Diversión gamificada:</strong> La incertidumbre y la animación final (con sonido de sirena y vibración háptica en dispositivos móviles compatibles) crean momentos memorables y risas que mejoran la cohesión de los grupos.</li>
+      <li><a href="/blog/temporizador/patata-caliente">El juego de la papa caliente online: reglas y dinámicas</a></li>
+      <li><a href="/blog/temporizador/juegos-de-mesa-temporizador-aleatorio">Temporizador aleatorio para juegos de mesa y dinámicas familiares</a></li>
+      <li><a href="/blog/temporizador/dinamicas-aula-temporizador-aleatorio">Dinámicas en el aula con temporizador aleatorio</a></li>
+      <li><a href="/blog/temporizador/entrenamiento-reaccion">Entrenamiento de reacción con temporizador aleatorio</a></li>
+      <li><a href="/blog/temporizador/metodo-pomodoro-tdah-temporizador">Temporizador Pomodoro: concentración y bloques de tiempo</a></li>
+      <li><a href="/blog/temporizador/ley-parkinson-procrastinacion-teletrabajo">Ley de Parkinson: temporizador contra la procrastinación</a></li>
     </ul>
 
-    <h2>Sonido Dinámico y Vibración 100% Servidor Web</h2>
-    <p>Hemos optimizado este temporizador utilizando la moderna tecnología **Web Audio API** para sintetizar sonidos de relojería analógica y alarma de sirena en tiempo real, sin sobrecargar tu conexión a internet ni requerir descargas pesadas de ficheros MP3. Adicionalmente, cuenta con soporte de la **Vibration API** en dispositivos móviles compatibles con Android, para que sientas un pulso vibratorio en tus manos cuando la bomba explote o el temporizador termine.</p>
+    <h2>Fuentes</h2>
+    <ol>
+      <li id="fuente-1">Wikipedia. «Papa caliente». <a href="https://es.wikipedia.org/wiki/Papa_caliente" rel="noopener" target="_blank">es.wikipedia.org</a></li>
+      <li id="fuente-2">Wikipedia. «Anexo:Juegos de Colombia». <a href="https://es.wikipedia.org/wiki/Anexo:Juegos_de_Colombia" rel="noopener" target="_blank">es.wikipedia.org</a></li>
+      <li id="fuente-3">Osorio Pinta, M. Á. (2001). «Juegos para todos (I)». <em>Lecturas: Educación Física y Deportes</em>, 6(31). <a href="https://www.efdeportes.com/efd31/juegos.htm" rel="noopener" target="_blank">www.efdeportes.com</a></li>
+      <li id="fuente-4">Bowen, S. y Marlatt, A. (2009). «Surfing the urge: Brief mindfulness-based intervention for college student smokers». <em>Psychology of Addictive Behaviors</em>, 23(4), 666-671. <a href="https://doi.org/10.1037/a0017127" rel="noopener" target="_blank">doi.org</a></li>
+      <li id="fuente-5">Plum Village UK. «Bell Guide». <a href="https://plumvillage.uk/resources/bell-guide/" rel="noopener" target="_blank">plumvillage.uk</a></li>
+      <li id="fuente-6">MDN Web Docs. «Crypto.getRandomValues()». <a href="https://developer.mozilla.org/es/docs/Web/API/Crypto/getRandomValues" rel="noopener" target="_blank">developer.mozilla.org</a></li>
+      <li id="fuente-7">MDN Web Docs. «Screen Wake Lock API». <a href="https://developer.mozilla.org/en-US/docs/Web/API/Screen_Wake_Lock_API" rel="noopener" target="_blank">developer.mozilla.org</a></li>
+    </ol>
   </SeoArticle>
 
   <AdSlot position="bottom" />
@@ -213,324 +422,353 @@ const schemaLD = {
 </Layout>
 
 <style>
-  main {
-    padding: 3rem 0;
+  /* Solo queda aquí lo que no puede ser utilidad: el botón principal y los
+     campos (estados y color literal en una sola regla), los estados que
+     pone el JS, el aviso a pantalla completa y las filas del historial
+     (Tailwind no rastrea src/scripts/). */
+
+  /* El sitio no carga el preflight de Tailwind: sin esto, `.flex` ganaría
+     a `hidden` */
+  [hidden] {
+    display: none !important;
   }
 
-  /* Panel de configuración */
-  .settings-panel {
-    margin-bottom: 2rem;
-    background: var(--bg-surface-alt);
-    border: 1px solid var(--card-border);
-    border-radius: var(--radius-md);
-    padding: 1.5rem;
-  }
-
-  .range-sliders {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-
-  .slider-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .slider-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .slider-header label {
+  .timer-start {
+    padding: 0.875rem 2.75rem;
+    border: 0;
+    border-radius: 999px;
+    background: var(--accent-warm);
+    color: #1a0e06;
     font-family: 'Outfit', sans-serif;
-    font-size: 0.88rem;
-    font-weight: 600;
-    color: var(--text-secondary);
-  }
-
-  .value-display {
-    font-family: 'Outfit', sans-serif;
-    font-size: 0.9rem;
     font-weight: 700;
-    color: var(--accent-cyan);
-  }
-
-  /* Sliders visuales premium */
-  .slider-group input[type="range"] {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 100%;
-    height: 6px;
-    background: rgba(255, 255, 255, 0.08);
-    border-radius: 3px;
-    outline: none;
-    transition: var(--transition);
-  }
-
-  .slider-group input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background: var(--accent-cyan);
+    font-size: 1.125rem;
     cursor: pointer;
-    box-shadow: 0 0 10px rgba(0, 229, 255, 0.4);
-    transition: transform 0.15s ease, background 0.15s ease;
+    transition: transform 0.15s;
   }
 
-  .slider-group input[type="range"]:focus-visible::-webkit-slider-thumb {
-    outline: 2px solid #ffffff;
+  .timer-start:active {
+    transform: scale(0.95);
   }
 
-  .slider-group input[type="range"]::-webkit-slider-thumb:hover {
-    transform: scale(1.25);
-    background: #ffffff;
+  .timer-start:focus-visible {
+    outline: 2px solid var(--accent-warm);
+    outline-offset: 3px;
   }
 
-  /* Escena del Timer */
-  .timer-display-scene {
-    position: relative;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    margin: 1.5rem 0 2.5rem;
-  }
-
-  .timer-ring-container {
-    position: relative;
-    width: 220px;
-    height: 220px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .progress-ring {
-    transform: rotate(-90deg);
-    position: absolute;
-    top: 0;
-    left: 0;
-  }
-
-  .progress-ring-fill {
-    stroke-dasharray: 597;
-    stroke-dashoffset: 0; /* Completo al inicio */
-    transition: stroke-dashoffset 0.1s linear; /* Muy fluido */
-  }
-
-  .timer-text-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 2;
-    text-align: center;
-  }
-
-  .timer-icon {
-    font-size: 2.2rem;
-    margin-bottom: 0.25rem;
-    display: inline-block;
-    transition: transform 0.3s ease;
-  }
-
-  .timer-ring-container.ticking .timer-icon {
-    animation: pulseIcon 1s infinite alternate ease-in-out;
-  }
-
-  @keyframes pulseIcon {
-    from { transform: scale(1); }
-    to { transform: scale(1.15); }
-  }
-
-  .timer-ring-container.secret-ticking .timer-icon {
-    animation: shakeIcon 0.5s infinite linear;
-  }
-
-  @keyframes shakeIcon {
-    0% { transform: rotate(0) scale(1.05); }
-    25% { transform: rotate(-5deg) scale(1.05); }
-    75% { transform: rotate(5deg) scale(1.05); }
-    100% { transform: rotate(0) scale(1.05); }
-  }
-
-  .timer-time {
-    font-family: 'Outfit', sans-serif;
-    font-size: 2.2rem;
-    font-weight: 800;
-    color: #ffffff;
-    line-height: 1;
-    letter-spacing: -0.02em;
-  }
-
-  .timer-status {
-    font-family: 'Inter', sans-serif;
-    font-size: 0.72rem;
-    font-weight: 600;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-top: 0.35rem;
-    background: rgba(255, 255, 255, 0.03);
-    padding: 0.2rem 0.6rem;
-    border-radius: 99px;
-    border: 1px solid rgba(255,255,255,0.05);
-  }
-
-  .timer-ring-container.running .timer-status {
-    color: var(--accent-cyan);
-    border-color: rgba(0, 229, 255, 0.15);
-    background: rgba(0, 229, 255, 0.05);
-  }
-
-  .timer-ring-container.running.danger .timer-status {
-    color: var(--accent-danger);
-    border-color: rgba(239, 68, 68, 0.15);
-    background: rgba(239, 68, 68, 0.05);
-  }
-
-  /* Animación de Explode / Éxito */
-  .timer-ring-container.completed .timer-icon {
-    animation: jumpWin 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) infinite alternate;
-  }
-
-  @keyframes jumpWin {
-    from { transform: translateY(0) scale(1.2); }
-    to { transform: translateY(-10px) scale(1.2); }
-  }
-
-  .timer-ring-container.completed .timer-time {
-    color: var(--accent-success);
-    text-shadow: 0 0 10px rgba(57, 255, 20, 0.3);
-  }
-
-  .timer-ring-container.completed.exploded .timer-time {
-    color: var(--accent-danger);
-    text-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
-  }
-
-  .timer-ring-container.completed .timer-status {
-    color: var(--accent-success);
-    border-color: rgba(57, 255, 20, 0.15);
-    background: rgba(57, 255, 20, 0.05);
-  }
-
-  .timer-ring-container.completed.exploded .timer-status {
-    color: var(--accent-danger);
-    border-color: rgba(239, 68, 68, 0.15);
-    background: rgba(239, 68, 68, 0.05);
-  }
-
-  /* Historial */
-  .history-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .history-list-vertical {
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-    margin-top: 1rem;
-    max-height: 280px;
-    overflow-y: auto;
-    padding-right: 0.4rem;
-  }
-
-  .history-list-vertical::-webkit-scrollbar {
-    width: 6px;
-  }
-  .history-list-vertical::-webkit-scrollbar-track {
+  /* Mientras corre, el botón para: se vacía para que se lea distinto */
+  .timer-start.is-running {
     background: transparent;
+    color: var(--text-primary);
+    box-shadow: inset 0 0 0 1.5px var(--accent-warm);
   }
-  .history-list-vertical::-webkit-scrollbar-thumb {
-    background: rgba(255,255,255,0.06);
+
+  /* Modo: control segmentado igual que en piedra, papel o tijera */
+  .timer-modes {
+    display: inline-flex;
+    padding: 3px;
+    border: 1px solid var(--divider-line);
     border-radius: 999px;
   }
 
-  :global(.history-item-row.timer-row) {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: var(--bg-surface-alt);
-    border: 1px solid var(--card-border);
-    border-radius: var(--radius-sm);
-    padding: 0.75rem 1.25rem;
-    gap: 1.5rem;
-    animation: slideInRow 0.25s ease-out forwards;
-  }
-
-  @keyframes slideInRow {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  :global(.timer-meta-block) {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 0.2rem;
-  }
-
-  :global(.history-timer-mode) {
-    font-size: 0.88rem;
+  .timer-modes button {
+    padding: 0.45rem 0.85rem;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--text-secondary);
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.875rem;
     font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color 0.15s, background-color 0.15s;
+  }
+
+  .timer-modes button[aria-pressed="true"] {
+    background: var(--bg-surface-alt);
     color: var(--text-primary);
   }
 
-  :global(.history-timer-range) {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
+  .timer-modes button:focus-visible {
+    outline: 2px solid var(--accent-warm);
+    outline-offset: 1px;
   }
 
-  :global(.history-time) {
-    font-size: 0.7rem;
+  @media (hover: hover) {
+    .timer-modes button:hover {
+      color: var(--accent-warm);
+    }
+  }
+
+  .timer-modes button:disabled {
+    cursor: default;
+  }
+
+  .timer-fieldset {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    min-width: 0;
+  }
+
+  .timer-fieldset:disabled {
+    opacity: 0.5;
+  }
+
+  /* Campos subrayados, 16px para que Safari no haga zoom */
+  .timer-input {
+    padding: 0.2rem 0;
+    border: 0;
+    border-bottom: 1px solid var(--text-tertiary);
+    border-radius: 0;
+    background: transparent;
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 1rem;
+  }
+
+  .timer-input::placeholder {
     color: var(--text-tertiary);
   }
 
-  :global(.history-value.success) {
-    color: var(--accent-success);
-    font-family: 'Outfit', sans-serif;
-    font-weight: 700;
-    font-size: 0.9rem;
-    text-shadow: 0 0 6px rgba(57, 255, 20, 0.15);
+  .timer-input:focus {
+    outline: none;
+    border-bottom-color: var(--accent-warm);
   }
 
-  :global(.history-value.danger) {
-    color: var(--accent-danger);
-    font-family: 'Outfit', sans-serif;
-    font-weight: 700;
-    font-size: 0.9rem;
-    text-shadow: 0 0 6px rgba(239, 68, 68, 0.15);
+  select.timer-input option {
+    background: var(--bg-surface);
+    color: var(--text-primary);
   }
 
-  .history-empty {
+  /* Escala de ganas: diez botones iguales, el elegido con el acento */
+  .timer-ganas button {
+    padding: 0.4rem 0;
+    border: 1px solid var(--divider-line);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-primary);
+    font-family: 'Outfit', sans-serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+  }
+
+  .timer-ganas button[aria-pressed="true"] {
+    background: var(--accent-warm);
+    border-color: var(--accent-warm);
+    color: #1a0e06;
+  }
+
+  .timer-ganas button:focus-visible {
+    outline: 2px solid var(--accent-warm);
+    outline-offset: 1px;
+  }
+
+  .timer-result:not(.is-shown) {
+    display: none;
+  }
+
+  .timer-result.is-shown {
+    animation: timer-result-in 0.3s cubic-bezier(0.2, 0.7, 0.3, 1);
+  }
+
+  @keyframes timer-result-in {
+    from { opacity: 0; transform: translateY(8px); }
+  }
+
+  .timer-result-stake:empty,
+  #timer-status:empty {
+    display: none;
+  }
+
+  /* --- Aviso final a pantalla completa ---------------------------------- */
+  .timer-alert {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: var(--accent-warm);
+    color: #1a0e06;
+    text-align: center;
+    overflow-y: auto;
+  }
+
+  .timer-alert-kicker {
+    margin: 0;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .timer-alert-title {
+    margin: 0;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 800;
+    font-size: clamp(2.6rem, 13vw, 5.5rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: #1a0e06;
+    overflow-wrap: anywhere;
+  }
+
+  .timer-alert-text {
+    margin: 0;
+    max-width: 28rem;
+    font-size: 1.15rem;
+    overflow-wrap: anywhere;
+  }
+
+  .timer-alert-text:empty {
+    display: none;
+  }
+
+  .timer-alert-ganas {
+    width: 100%;
+    max-width: 26rem;
+  }
+
+  .timer-alert .timer-ganas button {
+    border-color: rgb(26 14 6 / 0.35);
+    color: #1a0e06;
+  }
+
+  .timer-alert .timer-ganas button[aria-pressed="true"] {
+    background: #1a0e06;
+    border-color: #1a0e06;
+    color: var(--accent-warm);
+  }
+
+  .timer-alert-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.25rem;
+    margin-top: 0.5rem;
+  }
+
+  .timer-alert-main {
+    padding: 0.8rem 2.25rem;
+    border: 0;
+    border-radius: 999px;
+    background: #1a0e06;
+    color: var(--accent-warm);
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    cursor: pointer;
+  }
+
+  .timer-alert-close {
+    padding: 0.25rem 0;
+    border: 0;
+    border-bottom: 1px solid currentColor;
+    background: transparent;
+    color: #1a0e06;
+    font-family: inherit;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+
+  .timer-alert button:focus-visible {
+    outline: 2px solid #1a0e06;
+    outline-offset: 3px;
+  }
+
+  /* Destello de cada aviso: encima de todo, sin capturar toques */
+  .timer-flash {
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    display: grid;
+    place-items: center;
+    background: rgb(226 144 90 / 0.92);
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .timer-flash.is-shown {
+    visibility: visible;
+  }
+
+  .timer-flash-text {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 800;
+    font-size: clamp(2.4rem, 12vw, 5rem);
+    color: #1a0e06;
+  }
+
+  /* --- Historial: lista dividida por líneas de 1px ---------------------- */
+  .timer-history :global(.history-row) {
+    display: grid;
+    grid-template-columns: 2rem 1fr;
+    column-gap: 0.75rem;
+    row-gap: 0.2rem;
+    align-items: baseline;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid var(--divider-line);
+  }
+
+  .timer-history :global(.history-num) {
+    grid-row: span 2;
+    color: var(--text-tertiary);
+    font-variant-numeric: tabular-nums;
+    font-size: 0.85rem;
+  }
+
+  .timer-history :global(.history-label) {
+    color: var(--text-primary);
+    overflow-wrap: anywhere;
+  }
+
+  .timer-history :global(.history-side) {
     color: var(--text-tertiary);
     font-size: 0.85rem;
-    font-style: italic;
-    text-align: center;
-    padding: 1rem 0;
   }
 
-  /* Hub Section Header */
+  .timer-history :global(.history-row.is-new) {
+    animation: timer-row-in 0.4s cubic-bezier(0.2, 0.7, 0.3, 1);
+  }
+
+  @keyframes timer-row-in {
+    from { opacity: 0; transform: translateY(-6px); }
+  }
+
+  .timer-history :global(.history-empty) {
+    padding: 0.8rem 0;
+    color: var(--text-tertiary);
+    font-size: 0.9rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .timer-result.is-shown { animation: none; }
+    .timer-history :global(.history-row.is-new) { animation: none; }
+  }
+
+  @media (min-width: 640px) {
+    .timer-history :global(.history-row) {
+      grid-template-columns: 2.5rem 1fr auto;
+      column-gap: 1rem;
+    }
+
+    .timer-history :global(.history-num) {
+      grid-row: auto;
+    }
+
+    .timer-history :global(.history-side) {
+      text-align: right;
+    }
+  }
+
   .hub-section {
     padding: 3rem 0;
-  }
-
-  /* Responsive overrides */
-  @media (max-width: 600px) {
-    :global(.history-item-row.timer-row) {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 0.5rem;
-    }
-    :global(.history-value) {
-      align-self: flex-end;
-    }
   }
 </style>

@@ -788,4 +788,89 @@ export const ESTADOS = [
   },
   ...estadosAccionVisible('/piedra-papel-tijera', '#ppt-choices'),
   ...estadosResponsive('/piedra-papel-tijera', '#ppt-choices'),
+  // --- Temporizador --------------------------------------------------------
+  // Migrado al sistema editorial con la estructura de la moneda. El aviso a
+  // pantalla completa, el resultado y las filas del historial los pone
+  // temporizador.js. El rango llega por la URL (1–2 s) para que la ronda
+  // termine sin esperar; la zona horaria fija el nombre del juego.
+  {
+    ruta: '/temporizador?modo=papa&min=1&max=2',
+    nombre: 'papa-quemada',
+    viewport: { width: 393, height: 659 },
+    contexto: { reducedMotion: 'reduce', timezoneId: 'America/Bogota' },
+    escribir: [{ sel: '#timer-stake', texto: 'canta una canción' }],
+    clics: ['#timer-start'],
+    esperarSelector: '#timer-alert.is-shown',
+    comprobar: [
+      { sel: '#timer-alert', props: ['display', 'position', 'backgroundColor', 'color'] },
+      { sel: '#timer-alert-title', props: ['fontFamily', 'fontWeight', 'color'] },
+      { sel: '#timer-alert-close', props: ['display'] },
+      { sel: '#timer-alert-ganas', props: ['display'] },
+      { sel: '#timer-result', props: ['display', 'textAlign'] },
+      { sel: '#timer-result-stake', props: ['display'] },
+      { sel: '.history-row', props: ['display', 'borderBottomWidth', 'borderBottomStyle'] },
+      { sel: '.history-label', props: ['color'] },
+      { sel: '#timer-start', props: ['backgroundColor', 'borderRadius'] },
+      { sel: '#timer-fieldset', props: ['opacity'] },
+    ],
+  },
+  {
+    // Mismo final, mirando el texto: en Colombia el juego es el tingo tango.
+    // Va aparte porque un estado con verificarRelacion no mide estilos.
+    ruta: '/temporizador?modo=papa&min=1&max=2',
+    nombre: 'papa-nombre-colombia',
+    contexto: { reducedMotion: 'reduce', timezoneId: 'America/Bogota' },
+    escribir: [{ sel: '#timer-stake', texto: 'canta una canción' }],
+    clics: ['#timer-start'],
+    esperarSelector: '#timer-alert.is-shown',
+    verificarRelacion: async (pagina) => {
+      const r = await pagina.evaluate(() => ({
+        titulo: document.getElementById('timer-alert-title').textContent,
+        texto: document.getElementById('timer-alert-text').textContent,
+        modo: document.getElementById('timer-mode-papa').textContent,
+      }));
+      const ok = r.titulo === '¡Tango!' && r.texto === 'A quien le caiga: canta una canción' && r.modo === 'Tingo tango';
+      return { ok, mensaje: `en Colombia el aviso dice ${JSON.stringify(r)}` };
+    },
+  },
+  {
+    // Aguantar un impulso: las ganas de antes y de después quedan juntas
+    ruta: '/temporizador?modo=impulso&min=1&max=1',
+    nombre: 'impulso-registrado',
+    contexto: { reducedMotion: 'reduce' },
+    verificarRelacion: async (pagina) => {
+      await pagina.fill('#timer-urge', 'mirar el móvil');
+      await pagina.click('[data-ganas="7"]');
+      await pagina.click('#timer-start');
+      await pagina.waitForSelector('#timer-alert.is-shown', { timeout: 5000 });
+      if (!(await pagina.isVisible('#timer-alert-ganas'))) {
+        return { ok: false, mensaje: 'el aviso del impulso no pregunta por las ganas de después' };
+      }
+      await pagina.click('[data-ganas-despues="3"]');
+      await pagina.click('#timer-alert-again');
+      const fila = await pagina.textContent('.history-row');
+      const ok = /Ganas de mirar el móvil/.test(fila) && /Ganas 7 → 3/.test(fila);
+      return { ok, mensaje: `fila del historial: «${fila}»` };
+    },
+  },
+  {
+    // Avisos al azar: suena varias veces sin parar hasta que se pulsa Parar
+    ruta: '/temporizador?modo=avisos&min=1&max=1',
+    nombre: 'avisos-repetidos',
+    contexto: { reducedMotion: 'reduce' },
+    verificarRelacion: async (pagina) => {
+      await pagina.click('#timer-start');
+      await pagina.waitForFunction(() => /^2 avisos/.test(document.getElementById('timer-status').textContent), null, { timeout: 6000 });
+      const alerta = await pagina.isVisible('#timer-alert');
+      await pagina.click('#timer-start');
+      const res = await pagina.textContent('#timer-result-main');
+      const ok = !alerta && /avisos$/.test(res);
+      return { ok, mensaje: `aviso bloqueante durante la sesión: ${alerta}; resultado: «${res}»` };
+    },
+  },
+  ...estadosAccionVisible('/temporizador', '#timer-start'),
+  ...estadosResponsive('/temporizador', '#timer-start', [
+    // El modo impulso muestra más campos; el botón no debe moverse de sitio
+    { nombre: 'impulso-android-360x560', viewport: { width: 360, height: 560 }, preparar: (p) => p.click('#timer-modes [data-mode="impulso"]') },
+  ]),
 ];
