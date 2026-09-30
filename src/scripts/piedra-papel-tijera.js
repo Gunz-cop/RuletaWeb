@@ -98,6 +98,9 @@ function initPPT() {
   const namesBox = $('ppt-names');
   const nameInputs = [$('ppt-name-input-1'), $('ppt-name-input-2')];
   const turn = $('ppt-turn');
+  const choicesBox = $('ppt-choices');
+  const handoff = $('ppt-handoff');
+  const btnPass = $('btn-pass');
   const result = $('ppt-result');
   const resultMain = $('ppt-result-main');
   const resultSide = $('ppt-result-side');
@@ -139,6 +142,7 @@ function initPPT() {
   let history = leerHistorial();
   let busy = false;
   let pendiente = null; // jugada del jugador 1 mientras elige el 2
+  let pasado = false; // el jugador 2 ya tiene el móvil
 
   const nombres = () =>
     modo === 'maquina'
@@ -157,10 +161,12 @@ function initPPT() {
   }
 
   function pintarTurno() {
-    if (!turn) return;
     const [n1, n2] = nombres();
+    if (btnPass) btnPass.textContent = `Soy ${n2}: elegir`;
+    if (!turn) return;
     if (modo === 'maquina') turn.textContent = 'Elige tu jugada';
-    else if (pendiente) turn.textContent = `Listo. Ahora ${n2}, sin que ${n1} mire`;
+    else if (pendiente && !pasado) turn.textContent = `Listo, ${n1}. Pásale el móvil a ${n2}`;
+    else if (pendiente) turn.textContent = `Tu turno, ${n2}. ${n1} ya eligió`;
     else turn.textContent = `Elige ${n1}, sin que ${n2} mire`;
   }
 
@@ -362,11 +368,26 @@ function initPPT() {
 
     if (navigator.vibrate) navigator.vibrate(30);
     pendiente = null;
+    pasado = false;
     choices.forEach((b) => b.setAttribute('aria-pressed', 'false'));
     bloquear(false);
     pintarTurno();
     reposar();
   }
+
+  // Entre turnos: las jugadas se ocultan y solo queda el botón para que el
+  // segundo jugador empiece. Nada de la fila de jugadas sigue a la vista
+  // (ni un :hover o un foco pegados del toque del primero).
+  function entreTurnos(activo) {
+    if (choicesBox) choicesBox.hidden = activo;
+    if (handoff) handoff.hidden = !activo;
+  }
+
+  btnPass?.addEventListener('click', () => {
+    pasado = true;
+    entreTurnos(false);
+    pintarTurno();
+  });
 
   choices.forEach((btn) => {
     btn.setAttribute('aria-pressed', 'false');
@@ -384,6 +405,9 @@ function initPPT() {
       // o el segundo la vería al coger el móvil
       if (!pendiente) {
         pendiente = eleccion;
+        pasado = false;
+        btn.blur();
+        entreTurnos(true);
         limpiar();
         pintarTurno();
         if (!reducido()) turn?.animate([{ opacity: 0, transform: 'translateY(4px)' }, { opacity: 1, transform: 'none' }], { duration: 250, easing: 'ease-out' });
@@ -403,6 +427,8 @@ function initPPT() {
     const grupo = document.getElementById('ppt-choices');
     grupo?.setAttribute('aria-label', modo === 'dos' ? 'Jugada' : 'Tu jugada');
     pendiente = null;
+    pasado = false;
+    entreTurnos(false);
     marcador = leerMarcador(modo);
     limpiar();
     pintarNombres();

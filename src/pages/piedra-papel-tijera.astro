@@ -122,6 +122,12 @@ const schemaLD = {
           </button>
         ))}
       </div>
+
+      {/* Dos jugadores: entre turno y turno las jugadas se ocultan, para
+          que al pasar el móvil no quede ningún rastro de la del primero */}
+      <div class="ppt-handoff flex flex-col items-center justify-center w-full max-w-sm" id="ppt-handoff" hidden>
+        <button type="button" class="ppt-pass" id="btn-pass">Elegir</button>
+      </div>
     </section>
 
     <div class="w-full flex flex-col items-center lg:items-start gap-4 mt-8 lg:mt-4 lg:col-start-1 lg:row-start-2">
@@ -234,7 +240,15 @@ const schemaLD = {
     transition: color 0.15s, border-color 0.15s, background-color 0.15s, transform 0.15s;
   }
 
-  .ppt-choice:hover,
+  /* Solo con ratón: en un móvil el :hover de un toque se queda pegado y,
+     con dos jugadores, delataría la jugada del primero */
+  @media (hover: hover) {
+    .ppt-choice:hover {
+      color: var(--accent-warm);
+      border-color: var(--accent-warm);
+    }
+  }
+
   .ppt-choice:focus-visible {
     color: var(--accent-warm);
     border-color: var(--accent-warm);
@@ -250,6 +264,33 @@ const schemaLD = {
     background: var(--accent-warm);
     border-color: var(--accent-warm);
     color: #1a0e06;
+  }
+
+  /* Mismo alto que la fila de jugadas: al alternar no salta la página */
+  .ppt-handoff {
+    min-height: 5.6rem;
+  }
+
+  .ppt-pass {
+    padding: 0.9rem 2.25rem;
+    border: 0;
+    border-radius: 999px;
+    background: var(--accent-warm);
+    color: #1a0e06;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 1.125rem;
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+
+  .ppt-pass:active {
+    transform: scale(0.95);
+  }
+
+  .ppt-pass:focus-visible {
+    outline: 2px solid var(--accent-warm);
+    outline-offset: 3px;
   }
 
   .ppt-choice:disabled {

@@ -735,13 +735,19 @@ export const ESTADOS = [
       await pagina.fill('#ppt-name-input-1', 'Ana');
       await pagina.fill('#ppt-name-input-2', 'Luis');
       await pagina.click('.ppt-choice[data-choice="tijera"]');
-      const oculta = await pagina.evaluate(() => ({
-        pulsados: document.querySelectorAll('.ppt-choice[aria-pressed="true"]').length,
+      // Entre turnos no debe quedar a la vista ningún botón de jugada: en
+      // móvil el :hover de un toque se queda pegado y delataba la elección
+      const entre = await pagina.evaluate(() => ({
+        filaVisible: document.getElementById('ppt-choices').checkVisibility(),
+        pasar: document.getElementById('btn-pass').checkVisibility(),
         resuelta: document.getElementById('ppt-result').dataset.estado === 'final',
       }));
-      if (oculta.pulsados || oculta.resuelta) {
-        return { ok: false, mensaje: `tras elegir el jugador 1 se ve su jugada o la ronda ya se resolvió (${JSON.stringify(oculta)})` };
+      if (entre.filaVisible || !entre.pasar || entre.resuelta) {
+        return { ok: false, mensaje: `tras elegir el jugador 1 la fila de jugadas sigue a la vista o la ronda ya se resolvió (${JSON.stringify(entre)})` };
       }
+      await pagina.click('#btn-pass');
+      const pulsados = await pagina.evaluate(() => document.querySelectorAll('.ppt-choice[aria-pressed="true"]').length);
+      if (pulsados) return { ok: false, mensaje: 'al pasar el móvil un botón sigue marcado con la jugada del jugador 1' };
       await pagina.click('.ppt-choice[data-choice="papel"]');
       await pagina.waitForSelector('#ppt-result[data-estado="final"]');
       const texto = await pagina.textContent('#ppt-result-main');

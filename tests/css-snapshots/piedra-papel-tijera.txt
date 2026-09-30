@@ -22,9 +22,14 @@
 @media (prefers-reduced-motion:reduce){.ppt-hand[S]{transition:none}}
 [S][hidden]{display:none!important}
 .ppt-choice[S]{border:1px solid var(--divider-line);color:var(--text-primary);cursor:pointer;-webkit-tap-highlight-color:transparent;background:0 0;border-radius:999px;flex-direction:column;align-items:center;gap:.25rem;padding:.6rem .25rem .7rem;font-family:Outfit,sans-serif;font-size:1rem;font-weight:700;transition:color .15s,border-color .15s,background-color .15s,transform .15s;display:flex}
-.ppt-choice[S]:hover,.ppt-choice[S]:focus-visible{color:var(--accent-warm);border-color:var(--accent-warm);outline:none}
+@media (hover:hover){.ppt-choice[S]:hover{color:var(--accent-warm);border-color:var(--accent-warm)}}
+.ppt-choice[S]:focus-visible{color:var(--accent-warm);border-color:var(--accent-warm);outline:none}
 .ppt-choice[S]:active{transform:scale(.95)}
 .ppt-choice[S][aria-pressed=true]{background:var(--accent-warm);border-color:var(--accent-warm);color:#1a0e06}
+.ppt-handoff[S]{min-height:5.6rem}
+.ppt-pass[S]{background:var(--accent-warm);color:#1a0e06;cursor:pointer;border:0;border-radius:999px;padding:.9rem 2.25rem;font-family:Outfit,sans-serif;font-size:1.125rem;font-weight:700;transition:transform .15s}
+.ppt-pass[S]:active{transform:scale(.95)}
+.ppt-pass[S]:focus-visible{outline:2px solid var(--accent-warm);outline-offset:3px}
 .ppt-choice[S]:disabled{cursor:default}
 .ppt-choice[S]:disabled:not([aria-pressed=true]){color:var(--text-tertiary)}
 .ppt-choice[S] .ppt-choice-icon,.ppt-choice[S] .ppt-choice-icon img{width:2.75rem;height:2.75rem;display:block}
