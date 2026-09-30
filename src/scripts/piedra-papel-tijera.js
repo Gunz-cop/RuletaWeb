@@ -202,13 +202,20 @@ function initPPT() {
     lados[1].score.textContent = marcador.j2;
   }
 
+  // Dentro de una frase («quien pierda limpia el escritorio») la primera
+  // letra va en minúscula, salvo siglas («ONU») donde la segunda también es
+  // mayúscula
+  const enFrase = (t) => (t && !/^\p{Lu}{2}/u.test(t) ? t[0].toLocaleLowerCase('es') + t.slice(1) : t);
+
   function textoTurno() {
     const [n1, n2] = nombres();
-    const q = castigo();
+    const q = enFrase(castigo());
     if (enlace?.tipo === 'roto') return 'Ese enlace de reto está incompleto. Pide que te lo reenvíen.';
     if (enlace?.tipo === 'reto') {
-      if (respuesta) return `Mándale el resultado a ${n1}`;
-      return `${n1} te reta${q ? `: quien pierda ${q}` : ''}. Elige tu jugada`;
+      // Si quien reta no puso nombre, las frases no lo usan: «Quien reta» es
+      // una etiqueta, no un nombre que quepa en «Mándale el resultado a…»
+      if (respuesta) return enlace.a ? `Mándale el resultado a ${n1}` : 'Mándale el resultado a quien te retó';
+      return `${enlace.a ? `${n1} te reta` : 'Te retan'}${q ? `: quien pierda ${q}` : ''}. Elige tu jugada`;
     }
     if (enlace?.tipo === 'resultado') return visto ? 'Así quedó tu reto' : `${n2} respondió tu reto`;
     if (modo === 'maquina') return 'Elige tu jugada';
@@ -245,7 +252,7 @@ function initPPT() {
     const abierto = stakeAbierto || !!stakeInput?.value.trim();
     if (stakeBox) stakeBox.hidden = !(conCastigo && abierto);
     if (btnStake) btnStake.hidden = !(conCastigo && !abierto);
-    if (btnShare) btnShare.textContent = enlace ? `Mandarle el resultado a ${nombres()[0]}` : 'Enviar reto por WhatsApp';
+    if (btnShare) btnShare.textContent = !enlace ? 'Enviar reto por WhatsApp' : enlace.a ? `Mandarle el resultado a ${enlace.a}` : 'Devolver el resultado';
     if (btnNew) btnNew.textContent = enlace ? 'Retar a alguien' : 'Nuevo reto';
     object.classList.toggle('is-dos', !enlace && modo !== 'maquina');
     // Con un enlace abierto no hay modo elegido: es un reto concreto
@@ -434,7 +441,11 @@ function initPPT() {
     let texto;
     if (g === 'empate') texto = 'Empate';
     else if (!enReto() && modo === 'maquina') texto = g === 'j1' ? 'Ganas tú' : 'Gana la máquina';
-    else texto = `Gana ${g === 'j1' ? n1 : n2}`;
+    else {
+      // «Tú» conjuga en segunda persona: «Ganas tú», no «Gana Tú»
+      const nombre = g === 'j1' ? n1 : n2;
+      texto = nombre === 'Tú' ? 'Ganas tú' : `Gana ${nombre}`;
+    }
     // Lo que se decidía, con el nombre de quien pierde delante: así la frase
     // vale sea cual sea el nombre («Luis: lava los platos», «Tú: …»)
     if (resultStake) {
@@ -579,7 +590,7 @@ function initPPT() {
   }
 
   function mensaje() {
-    const q = castigo();
+    const q = enFrase(castigo());
     const [a, b] = nombres();
     if (enlace?.tipo === 'reto' && respuesta) {
       return `Ya respondí tu reto de piedra, papel o tijera${q ? ` (quien pierda ${q})` : ''}. Mira quién ganó: ${respuesta.url}`;
