@@ -765,7 +765,13 @@ export const ESTADOS = [
     verificarRelacion: async (pagina) => {
       const token = crearReto({ id: nuevoId(), a: 'Ana', b: 'Luis', q: 'lava los platos', e1: 'tijera' });
       const url = `${new URL(pagina.url()).origin}/piedra-papel-tijera#reto=${token}`;
+      // La página ya está abierta en /piedra-papel-tijera: ir a la misma URL
+      // con #reto= solo cambia el fragmento y la recarga la hace el script
+      // (hashchange). Pasar por about:blank fuerza una carga limpia, como
+      // cuando se abre el enlace desde WhatsApp, y la espera cubre el resto.
+      await pagina.goto('about:blank');
       await pagina.goto(url);
+      await pagina.waitForFunction(() => document.getElementById('ppt-turn')?.textContent.includes('Ana te reta'), null, { timeout: 5000 }).catch(() => {});
       const turno = await pagina.textContent('#ppt-turn');
       if (!turno.includes('Ana te reta')) return { ok: false, mensaje: `al abrir el reto la línea de turno dice «${turno}»` };
       await pagina.click('.ppt-choice[data-choice="papel"]');
