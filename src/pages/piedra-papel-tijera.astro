@@ -85,22 +85,28 @@ const schemaLD = {
     <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@1,400&display=swap" rel="stylesheet">
   </Fragment>
 
-  {/* El orden del HTML es el de móvil: manos, resultado y las tres jugadas
-      arriba; modo y nombres debajo. Desde 1024px, dos columnas: a la
+  {/* El orden del HTML es el de móvil: título y modo, manos, resultado y
+      las tres jugadas. Desde 1024px, dos columnas: a la
       izquierda el título, los ajustes y el historial; a la derecha el
       juego, así en un portátil de 720px las jugadas no quedan fuera. */}
-  <main class="wrap max-w-2xl lg:max-w-5xl pt-5 pb-8 sm:pt-8 lg:grid lg:grid-cols-2 lg:grid-rows-[auto_auto_1fr] lg:gap-x-16 lg:items-start">
+  <main class="wrap max-w-2xl lg:max-w-5xl pt-5 pb-8 sm:pt-8 lg:grid lg:grid-cols-2 lg:grid-rows-[auto_1fr] lg:gap-x-16 lg:items-start">
 
     <div class="w-full text-center lg:text-left mb-4 sm:mb-6 lg:col-start-1 lg:row-start-1">
       <h1 class="m-0 mb-2 sm:mb-4 font-display text-[1.7rem] sm:text-5xl lg:text-[2.75rem] leading-tight tracking-tight">Piedra, papel <em class="font-[Newsreader,Georgia,serif] italic font-normal text-warm">o tijera</em></h1>
       {/* En pantallas bajas la entradilla cede su sitio a las jugadas */}
-      <p class="m-0 mx-auto lg:mx-0 max-w-lg text-sm sm:text-base text-ink-secondary max-sm:[@media(max-height:620px)]:hidden">Juega contra la máquina, con alguien en el mismo móvil o a distancia por WhatsApp. Y si hay algo que decidir, que lo pague quien pierda.</p>
+      <p class="m-0 mx-auto lg:mx-0 max-w-lg text-sm sm:text-base text-ink-secondary max-sm:[@media(max-height:620px)]:hidden">Para jugar, o para decidir quién hace qué.</p>
+      {/* El modo es lo primero que se decide: arriba, en una sola pieza */}
+      <div class="ppt-modes mt-4" role="group" aria-label="Modo de juego">
+        <button type="button" data-mode="maquina" aria-pressed="true">Máquina</button>
+        <button type="button" data-mode="dos" aria-pressed="false">Mismo móvil</button>
+        <button type="button" data-mode="distancia" aria-pressed="false">A distancia</button>
+      </div>
     </div>
 
-    <section class="w-full flex flex-col items-center lg:col-start-2 lg:row-start-1 lg:row-span-3 lg:pt-8" aria-label="Jugar a piedra, papel o tijera">
+    <section class="w-full flex flex-col items-center lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:pt-8" aria-label="Jugar a piedra, papel o tijera">
       <PptHands />
 
-      <p class="ppt-result w-full text-center min-h-14 sm:min-h-18 mt-2 mb-2 sm:mt-3 sm:mb-4" id="ppt-result" aria-live="polite">
+      <p class="ppt-result w-full text-center mt-2 mb-1 sm:mt-3 sm:mb-2" id="ppt-result" aria-live="polite">
         <span class="block font-display font-bold text-[1.7rem] sm:text-4xl leading-tight text-ink-primary [overflow-wrap:anywhere]" id="ppt-result-main"></span>
         {/* Lo que se decidía, en palabras del usuario: «Luis: lava los platos» */}
         <span class="ppt-result-stake block mt-1 text-base sm:text-lg text-ink-primary [overflow-wrap:anywhere]" id="ppt-result-stake"></span>
@@ -109,7 +115,8 @@ const schemaLD = {
 
       {/* Con dos jugadores: qué se decide. Junto a la acción, no en un
           formulario aparte, igual que los nombres bajo las manos */}
-      <label class="ppt-stake flex items-baseline justify-center gap-2 w-full max-w-sm mb-3" id="ppt-stake" hidden>
+      <button type="button" class="ppt-stake-open" id="btn-stake" hidden>+ ¿Qué se decide?</button>
+      <label class="ppt-stake flex items-baseline justify-center gap-2 w-full max-w-sm mt-4 mb-3" id="ppt-stake" hidden>
         <span class="shrink-0 text-sm text-ink-secondary">Quien pierda</span>
         <input class="ppt-stake-input" id="ppt-stake-input" type="text" maxlength="60" placeholder="lava los platos" autocomplete="off" enterkeyhint="done">
       </label>
@@ -145,15 +152,7 @@ const schemaLD = {
       </div>
     </section>
 
-    <div class="w-full flex flex-col items-center lg:items-start gap-4 mt-8 lg:mt-4 lg:col-start-1 lg:row-start-2">
-      <div class="flex flex-wrap justify-center lg:justify-start gap-x-6 gap-y-2" role="group" aria-label="Modo de juego">
-        <button class={textBtn} type="button" data-mode="maquina" aria-pressed="true">Contra la máquina</button>
-        <button class={textBtn} type="button" data-mode="dos" aria-pressed="false">En el mismo móvil</button>
-        <button class={textBtn} type="button" data-mode="distancia" aria-pressed="false">A distancia</button>
-      </div>
-    </div>
-
-    <section class="w-full mt-12 sm:mt-16 lg:mt-10 lg:col-start-1 lg:row-start-3" aria-label="Historial de rondas">
+    <section class="w-full mt-12 sm:mt-16 lg:mt-10 lg:col-start-1 lg:row-start-2" aria-label="Historial de rondas">
       <div class="flex flex-wrap items-baseline gap-4 pb-3 border-0 border-b border-(--divider-line)">
         <h2 class="m-0 font-display text-lg">Últimas rondas</h2>
         <span class="flex-1 text-sm text-ink-tertiary tabular-nums" id="history-count"></span>
@@ -272,6 +271,10 @@ const schemaLD = {
     color: #1a0e06;
   }
 
+  .ppt-result:not(.is-shown) {
+    display: none;
+  }
+
   .ppt-result-stake:empty,
   #ppt-share-msg:empty {
     display: none;
@@ -298,6 +301,66 @@ const schemaLD = {
   .ppt-stake-input:focus {
     outline: none;
     border-bottom-color: var(--accent-warm);
+  }
+
+  /* Modo: control segmentado, una sola pieza con borde de lista. El
+     segmento activo se distingue por superficie y texto, no por color */
+  .ppt-modes {
+    display: inline-flex;
+    padding: 3px;
+    border: 1px solid var(--divider-line);
+    border-radius: 999px;
+  }
+
+  .ppt-modes button {
+    padding: 0.45rem 0.85rem;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--text-secondary);
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color 0.15s, background-color 0.15s;
+  }
+
+  .ppt-modes button[aria-pressed="true"] {
+    background: var(--bg-surface-alt);
+    color: var(--text-primary);
+  }
+
+  .ppt-modes button:focus-visible {
+    outline: 2px solid var(--accent-warm);
+    outline-offset: 1px;
+  }
+
+  @media (hover: hover) {
+    .ppt-modes button:hover {
+      color: var(--accent-warm);
+    }
+  }
+
+  .ppt-modes button:disabled {
+    cursor: default;
+  }
+
+  .ppt-stake-open {
+    margin: 0.75rem 0 0.5rem;
+    padding: 0.2rem 0;
+    border: 0;
+    background: transparent;
+    color: var(--text-tertiary);
+    font-family: inherit;
+    font-size: 0.875rem;
+    cursor: pointer;
+  }
+
+  .ppt-stake-open:hover,
+  .ppt-stake-open:focus-visible {
+    color: var(--accent-warm);
+    outline: none;
   }
 
   /* Mismo alto que la fila de jugadas: al alternar no salta la página */
@@ -346,15 +409,14 @@ const schemaLD = {
   }
 
   /* El resultado se enfoca al aparecer, cuando las manos ya se ven */
-  .ppt-result {
-    opacity: 0;
-    transform: translateY(8px);
-    transition: opacity 0.3s ease-out, transform 0.3s cubic-bezier(0.2, 0.7, 0.3, 1);
+  /* Sin resultado no ocupa sitio (ver arriba); al aparecer entra con un
+     fundido corto. Con display:none de por medio no sirve una transición */
+  .ppt-result.is-shown {
+    animation: ppt-result-in 0.3s cubic-bezier(0.2, 0.7, 0.3, 1);
   }
 
-  .ppt-result.is-shown {
-    opacity: 1;
-    transform: none;
+  @keyframes ppt-result-in {
+    from { opacity: 0; transform: translateY(8px); }
   }
 
   /* Historial: lista dividida por líneas de 1px. En móvil el ganador va
@@ -401,7 +463,7 @@ const schemaLD = {
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .ppt-result { transform: none; }
+    .ppt-result.is-shown { animation: none; }
     .ppt-history :global(.history-row.is-new) { animation: none; }
   }
 

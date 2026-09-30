@@ -109,6 +109,7 @@ function initPPT() {
   const handoff = $('ppt-handoff');
   const btnPass = $('btn-pass');
   const stakeBox = $('ppt-stake');
+  const btnStake = $('btn-stake');
   const stakeInput = $('ppt-stake-input');
   const share = $('ppt-share');
   const btnShare = $('btn-share');
@@ -167,6 +168,7 @@ function initPPT() {
   let enviado = null; // { id, a, b, q, e1, url }
   let respuesta = null; // { e2, url } cuando este móvil ya respondió el reto
   let visto = false; // el resultado devuelto ya se abrió
+  let stakeAbierto = false; // «+ ¿Qué se decide?» ya pulsado
   const retos = () => readStore(RETOS_KEY, {}) || {};
   function recordarReto(id, datos) {
     const todos = { ...retos(), [id]: { ...retos()[id], ...datos } };
@@ -237,7 +239,12 @@ function initPPT() {
     if (choicesBox) choicesBox.hidden = !jugadas;
     if (handoff) handoff.hidden = !pasar;
     if (share) share.hidden = !compartir;
-    if (stakeBox) stakeBox.hidden = enlace || modo === 'maquina' || enviado || pendiente;
+    // «Quien pierda» va plegado tras un enlace discreto; abierto si ya
+    // tiene algo escrito
+    const conCastigo = !enlace && modo !== 'maquina' && !enviado && !pendiente;
+    const abierto = stakeAbierto || !!stakeInput?.value.trim();
+    if (stakeBox) stakeBox.hidden = !(conCastigo && abierto);
+    if (btnStake) btnStake.hidden = !(conCastigo && !abierto);
     if (btnShare) btnShare.textContent = enlace ? `Mandarle el resultado a ${nombres()[0]}` : 'Enviar reto por WhatsApp';
     if (btnNew) btnNew.textContent = enlace ? 'Retar a alguien' : 'Nuevo reto';
     object.classList.toggle('is-dos', !enlace && modo !== 'maquina');
@@ -611,6 +618,12 @@ function initPPT() {
     await jugar(enlace.e1, e2, { contar: false, registrar: nueva });
     pintarTurno();
   }
+
+  btnStake?.addEventListener('click', () => {
+    stakeAbierto = true;
+    vista();
+    stakeInput?.focus();
+  });
 
   stakeInput?.addEventListener('input', () => {
     writeStore(STAKE_KEY, stakeInput.value.trim().slice(0, STAKE_MAX) || null);

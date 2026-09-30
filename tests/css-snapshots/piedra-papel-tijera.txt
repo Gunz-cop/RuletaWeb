@@ -32,10 +32,18 @@
 .ppt-choice[S]:focus-visible{color:var(--accent-warm);border-color:var(--accent-warm);outline:none}
 .ppt-choice[S]:active{transform:scale(.95)}
 .ppt-choice[S][aria-pressed=true]{background:var(--accent-warm);border-color:var(--accent-warm);color:#1a0e06}
-.ppt-result-stake[S]:empty,#ppt-share-msg[S]:empty{display:none}
+.ppt-result[S]:not(.is-shown),.ppt-result-stake[S]:empty,#ppt-share-msg[S]:empty{display:none}
 .ppt-stake-input[S]{border:0;border-bottom:1px solid var(--text-tertiary);min-width:0;color:var(--text-primary);background:0 0;border-radius:0;flex:1;padding:.1rem 0;font-family:inherit;font-size:1rem}
 .ppt-stake-input[S]::placeholder{color:var(--text-tertiary)}
 .ppt-stake-input[S]:focus{border-bottom-color:var(--accent-warm);outline:none}
+.ppt-modes[S]{border:1px solid var(--divider-line);border-radius:999px;padding:3px;display:inline-flex}
+.ppt-modes[S] button[S]{color:var(--text-secondary);white-space:nowrap;cursor:pointer;background:0 0;border:0;border-radius:999px;padding:.45rem .85rem;font-family:Outfit,sans-serif;font-size:.875rem;font-weight:600;transition:color .15s,background-color .15s}
+.ppt-modes[S] button[S][aria-pressed=true]{background:var(--bg-surface-alt);color:var(--text-primary)}
+.ppt-modes[S] button[S]:focus-visible{outline:2px solid var(--accent-warm);outline-offset:1px}
+@media (hover:hover){.ppt-modes[S] button[S]:hover{color:var(--accent-warm)}}
+.ppt-modes[S] button[S]:disabled{cursor:default}
+.ppt-stake-open[S]{color:var(--text-tertiary);cursor:pointer;background:0 0;border:0;margin:.75rem 0 .5rem;padding:.2rem 0;font-family:inherit;font-size:.875rem}
+.ppt-stake-open[S]:hover,.ppt-stake-open[S]:focus-visible{color:var(--accent-warm);outline:none}
 .ppt-handoff[S]{min-height:5.6rem}
 .ppt-pass[S]{background:var(--accent-warm);color:#1a0e06;cursor:pointer;border:0;border-radius:999px;padding:.9rem 2.25rem;font-family:Outfit,sans-serif;font-size:1.125rem;font-weight:700;transition:transform .15s}
 .ppt-pass[S]:active{transform:scale(.95)}
@@ -43,8 +51,8 @@
 .ppt-choice[S]:disabled{cursor:default}
 .ppt-choice[S]:disabled:not([aria-pressed=true]){color:var(--text-tertiary)}
 .ppt-choice[S] .ppt-choice-icon,.ppt-choice[S] .ppt-choice-icon img{width:2.75rem;height:2.75rem;display:block}
-.ppt-result[S]{opacity:0;transition:opacity .3s ease-out,transform .3s cubic-bezier(.2,.7,.3,1);transform:translateY(8px)}
-.ppt-result[S].is-shown{opacity:1;transform:none}
+.ppt-result[S].is-shown{animation:.3s cubic-bezier(.2,.7,.3,1) ppt-result-in}
+@keyframes ppt-result-in{0%{opacity:0;transform:translateY(8px)}}
 .ppt-history[S] .history-row{border-bottom:1px solid var(--divider-line);grid-template-columns:2rem 1fr;align-items:baseline;gap:.2rem .75rem;padding:.8rem 0;display:grid}
 .ppt-history[S] .history-num{color:var(--text-tertiary);font-variant-numeric:tabular-nums;grid-row:span 2;font-size:.85rem}
 .ppt-history[S] .history-label{color:var(--text-primary);overflow-wrap:anywhere}
@@ -52,7 +60,7 @@
 .ppt-history[S] .history-row.is-new{animation:.4s cubic-bezier(.2,.7,.3,1) ppt-row-in}
 @keyframes ppt-row-in{0%{opacity:0;transform:translateY(-6px)}}
 .ppt-history[S] .history-empty{color:var(--text-tertiary);padding:.8rem 0;font-size:.9rem}
-@media (prefers-reduced-motion:reduce){.ppt-result[S]{transform:none}.ppt-history[S] .history-row.is-new{animation:none}}
+@media (prefers-reduced-motion:reduce){.ppt-result[S].is-shown,.ppt-history[S] .history-row.is-new{animation:none}}
 @media (width>=640px){.ppt-history[S] .history-row{grid-template-columns:2.5rem 1fr auto;column-gap:1rem}.ppt-history[S] .history-num{grid-row:auto}.ppt-history[S] .history-side{text-align:right}}
 .hub-section[S]{padding:3rem 0}
 .hub-list[S]{border-top:1px solid var(--divider-line);flex-direction:column;width:100%;display:flex}
