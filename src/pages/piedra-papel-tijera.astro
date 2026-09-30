@@ -117,7 +117,7 @@ const schemaLD = {
       <div class="grid grid-cols-3 gap-2 sm:gap-3 w-full max-w-sm" id="ppt-choices" role="group" aria-label="Tu jugada">
         {ELECCIONES.map(({ forma, nombre }) => (
           <button type="button" class="ppt-choice" data-choice={forma}>
-            <svg class="ppt-choice-icon" viewBox="0 0 80 80" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <svg class="ppt-choice-icon" viewBox="-5 0 110 120" aria-hidden="true">
               <HandShape forma={forma} />
             </svg>
             <span>{nombre}</span>
@@ -258,12 +258,14 @@ const schemaLD = {
     cursor: default;
   }
 
+  /* Solo se apaga el texto: con opacidad sobre el fondo oscuro la mano
+     parecería de otro tono de piel */
   .ppt-choice:disabled:not([aria-pressed="true"]) {
-    opacity: 0.45;
+    color: var(--text-tertiary);
   }
 
   .ppt-choice-icon {
-    width: 2.75rem;
+    width: 2.5rem;
     height: 2.75rem;
   }
 

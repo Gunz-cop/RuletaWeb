@@ -1,25 +1,39 @@
-.ppt-object[S]{--hand-size:7rem;overflow-x:clip}
-@media (width>=640px){.ppt-object[S]{--hand-size:9rem}}
-@media (width>=1024px){.ppt-object[S]{--hand-size:10rem}}
+.hs-f[S]{fill:url(#ppt-g-f);stroke:#6e4a35;stroke-width:.9px}
+.hs-t[S]{stroke-width:1px}
+.hs-p[S]{fill:url(#ppt-g-p)}
+.hs-po[S]{fill:none;stroke:#6e4a35;stroke-width:.9px}
+.hs-n[S]{fill:#fff;opacity:.28}
+.hs-c[S]{fill:none;stroke:#7a5038;stroke-width:.8px;opacity:.45;stroke-linecap:round}
+.hs-sh[S]{fill:none;stroke:#8a5d42;stroke-width:3px;opacity:.25;stroke-linecap:round}
+.hs-k[S]{fill:url(#ppt-g-k);transition:fill .3s ease-out}
+.hs-kl[S]{stroke:#5a5d70;stroke-width:1px}
+.ppt-object[S]{--hand-size:8.5rem;overflow-x:clip}
+@media (width>=640px){.ppt-object[S]{--hand-size:10.5rem}}
+@media (width>=1024px){.ppt-object[S]{--hand-size:12rem}}
 .ppt-rig[S]{transform-origin:50% 100%;will-change:transform}
-.ppt-hand[S]{width:var(--hand-size);height:var(--hand-size);color:var(--text-primary);transition:color .3s ease-out}
+.ppt-hand[S]{width:var(--hand-size);height:calc(var(--hand-size) * 1.09)}
 .ppt-side[S][data-lado="2"] .ppt-hand[S]{transform:scaleX(-1)}
 .ppt-hand[S] .ppt-shape{display:none}
 .ppt-hand[S][data-forma=piedra] .ppt-shape[data-forma=piedra],.ppt-hand[S][data-forma=papel] .ppt-shape[data-forma=papel],.ppt-hand[S][data-forma=tijera] .ppt-shape[data-forma=tijera]{display:inline}
-.ppt-floor[S]{width:calc(var(--hand-size) * .6);height:calc(var(--hand-size) * .08);margin-top:calc(var(--hand-size) * -.08);will-change:transform, opacity;background:radial-gradient(closest-side,#0000008c,#0000);border-radius:50%}
+.ppt-floor[S]{width:calc(var(--hand-size) * .55);height:calc(var(--hand-size) * .07);margin-top:calc(var(--hand-size) * -.02);will-change:transform, opacity;background:radial-gradient(closest-side,#0000008c,#0000);border-radius:50%}
 .ppt-name[S]{letter-spacing:.1em;text-transform:uppercase;color:var(--text-tertiary);text-overflow:ellipsis;white-space:nowrap;font-size:.75rem;font-weight:600;overflow:hidden}
 .ppt-score[S]{color:var(--text-primary);font-variant-numeric:tabular-nums;font-family:Outfit,sans-serif;font-weight:700}
-.ppt-side[S]{min-width:0;transition:opacity .3s ease-out}
-.ppt-side[S].is-winner .ppt-hand[S],.ppt-side[S].is-winner .ppt-name[S]{color:var(--accent-warm)}
-.ppt-side[S].is-loser{opacity:.45}
+.ppt-side[S]{min-width:0}
+.ppt-hand[S]{transition:transform .35s cubic-bezier(.2,.7,.3,1)}
+.ppt-side[S].is-winner .ppt-name[S]{color:var(--accent-warm)}
+.ppt-side[S].is-winner .ppt-cuff{fill:var(--accent-warm)}
+.ppt-side[S].is-loser .ppt-hand[S]{transform:translateY(6%)scale(.88)}
+.ppt-side[S][data-lado="2"].is-loser .ppt-hand[S]{transform:translateY(6%)scale(-.88,.88)}
+.ppt-side[S].is-loser .ppt-score[S]{color:var(--text-tertiary)}
+@media (prefers-reduced-motion:reduce){.ppt-hand[S]{transition:none}}
 [S][hidden]{display:none!important}
 .ppt-choice[S]{border:1px solid var(--divider-line);color:var(--text-primary);cursor:pointer;-webkit-tap-highlight-color:transparent;background:0 0;border-radius:999px;flex-direction:column;align-items:center;gap:.25rem;padding:.6rem .25rem .7rem;font-family:Outfit,sans-serif;font-size:1rem;font-weight:700;transition:color .15s,border-color .15s,background-color .15s,transform .15s;display:flex}
 .ppt-choice[S]:hover,.ppt-choice[S]:focus-visible{color:var(--accent-warm);border-color:var(--accent-warm);outline:none}
 .ppt-choice[S]:active{transform:scale(.95)}
 .ppt-choice[S][aria-pressed=true]{background:var(--accent-warm);border-color:var(--accent-warm);color:#1a0e06}
 .ppt-choice[S]:disabled{cursor:default}
-.ppt-choice[S]:disabled:not([aria-pressed=true]){opacity:.45}
-.ppt-choice-icon[S]{width:2.75rem;height:2.75rem}
+.ppt-choice[S]:disabled:not([aria-pressed=true]){color:var(--text-tertiary)}
+.ppt-choice-icon[S]{width:2.5rem;height:2.75rem}
 .ppt-result[S]{opacity:0;transition:opacity .3s ease-out,transform .3s cubic-bezier(.2,.7,.3,1);transform:translateY(8px)}
 .ppt-result[S].is-shown{opacity:1;transform:none}
 .ppt-history[S] .history-row{border-bottom:1px solid var(--divider-line);grid-template-columns:2rem 1fr;align-items:baseline;gap:.2rem .75rem;padding:.8rem 0;display:grid}

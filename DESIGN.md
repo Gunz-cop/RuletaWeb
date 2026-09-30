@@ -134,6 +134,13 @@ lee como un disco plano. La regla de "sin degradados" aplica a botones,
 tarjetas y texto; la paleta de latón vive como variables locales
 (`--metal-*`) dentro del componente, no como tokens globales.
 
+Las manos de piedra, papel o tijera (`HandShape.astro`) siguen la misma
+excepción: cada dedo es una cápsula con luz cilíndrica, la palma una luz
+radial y la manga tela oscura. **Una mano nunca se apaga con opacidad ni
+filtro** (perdedor, botón desactivado): sobre el fondo oscuro parece otro
+tono de piel. Se marca con posición y tamaño (el perdedor baja y se
+encoge) y con el acento en la manga del ganador.
+
 ### El acento: `--accent-warm`
 
 Un solo acento (`#e2905a`, terracota cálido — ver tabla de tokens) hace lo
@@ -376,8 +383,8 @@ acción, como todo control secundario) y el resultado los usa ("Gana Ana").
 no en el oráculo; ganar / perder / empate en piedra, papel o tijera): la
 respuesta grande en `--text-primary` y el tipo o el motivo debajo en texto
 terciario, igual que Cara/Cruz en la moneda. Si hay un ganador en el
-objeto, se marca con el acento y el perdedor se apaga (opacidad), nunca
-con verde/rojo.
+objeto, se marca con el acento y el perdedor cede (baja, se encoge),
+nunca con verde/rojo.
 
 ### Ciclo de movimiento (estándar)
 

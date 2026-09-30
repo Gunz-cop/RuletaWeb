@@ -159,9 +159,11 @@ footer a:hover{color:var(--accent-coral)}
 .flex{display:flex}
 .grid{display:grid}
 .hidden{display:none}
+.h-0{height:0}
 .h-full{height:100%}
 .max-h-\[380px\]{max-height:380px}
 .min-h-14{min-height:calc(var(--spacing) * 14)}
+.w-0{width:0}
 .w-full{width:100%}
 .max-w-2xl{max-width:var(--container-2xl)}
 .max-w-\[800px\]{max-width:800px}
