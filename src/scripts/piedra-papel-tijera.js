@@ -7,7 +7,10 @@
 // entran desde su lado al cargar, respiran en reposo, marcan el "piedra,
 // papel, tijera" en cada ronda y se asientan al enseñar la jugada.
 // Con dos jugadores se elige por turnos en el mismo móvil: la jugada del
-// primero no se ve en ningún sitio hasta que el segundo elige.
+// primero no se ve en ningún sitio hasta que el segundo elige. A distancia,
+// el reto va y vuelve por un enlace (lógica en ppt-reto.js).
+
+import { ganador as ganadorDe, nuevoId, crearReto, crearResultado, leerFragmento, NAME_MAX, STAKE_MAX } from './ppt-reto.js';
 
 // Formato heredado de la versión anterior ({ victorias, derrotas, empates }):
 // se sigue usando tal cual para el marcador contra la máquina.
@@ -16,8 +19,14 @@ const SCORE_DOS_KEY = 'decidelo_ppt_score_dos';
 const MODE_KEY = 'decidelo_ppt_modo';
 const NAMES_KEY = 'decidelo_ppt_nombres';
 const HISTORY_KEY = 'decidelo_ppt_historial';
+const STAKE_KEY = 'decidelo_ppt_castigo';
+// Retos de este navegador: { id: { e1 } } si lo creó, { id: { e2 } } si lo
+// respondió. Así, reabrir un reto ya respondido enseña el mismo resultado en
+// vez de dejar elegir otra vez.
+const RETOS_KEY = 'decidelo_ppt_retos';
+const RETOS_MAX = 30;
 const HISTORY_MAX = 10;
-const NAME_MAX = 20;
+const MODOS = ['maquina', 'dos', 'distancia'];
 
 // Tres golpes de ~330ms (uno por palabra) + el asiento: unos 1,4 s, dentro
 // del margen de DESIGN.md.
@@ -33,7 +42,6 @@ const PASOS = [2, 3, 4, 5, 6];
 
 const FORMAS = ['piedra', 'papel', 'tijera'];
 const NOMBRE = { piedra: 'Piedra', papel: 'Papel', tijera: 'Tijera' };
-const VENCE = { piedra: 'tijera', papel: 'piedra', tijera: 'papel' };
 const VERBO = { piedra: 'aplasta', papel: 'envuelve', tijera: 'corta' };
 const CANTO = ['Piedra…', 'papel…', 'tijera…'];
 
@@ -100,6 +108,14 @@ function initPPT() {
   const choicesBox = $('ppt-choices');
   const handoff = $('ppt-handoff');
   const btnPass = $('btn-pass');
+  const stakeBox = $('ppt-stake');
+  const stakeInput = $('ppt-stake-input');
+  const share = $('ppt-share');
+  const btnShare = $('btn-share');
+  const btnCopy = $('btn-copy');
+  const btnNew = $('btn-new');
+  const shareMsg = $('ppt-share-msg');
+  const resultStake = $('ppt-result-stake');
   const result = $('ppt-result');
   const resultMain = $('ppt-result-main');
   const resultSide = $('ppt-result-side');
@@ -132,7 +148,9 @@ function initPPT() {
   const fin = (a) => a?.finished.catch(() => {});
 
   // --- Estado ------------------------------------------------------------------
-  let modo = readStore(MODE_KEY, 'maquina') === 'dos' ? 'dos' : 'maquina';
+  const guardado = readStore(MODE_KEY, 'maquina');
+  let modo = MODOS.includes(guardado) ? guardado : 'maquina';
+  if (stakeInput) stakeInput.value = String(readStore(STAKE_KEY, '') || '').slice(0, STAKE_MAX);
   const guardados = readStore(NAMES_KEY, []);
   nameInputs.forEach((input, i) => {
     if (input) input.value = String((Array.isArray(guardados) && guardados[i]) || '').slice(0, NAME_MAX);
@@ -143,10 +161,33 @@ function initPPT() {
   let pendiente = null; // jugada del jugador 1 mientras elige el 2
   let pasado = false; // el jugador 2 ya tiene el móvil
 
-  const nombres = () =>
-    modo === 'maquina'
-      ? ['Tú', 'Máquina']
-      : nameInputs.map((input, i) => input?.value.trim() || `Jugador ${i + 1}`);
+  // A distancia. `enlace` es lo que trae la URL al abrir la página
+  // (#reto=… o #resultado=…); `enviado`, el reto que se acaba de crear aquí.
+  let enlace = leerFragmento(location.hash);
+  let enviado = null; // { id, a, b, q, e1, url }
+  let respuesta = null; // { e2, url } cuando este móvil ya respondió el reto
+  let visto = false; // el resultado devuelto ya se abrió
+  const retos = () => readStore(RETOS_KEY, {}) || {};
+  function recordarReto(id, datos) {
+    const todos = { ...retos(), [id]: { ...retos()[id], ...datos } };
+    const ids = Object.keys(todos);
+    ids.slice(0, Math.max(0, ids.length - RETOS_MAX)).forEach((k) => delete todos[k]);
+    writeStore(RETOS_KEY, todos);
+  }
+  const enReto = () => enlace && enlace.tipo !== 'roto';
+
+  const nombres = () => {
+    if (enReto()) return [enlace.a || 'Quien reta', enlace.b || (enlace.tipo === 'reto' ? 'Tú' : 'Tu rival')];
+    if (modo === 'maquina') return ['Tú', 'Máquina'];
+    const vacio = modo === 'distancia' ? ['Tú', 'Tu rival'] : ['Jugador 1', 'Jugador 2'];
+    return nameInputs.map((input, i) => input?.value.trim() || vacio[i]);
+  };
+
+  // Lo que se decide: el del enlace, o el que se escribe en los modos de dos
+  const castigo = () => {
+    if (enReto()) return enlace.q;
+    return modo === 'maquina' ? '' : (stakeInput?.value.trim() ?? '');
+  };
 
   function pintarNombres() {
     const [n1, n2] = nombres();
@@ -159,15 +200,54 @@ function initPPT() {
     lados[1].score.textContent = marcador.j2;
   }
 
-  function pintarTurno() {
+  function textoTurno() {
     const [n1, n2] = nombres();
-    if (btnPass) btnPass.textContent = `Soy ${n2}: elegir`;
-    if (!turn) return;
-    if (modo === 'maquina') turn.textContent = 'Elige tu jugada';
-    else if (pendiente && !pasado) turn.textContent = `Listo, ${n1}. Pásale el móvil a ${n2}`;
-    else if (pendiente) turn.textContent = `Tu turno, ${n2}. ${n1} ya eligió`;
-    else if (!nameInputs.some((i) => i?.value.trim())) turn.textContent = 'Pongan sus nombres bajo las manos';
-    else turn.textContent = `Elige ${n1}, sin que ${n2} mire`;
+    const q = castigo();
+    if (enlace?.tipo === 'roto') return 'Ese enlace de reto está incompleto. Pide que te lo reenvíen.';
+    if (enlace?.tipo === 'reto') {
+      if (respuesta) return `Mándale el resultado a ${n1}`;
+      return `${n1} te reta${q ? `: quien pierda ${q}` : ''}. Elige tu jugada`;
+    }
+    if (enlace?.tipo === 'resultado') return visto ? 'Así quedó tu reto' : `${n2} respondió tu reto`;
+    if (modo === 'maquina') return 'Elige tu jugada';
+    if (modo === 'distancia') {
+      const rival = nameInputs[1]?.value.trim();
+      if (enviado) return `Tu jugada quedó sellada. Envíale el reto a ${rival || 'tu rival'}`;
+      return rival ? `Elige tu jugada y envíale el reto a ${rival}` : 'Elige tu jugada y envía el reto';
+    }
+    if (pendiente && !pasado) return `Listo, ${n1}. Pásale el móvil a ${n2}`;
+    if (pendiente) return `Tu turno, ${n2}. ${n1} ya eligió`;
+    if (!nameInputs.some((i) => i?.value.trim())) return 'Pongan sus nombres bajo las manos';
+    return `Elige ${n1}, sin que ${n2} mire`;
+  }
+
+  function pintarTurno() {
+    const [, n2] = nombres();
+    if (btnPass) btnPass.textContent = enlace?.tipo === 'resultado' ? 'Ver resultado' : `Soy ${n2}: elegir`;
+    if (turn) turn.textContent = textoTurno();
+    vista();
+  }
+
+  // Qué bloque ocupa el sitio de la acción: las jugadas, el botón de pasar
+  // el móvil (o de ver el resultado) o el de compartir
+  function vista() {
+    const pasar = (modo === 'dos' && !enlace && pendiente && !pasado) || (enlace?.tipo === 'resultado' && !visto);
+    const compartir = (!enlace && modo === 'distancia' && enviado) || (enlace?.tipo === 'reto' && respuesta);
+    const jugadas = !pasar && !compartir && enlace?.tipo !== 'roto' && enlace?.tipo !== 'resultado';
+    if (choicesBox) choicesBox.hidden = !jugadas;
+    if (handoff) handoff.hidden = !pasar;
+    if (share) share.hidden = !compartir;
+    if (stakeBox) stakeBox.hidden = enlace || modo === 'maquina' || enviado || pendiente;
+    if (btnShare) btnShare.textContent = enlace ? `Mandarle el resultado a ${nombres()[0]}` : 'Enviar reto por WhatsApp';
+    if (btnNew) btnNew.textContent = enlace ? 'Retar a alguien' : 'Nuevo reto';
+    object.classList.toggle('is-dos', !enlace && modo !== 'maquina');
+    // Con un enlace abierto no hay modo elegido: es un reto concreto
+    modeBtns.forEach((b) => b.setAttribute('aria-pressed', String(!enlace && b.dataset.mode === modo)));
+    // Un reto a distancia es una sola partida: sin marcador bajo las manos
+    object.classList.toggle('is-reto', !!enlace || modo === 'distancia');
+    nameInputs.forEach((input, i) => {
+      if (input) input.placeholder = modo === 'distancia' ? ['Tu nombre', '¿A quién?'][i] : `Jugador ${i + 1}`;
+    });
   }
 
   // --- Historial ---------------------------------------------------------------
@@ -306,6 +386,7 @@ function initPPT() {
   // --- Ronda ----------------------------------------------------------------------
   function limpiar() {
     result.classList.remove('is-shown');
+    if (resultStake) resultStake.textContent = '';
     delete result.dataset.estado;
     delete result.dataset.ganador;
     lados.forEach((l) => {
@@ -320,7 +401,9 @@ function initPPT() {
     modeBtns.forEach((b) => { b.disabled = activo; });
   }
 
-  async function jugar(e1, e2) {
+  // `contar`: suma al marcador del modo (no en los retos a distancia).
+  // `registrar`: añade la fila al historial (no al reabrir un reto ya visto).
+  async function jugar(e1, e2, { contar = true, registrar = true } = {}) {
     bloquear(true);
     limpiar();
     parar();
@@ -338,12 +421,20 @@ function initPPT() {
       await abrir(e1, e2);
     }
 
-    const g = e1 === e2 ? 'empate' : VENCE[e1] === e2 ? 'j1' : 'j2';
+    const g = ganadorDe(e1, e2);
     const [n1, n2] = nombres();
+    const q = castigo();
     let texto;
     if (g === 'empate') texto = 'Empate';
-    else if (modo === 'maquina') texto = g === 'j1' ? 'Ganas tú' : 'Gana la máquina';
+    else if (!enReto() && modo === 'maquina') texto = g === 'j1' ? 'Ganas tú' : 'Gana la máquina';
     else texto = `Gana ${g === 'j1' ? n1 : n2}`;
+    // Lo que se decidía, con el nombre de quien pierde delante: así la frase
+    // vale sea cual sea el nombre («Luis: lava los platos», «Tú: …»)
+    if (resultStake) {
+      if (q && g === 'empate') resultStake.textContent = 'Toca repetir';
+      else if (q) resultStake.textContent = `${g === 'j1' ? n2 : n1}: ${q}`;
+      else resultStake.textContent = '';
+    }
 
     resultMain.textContent = texto;
     if (g === 'empate') resultSide.textContent = `Los dos sacaron ${e1}`;
@@ -359,12 +450,14 @@ function initPPT() {
       lados[g === 'j1' ? 0 : 1].side?.classList.add('is-winner');
       lados[g === 'j1' ? 1 : 0].side?.classList.add('is-loser');
     }
-    if (g === 'j1') marcador.j1 += 1;
-    else if (g === 'j2') marcador.j2 += 1;
-    else marcador.empates += 1;
-    guardarMarcador(modo, marcador);
-    pintarMarcador();
-    guardar({ e1, e2, g, texto });
+    if (contar) {
+      if (g === 'j1') marcador.j1 += 1;
+      else if (g === 'j2') marcador.j2 += 1;
+      else marcador.empates += 1;
+      guardarMarcador(modo, marcador);
+      pintarMarcador();
+    }
+    if (registrar) guardar({ e1, e2, g, texto: q && g !== 'empate' ? `${texto} · ${resultStake.textContent}` : texto });
 
     if (navigator.vibrate) navigator.vibrate(30);
     pendiente = null;
@@ -375,17 +468,19 @@ function initPPT() {
     reposar();
   }
 
-  // Entre turnos: las jugadas se ocultan y solo queda el botón para que el
-  // segundo jugador empiece. Nada de la fila de jugadas sigue a la vista
-  // (ni un :hover o un foco pegados del toque del primero).
-  function entreTurnos(activo) {
-    if (choicesBox) choicesBox.hidden = activo;
-    if (handoff) handoff.hidden = !activo;
-  }
-
+  // Entre turnos (vista()): las jugadas se ocultan y solo queda el botón
+  // para que el segundo jugador empiece. Nada de la fila de jugadas sigue a
+  // la vista (ni un :hover o un foco pegados del toque del primero). El
+  // mismo botón abre el resultado de un reto devuelto: el momento de
+  // "abrir el regalo", con las manos marcando el canto.
   btnPass?.addEventListener('click', () => {
+    if (enlace?.tipo === 'resultado') {
+      visto = true;
+      pintarTurno();
+      jugar(enlace.e1, enlace.e2, { contar: false });
+      return;
+    }
     pasado = true;
-    entreTurnos(false);
     pintarTurno();
   });
 
@@ -396,9 +491,29 @@ function initPPT() {
       const eleccion = btn.dataset.choice;
       if (!FORMAS.includes(eleccion)) return;
 
+      // Responder un reto recibido: la jugada de quien reta se revela ya
+      if (enlace?.tipo === 'reto' && !respuesta) {
+        btn.setAttribute('aria-pressed', 'true');
+        responder(eleccion, true);
+        return;
+      }
+      if (enlace) return;
+
       if (modo === 'maquina') {
         btn.setAttribute('aria-pressed', 'true');
         jugar(eleccion, FORMAS[randomIndex(3)]);
+        return;
+      }
+
+      // A distancia: la jugada se sella en el enlace y no se enseña aquí
+      if (modo === 'distancia') {
+        btn.blur();
+        const [a, b] = nameInputs.map((i) => i?.value.trim() ?? '');
+        const reto = { id: nuevoId(), a, b, q: castigo(), e1: eleccion };
+        enviado = { ...reto, url: enlaceA('reto', crearReto(reto)) };
+        recordarReto(reto.id, { e1: eleccion });
+        if (shareMsg) shareMsg.textContent = '';
+        pintarTurno();
         return;
       }
       // Dos jugadores: la jugada del primero no se marca en ningún botón,
@@ -407,7 +522,6 @@ function initPPT() {
         pendiente = eleccion;
         pasado = false;
         btn.blur();
-        entreTurnos(true);
         limpiar();
         pintarTurno();
         if (!reducido()) turn?.animate([{ opacity: 0, transform: 'translateY(4px)' }, { opacity: 1, transform: 'none' }], { duration: 250, easing: 'ease-out' });
@@ -421,15 +535,13 @@ function initPPT() {
   // --- Modo y nombres -------------------------------------------------------------
   function ponerModo(nuevo) {
     modo = nuevo;
-    writeStore(MODE_KEY, modo === 'dos' ? 'dos' : null);
+    writeStore(MODE_KEY, modo === 'maquina' ? null : modo);
     modeBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === modo)));
-    object.classList.toggle('is-dos', modo === 'dos');
-    const grupo = document.getElementById('ppt-choices');
-    grupo?.setAttribute('aria-label', modo === 'dos' ? 'Jugada' : 'Tu jugada');
+    choicesBox?.setAttribute('aria-label', modo === 'dos' ? 'Jugada' : 'Tu jugada');
     pendiente = null;
     pasado = false;
-    entreTurnos(false);
-    marcador = leerMarcador(modo);
+    enviado = null;
+    marcador = leerMarcador(modo === 'dos' ? 'dos' : 'maquina');
     limpiar();
     pintarNombres();
     pintarMarcador();
@@ -437,8 +549,75 @@ function initPPT() {
   }
 
   modeBtns.forEach((b) => b.addEventListener('click', () => {
-    if (!busy && b.dataset.mode !== modo) ponerModo(b.dataset.mode === 'dos' ? 'dos' : 'maquina');
+    if (busy || (b.dataset.mode === modo && !enlace)) return;
+    salirDelEnlace();
+    ponerModo(MODOS.includes(b.dataset.mode) ? b.dataset.mode : 'maquina');
   }));
+
+  // --- A distancia: compartir, responder y reabrir ---------------------------------
+  function enlaceA(clave, token) {
+    return `${location.origin}${location.pathname}#${clave}=${token}`;
+  }
+
+  // Cambiar de modo o crear un reto nuevo deja atrás el enlace recibido
+  function salirDelEnlace() {
+    if (!enlace) return;
+    enlace = null;
+    respuesta = null;
+    visto = false;
+    // window.history: `history` es aquí el historial de rondas
+    window.history.replaceState?.(null, '', location.pathname + location.search);
+    // Los nombres del enlace dejan paso a los propios
+    pintarNombres();
+  }
+
+  function mensaje() {
+    const q = castigo();
+    const [a, b] = nombres();
+    if (enlace?.tipo === 'reto' && respuesta) {
+      return `Ya respondí tu reto de piedra, papel o tijera${q ? ` (quien pierda ${q})` : ''}. Mira quién ganó: ${respuesta.url}`;
+    }
+    return `${a && a !== 'Tú' ? a : 'Alguien'} te reta a piedra, papel o tijera${q ? `: quien pierda ${q}` : ''}. Elige tu jugada aquí: ${enviado?.url}`;
+  }
+
+  const urlActual = () => (enlace ? respuesta?.url : enviado?.url);
+
+  btnShare?.addEventListener('click', () => {
+    if (!urlActual()) return;
+    // wa.me abre WhatsApp en el móvil y WhatsApp Web en el ordenador
+    window.open(`https://wa.me/?text=${encodeURIComponent(mensaje())}`, '_blank', 'noopener');
+  });
+
+  btnCopy?.addEventListener('click', async () => {
+    if (!urlActual()) return;
+    try {
+      await navigator.clipboard.writeText(mensaje());
+      if (shareMsg) shareMsg.textContent = 'Copiado. Pégalo donde quieras.';
+    } catch (e) {
+      if (shareMsg) shareMsg.textContent = urlActual();
+    }
+  });
+
+  btnNew?.addEventListener('click', () => {
+    salirDelEnlace();
+    ponerModo('distancia');
+  });
+
+  // Respuesta a un reto: se guarda antes de revelar, así reabrir el enlace
+  // en este navegador enseña el mismo resultado en vez de dejar probar otra
+  async function responder(e2, nueva) {
+    respuesta = { e2, url: enlaceA('resultado', crearResultado(enlace, e2)) };
+    if (nueva) recordarReto(enlace.id, { e2 });
+    await jugar(enlace.e1, e2, { contar: false, registrar: nueva });
+    pintarTurno();
+  }
+
+  stakeInput?.addEventListener('input', () => {
+    writeStore(STAKE_KEY, stakeInput.value.trim().slice(0, STAKE_MAX) || null);
+  });
+  stakeInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); stakeInput.blur(); }
+  });
 
   nameInputs.forEach((input) => input?.addEventListener('input', () => {
     const valores = nameInputs.map((i) => i?.value.trim().slice(0, NAME_MAX) ?? '');
@@ -458,8 +637,37 @@ function initPPT() {
 
   ponerModo(modo);
   renderHistory();
-  entrar();
+
+  // Abrir un enlace: el propio reto (lo creó este navegador) vuelve a la
+  // pantalla de enviarlo; uno ya respondido enseña su resultado; un resultado
+  // cuya jugada no es la que se hizo aquí manda la jugada guardada.
+  const propio = enlace && enlace.tipo !== 'roto' ? retos()[enlace.id] : null;
+  if (enlace?.tipo === 'reto' && propio?.e1) {
+    const reto = enlace;
+    salirDelEnlace();
+    ponerModo('distancia');
+    enviado = { ...reto, url: enlaceA('reto', crearReto(reto)) };
+    pintarTurno();
+  } else if (enlace?.tipo === 'resultado' && propio?.e1 && propio.e1 !== enlace.e1) {
+    enlace = { ...enlace, e1: propio.e1 };
+  }
+  pintarNombres();
+  pintarTurno();
+
+  if (enlace?.tipo === 'reto' && propio?.e2) {
+    // Ya respondido en este navegador: mismo resultado, sin repetir la entrada
+    responder(propio.e2, false);
+  } else {
+    entrar();
+  }
 }
+
+// Un enlace de reto abierto en la pestaña donde ya estaba la página solo
+// cambia el fragmento (#…) y no recarga: se recarga a mano para leerlo
+window.addEventListener('hashchange', () => {
+  const nuevo = leerFragmento(location.hash);
+  if (nuevo && document.getElementById('ppt-object')) location.reload();
+});
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initPPT);

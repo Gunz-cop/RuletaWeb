@@ -94,7 +94,7 @@ const schemaLD = {
     <div class="w-full text-center lg:text-left mb-4 sm:mb-6 lg:col-start-1 lg:row-start-1">
       <h1 class="m-0 mb-2 sm:mb-4 font-display text-[1.7rem] sm:text-5xl lg:text-[2.75rem] leading-tight tracking-tight">Piedra, papel <em class="font-[Newsreader,Georgia,serif] italic font-normal text-warm">o tijera</em></h1>
       {/* En pantallas bajas la entradilla cede su sitio a las jugadas */}
-      <p class="m-0 mx-auto lg:mx-0 max-w-lg text-sm sm:text-base text-ink-secondary max-sm:[@media(max-height:620px)]:hidden">Elige tu jugada contra la máquina o juega con alguien en el mismo móvil, sin que el otro vea lo que sacas.</p>
+      <p class="m-0 mx-auto lg:mx-0 max-w-lg text-sm sm:text-base text-ink-secondary max-sm:[@media(max-height:620px)]:hidden">Juega contra la máquina, con alguien en el mismo móvil o a distancia por WhatsApp. Y si hay algo que decidir, que lo pague quien pierda.</p>
     </div>
 
     <section class="w-full flex flex-col items-center lg:col-start-2 lg:row-start-1 lg:row-span-3 lg:pt-8" aria-label="Jugar a piedra, papel o tijera">
@@ -102,10 +102,19 @@ const schemaLD = {
 
       <p class="ppt-result w-full text-center min-h-14 sm:min-h-18 mt-2 mb-2 sm:mt-3 sm:mb-4" id="ppt-result" aria-live="polite">
         <span class="block font-display font-bold text-[1.7rem] sm:text-4xl leading-tight text-ink-primary [overflow-wrap:anywhere]" id="ppt-result-main"></span>
+        {/* Lo que se decidía, en palabras del usuario: «Luis: lava los platos» */}
+        <span class="ppt-result-stake block mt-1 text-base sm:text-lg text-ink-primary [overflow-wrap:anywhere]" id="ppt-result-stake"></span>
         <span class="block mt-0.5 sm:mt-1.5 text-xs tracking-widest uppercase text-ink-tertiary" id="ppt-result-side"></span>
       </p>
 
-      <p class="m-0 mb-2 text-sm text-ink-secondary text-center" id="ppt-turn" aria-live="polite">Elige tu jugada</p>
+      {/* Con dos jugadores: qué se decide. Junto a la acción, no en un
+          formulario aparte, igual que los nombres bajo las manos */}
+      <label class="ppt-stake flex items-baseline justify-center gap-2 w-full max-w-sm mb-3" id="ppt-stake" hidden>
+        <span class="shrink-0 text-sm text-ink-secondary">Quien pierda</span>
+        <input class="ppt-stake-input" id="ppt-stake-input" type="text" maxlength="60" placeholder="lava los platos" autocomplete="off" enterkeyhint="done">
+      </label>
+
+      <p class="m-0 mb-2 text-sm text-ink-secondary text-center [overflow-wrap:anywhere]" id="ppt-turn" aria-live="polite">Elige tu jugada</p>
 
       {/* Acción principal: una de tres jugadas. Tres botones iguales en vez
           de una píldora rellena (ver DESIGN.md, "Acción principal de
@@ -124,12 +133,23 @@ const schemaLD = {
       <div class="ppt-handoff flex flex-col items-center justify-center w-full max-w-sm" id="ppt-handoff" hidden>
         <button type="button" class="ppt-pass" id="btn-pass">Elegir</button>
       </div>
+
+      {/* A distancia: enviar el reto o devolver el resultado por WhatsApp */}
+      <div class="ppt-handoff flex flex-col items-center justify-center gap-3 w-full max-w-sm" id="ppt-share" hidden>
+        <button type="button" class="ppt-pass" id="btn-share">Enviar por WhatsApp</button>
+        <div class="flex gap-6">
+          <button class={textBtn} type="button" id="btn-copy">Copiar enlace</button>
+          <button class={textBtn} type="button" id="btn-new">Nuevo reto</button>
+        </div>
+        <p class="m-0 text-xs text-ink-tertiary text-center" id="ppt-share-msg" aria-live="polite"></p>
+      </div>
     </section>
 
     <div class="w-full flex flex-col items-center lg:items-start gap-4 mt-8 lg:mt-4 lg:col-start-1 lg:row-start-2">
-      <div class="flex gap-6" role="group" aria-label="Modo de juego">
+      <div class="flex flex-wrap justify-center lg:justify-start gap-x-6 gap-y-2" role="group" aria-label="Modo de juego">
         <button class={textBtn} type="button" data-mode="maquina" aria-pressed="true">Contra la máquina</button>
-        <button class={textBtn} type="button" data-mode="dos" aria-pressed="false">Dos jugadores</button>
+        <button class={textBtn} type="button" data-mode="dos" aria-pressed="false">En el mismo móvil</button>
+        <button class={textBtn} type="button" data-mode="distancia" aria-pressed="false">A distancia</button>
       </div>
     </div>
 
@@ -250,6 +270,34 @@ const schemaLD = {
     background: var(--accent-warm);
     border-color: var(--accent-warm);
     color: #1a0e06;
+  }
+
+  .ppt-result-stake:empty,
+  #ppt-share-msg:empty {
+    display: none;
+  }
+
+  /* Campo en línea, subrayado, 16px para que Safari no haga zoom */
+  .ppt-stake-input {
+    flex: 1;
+    min-width: 0;
+    padding: 0.1rem 0;
+    border: 0;
+    border-bottom: 1px solid var(--text-tertiary);
+    border-radius: 0;
+    background: transparent;
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 1rem;
+  }
+
+  .ppt-stake-input::placeholder {
+    color: var(--text-tertiary);
+  }
+
+  .ppt-stake-input:focus {
+    outline: none;
+    border-bottom-color: var(--accent-warm);
   }
 
   /* Mismo alto que la fila de jugadas: al alternar no salta la página */

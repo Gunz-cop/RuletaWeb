@@ -15,6 +15,7 @@
 .ppt-name-input[S]:focus{border-bottom-color:var(--accent-warm);outline:none}
 .ppt-object[S].is-dos .ppt-name[S]{display:none}
 .ppt-object[S].is-dos .ppt-name-input[S]{display:block}
+.ppt-object[S].is-reto .ppt-score[S]{display:none}
 .ppt-score[S]{color:var(--text-primary);font-variant-numeric:tabular-nums;font-family:Outfit,sans-serif;font-weight:700}
 .ppt-side[S]{min-width:0}
 .ppt-hand[S]{transition:transform .35s cubic-bezier(.2,.7,.3,1)}
@@ -31,6 +32,10 @@
 .ppt-choice[S]:focus-visible{color:var(--accent-warm);border-color:var(--accent-warm);outline:none}
 .ppt-choice[S]:active{transform:scale(.95)}
 .ppt-choice[S][aria-pressed=true]{background:var(--accent-warm);border-color:var(--accent-warm);color:#1a0e06}
+.ppt-result-stake[S]:empty,#ppt-share-msg[S]:empty{display:none}
+.ppt-stake-input[S]{border:0;border-bottom:1px solid var(--text-tertiary);min-width:0;color:var(--text-primary);background:0 0;border-radius:0;flex:1;padding:.1rem 0;font-family:inherit;font-size:1rem}
+.ppt-stake-input[S]::placeholder{color:var(--text-tertiary)}
+.ppt-stake-input[S]:focus{border-bottom-color:var(--accent-warm);outline:none}
 .ppt-handoff[S]{min-height:5.6rem}
 .ppt-pass[S]{background:var(--accent-warm);color:#1a0e06;cursor:pointer;border:0;border-radius:999px;padding:.9rem 2.25rem;font-family:Outfit,sans-serif;font-size:1.125rem;font-weight:700;transition:transform .15s}
 .ppt-pass[S]:active{transform:scale(.95)}

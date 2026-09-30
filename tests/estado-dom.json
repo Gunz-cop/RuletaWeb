@@ -541,6 +541,12 @@
       "mensaje": "tijera contra papel debería decir «Gana Ana» y dice «Gana Ana»"
     }
   },
+  "/piedra-papel-tijera [reto-a-distancia]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "reto respondido, revelado y bloqueado al reabrir"
+    }
+  },
   "/piedra-papel-tijera [accion-principal-visible-android-360x560]": {
     "relacion": {
       "ok": true,
@@ -556,13 +562,13 @@
   "/piedra-papel-tijera [accion-principal-visible-iphone-393x659]": {
     "relacion": {
       "ok": true,
-      "mensaje": "#ppt-choices.bottom=540.0px con 659px visibles (holgura 119.0px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+      "mensaje": "#ppt-choices.bottom=560.0px con 659px visibles (holgura 99.0px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
     }
   },
   "/piedra-papel-tijera [responsive-fold-cerrado-344x680]": {
     "relacion": {
       "ok": true,
-      "mensaje": "#ppt-choices.bottom=560.0px con 680px visibles (holgura 120.0px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+      "mensaje": "#ppt-choices.bottom=580.0px con 680px visibles (holgura 100.0px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
     }
   },
   "/piedra-papel-tijera [responsive-fold-abierto-673x760]": {

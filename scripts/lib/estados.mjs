@@ -126,6 +126,8 @@ async function verificarBotonGirarSobrePanel(pagina) {
 //
 // Misma holgura de un dedo que el invariante de la ruleta, por la misma
 // razón: con >= 0 solo avisaría cuando el botón ya está cortado.
+import { crearReto, nuevoId } from '../../src/scripts/ppt-reto.js';
+
 export const VIEWPORTS_MOVIL = {
   'android-360x560': { width: 360, height: 560 },
   'iphone-se-375x548': { width: 375, height: 548 },
@@ -752,6 +754,30 @@ export const ESTADOS = [
       await pagina.waitForSelector('#ppt-result[data-estado="final"]');
       const texto = await pagina.textContent('#ppt-result-main');
       return { ok: texto === 'Gana Ana', mensaje: `tijera contra papel debería decir «Gana Ana» y dice «${texto}»` };
+    },
+  },
+  {
+    // Reto a distancia recibido por enlace: se responde, se revela y
+    // reabrir el mismo enlace en este navegador ya no deja elegir otra vez
+    ruta: '/piedra-papel-tijera',
+    nombre: 'reto-a-distancia',
+    contexto: { reducedMotion: 'reduce' },
+    verificarRelacion: async (pagina) => {
+      const token = crearReto({ id: nuevoId(), a: 'Ana', b: 'Luis', q: 'lava los platos', e1: 'tijera' });
+      const url = `${new URL(pagina.url()).origin}/piedra-papel-tijera#reto=${token}`;
+      await pagina.goto(url);
+      const turno = await pagina.textContent('#ppt-turn');
+      if (!turno.includes('Ana te reta')) return { ok: false, mensaje: `al abrir el reto la línea de turno dice «${turno}»` };
+      await pagina.click('.ppt-choice[data-choice="papel"]');
+      await pagina.waitForSelector('#ppt-result[data-estado="final"]');
+      const veredicto = await pagina.textContent('#ppt-result-stake');
+      if (veredicto !== 'Luis: lava los platos') return { ok: false, mensaje: `el veredicto dice «${veredicto}»` };
+      if (!(await pagina.isVisible('#btn-share'))) return { ok: false, mensaje: 'tras responder no aparece el botón para devolver el resultado' };
+      await pagina.goto('about:blank');
+      await pagina.goto(url);
+      await pagina.waitForSelector('#ppt-result[data-estado="final"]');
+      const otraVez = await pagina.isVisible('#ppt-choices');
+      return { ok: !otraVez, mensaje: otraVez ? 'al reabrir un reto ya respondido deja elegir otra vez' : 'reto respondido, revelado y bloqueado al reabrir' };
     },
   },
   ...estadosAccionVisible('/piedra-papel-tijera', '#ppt-choices'),
