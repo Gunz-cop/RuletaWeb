@@ -307,7 +307,7 @@ const schemaLD = {
     <p>La versión moderna nació en Cincinnati. En 1946, Albert C. Carter y Abe Bookman inventaron el mecanismo: un dado de 20 caras flotando en un líquido azul oscuro, que sube a una ventana con la respuesta. En 1950 le dieron la forma de la bola 8 del billar, y así se quedó. Las 20 respuestas las escribió un profesor de psicología de la Universidad de Cincinnati<sup><a href="#fuente-1">[1]</a></sup>. Nuestra bola copia ese gesto, el dado que emerge, pero con respuestas equilibradas.</p>
 
     <h2>¿Cómo funciona por dentro?</h2>
-    <p>Cada respuesta sale del generador de valores aleatorios criptográficamente fuertes del navegador (<code>crypto.getRandomValues</code>)<sup><a href="#fuente-5">[5]</a></sup>, con la misma probabilidad para las 15. La animación solo muestra la respuesta; no la decide. Y que haya salido &laquo;no&raquo; tres veces seguidas no hace más probable un &laquo;sí&raquo;: pensar lo contrario es la llamada falacia del apostador<sup><a href="#fuente-6">[6]</a></sup>.</p>
+    <p>Cada respuesta sale del generador de valores aleatorios criptográficamente fuertes del navegador (<code>crypto.getRandomValues</code>)<sup><a href="#fuente-5">[5]</a></sup>, con la misma probabilidad para las 15. La animación solo muestra la respuesta; no la decide. Cada consulta es independiente: lo que salió antes no cambia lo que sale ahora.</p>
 
     <h2>Deja de dudar: pregúntale al oráculo ahora</h2>
     <p>La pregunta sigue ahí, esperando. Sube a la <a href="#oracle-question">bola 8</a>, escríbela y pulsa &laquo;Consultar al oráculo&raquo;. En dos segundos tendrás tu respuesta y, con la prueba del alivio, sabrás si era la que querías. Si tu duda tiene más de dos caminos, gira la <a href="/ruleta">ruleta</a>.</p>
@@ -354,7 +354,6 @@ const schemaLD = {
       <li id="fuente-3">Levitt, S. D. (2016). «Heads or Tails: The Impact of a Coin Toss on Major Life Decisions and Subsequent Happiness». NBER Working Paper 22487; publicado en <em>The Review of Economic Studies</em> (2021). <a href="https://www.nber.org/papers/w22487" rel="noopener" target="_blank">www.nber.org</a></li>
       <li id="fuente-4">Wikipedia. «Oráculo de Delfos». <a href="https://es.wikipedia.org/wiki/Or%C3%A1culo_de_Delfos" rel="noopener" target="_blank">es.wikipedia.org</a></li>
       <li id="fuente-5">MDN Web Docs. «Crypto.getRandomValues()». <a href="https://developer.mozilla.org/es/docs/Web/API/Crypto/getRandomValues" rel="noopener" target="_blank">developer.mozilla.org</a></li>
-      <li id="fuente-6">Wikipedia. «Falacia del apostador». <a href="https://es.wikipedia.org/wiki/Falacia_del_apostador" rel="noopener" target="_blank">es.wikipedia.org</a></li>
     </ol>
   </SeoArticle>
 
