@@ -1,76 +1,78 @@
 ---
-title: 'Tarot Sí o No: Cómo hacer preguntas claras para resolver tus dudas de amor y dinero'
-description: 'Aprende a formular preguntas efectivas para el Tarot de Sí o No. Evita errores comunes y obtén respuestas binarias claras y precisas sobre tu futuro.'
+title: 'Cómo hacer buenas preguntas de sí o no (y por qué las abiertas no sirven)'
+description: 'Aprende a formular preguntas de sí o no claras para decidir más rápido o jugar con amigos. Ejemplos correctos e incorrectos y una tabla para copiar.'
 pubDate: '2026-06-02'
-tags: ['tarot', 'oraculo', 'si-o-no', 'esoterismo']
+tags: ['si-o-no', 'preguntas', 'decisiones', 'juegos']
 author: 'Decídelo.app'
-heroImage: '/blog/tarot-si-no.png'
+heroImage: '/blog/si-o-no.png'
 ---
 
-El mundo del esoterismo y la cartomancia atrae a millones de personas que buscan respuestas sobre lo que les depara el destino. Sin embargo, realizar una lectura completa de cartas del tarot con arcanos mayores y menores requiere mucho tiempo, conocimientos profundos y, a menudo, acudir a consultores profesionales de pago.
+Una pregunta de sí o no parece lo más fácil del mundo, pero muchas veces la formulamos mal. Preguntamos *«¿qué hago este fin de semana?»* y esperamos que un «sí» nos lo aclare. No funciona.
 
-Para consultas rápidas y cotidianas, existe una alternativa muy popular y accesible: el **Tarot de Sí o No**.
-
-Se trata de un formato simplificado de lectura donde la baraja o el oráculo digital responde con un veredicto binario. Pero hay un secreto: **para obtener una respuesta clara y útil, la pregunta debe estar perfectamente formulada**. Si haces preguntas confusas o mal estructuradas, el resultado será inútil. En esta guía te voy a enseñar cómo formular preguntas efectivas sobre amor, dinero y trabajo para tu oráculo de cabecera.
-
----
-
-## El Arte de la Precisión: Por qué fallan las preguntas vagas
-
-El error más común de quienes consultan un oráculo de Sí o No es hacer preguntas abiertas. Por ejemplo: *¿Cómo me irá en mi relación amorosa?* o *¿Qué pasará con mi entrevista de trabajo?*
-
-Un oráculo binario no puede explicar escenarios complejos ni dar detalles narrativos. Solo puede dar una afirmación o una negación. Si le haces una pregunta abierta a un oráculo digital, la respuesta "Sí" o "No" carecerá por completo de sentido.
-
-Para que la consulta sea efectiva, debes seguir tres reglas de oro de formulación:
-
-1. **La pregunta debe ser cerrada:** Solo debe admitir un Sí o un No como respuesta lógica.
-2. **Debe ser directa e individual:** Enfócate en un solo tema o acción a la vez. No mezcles conceptos.
-3. **Evita las negaciones cruzadas:** En lugar de preguntar *¿Es verdad que no conseguiré el empleo?* (lo cual genera confusión si sale No), pregunta *¿Conseguiré el empleo en esta empresa?*.
+Para que una [pregunta sí o no](/si-o-no) te ayude a decidir, o para que dé risa en una reunión, **la pregunta tiene que estar bien hecha**. En esta guía verás cómo, con ejemplos para copiar.
 
 ---
 
-## Ejemplos de Preguntas Efectivas por Categorías
+## Por qué fallan las preguntas abiertas
 
-A continuación, tienes un listado de preguntas modelo bien estructuradas y listas para usar en tu oráculo:
+Una respuesta de sí o no solo puede afirmar o negar. Si la pregunta es abierta (*«¿Cómo me irá en el trabajo?»*, *«¿Qué ceno?»*), un «sí» no significa nada.
 
-### Sobre Amor y Relaciones
-* **Incorrecto:** *¿Qué siente mi ex por mí?* (Abierta)
-* **Correcto:** *¿Recibiré un mensaje de mi ex antes de que termine el mes?*
-* **Correcto:** *¿Es conveniente para mí iniciar una relación con [Nombre Personas] ahora mismo?*
-* **Correcto:** *¿Tendré una cita romántica el próximo fin de semana?*
+Sigue tres reglas:
 
-### Sobre Trabajo y Dinero
-* **Incorrecto:** *¿Cómo me irá en las finanzas de este año?* (Abierta)
-* **Correcto:** *¿Aceptarán mi propuesta de aumento de sueldo en la oficina?*
-* **Correcto:** *¿Es buena idea invertir dinero en este nuevo proyecto de negocio?*
-* **Correcto:** *¿Aprobaré el examen de certificación profesional de la próxima semana?*
-
-### Sobre Decisiones y Estilo de Vida
-* **Correcto:** *¿Debería mudarme de piso antes de finalizar el año?*
-* **Correcto:** *¿Es buen momento para hacer ese viaje de vacaciones que tengo planeado?*
+1. **Que sea cerrada:** solo admite sí o no como respuesta.
+2. **Una cosa a la vez:** *«¿Salgo y me pongo la camisa azul?»* son dos preguntas. Sepáralas.
+3. **Sin negaciones:** en lugar de *«¿No voy al gimnasio hoy?»*, pregunta *«¿Voy al gimnasio hoy?»*. Si sale «no», no tendrás que pensar qué significaba.
 
 ---
 
-## Tabla de Estructuración de Preguntas para el Oráculo
+## Ejemplos de preguntas bien hechas
 
-| Tema de Consulta | Formulación Confusa (Evitar) | Formulación Efectiva (Recomendada) |
+### Para decidir en el día a día
+* **Mal:** *¿Qué hago esta noche?* (abierta)
+* **Bien:** *¿Salgo esta noche?*
+* **Bien:** *¿Pido comida a domicilio?*
+* **Bien:** *¿Veo otro capítulo antes de dormir?*
+
+### Para planes con amigos o familia
+* **Mal:** *¿A dónde vamos el sábado?* (abierta)
+* **Bien:** *¿Vamos a la playa el sábado?*
+* **Bien:** *¿Pedimos pizza con piña?*
+* **Bien:** *¿Jugamos otra partida?*
+
+### Para jugar y reírse
+* *¿El perro sabe que es un perro?*
+* *¿Mi hermano va a lavar los platos hoy?*
+* *¿Alguien en esta mesa se ha comido el último trozo de pastel?*
+
+Tienes muchas más en la guía de [preguntas divertidas de sí o no](/blog/si-o-no/preguntas-divertidas-oraculo-si-o-no).
+
+---
+
+## Tabla para copiar
+
+| Situación | Pregunta confusa (evitar) | Pregunta clara (usar) |
 | :--- | :--- | :--- |
-| **Relaciones** | ¿Volveré con mi pareja y seremos felices para siempre? | ¿Habrá una reconciliación con mi ex este mes? |
-| **Profesional** | ¿Mejorará mi situación laboral pronto? | ¿Recibiré una oferta de empleo de la empresa que me entrevistó? |
-| **Finanzas** | ¿Seré rico este año? | ¿Es rentable comprar este activo financiero hoy? |
+| **Comida** | ¿Qué comemos hoy? | ¿Pedimos comida a domicilio? |
+| **Plan** | ¿Hacemos algo este finde? | ¿Vamos al cine el sábado? |
+| **Rutina** | ¿Debería cuidarme más? | ¿Voy al gimnasio hoy? |
+| **Juego** | ¿Quién gana? | ¿Gana el equipo azul? |
 
 ---
 
-## Cómo usar el Oráculo de Sí o No de Decídelo.app
+## Qué preguntas no dejar al azar
 
-Si quieres realizar tus consultas de forma rápida, privada y totalmente gratuita, nuestro simulador digital de **Tarot y Oráculo Sí o No** es la herramienta ideal:
+Una respuesta al azar sirve para dudas en las que **las dos salidas te valen**: qué cenar, si salir o quedarte, qué ver. No sirve para decisiones de salud, dinero, trabajo o relaciones importantes. Ahí, habla con alguien de confianza o con un profesional.
 
-1. Busca un momento de calma y concéntrate en la duda que te ronda la cabeza.
-2. Formula tu pregunta siguiendo las pautas de esta guía (escríbela mentalmente o anótala).
-3. Entra en nuestra herramienta de [Oráculo Sí o No](https://decidelo.app/si-o-no).
-4. Haz clic en el botón de consulta. El sistema girará y te mostrará una respuesta en pantalla de forma instantánea.
+---
+
+## Cómo usar la Pregunta sí o no de Decídelo.app
+
+1. Escribe tu pregunta siguiendo las reglas de arriba.
+2. Entra en [Pregunta sí o no](/si-o-no) y pégala en el campo «Tu pregunta».
+3. Pulsa «Preguntar». La bola 8 se agita y te da la respuesta al instante.
+4. Fíjate en qué sientes: si la respuesta te da alivio o decepción, ya sabías lo que querías.
 
 > [!TIP]
-> **Usa el oráculo como guía de introspección:** Recuerda que la respuesta del azar sirve para activar tu intuición. Si el oráculo responde "No" a tu propuesta de negocio y sientes el deseo de llevarle la contraria y hacerlo de todos modos, has obtenido tu respuesta real: ¡tienes la determinación para seguir adelante!
+> **Si preguntas varias veces hasta que salga lo que quieres, ya tienes tu respuesta.** Querías ese resultado desde el principio.
 
-Aprende a formular tus dudas de forma clara y directa. Abre nuestra aplicación, pon en práctica la guía de preguntas y deja que el oráculo te ayude a encontrar el foco mental que necesitas para avanzar. ¡Que el azar aclare tus dudas!
+¿Tienes más de dos opciones? Entonces no es una pregunta de sí o no: gira la [ruleta de decisiones](/ruleta).
