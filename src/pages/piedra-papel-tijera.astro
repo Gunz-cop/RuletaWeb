@@ -19,10 +19,6 @@ const socialImage = await getSocialImageUrl('/blog/piedra-papel-tijera.png');
 // en si-o-no.astro).
 const textBtn = 'bg-transparent border-0 border-b border-(--divider-line) rounded-none px-0 py-1 font-sans text-base text-ink-secondary cursor-pointer hover:text-warm hover:border-current focus-visible:text-warm focus-visible:border-current focus-visible:outline-none aria-pressed:text-ink-primary aria-pressed:border-warm';
 
-// Campo subrayado del sistema editorial, 16px o más para que Safari no
-// haga zoom al enfocarlo.
-const campo = 'w-full min-w-0 bg-transparent border-0 border-b border-(--divider-line) rounded-none px-0 py-1.5 font-sans text-base text-ink-primary placeholder:text-ink-tertiary focus:outline-none focus:border-warm';
-
 const ELECCIONES = [
   { forma: 'piedra', nombre: 'Piedra' },
   { forma: 'papel', nombre: 'Papel' },
@@ -134,16 +130,6 @@ const schemaLD = {
       <div class="flex gap-6" role="group" aria-label="Modo de juego">
         <button class={textBtn} type="button" data-mode="maquina" aria-pressed="true">Contra la máquina</button>
         <button class={textBtn} type="button" data-mode="dos" aria-pressed="false">Dos jugadores</button>
-      </div>
-      <div class="grid grid-cols-2 gap-4 w-full max-w-sm" id="ppt-names" hidden>
-        <label class="flex flex-col gap-1.5 min-w-0">
-          <span class="text-xs font-semibold tracking-widest uppercase text-ink-tertiary">Jugador 1</span>
-          <input id="ppt-name-input-1" type="text" maxlength="20" placeholder="Jugador 1" autocomplete="off" class={campo}>
-        </label>
-        <label class="flex flex-col gap-1.5 min-w-0">
-          <span class="text-xs font-semibold tracking-widest uppercase text-ink-tertiary">Jugador 2</span>
-          <input id="ppt-name-input-2" type="text" maxlength="20" placeholder="Jugador 2" autocomplete="off" class={campo}>
-        </label>
       </div>
     </div>
 

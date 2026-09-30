@@ -95,7 +95,6 @@ function initPPT() {
   const object = $('ppt-object');
   const choices = [...document.querySelectorAll('#ppt-choices .ppt-choice')];
   const modeBtns = [...document.querySelectorAll('[data-mode]')];
-  const namesBox = $('ppt-names');
   const nameInputs = [$('ppt-name-input-1'), $('ppt-name-input-2')];
   const turn = $('ppt-turn');
   const choicesBox = $('ppt-choices');
@@ -167,6 +166,7 @@ function initPPT() {
     if (modo === 'maquina') turn.textContent = 'Elige tu jugada';
     else if (pendiente && !pasado) turn.textContent = `Listo, ${n1}. Pásale el móvil a ${n2}`;
     else if (pendiente) turn.textContent = `Tu turno, ${n2}. ${n1} ya eligió`;
+    else if (!nameInputs.some((i) => i?.value.trim())) turn.textContent = 'Pongan sus nombres bajo las manos';
     else turn.textContent = `Elige ${n1}, sin que ${n2} mire`;
   }
 
@@ -423,7 +423,7 @@ function initPPT() {
     modo = nuevo;
     writeStore(MODE_KEY, modo === 'dos' ? 'dos' : null);
     modeBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === modo)));
-    if (namesBox) namesBox.hidden = modo !== 'dos';
+    object.classList.toggle('is-dos', modo === 'dos');
     const grupo = document.getElementById('ppt-choices');
     grupo?.setAttribute('aria-label', modo === 'dos' ? 'Jugada' : 'Tu jugada');
     pendiente = null;
@@ -445,6 +445,15 @@ function initPPT() {
     writeStore(NAMES_KEY, valores.some(Boolean) ? valores : null);
     pintarNombres();
     pintarTurno();
+  }));
+
+  // Intro en el primer nombre salta al segundo; en el segundo cierra el
+  // teclado para dejar a la vista las manos y las jugadas
+  nameInputs.forEach((input, i) => input?.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    if (i === 0) nameInputs[1]?.focus();
+    else input.blur();
   }));
 
   ponerModo(modo);

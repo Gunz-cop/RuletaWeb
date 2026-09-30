@@ -10,10 +10,15 @@
 .ppt-hand[S] img{pointer-events:none;width:100%;height:100%;display:block}
 .ppt-floor[S]{width:calc(var(--hand-size) * .7);height:calc(var(--hand-size) * .07);margin-top:calc(var(--hand-size) * -.04);will-change:transform, opacity;background:radial-gradient(closest-side,#0000008c,#0000);border-radius:50%}
 .ppt-name[S]{letter-spacing:.1em;text-transform:uppercase;color:var(--text-tertiary);text-overflow:ellipsis;white-space:nowrap;font-size:.75rem;font-weight:600;overflow:hidden}
+.ppt-name-input[S]{border:0;border-bottom:1px solid var(--text-tertiary);width:6.5rem;min-width:0;color:var(--text-primary);text-align:center;background:0 0;border-radius:0;padding:.1rem 0;font-family:Outfit,sans-serif;font-size:1rem;font-weight:600;display:none}
+.ppt-name-input[S]::placeholder{color:var(--text-tertiary)}
+.ppt-name-input[S]:focus{border-bottom-color:var(--accent-warm);outline:none}
+.ppt-object[S].is-dos .ppt-name[S]{display:none}
+.ppt-object[S].is-dos .ppt-name-input[S]{display:block}
 .ppt-score[S]{color:var(--text-primary);font-variant-numeric:tabular-nums;font-family:Outfit,sans-serif;font-weight:700}
 .ppt-side[S]{min-width:0}
 .ppt-hand[S]{transition:transform .35s cubic-bezier(.2,.7,.3,1)}
-.ppt-side[S].is-winner .ppt-name[S]{color:var(--accent-warm)}
+.ppt-side[S].is-winner .ppt-name[S],.ppt-side[S].is-winner .ppt-name-input[S]{color:var(--accent-warm)}
 .ppt-side[S].is-winner .ppt-hand[S]{transform:scale(1.06)}
 .ppt-side[S][data-lado="2"].is-winner .ppt-hand[S]{transform:scale(-1.06,1.06)}
 .ppt-side[S].is-loser .ppt-hand[S]{transform:translateY(6%)scale(.88)}

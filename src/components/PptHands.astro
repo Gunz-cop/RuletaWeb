@@ -32,6 +32,9 @@ const LADOS = [
       <div class="ppt-floor" id={`ppt-floor-${n}`} aria-hidden="true"></div>
       <p class="m-0 mt-1 flex items-baseline gap-2 max-w-full">
         <span class="ppt-name" id={`ppt-name-${n}`}>{nombre}</span>
+        {/* Con dos jugadores la etiqueta se vuelve campo: el nombre se
+            escribe donde se lee, bajo su mano, no en un formulario aparte */}
+        <input class="ppt-name-input" id={`ppt-name-input-${n}`} type="text" maxlength="20" placeholder={`Jugador ${n}`} aria-label={`Nombre del jugador ${n}`} autocomplete="off" enterkeyhint={n === 1 ? 'next' : 'done'}>
         <span class="ppt-score" id={`ppt-score-${n}`}>0</span>
       </p>
     </div>
@@ -115,6 +118,40 @@ const LADOS = [
     white-space: nowrap;
   }
 
+  .ppt-name-input {
+    display: none;
+    width: 6.5rem;
+    min-width: 0;
+    padding: 0.1rem 0;
+    border: 0;
+    border-bottom: 1px solid var(--text-tertiary);
+    border-radius: 0;
+    background: transparent;
+    color: var(--text-primary);
+    /* 16px o más: Safari en iPhone hace zoom al enfocar un campo menor */
+    font-family: 'Outfit', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    text-align: center;
+  }
+
+  .ppt-name-input::placeholder {
+    color: var(--text-tertiary);
+  }
+
+  .ppt-name-input:focus {
+    outline: none;
+    border-bottom-color: var(--accent-warm);
+  }
+
+  .ppt-object.is-dos .ppt-name {
+    display: none;
+  }
+
+  .ppt-object.is-dos .ppt-name-input {
+    display: block;
+  }
+
   .ppt-score {
     font-family: 'Outfit', sans-serif;
     font-weight: 700;
@@ -131,7 +168,8 @@ const LADOS = [
   }
 
   /* El ganador se marca con su nombre en el acento y la mano algo mayor */
-  .ppt-side.is-winner .ppt-name {
+  .ppt-side.is-winner .ppt-name,
+  .ppt-side.is-winner .ppt-name-input {
     color: var(--accent-warm);
   }
 

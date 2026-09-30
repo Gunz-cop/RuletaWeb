@@ -721,7 +721,7 @@ export const ESTADOS = [
       { sel: '.ppt-choice', props: ['borderTopWidth', 'borderRadius'] },
       { sel: '.history-row', props: ['display', 'borderBottomWidth', 'borderBottomStyle'] },
       { sel: '.history-label', props: ['color'] },
-      { sel: '#ppt-names', props: ['display'] },
+      { sel: '#ppt-name-input-1', props: ['display'] },
     ],
   },
   {
