@@ -5,6 +5,7 @@ import HubGrid from '../components/HubGrid.astro';
 import SeoArticle from '../components/SeoArticle.astro';
 import PptHands from '../components/PptHands.astro';
 import HandShape from '../components/HandShape.astro';
+import PptModoDemo from '../components/PptModoDemo.astro';
 import { getSocialImageUrl } from '../lib/heroImages';
 
 const title = 'Piedra, Papel o Tijera Online: Juega Gratis y Sin Registro';
@@ -248,12 +249,15 @@ const schemaLD = {
     <h2>Tres modos de juego</h2>
     <h3>Contra la máquina</h3>
     <p>Para pasar el rato o practicar. La máquina elige con <code>crypto.getRandomValues</code>, el generador aleatorio del navegador<sup><a href="#fuente-4">[4]</a></sup>, y no ve tu jugada antes de elegir. Piedra, papel y tijera tienen la misma probabilidad en cada ronda, así que no tiene rachas ni manías que puedas aprender.</p>
+    <PptModoDemo modo="maquina" />
 
     <h3>Dos jugadores en el mismo móvil</h3>
     <p>Elige el primero, pulsa <strong>Elegir</strong> para pasar el móvil y elige el segundo. Entre un turno y otro las jugadas se ocultan, así que nadie ve la del otro ni puede cambiar la suya en el último momento. Es la forma más limpia de acabar con el clásico «¡has sacado tarde!».</p>
+    <PptModoDemo modo="dos" />
 
     <h3>A distancia por WhatsApp</h3>
     <p>Escribe tu nombre y el de tu rival, elige tu jugada y pulsa <strong>Enviar reto por WhatsApp</strong> (o <strong>Copiar enlace</strong>). Tu amigo abre el enlace, elige la suya y ve el resultado; luego te lo puede devolver. Sirve para decidir con la familia o con amigos que no están en la misma casa.</p>
+    <PptModoDemo modo="distancia" />
 
     <h2>Ideas para usarlo</h2>
     <table>
