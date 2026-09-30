@@ -11,6 +11,63 @@ Esta skill aplica lo aprendido al rehacer la moneda (`src/pages/moneda.astro`).
 
 Todo el texto va en español neutro, con el trato de «tú».
 
+## 0. Antes de escribir: posicionamiento y territorio
+
+### Qué es el sitio (y qué no es)
+
+Decídelo.app son **juegos interactivos para decidir**: en grupo, entre
+amigos, en familia o para pasar el rato. **No es un sitio de juegos de azar**
+y no debe parecerlo, ni para Google ni para quien llega.
+
+- **Prohibido:** apuesta, apostar, apostador, casino, lotería, ganar dinero,
+  premio en dinero, jackpot, ludopatía, «prueba tu suerte». Tampoco para
+  prohibirlos («no la uses para apuestas»): nombrarlos ya asocia la página.
+  Conceptos con esas palabras en el nombre (la «falacia del apostador») se
+  explican sin nombrarlos o se omiten.
+- **Evita el tono místico o adivinatorio:** nada de «el destino decide»,
+  «el universo responde», «predice tu futuro». Si una herramienta tiene un
+  personaje (la bola 8), se presenta como juego, no como adivinación.
+- **Sí:** decidir, jugar, reunión, amigos, grupo, empate, turno, reto, rato
+  libre, aburrimiento, «que decida el juego».
+- El aviso de límites se redacta en positivo: «Para decisiones médicas,
+  legales o de dinero, mejor habla con alguien que sepa del tema».
+- Si encuentras vocabulario prohibido en el código de la app (un tema, una
+  opción, una keyword), no lo cambies por tu cuenta: señálalo.
+
+### Una intención de búsqueda, una página
+
+Cada herramienta es dueña de un territorio de consultas. Si dos páginas
+persiguen la misma consulta, Google alterna entre ellas y ninguna sube.
+
+| Página | Es dueña de | No persigue |
+|---|---|---|
+| `/moneda` | Elegir entre **dos opciones con nombre**: cara o sello, cara o cruz, águila o sol, volado | Preguntas de sí o no |
+| `/si-o-no` | **Una pregunta** que se responde sí o no; bola 8; preguntas para jugar | Elegir entre dos opciones |
+| `/ruleta` | **Tres o más** opciones o nombres; ruleta de nombres, de premios, de retos | Dos opciones; números |
+| `/numeros` | Número aleatorio en un rango; sorteo por número | Nombres (eso es ruleta) |
+| `/dados` | Tirar dados para juegos de mesa y rol | Números en rango |
+| `/equipos` | Dividir un grupo en equipos | Elegir a una persona (ruleta) |
+| `/piedra-papel-tijera` | Jugar piedra, papel o tijera | Romper empates en general (solo como juego) |
+| `/amigo-secreto` | Intercambio de regalos, sorteo de amigo secreto | Sorteos genéricos |
+| `/temporizador` | Temporizador, turnos con tiempo, pomodoro | — |
+
+Reglas:
+
+1. **Título, description, H1 y keywords** solo usan las consultas del
+   territorio propio. La consulta de otra herramienta no entra ahí.
+2. **En el artículo**, otra herramienta se nombra una vez, con enlace, para
+   derivar («para tres o más opciones, gira la ruleta»), no se explica.
+3. **Consultas frontera** (p. ej. «decidir entre dos cosas», «romper un
+   empate»): decide una sola página dueña, añádela a la tabla y que las
+   demás enlacen a ella.
+4. **Blog**: cada guía enlaza a su herramienta; si su tema es de otro
+   territorio, se mueve o se enlaza a la herramienta dueña.
+5. **Con Search Console**: si una consulta da impresiones a dos URL del
+   sitio, es canibalización. Díselo al propietario con las cifras y
+   propón cuál se queda la consulta.
+6. Antes de publicar, busca las keywords nuevas en `src/pages/` y
+   `src/content/blog/` (`grep -ri`) para ver si otra página ya las usa.
+
 ## 1. Partir de los datos, no de intuiciones
 
 Si hay un export de Search Console (zip con `Consultas.csv`, `Países.csv`,

@@ -244,7 +244,7 @@ const schemaLD = {
   <SeoArticle title="Cara o sello online: cuando las dos opciones te valen, que decida la moneda">
     <p><strong>¿Llevas cinco minutos dudando entre dos opciones?</strong> Lanzar una moneda es la forma más rápida de decidir entre dos opciones que te valen igual. Según el país se dice <strong>cara o sello</strong>, <strong>cara o cruz</strong>, <strong>volado águila o sol</strong> o <strong>cara o ceca</strong>, pero el juego es el mismo: dos lados, un 50 % cada uno. Esta moneda online funciona en el móvil y en el ordenador, sin instalar nada y sin registro.</p>
 
-    <p>Úsala para lo cotidiano (y <a href="#coin-single">pruébala ahora, está justo arriba</a>): quién empieza la partida, qué comer, qué equipo saca, qué tarea haces primero o cómo romper un empate entre amigos. No la uses para apuestas ni para decisiones médicas, legales o de dinero.</p>
+    <p>Úsala para lo cotidiano (y <a href="#coin-single">pruébala ahora, está justo arriba</a>): quién empieza la partida, qué comer, qué equipo saca, qué tarea haces primero o cómo romper un empate entre amigos. Para decisiones médicas, legales o de dinero, mejor habla con alguien que sepa del tema.</p>
 
     <h2>Cómo tirar una moneda online</h2>
     <CoinDemo />
@@ -262,7 +262,7 @@ const schemaLD = {
         <tr><th>País</th><th>Cómo se dice</th></tr>
       </thead>
       <tbody>
-        <tr><td>Colombia, Chile, Perú, Ecuador, Panamá, Venezuela<sup><a href="#fuente-10">[10]</a></sup></td><td>Cara o sello</td></tr>
+        <tr><td>Colombia, Chile, Perú, Ecuador, Panamá, Venezuela<sup><a href="#fuente-9">[9]</a></sup></td><td>Cara o sello</td></tr>
         <tr><td>México</td><td>Volado: águila o sol</td></tr>
         <tr><td>Argentina</td><td>Cara o ceca</td></tr>
         <tr><td>Costa Rica</td><td>Escudo o corona</td></tr>
@@ -282,10 +282,10 @@ const schemaLD = {
     <p>Lanza de 2 a 5 monedas de golpe y verás cuántas caras y cuántos sellos salen. Sirve para juegos como las <a href="/blog/moneda/juego-chapas">chapas</a>, para clases de probabilidad o simplemente para ver el azar en acción. El marcador de cada serie queda guardado en el historial.</p>
 
     <h2>¿Es una moneda justa? El 50/50 explicado</h2>
-    <p>Una moneda física no es perfecta. Diaconis, Holmes y Montgomery calcularon que una moneda lanzada con la mano cae del mismo lado con que empezó cerca del 51 % de las veces<sup><a href="#fuente-2">[2]</a></sup>, y un experimento de 2023 con <strong>350.757 lanzamientos reales</strong> lo confirmó: 50,8 %<sup><a href="#fuente-3">[3]</a></sup>. Aquí no pasa: cada resultado sale del generador de valores aleatorios criptográficamente fuertes del navegador (<code>crypto.getRandomValues</code>)<sup><a href="#fuente-4">[4]</a></sup>, con la <strong>misma probabilidad para cada lado</strong>. La animación solo muestra ese resultado; no lo decide. Y que haya salido sello tres veces seguidas no cambia la siguiente tirada: creer lo contrario es la llamada falacia del apostador<sup><a href="#fuente-5">[5]</a></sup>.</p>
+    <p>Una moneda física no es perfecta. Diaconis, Holmes y Montgomery calcularon que una moneda lanzada con la mano cae del mismo lado con que empezó cerca del 51 % de las veces<sup><a href="#fuente-2">[2]</a></sup>, y un experimento de 2023 con <strong>350.757 lanzamientos reales</strong> lo confirmó: 50,8 %<sup><a href="#fuente-3">[3]</a></sup>. Aquí no pasa: cada resultado sale del generador de valores aleatorios criptográficamente fuertes del navegador (<code>crypto.getRandomValues</code>)<sup><a href="#fuente-4">[4]</a></sup>, con la <strong>misma probabilidad para cada lado</strong>. La animación solo muestra ese resultado; no lo decide. Cada lanzamiento es independiente: lo que salió antes no cambia lo que sale ahora.</p>
 
     <h2>Por qué lanzar una moneda ayuda a decidir</h2>
-    <p>Cuando dos opciones pesan lo mismo, una pregunta tan simple como &laquo;¿empiezo por la tarea A o por la B?&raquo; puede bloquearte un buen rato. La ciencia dice que la moneda ayuda más de lo que parece: en un estudio publicado en <em>PLOS ONE</em>, quienes lanzaban una moneda sentían con más fuerza qué opción preferían, incluso sin obedecerla<sup><a href="#fuente-6">[6]</a></sup>. Y en un experimento del economista Steven Levitt con miles de personas, quienes hicieron el cambio que les indicó la moneda se declaraban más felices seis meses después<sup><a href="#fuente-7">[7]</a></sup>. La moneda corta ese bucle:</p>
+    <p>Cuando dos opciones pesan lo mismo, una pregunta tan simple como &laquo;¿empiezo por la tarea A o por la B?&raquo; puede bloquearte un buen rato. La ciencia dice que la moneda ayuda más de lo que parece: en un estudio publicado en <em>PLOS ONE</em>, quienes lanzaban una moneda sentían con más fuerza qué opción preferían, incluso sin obedecerla<sup><a href="#fuente-5">[5]</a></sup>. Y en un experimento del economista Steven Levitt con miles de personas, quienes hicieron el cambio que les indicó la moneda se declaraban más felices seis meses después<sup><a href="#fuente-6">[6]</a></sup>. La moneda corta ese bucle:</p>
     <ul>
       <li><strong>Te saca del bloqueo:</strong> convierte la duda en un paso concreto en un segundo.</li>
       <li><strong>Te muestra lo que ya querías:</strong> mientras la moneda gira, sueles desear que salga un lado. Ese deseo es la respuesta, salga lo que salga.</li>
@@ -315,7 +315,7 @@ const schemaLD = {
     <h3>2. Escribe las opciones, no te las guardes en la cabeza</h3>
     <p>Poner nombre a cada lado evita el clásico &laquo;¿cara era la pizza o el sushi?&raquo;. En la herramienta el resultado aparece con tu opción escrita, así que nadie puede discutirlo.</p>
     <h3>3. Usa la prueba del alivio</h3>
-    <p>Justo al ver el resultado, la herramienta te pregunta qué sentiste. Si sientes decepción, ya sabes que preferías la otra opción: puedes elegirla sin culpa. Si sientes alivio, adelante. Está comprobado: lanzar la moneda intensifica esa reacción y te ayuda a ver lo que querías<sup><a href="#fuente-6">[6]</a></sup>.</p>
+    <p>Justo al ver el resultado, la herramienta te pregunta qué sentiste. Si sientes decepción, ya sabes que preferías la otra opción: puedes elegirla sin culpa. Si sientes alivio, adelante. Está comprobado: lanzar la moneda intensifica esa reacción y te ayuda a ver lo que querías<sup><a href="#fuente-5">[5]</a></sup>.</p>
     <h3>4. Para decisiones de grupo, comparte el enlace</h3>
     <p>Con &laquo;Compartir esta decisión&raquo; mandas la misma moneda por WhatsApp. Todos ven las mismas opciones y nadie puede decir que hiciste trampa.</p>
     <h3>5. Si hay más de dos opciones, cambia de herramienta</h3>
@@ -341,7 +341,7 @@ const schemaLD = {
     </table>
 
     <h2>¿Por qué se dice cara o sello?</h2>
-    <p>Lanzar una moneda para decidir es un juego muy antiguo. El escritor romano Macrobio cuenta en las <em>Saturnales</em> que los niños lanzaban monedas al aire gritando <em>capita aut navia</em>, &laquo;cabezas o barco&raquo;, porque las monedas antiguas tenían una cabeza de Jano en un lado y un barco en el otro<sup><a href="#fuente-8">[8]</a></sup>. Hoy cada país tiene su propio nombre para el mismo juego: <strong>cara o sello</strong> en Colombia, <strong>cara o cruz</strong> en España, <strong>águila o sol</strong> en México<sup><a href="#fuente-1">[1]</a></sup>. Cambia el nombre, pero la regla es idéntica en todas partes: dos lados, la misma oportunidad.</p>
+    <p>Lanzar una moneda para decidir es un juego muy antiguo. El escritor romano Macrobio cuenta en las <em>Saturnales</em> que los niños lanzaban monedas al aire gritando <em>capita aut navia</em>, &laquo;cabezas o barco&raquo;, porque las monedas antiguas tenían una cabeza de Jano en un lado y un barco en el otro<sup><a href="#fuente-7">[7]</a></sup>. Hoy cada país tiene su propio nombre para el mismo juego: <strong>cara o sello</strong> en Colombia, <strong>cara o cruz</strong> en España, <strong>águila o sol</strong> en México<sup><a href="#fuente-1">[1]</a></sup>. Cambia el nombre, pero la regla es idéntica en todas partes: dos lados, la misma oportunidad.</p>
 
     <h2>Deja de dudar: lanza la moneda ahora</h2>
     <p>Llevas leyendo un buen rato y la decisión sigue ahí esperando. Sube a la <a href="#coin-single">moneda online</a>, escribe tus dos opciones y pulsa &laquo;Lanzar moneda&raquo;. En un segundo tendrás tu respuesta y, con la prueba del alivio, sabrás si de verdad era la que querías. Y si la duda tiene más de dos caminos, gira la <a href="/ruleta">ruleta</a> o pregunta al <a href="/si-o-no">oráculo de sí o no</a>.</p>
@@ -366,7 +366,7 @@ const schemaLD = {
     <p>Solo un historial breve en tu propio navegador, que puedes borrar cuando quieras. No hace falta cuenta y tus opciones no se envían a ningún servidor.</p>
 
     <h3>¿Cómo se decide quién saca en el fútbol con una moneda?</h3>
-    <p>Según las Reglas de Juego de la IFAB, el árbitro lanza una moneda y el equipo que gana el sorteo decide hacia qué portería atacará en el primer tiempo o si hace el saque inicial<sup><a href="#fuente-9">[9]</a></sup>. Aquí puedes hacer lo mismo: escribe el nombre de cada equipo en un lado y lanza.</p>
+    <p>Según las Reglas de Juego de la IFAB, el árbitro lanza una moneda y el equipo que gana el sorteo decide hacia qué portería atacará en el primer tiempo o si hace el saque inicial<sup><a href="#fuente-8">[8]</a></sup>. Aquí puedes hacer lo mismo: escribe el nombre de cada equipo en un lado y lanza.</p>
 
     <h3>¿Puedo lanzar una moneda con alguien que está lejos?</h3>
     <p>Sí. Escribe las dos opciones, lanza y pulsa &laquo;Compartir esta decisión&raquo;. La otra persona recibe un enlace con la misma moneda y las mismas opciones para lanzarla ella también.</p>
@@ -386,12 +386,11 @@ const schemaLD = {
       <li id="fuente-2">Diaconis, P., Holmes, S. y Montgomery, R. (2007). «Dynamical Bias in the Coin Toss». <em>SIAM Review</em>, 49(2), 211-235. <a href="https://www.stat.berkeley.edu/~aldous/157/Papers/diaconis_coinbias.pdf" rel="noopener" target="_blank">www.stat.berkeley.edu</a></li>
       <li id="fuente-3">Bartoš, F. et al. (2023). «Fair coins tend to land on the same side they started: Evidence from 350,757 flips». arXiv:2310.04153. <a href="https://arxiv.org/abs/2310.04153" rel="noopener" target="_blank">arxiv.org</a></li>
       <li id="fuente-4">MDN Web Docs. «Crypto.getRandomValues()». <a href="https://developer.mozilla.org/es/docs/Web/API/Crypto/getRandomValues" rel="noopener" target="_blank">developer.mozilla.org</a></li>
-      <li id="fuente-5">Wikipedia. «Falacia del apostador». <a href="https://es.wikipedia.org/wiki/Falacia_del_apostador" rel="noopener" target="_blank">es.wikipedia.org</a></li>
-      <li id="fuente-6">Jaffé, M. E., Reutner, L. y Greifeneder, R. (2019). «Catalyzing decisions: How a coin flip strengthens affective reactions». <em>PLOS ONE</em>, 14(8): e0220736. <a href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0220736" rel="noopener" target="_blank">journals.plos.org</a></li>
-      <li id="fuente-7">Levitt, S. D. (2016). «Heads or Tails: The Impact of a Coin Toss on Major Life Decisions and Subsequent Happiness». NBER Working Paper 22487; publicado en <em>The Review of Economic Studies</em> (2021). <a href="https://www.nber.org/papers/w22487" rel="noopener" target="_blank">www.nber.org</a></li>
-      <li id="fuente-8">Macrobio. <em>Saturnales</em>, libro I, 7.22 (texto latino en LacusCurtius). <a href="https://penelope.uchicago.edu/Thayer/L/Roman/Texts/Macrobius/Saturnalia/1*.html" rel="noopener" target="_blank">penelope.uchicago.edu</a></li>
-      <li id="fuente-9">IFAB. Reglas de Juego, Regla 8: «Inicio y reanudación del juego». <a href="https://www.theifab.com/laws/latest/the-start-and-restart-of-play/" rel="noopener" target="_blank">www.theifab.com</a></li>
-      <li id="fuente-10">López, R. A. (2026). «Cara o sello: creer o no creer». <em>El Nacional</em> (Venezuela). <a href="https://www.elnacional.com/columnas/2026/07/cara-o-sello-creer-o-no-creer/" rel="noopener" target="_blank">www.elnacional.com</a></li>
+      <li id="fuente-5">Jaffé, M. E., Reutner, L. y Greifeneder, R. (2019). «Catalyzing decisions: How a coin flip strengthens affective reactions». <em>PLOS ONE</em>, 14(8): e0220736. <a href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0220736" rel="noopener" target="_blank">journals.plos.org</a></li>
+      <li id="fuente-6">Levitt, S. D. (2016). «Heads or Tails: The Impact of a Coin Toss on Major Life Decisions and Subsequent Happiness». NBER Working Paper 22487; publicado en <em>The Review of Economic Studies</em> (2021). <a href="https://www.nber.org/papers/w22487" rel="noopener" target="_blank">www.nber.org</a></li>
+      <li id="fuente-7">Macrobio. <em>Saturnales</em>, libro I, 7.22 (texto latino en LacusCurtius). <a href="https://penelope.uchicago.edu/Thayer/L/Roman/Texts/Macrobius/Saturnalia/1*.html" rel="noopener" target="_blank">penelope.uchicago.edu</a></li>
+      <li id="fuente-8">IFAB. Reglas de Juego, Regla 8: «Inicio y reanudación del juego». <a href="https://www.theifab.com/laws/latest/the-start-and-restart-of-play/" rel="noopener" target="_blank">www.theifab.com</a></li>
+      <li id="fuente-9">López, R. A. (2026). «Cara o sello: creer o no creer». <em>El Nacional</em> (Venezuela). <a href="https://www.elnacional.com/columnas/2026/07/cara-o-sello-creer-o-no-creer/" rel="noopener" target="_blank">www.elnacional.com</a></li>
     </ol>
 
   </SeoArticle>
