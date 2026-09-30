@@ -1,0 +1,256 @@
+---
+// Demostración en bucle de un modo de piedra, papel o tijera, para el
+// artículo: cuatro pantallas de un móvil que se suceden cada 2 s. Es solo
+// ilustración (aria-hidden); la descripción va en aria-label.
+// Con prefers-reduced-motion las cuatro pantallas se ven a la vez, como
+// una tira de pasos, sin movimiento.
+interface Props {
+  modo: 'maquina' | 'dos' | 'distancia';
+}
+
+const { modo } = Astro.props;
+
+type Pantalla = {
+  arriba: string;
+  jugadas?: 'piedra' | 'papel' | 'tijera' | 'ninguna';
+  boton?: string;
+  resultado?: string;
+  detalle?: string;
+  pasa?: boolean;
+};
+
+const PANTALLAS: Record<Props['modo'], { etiqueta: string; pasos: Pantalla[] }> = {
+  maquina: {
+    etiqueta: 'Animación: eliges tu jugada, la máquina elige la suya al azar y aparece quién gana.',
+    pasos: [
+      { arriba: 'Elige tu jugada', jugadas: 'ninguna' },
+      { arriba: 'Tú eliges papel', jugadas: 'papel' },
+      { arriba: 'La máquina elige', resultado: 'Piedra', detalle: 'al azar' },
+      { arriba: 'Resultado', resultado: 'Ganas tú', detalle: 'Papel envuelve a piedra' },
+    ],
+  },
+  dos: {
+    etiqueta: 'Animación: Ana elige, pasa el móvil sin que se vea su jugada, Luis elige y se muestran las dos.',
+    pasos: [
+      { arriba: 'Turno de Ana', jugadas: 'tijera' },
+      { arriba: 'Jugada de Ana oculta', boton: 'Elegir', detalle: 'Pasa el móvil a Luis', pasa: true },
+      { arriba: 'Turno de Luis', jugadas: 'piedra' },
+      { arriba: 'Ana: tijera · Luis: piedra', resultado: 'Gana Luis', detalle: 'Ana lava los platos' },
+    ],
+  },
+  distancia: {
+    etiqueta: 'Animación: Ana elige y envía el reto por WhatsApp, Luis abre el enlace, elige y ve quién gana.',
+    pasos: [
+      { arriba: 'Ana elige', jugadas: 'piedra' },
+      { arriba: 'Reto listo', boton: 'Enviar reto por WhatsApp', detalle: 'Luis recibe un enlace', pasa: true },
+      { arriba: 'Luis abre el enlace', jugadas: 'papel' },
+      { arriba: 'Ana: piedra · Luis: papel', resultado: 'Gana Luis', detalle: 'Mandarle el resultado a Ana' },
+    ],
+  },
+};
+
+const { etiqueta, pasos } = PANTALLAS[modo];
+const JUGADAS = ['piedra', 'papel', 'tijera'] as const;
+---
+
+<figure class="pptd" role="img" aria-label={etiqueta}>
+  <div class="pptd-phone" aria-hidden="true">
+    {pasos.map((p, i) => (
+      <div class:list={['pptd-screen', { 'is-pasa': p.pasa }]} style={`--i:${i}`}>
+        <span class="pptd-step">{i + 1}</span>
+        <span class="pptd-top">{p.arriba}</span>
+        {p.jugadas && (
+          <span class="pptd-choices">
+            {JUGADAS.map((j) => (
+              <span class:list={['pptd-choice', { 'is-on': p.jugadas === j }]}>{j}</span>
+            ))}
+          </span>
+        )}
+        {p.resultado && <span class="pptd-result">{p.resultado}</span>}
+        {p.boton && <span class="pptd-btn">{p.boton}</span>}
+        {p.detalle && <span class="pptd-detail">{p.detalle}</span>}
+      </div>
+    ))}
+  </div>
+  <span class="pptd-dots" aria-hidden="true">
+    {pasos.map((_, i) => <span class="pptd-dot" style={`--i:${i}`}></span>)}
+  </span>
+</figure>
+
+<style>
+  /* Keyframes propios: CSS propio (DESIGN.md, "CSS propio y utilidad").
+     Cada pantalla es visible un cuarto del ciclo; el retraso negativo
+     (--i) la coloca en su cuarto. Solo opacity y transform. */
+  .pptd {
+    --pptd-dur: 8s;
+    margin: 1.25rem auto 1.5rem;
+    max-width: 16rem;
+  }
+
+  .pptd-phone {
+    position: relative;
+    height: 11rem;
+    border: 1px solid var(--divider-line);
+    border-radius: 1.5rem;
+    background: var(--bg-surface-alt);
+    overflow: hidden;
+  }
+
+  .pptd-screen {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    padding: 1rem;
+    text-align: center;
+    opacity: 0;
+    animation: pptd-ver var(--pptd-dur) linear infinite;
+    animation-delay: calc(var(--pptd-dur) * (var(--i) - 4) / 4);
+  }
+
+  /* Pasar el móvil o enviar el reto: la pantalla sale hacia la derecha */
+  .pptd-screen.is-pasa {
+    animation-name: pptd-ver, pptd-pasa;
+  }
+
+  .pptd-step {
+    position: absolute;
+    top: 0.6rem;
+    left: 0.9rem;
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .pptd-top {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+
+  .pptd-choices {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.35rem;
+    width: 100%;
+  }
+
+  .pptd-choice {
+    padding: 0.4rem 0;
+    border: 1px solid var(--divider-line);
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: capitalize;
+    color: var(--text-primary);
+  }
+
+  .pptd-choice.is-on {
+    background: var(--accent-warm);
+    border-color: var(--accent-warm);
+    color: #1a0e06;
+    animation: pptd-toque var(--pptd-dur) ease-out infinite;
+    animation-delay: calc(var(--pptd-dur) * (var(--i) - 4) / 4);
+  }
+
+  .pptd-result {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--text-primary);
+  }
+
+  .pptd-btn {
+    padding: 0.45rem 1rem;
+    border-radius: 999px;
+    background: var(--accent-warm);
+    color: #1a0e06;
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+
+  .pptd-detail {
+    font-size: 0.8rem;
+    color: var(--text-tertiary);
+  }
+
+  .pptd-dots {
+    display: flex;
+    justify-content: center;
+    gap: 0.4rem;
+    margin-top: 0.6rem;
+  }
+
+  .pptd-dot {
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 50%;
+    background: var(--accent-warm);
+    opacity: 0.25;
+    animation: pptd-punto var(--pptd-dur) linear infinite;
+    animation-delay: calc(var(--pptd-dur) * (var(--i) - 4) / 4);
+  }
+
+  @keyframes pptd-ver {
+    0% { opacity: 0; transform: translateY(6px); }
+    3%, 22% { opacity: 1; transform: none; }
+    25%, 100% { opacity: 0; transform: none; }
+  }
+
+  @keyframes pptd-pasa {
+    0%, 17% { transform: none; }
+    24%, 100% { transform: translateX(40%); }
+  }
+
+  /* El dedo pulsa la jugada: se hunde un poco al empezar el paso */
+  @keyframes pptd-toque {
+    0%, 4% { transform: scale(1); }
+    8% { transform: scale(0.9); }
+    12%, 100% { transform: scale(1); }
+  }
+
+  @keyframes pptd-punto {
+    0%, 24% { opacity: 1; }
+    25%, 100% { opacity: 0.25; }
+  }
+
+  /* Sin movimiento: las cuatro pantallas en fila, como pasos */
+  @media (prefers-reduced-motion: reduce) {
+    .pptd {
+      max-width: none;
+    }
+
+    .pptd-phone {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      height: auto;
+      gap: 1px;
+      background: var(--divider-line);
+    }
+
+    .pptd-screen {
+      position: relative;
+      min-height: 9rem;
+      padding-top: 1.75rem;
+      opacity: 1;
+      animation: none !important;
+      background: var(--bg-surface-alt);
+    }
+
+    .pptd-choice {
+      padding: 0.3rem 0;
+      font-size: 0.7rem;
+    }
+
+    .pptd-choice.is-on {
+      animation: none;
+    }
+
+    .pptd-dots {
+      display: none;
+    }
+  }
+</style>

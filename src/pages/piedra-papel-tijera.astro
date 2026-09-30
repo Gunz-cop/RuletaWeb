@@ -5,11 +5,12 @@ import HubGrid from '../components/HubGrid.astro';
 import SeoArticle from '../components/SeoArticle.astro';
 import PptHands from '../components/PptHands.astro';
 import HandShape from '../components/HandShape.astro';
+import PptModoDemo from '../components/PptModoDemo.astro';
 import { getSocialImageUrl } from '../lib/heroImages';
 
-const title = 'Piedra, Papel o Tijera Online — Juego Gratis PvP y vs IA | Decídelo.app';
-const description = 'Juega Piedra, Papel o Tijera online gratis contra la IA o en modo 2 jugadores local. Sin registro y sin distracciones: resuelve disputas al instante.';
-const keywords = 'piedra papel tijera, piedra papel o tijera online, juego ppt, rps online, decidir al azar, juego gratis, pvp local, vs ia, decidelo';
+const title = 'Piedra, Papel o Tijera Online: Juega Gratis y Sin Registro';
+const description = '¿Quién lava los platos? Juega piedra, papel o tijera online contra la máquina, en el mismo móvil o a distancia por WhatsApp. Gratis y sin registro.';
+const keywords = 'piedra papel o tijera, piedra papel o tijera online, jugar piedra papel o tijera, piedra papel tijera 2 jugadores, piedra papel o tijera contra la máquina, cachipún, yan ken po, jankenpon';
 
 // La imagen vive en src/assets y la optimiza Astro; el JSON-LD necesita
 // su URL absoluta ya generada, no la ruta pública que tenía antes.
@@ -74,6 +75,60 @@ const schemaLD = {
           "item": "https://decidelo.app/piedra-papel-tijera"
         }
       ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://decidelo.app/piedra-papel-tijera#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "¿Cómo se juega a piedra, papel o tijera?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Cada jugador elige a la vez piedra, papel o tijera. La piedra gana a la tijera, la tijera gana al papel y el papel gana a la piedra. Si los dos eligen lo mismo, es empate y se repite la ronda."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Puedo jugar piedra, papel o tijera con otra persona en el mismo móvil?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Sí. Elige el modo «Mismo móvil»: primero elige un jugador, pasa el móvil y elige el otro. Las jugadas se ocultan entre turno y turno y solo se muestran cuando los dos han elegido."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Cómo juego a distancia con un amigo?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Elige el modo «A distancia», escribe tu nombre y el de tu amigo, elige tu jugada y pulsa «Enviar reto por WhatsApp». Tu amigo abre el enlace, elige su jugada y te puede devolver el resultado por el mismo camino."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "¿La máquina hace trampa?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. La máquina elige con el generador aleatorio del navegador, crypto.getRandomValues, y no mira tu jugada: piedra, papel y tijera tienen la misma probabilidad en cada ronda."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Existe una estrategia para ganar siempre?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Contra alguien que elige al azar, no: ninguna jugada es mejor que otra. Contra personas sí hay tendencias, como repetir la jugada después de ganar y cambiar después de perder, según un experimento de la Universidad de Zhejiang con 360 estudiantes."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Cómo se llama este juego en otros países?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Depende del país: cachipún en Chile, yan ken po en Perú, jankenpon en Paraguay y janken en Japón."
+          }
+        }
+      ]
     }
   ]
 };
@@ -103,7 +158,7 @@ const schemaLD = {
       </div>
     </div>
 
-    <section class="w-full flex flex-col items-center lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:pt-8" aria-label="Jugar a piedra, papel o tijera">
+    <section id="jugar" class="w-full flex flex-col items-center lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:pt-8" aria-label="Jugar a piedra, papel o tijera">
       <PptHands />
 
       <p class="ppt-result w-full text-center mt-2 mb-1 sm:mt-3 sm:mb-2" id="ppt-result" aria-live="polite">
@@ -167,40 +222,123 @@ const schemaLD = {
 
   <AdSlot position="top" />
 
-  <SeoArticle title="¿Cómo se juega Piedra, Papel o Tijera? Reglas, Estrategia y Psicología">
-    <p><strong>Piedra, Papel o Tijera</strong> (también conocido como <em>cachipún</em>, <em>jan-ken-pon</em> o <em>roshambo</em>) es uno de los juegos de mano más universales del planeta. Utilizado desde hace siglos para resolver disputas rápidas, asignar turnos o simplemente divertirse, este juego de suma cero ha fascinado tanto a matemáticos como a psicólogos por su aparente simplicidad y su sorprendente profundidad estratégica.</p>
+  <SeoArticle title="Piedra, papel o tijera online: reglas, modos y trucos">
+    <p><strong>¿Quién elige la película, quién saca la basura o quién empieza la partida? Piedra, papel o tijera lo resuelve en tres segundos, y aquí puedes jugarlo aunque tu rival esté en otra ciudad.</strong> Es el juego de manos más conocido del mundo: dos personas, tres gestos y una regla que se aprende a la primera. Esta versión online añade lo que la mano no puede: una máquina que no se deja leer, turnos ocultos en el mismo móvil y retos por WhatsApp.</p>
 
-    <h2>Reglas Fundamentales del Juego</h2>
-    <p>Las reglas son elegantemente simples y se aprenden en segundos:</p>
+    <h2>Cómo jugar en Decídelo.app</h2>
+    <ol>
+      <li>Elige el modo arriba del juego: <strong>Máquina</strong>, <strong>Mismo móvil</strong> o <strong>A distancia</strong>.</li>
+      <li>Si juegan dos personas, escriban sus nombres bajo las manos. Con <strong>+ ¿Qué se decide?</strong> pueden anotar lo que le toca a quien pierda, por ejemplo «lava los platos».</li>
+      <li>Pulsa <strong>Piedra</strong>, <strong>Papel</strong> o <strong>Tijera</strong>. Las manos se mueven y aparece el resultado.</li>
+      <li>Cada ronda queda en <strong>Últimas rondas</strong>, y el marcador se guarda en tu navegador. Con <strong>Borrar</strong> empiezas de cero.</li>
+    </ol>
+    <p>No hace falta cuenta ni descarga: <a href="#jugar">empieza una ronda ahora</a>.</p>
+
+    <h2>Las reglas de piedra, papel o tijera</h2>
+    <p>Los dos jugadores muestran su gesto a la vez. Cada jugada gana a una y pierde contra otra<sup><a href="#fuente-1">[1]</a></sup>:</p>
+    <table>
+      <thead><tr><th>Jugada</th><th>Gana a</th><th>Pierde contra</th></tr></thead>
+      <tbody>
+        <tr><td>Piedra (puño cerrado)</td><td>Tijera: la rompe</td><td>Papel</td></tr>
+        <tr><td>Papel (mano abierta)</td><td>Piedra: la envuelve</td><td>Tijera</td></tr>
+        <tr><td>Tijera (dos dedos en V)</td><td>Papel: lo corta</td><td>Piedra</td></tr>
+      </tbody>
+    </table>
+    <p>Si los dos eligen lo mismo, es <strong>empate</strong> y se juega otra ronda. Como ninguna jugada es mejor que las demás, el juego es justo: nadie empieza con ventaja.</p>
+
+    <h2>Tres modos de juego</h2>
+    <h3>Contra la máquina</h3>
+    <p>Para pasar el rato o practicar. La máquina elige con <code>crypto.getRandomValues</code>, el generador aleatorio del navegador<sup><a href="#fuente-4">[4]</a></sup>, y no ve tu jugada antes de elegir. Piedra, papel y tijera tienen la misma probabilidad en cada ronda, así que no tiene rachas ni manías que puedas aprender.</p>
+    <PptModoDemo modo="maquina" />
+
+    <h3>Dos jugadores en el mismo móvil</h3>
+    <p>Elige el primero, pulsa <strong>Elegir</strong> para pasar el móvil y elige el segundo. Entre un turno y otro las jugadas se ocultan, así que nadie ve la del otro ni puede cambiar la suya en el último momento. Es la forma más limpia de acabar con el clásico «¡has sacado tarde!».</p>
+    <PptModoDemo modo="dos" />
+
+    <h3>A distancia por WhatsApp</h3>
+    <p>Escribe tu nombre y el de tu rival, elige tu jugada y pulsa <strong>Enviar reto por WhatsApp</strong> (o <strong>Copiar enlace</strong>). Tu amigo abre el enlace, elige la suya y ve el resultado; luego te lo puede devolver. Sirve para decidir con la familia o con amigos que no están en la misma casa.</p>
+    <PptModoDemo modo="distancia" />
+
+    <h2>Ideas para usarlo</h2>
+    <table>
+      <thead><tr><th>Situación</th><th>Qué se decide</th><th>Modo</th></tr></thead>
+      <tbody>
+        <tr><td>Después de cenar</td><td>Quién lava los platos</td><td>Mismo móvil</td></tr>
+        <tr><td>Noche de películas</td><td>Quién elige qué ver</td><td>Mismo móvil</td></tr>
+        <tr><td>Partida de videojuego o de mesa</td><td>Quién empieza</td><td>Mismo móvil</td></tr>
+        <tr><td>Grupo de WhatsApp</td><td>Quién organiza el plan</td><td>A distancia</td></tr>
+        <tr><td>Rato libre o espera</td><td>Nada: jugar por jugar</td><td>Máquina</td></tr>
+      </tbody>
+    </table>
+    <p>Si en tu grupo son más de dos, es mejor usar la <a href="/ruleta">ruleta de nombres</a>: elige a una persona entre todas de una vez.</p>
+
+    <h2>Trucos para ganar a personas (no a la máquina)</h2>
+    <p>La teoría de juegos dice que, si tu rival elige al azar, lo mejor que puedes hacer es elegir también al azar, con un tercio de probabilidad para cada jugada<sup><a href="#fuente-1">[1]</a></sup>. Pero las personas no somos buenas eligiendo al azar. En un experimento de la Universidad de Zhejiang, 360 estudiantes jugaron 300 rondas cada uno, y sus decisiones dependían de lo que había pasado en la ronda anterior<sup><a href="#fuente-2">[2]</a></sup>.</p>
+    <h3>1. Quien gana suele repetir</h3>
+    <p>El estudio encontró una tendencia a mantener la jugada después de ganar, una variante de la estrategia «si ganas, repite; si pierdes, cambia»<sup><a href="#fuente-2">[2]</a></sup>. Si tu rival acaba de ganar con piedra, el papel tiene sentido.</p>
+    <h3>2. Quien pierde suele cambiar</h3>
+    <p>Después de perder, lo más habitual es cambiar de jugada<sup><a href="#fuente-2">[2]</a></sup>. Si tu rival perdió con tijera, lo probable es que no la repita: descarta la tijera y elige entre las otras dos.</p>
+    <h3>3. No seas predecible tú</h3>
+    <p>Lo mismo vale para ti. Si sabes que tiendes a repetir cuando ganas, rompe el patrón de vez en cuando. Contra la máquina estos trucos no sirven: ella no mira el historial, y cada ronda es nueva.</p>
+    <p>Si quieres más detalle, lee <a href="/blog/piedra-papel-tijera/como-ganar-piedra-papel-o-tijera">cómo ganar a piedra, papel o tijera</a>. Y luego <a href="#jugar">pruébalo en una ronda</a>.</p>
+
+    <h2>¿Qué herramienta usar?</h2>
+    <table>
+      <thead><tr><th>Si necesitas…</th><th>Usa</th></tr></thead>
+      <tbody>
+        <tr><td>Elegir entre dos opciones con nombre</td><td><a href="/moneda">Cara o sello</a></td></tr>
+        <tr><td>Responder una pregunta de sí o no</td><td><a href="/si-o-no">Pregunta sí o no</a></td></tr>
+        <tr><td>Elegir entre tres o más opciones o personas</td><td><a href="/ruleta">Ruleta</a></td></tr>
+        <tr><td>Un número al azar en un rango</td><td><a href="/numeros">Números aleatorios</a></td></tr>
+        <tr><td>Tirar dados para un juego de mesa</td><td><a href="/dados">Dados</a></td></tr>
+        <tr><td>Dividir un grupo en equipos</td><td><a href="/equipos">Equipos</a></td></tr>
+        <tr><td>Organizar un intercambio de regalos</td><td><a href="/amigo-secreto">Amigo secreto</a></td></tr>
+        <tr><td>Medir turnos con tiempo</td><td><a href="/temporizador">Temporizador</a></td></tr>
+      </tbody>
+    </table>
+
+    <h2>De dónde viene y cómo se llama en cada país</h2>
+    <p>La primera mención escrita conocida del juego está en un libro chino de hacia 1600, del escritor Xie Zhaozhe, que lo llama <em>shoushiling</em> y dice que viene de la época de la dinastía Han (206 a. C. – 220 d. C.). En Japón, la versión más conocida es el <em>janken</em>, una variante de los juegos chinos que llegaron en el siglo XVII<sup><a href="#fuente-1">[1]</a></sup>.</p>
+    <p>En español cambia el nombre según el país. En Chile es <strong>cachipún</strong><sup><a href="#fuente-5">[5]</a></sup>, en Perú <strong>yan ken po</strong><sup><a href="#fuente-6">[6]</a></sup> y en Paraguay <strong>jankenpon</strong><sup><a href="#fuente-7">[7]</a></sup>. El juego y las reglas son los mismos: solo cambia el nombre.</p>
+    <p>También hay versiones con más gestos. La más famosa, «piedra, papel, tijera, lagarto, Spock», la inventaron Sam Kass y Karen Bryla y en 2008 apareció en un episodio de la serie <em>The Big Bang Theory</em><sup><a href="#fuente-1">[1]</a></sup><sup><a href="#fuente-3">[3]</a></sup>. Te lo contamos en <a href="/blog/piedra-papel-tijera/reglas-variantes-lagarto-spock">las variantes del juego</a>.</p>
+
+    <h2>Juega ahora</h2>
+    <p>Elige un modo, pon qué se decide y <a href="#jugar">saca tu jugada</a>. Para decisiones médicas, legales o de dinero, mejor habla con alguien que sepa del tema; para quién lava los platos, esto basta.</p>
+
+    <h2>Preguntas frecuentes</h2>
+    <h3>¿Cómo se juega a piedra, papel o tijera?</h3>
+    <p>Cada jugador elige a la vez piedra, papel o tijera. La piedra gana a la tijera, la tijera gana al papel y el papel gana a la piedra. Si los dos eligen lo mismo, es empate y se repite la ronda.</p>
+    <h3>¿Puedo jugar piedra, papel o tijera con otra persona en el mismo móvil?</h3>
+    <p>Sí. Elige el modo «Mismo móvil»: primero elige un jugador, pasa el móvil y elige el otro. Las jugadas se ocultan entre turno y turno y solo se muestran cuando los dos han elegido.</p>
+    <h3>¿Cómo juego a distancia con un amigo?</h3>
+    <p>Elige el modo «A distancia», escribe tu nombre y el de tu amigo, elige tu jugada y pulsa «Enviar reto por WhatsApp». Tu amigo abre el enlace, elige su jugada y te puede devolver el resultado por el mismo camino.</p>
+    <h3>¿La máquina hace trampa?</h3>
+    <p>No. La máquina elige con el generador aleatorio del navegador, crypto.getRandomValues, y no mira tu jugada: piedra, papel y tijera tienen la misma probabilidad en cada ronda.</p>
+    <h3>¿Existe una estrategia para ganar siempre?</h3>
+    <p>Contra alguien que elige al azar, no: ninguna jugada es mejor que otra. Contra personas sí hay tendencias, como repetir la jugada después de ganar y cambiar después de perder, según un experimento de la Universidad de Zhejiang con 360 estudiantes.</p>
+    <h3>¿Cómo se llama este juego en otros países?</h3>
+    <p>Depende del país: cachipún en Chile, yan ken po en Perú, jankenpon en Paraguay y janken en Japón.</p>
+
+    <h2>Guías relacionadas</h2>
     <ul>
-      <li><strong>Piedra</strong> (puño cerrado) aplasta a <strong>Tijera</strong>.</li>
-      <li><strong>Tijera</strong> (gesto en V) corta a <strong>Papel</strong>.</li>
-      <li><strong>Papel</strong> (mano abierta) envuelve a <strong>Piedra</strong>.</li>
-      <li>Si ambos jugadores eligen lo mismo, es un <strong>empate</strong> y se repite la ronda.</li>
+      <li><a href="/blog/piedra-papel-tijera/como-ganar-piedra-papel-o-tijera">Cómo ganar a piedra, papel o tijera: estrategias con base científica</a></li>
+      <li><a href="/blog/piedra-papel-tijera/teoria-de-juegos-y-psicologia">La teoría de juegos detrás de piedra, papel o tijera</a></li>
+      <li><a href="/blog/piedra-papel-tijera/historia-janken">El origen del juego: historia del janken japonés</a></li>
+      <li><a href="/blog/piedra-papel-tijera/reglas-variantes-lagarto-spock">Variantes: de las reglas clásicas a lagarto y Spock</a></li>
+      <li><a href="/blog/piedra-papel-tijera/teoria-de-juegos-resolucion-disputas">Teoría de juegos para resolver conflictos pequeños</a></li>
+      <li><a href="/blog/piedra-papel-tijera/arbitro-esports">Piedra, papel o tijera para decidir turnos en eSports</a></li>
     </ul>
-    <p>Cada opción vence a exactamente una de las otras y pierde contra la restante, creando un ciclo perfecto de dominancia sin jerarquía absoluta. Matemáticamente, esto se modela como un <strong>juego no transitivo</strong>.</p>
 
-    <h2>Historia y Orígenes</h2>
-    <p>Aunque muchos creen que el juego es de origen japonés (<em>jan-ken</em>), sus raíces se remontan a la <strong>dinastía Han</strong> en China (aproximadamente 200 a.C.), donde se le conocía como <em>shǒushìlìng</em> (juego de gestos con la mano). Llegó a Japón en el siglo XVII y desde allí se extendió globalmente durante el siglo XX, convirtiéndose en un fenómeno cultural universal.</p>
-    <p>Hoy en día existen <strong>torneos profesionales internacionales</strong> con premios en efectivo, como el Campeonato Mundial de la World RPS Society, lo que demuestra que incluso un juego aparentemente simple puede alcanzar niveles competitivos serios.</p>
-
-    <h2>Estrategias Psicológicas Avanzadas</h2>
-    <p>Aunque en teoría la estrategia óptima es elegir de forma completamente aleatoria (distribución uniforme 1/3 para cada opción), los humanos somos <strong>terriblemente malos generando aleatoriedad</strong>. Estudios de la Universidad de Zhejiang analizaron más de 300 rondas por participante y descubrieron patrones predecibles:</p>
-    <ul>
-      <li><strong>Efecto "ganador repite":</strong> Los jugadores que ganan una ronda tienden a repetir la misma elección en la siguiente con una frecuencia significativamente superior al 33%.</li>
-      <li><strong>Efecto "perdedor escala":</strong> Quienes pierden tienden a cambiar a la siguiente opción en el ciclo (de Piedra pasan a Papel, de Papel a Tijera, etc.).</li>
-      <li><strong>Sesgo inicial hacia Piedra:</strong> En la primera ronda, los jugadores inexpertos eligen Piedra con mayor frecuencia (~36%), posiblemente por la asociación instintiva del puño con la fuerza.</li>
-    </ul>
-    <p>Conocer estos sesgos te permite anticipar la jugada de tu oponente y elegir estratégicamente en consecuencia. Por ejemplo: si tu oponente acaba de perder con Tijera, probablemente elegirá Piedra en la siguiente ronda, así que tú deberías elegir Papel.</p>
-
-    <h2>¿Por qué usar la versión digital?</h2>
-    <p>Nuestra herramienta de <strong>Piedra, Papel o Tijera online</strong> resuelve varios problemas comunes del juego presencial:</p>
-    <ul>
-      <li><strong>Eliminación de trampas:</strong> En el modo 2 jugadores, cada jugador elige por turnos en el mismo móvil y su jugada no se ve hasta que los dos han elegido, así que nadie puede reaccionar a la del otro.</li>
-      <li><strong>Una máquina de verdad aleatoria:</strong> En el modo contra la máquina, su jugada sale del generador criptográfico del navegador (<code>crypto.getRandomValues</code>), con la misma probabilidad para piedra, papel y tijera y sin los sesgos humanos de arriba.</li>
-      <li><strong>Registro de puntuación:</strong> El marcador se guarda automáticamente en tu navegador, permitiéndote llevar un historial de tu rendimiento sin necesidad de papel ni memoria.</li>
-      <li><strong>Accesibilidad universal:</strong> Funciona en cualquier dispositivo con navegador, sin instalaciones y sin registro.</li>
-    </ul>
+    <h2>Fuentes</h2>
+    <ol>
+      <li id="fuente-1">Wikipedia. «Rock paper scissors» (historia, teoría de juegos y variantes). <a href="https://en.wikipedia.org/wiki/Rock_paper_scissors" rel="noopener" target="_blank">en.wikipedia.org</a></li>
+      <li id="fuente-2">Wang, Z., Xu, B. y Zhou, H.-J. (2014). «Social cycling and conditional responses in the Rock-Paper-Scissors game». <em>Scientific Reports</em>, 4, 5830. <a href="https://www.nature.com/articles/srep05830" rel="noopener" target="_blank">www.nature.com</a></li>
+      <li id="fuente-3">Kass, S. «Rock Paper Scissors Spock Lizard» (página original del autor). <a href="http://www.samkass.com/theories/RPSSL.html" rel="noopener" target="_blank">www.samkass.com</a></li>
+      <li id="fuente-4">MDN Web Docs. «Crypto.getRandomValues()». <a href="https://developer.mozilla.org/es/docs/Web/API/Crypto/getRandomValues" rel="noopener" target="_blank">developer.mozilla.org</a></li>
+      <li id="fuente-5">ASALE. «cachipún». <em>Diccionario de americanismos</em>. <a href="https://www.asale.org/damer/cachip%C3%BAn" rel="noopener" target="_blank">www.asale.org</a></li>
+      <li id="fuente-6">ASALE. «yan ken po». <em>Diccionario de americanismos</em>. <a href="https://www.asale.org/damer/yan%20ken%20po" rel="noopener" target="_blank">www.asale.org</a></li>
+      <li id="fuente-7">ASALE. «jankenpon». <em>Diccionario de americanismos</em>. <a href="https://www.asale.org/damer/jankenpon" rel="noopener" target="_blank">www.asale.org</a></li>
+    </ol>
   </SeoArticle>
 
   <AdSlot position="bottom" />

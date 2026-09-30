@@ -26,6 +26,25 @@
 .ppt-side[S][data-lado="2"].is-loser .ppt-hand[S]{transform:translateY(6%)scale(-.88,.88)}
 .ppt-side[S].is-loser .ppt-score[S]{color:var(--text-tertiary)}
 @media (prefers-reduced-motion:reduce){.ppt-hand[S]{transition:none}}
+.pptd[S]{--pptd-dur:8s;max-width:16rem;margin:1.25rem auto 1.5rem}
+.pptd-phone[S]{border:1px solid var(--divider-line);background:var(--bg-surface-alt);border-radius:1.5rem;height:11rem;position:relative;overflow:hidden}
+.pptd-screen[S]{text-align:center;opacity:0;animation:pptd-ver var(--pptd-dur) linear infinite;animation-delay:calc(var(--pptd-dur) * (var(--i) - 4) / 4);flex-direction:column;justify-content:center;align-items:center;gap:.6rem;padding:1rem;display:flex;position:absolute;inset:0}
+.pptd-screen[S].is-pasa{animation-name:pptd-ver,pptd-pasa}
+.pptd-step[S]{color:var(--text-tertiary);font-variant-numeric:tabular-nums;font-size:.75rem;position:absolute;top:.6rem;left:.9rem}
+.pptd-top[S]{color:var(--text-secondary);font-size:.85rem}
+.pptd-choices[S]{grid-template-columns:repeat(3,1fr);gap:.35rem;width:100%;display:grid}
+.pptd-choice[S]{border:1px solid var(--divider-line);text-transform:capitalize;color:var(--text-primary);border-radius:999px;padding:.4rem 0;font-size:.75rem;font-weight:700}
+.pptd-choice[S].is-on{background:var(--accent-warm);border-color:var(--accent-warm);color:#1a0e06;animation:pptd-toque var(--pptd-dur) ease-out infinite;animation-delay:calc(var(--pptd-dur) * (var(--i) - 4) / 4)}
+.pptd-result[S]{color:var(--text-primary);font-family:Outfit,sans-serif;font-size:1.5rem;font-weight:700;line-height:1.1}
+.pptd-btn[S]{background:var(--accent-warm);color:#1a0e06;border-radius:999px;padding:.45rem 1rem;font-size:.8rem;font-weight:700}
+.pptd-detail[S]{color:var(--text-tertiary);font-size:.8rem}
+.pptd-dots[S]{justify-content:center;gap:.4rem;margin-top:.6rem;display:flex}
+.pptd-dot[S]{background:var(--accent-warm);opacity:.25;width:.4rem;height:.4rem;animation:pptd-punto var(--pptd-dur) linear infinite;animation-delay:calc(var(--pptd-dur) * (var(--i) - 4) / 4);border-radius:50%}
+@keyframes pptd-ver{0%{opacity:0;transform:translateY(6px)}3%,22%{opacity:1;transform:none}25%,to{opacity:0;transform:none}}
+@keyframes pptd-pasa{0%,17%{transform:none}24%,to{transform:translate(40%)}}
+@keyframes pptd-toque{0%,4%{transform:scale(1)}8%{transform:scale(.9)}12%,to{transform:scale(1)}}
+@keyframes pptd-punto{0%,24%{opacity:1}25%,to{opacity:.25}}
+@media (prefers-reduced-motion:reduce){.pptd[S]{max-width:none}.pptd-phone[S]{background:var(--divider-line);grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;height:auto;display:grid}.pptd-screen[S]{opacity:1;background:var(--bg-surface-alt);min-height:9rem;padding-top:1.75rem;position:relative;animation:none!important}.pptd-choice[S]{padding:.3rem 0;font-size:.7rem}.pptd-choice[S].is-on{animation:none}.pptd-dots[S]{display:none}}
 [S][hidden]{display:none!important}
 .ppt-choice[S]{border:1px solid var(--divider-line);color:var(--text-primary);cursor:pointer;-webkit-tap-highlight-color:transparent;background:0 0;border-radius:999px;flex-direction:column;align-items:center;gap:.25rem;padding:.6rem .25rem .7rem;font-family:Outfit,sans-serif;font-size:1rem;font-weight:700;transition:color .15s,border-color .15s,background-color .15s,transform .15s;display:flex}
 @media (hover:hover){.ppt-choice[S]:hover{color:var(--accent-warm);border-color:var(--accent-warm)}}

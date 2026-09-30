@@ -451,6 +451,13 @@ Reglas:
 - Extras que dependen del objeto (burbujas de la bola, cursor de la
   moneda) son opcionales; las cinco fases no.
 
+**Demostraciones en el artículo** (`PptModoDemo.astro`): cuando una
+herramienta tiene modos, cada modo puede llevar bajo su H3 una ilustración
+en bucle de cuatro pantallas (2 s cada una, solo `opacity` y `transform`,
+`aria-hidden` con la descripción en `aria-label`). Con
+`prefers-reduced-motion` las cuatro pantallas se muestran a la vez, en
+cuadrícula, sin movimiento.
+
 ## Cómo decidir entre CSS propio y utilidad de Tailwind
 
 Esta es la pregunta que te vas a hacer en cada línea al migrar una página.
