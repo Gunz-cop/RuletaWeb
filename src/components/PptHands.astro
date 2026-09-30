@@ -8,9 +8,9 @@
 // CSS propio (Tailwind no rastrea src/scripts/).
 //
 // Es un objeto ilustrado: la sombra del suelo lleva degradado (ver
-// DESIGN.md, "Excepción: objetos ilustrados"); el dibujo de cada mano está
-// en HandShape.astro. El ganador se marca con el único acento del sitio (su
-// manga); el perdedor se apaga. Sin segundo color.
+// DESIGN.md, "Excepción: objetos ilustrados"); cada mano es una imagen de
+// HandShape.astro. El ganador se marca con el único acento del sitio (su
+// nombre) y crece un poco; el perdedor baja y se encoge. Sin segundo color.
 import HandShape from './HandShape.astro';
 
 const FORMAS = ['piedra', 'papel', 'tijera'] as const;
@@ -20,36 +20,13 @@ const LADOS = [
 ];
 ---
 
-{/* Degradados de las manos, una sola vez por página: los usan también los
-    botones de jugada, que pintan la misma HandShape en pequeño */}
-<svg class="absolute w-0 h-0" aria-hidden="true" focusable="false">
-  <defs>
-    <linearGradient id="ppt-g-f" x1="0" x2="1" y1="0" y2="0">
-      <stop offset="0" stop-color="#b98a68" />
-      <stop offset="0.32" stop-color="#f1d6bd" />
-      <stop offset="0.6" stop-color="#e2bb9b" />
-      <stop offset="1" stop-color="#a87a5a" />
-    </linearGradient>
-    <radialGradient id="ppt-g-p" cx="0.38" cy="0.3" r="0.85">
-      <stop offset="0" stop-color="#f3dac3" />
-      <stop offset="0.55" stop-color="#ddb392" />
-      <stop offset="1" stop-color="#a47656" />
-    </radialGradient>
-    <linearGradient id="ppt-g-k" x1="0" x2="1">
-      <stop offset="0" stop-color="#1b1c25" />
-      <stop offset="0.35" stop-color="#3a3c4c" />
-      <stop offset="1" stop-color="#15161d" />
-    </linearGradient>
-  </defs>
-</svg>
-
 <div class="ppt-object grid grid-cols-2 w-full max-w-sm sm:max-w-md mx-auto" id="ppt-object">
   {LADOS.map(({ n, nombre }) => (
     <div class="ppt-side flex flex-col items-center" id={`ppt-side-${n}`} data-lado={n}>
       <div class="ppt-rig relative" id={`ppt-rig-${n}`}>
-        <svg class="ppt-hand block" id={`ppt-hand-${n}`} data-forma="piedra" viewBox="-5 0 110 120" aria-hidden="true">
-          {FORMAS.map((f) => <HandShape forma={f} class="ppt-shape" />)}
-        </svg>
+        <div class="ppt-hand" id={`ppt-hand-${n}`} data-forma="piedra" aria-hidden="true">
+          {FORMAS.map((f) => <HandShape forma={f} class="ppt-shape" sizes="(min-width: 1024px) 12rem, (min-width: 640px) 10.5rem, 8.5rem" />)}
+        </div>
       </div>
       <div class="ppt-floor" id={`ppt-floor-${n}`} aria-hidden="true"></div>
       <p class="m-0 mt-1 flex items-baseline gap-2 max-w-full">
@@ -85,7 +62,9 @@ const LADOS = [
 
   .ppt-hand {
     width: var(--hand-size);
-    height: calc(var(--hand-size) * 1.09);
+    height: var(--hand-size);
+    user-select: none;
+    -webkit-user-select: none;
   }
 
   /* Las manos se miran: la de la derecha es la de la izquierda en espejo */
@@ -93,22 +72,29 @@ const LADOS = [
     transform: scaleX(-1);
   }
 
-  /* Los <g> los pinta HandShape.astro: el alcance de estilos de Astro no
-     llega al marcado de un componente hijo, de ahí :global */
+  /* Los <picture> los pinta HandShape.astro: el alcance de estilos de
+     Astro no llega al marcado de un componente hijo, de ahí :global */
   .ppt-hand :global(.ppt-shape) {
     display: none;
+  }
+
+  .ppt-hand :global(img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
   }
 
   .ppt-hand[data-forma="piedra"] :global(.ppt-shape[data-forma="piedra"]),
   .ppt-hand[data-forma="papel"] :global(.ppt-shape[data-forma="papel"]),
   .ppt-hand[data-forma="tijera"] :global(.ppt-shape[data-forma="tijera"]) {
-    display: inline;
+    display: block;
   }
 
   .ppt-floor {
-    width: calc(var(--hand-size) * 0.55);
+    width: calc(var(--hand-size) * 0.7);
     height: calc(var(--hand-size) * 0.07);
-    margin-top: calc(var(--hand-size) * -0.02);
+    margin-top: calc(var(--hand-size) * -0.04);
     border-radius: 50%;
     background: radial-gradient(closest-side, rgb(0 0 0 / 0.55), transparent);
     will-change: transform, opacity;
@@ -140,13 +126,17 @@ const LADOS = [
     transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.3, 1);
   }
 
-  /* El ganador se marca con la manga en el acento, no tiñendo la mano */
+  /* El ganador se marca con su nombre en el acento y la mano algo mayor */
   .ppt-side.is-winner .ppt-name {
     color: var(--accent-warm);
   }
 
-  .ppt-side.is-winner :global(.ppt-cuff) {
-    fill: var(--accent-warm);
+  .ppt-side.is-winner .ppt-hand {
+    transform: scale(1.06);
+  }
+
+  .ppt-side[data-lado="2"].is-winner .ppt-hand {
+    transform: scale(-1.06, 1.06);
   }
 
   /* El perdedor baja y se encoge. Nunca se apaga con opacidad ni filtro:

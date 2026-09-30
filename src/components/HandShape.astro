@@ -1,107 +1,37 @@
 ---
-// Mano de piedra, papel o tijera: objeto ilustrado (vista frontal, dedos
-// arriba, viewBox "-5 0 110 120"). Lo comparten el objeto (PptHands.astro,
-// las tres formas por mano) y los botones de jugada de la página, así el
-// dibujo vive en un solo sitio y el JS nunca lo escribe (AGENTS.md, regla 6).
+// Mano de piedra, papel o tijera. Son los emojis 3D de Fluent Emoji
+// (Microsoft, licencia MIT, ver src/assets/ppt/LICENSE.txt): se probó a
+// dibujarlas a mano en SVG y no se entendían. El amarillo neutro, además,
+// no asigna ningún tono de piel a nadie.
 //
-// Como la moneda y la bola 8 lleva degradados y sombreado: sin ellos se lee
-// como un icono plano (DESIGN.md, "Excepción: objetos ilustrados"). Cada
-// dedo es una cápsula con luz cilíndrica (#ppt-g-f), la palma una luz
-// radial (#ppt-g-p) y la manga (.ppt-cuff) tela oscura; los degradados se
-// definen una sola vez en PptHands.astro. Orden de capas: manga, lo que va
-// detrás de la palma, palma, lo que va delante.
+// Las comparten el objeto (PptHands.astro, las tres formas por mano) y los
+// botones de jugada. Van por <Picture> en AVIF/WebP (AGENTS.md, regla 1):
+// el navegador descarga cada forma una sola vez aunque salga en tres sitios.
+// Siempre `eager`: las formas ocultas con display:none no se cargarían en
+// modo lazy hasta mostrarse, y la mano aparecería vacía al revelar.
+import { Picture } from 'astro:assets';
+import piedra from '../assets/ppt/piedra.png';
+import papel from '../assets/ppt/papel.png';
+import tijera from '../assets/ppt/tijera.png';
+
 interface Props {
   forma: 'piedra' | 'papel' | 'tijera';
   class?: string;
+  /** Ancho en CSS, para que el navegador elija la variante justa */
+  sizes: string;
 }
-const { forma, class: className } = Astro.props;
+const { forma, class: className, sizes } = Astro.props;
+const IMG = { piedra, papel, tijera };
 ---
 
-<g class:list={['hs', className]} data-forma={forma}>
-  {/* Puño: cuatro dedos doblados y el pulgar cruzado delante */}
-  {forma === 'piedra' && (
-    <>
-      <rect class="hs-k ppt-cuff" x="27" y="97" width="46" height="23" rx="5" />
-      <path class="hs-kl" d="M29 101 H71" />
-      <rect class="hs-p" x="24" y="50" width="52" height="52" rx="17" />
-      <path class="hs-po" d="M24 62 V85 A17 17 0 0 0 41 102 H59 A17 17 0 0 0 76 85 V62" />
-      <path class="hs-sh" d="M30 52 Q50 57 70 52" />
-      <g><rect class="hs-f" x="25" y="36" width="13" height="32" rx="6.5" />
-      <path class="hs-c" d="M28.25 50.4 q3.25 1.6 6.5 0" /></g>
-      <g><rect class="hs-f" x="38" y="33" width="13" height="35" rx="6.5" />
-      <path class="hs-c" d="M41.25 48.75 q3.25 1.6 6.5 0" /></g>
-      <g><rect class="hs-f" x="51" y="35" width="13" height="33" rx="6.5" />
-      <path class="hs-c" d="M54.25 49.85 q3.25 1.6 6.5 0" /></g>
-      <g><rect class="hs-f" x="64" y="40" width="12" height="30" rx="6" />
-      <path class="hs-c" d="M67 53.5 q3 1.6 6 0" /></g>
-      <g transform="rotate(-6 50 70)"><rect class="hs-f hs-t" x="21" y="62" width="44" height="14" rx="7" />
-      <path class="hs-c" d="M50 64 q1.5 5 0 10" /></g>
-    </>
-  )}
-  {/* Mano abierta: los dedos y el pulgar van detrás de la palma */}
-  {forma === 'papel' && (
-    <>
-      <rect class="hs-k ppt-cuff" x="27" y="97" width="46" height="23" rx="5" />
-      <path class="hs-kl" d="M29 101 H71" />
-      <g transform="rotate(-32 30 84)"><rect class="hs-f hs-t" x="21" y="44" width="13" height="44" rx="6.5" />
-      <rect class="hs-n" x="23.6" y="46" width="7.8" height="8" rx="3.9" />
-      <path class="hs-c" d="M24.5 62 q3 1.6 6 0" /></g>
-      <g><rect class="hs-f" x="25" y="14" width="12" height="52" rx="6" />
-      <rect class="hs-n" x="27.4" y="16" width="7.2" height="7.44" rx="3.6" />
-      <path class="hs-c" d="M28 32.72 q3 1.6 6 0" />
-      <path class="hs-c" d="M28 46.24 q3 1.6 6 0" /></g>
-      <g><rect class="hs-f" x="38" y="5" width="12" height="61" rx="6" />
-      <rect class="hs-n" x="40.4" y="7" width="7.2" height="7.44" rx="3.6" />
-      <path class="hs-c" d="M41 26.96 q3 1.6 6 0" />
-      <path class="hs-c" d="M41 42.82 q3 1.6 6 0" /></g>
-      <g><rect class="hs-f" x="51" y="10" width="12" height="56" rx="6" />
-      <rect class="hs-n" x="53.4" y="12" width="7.2" height="7.44" rx="3.6" />
-      <path class="hs-c" d="M54 30.16 q3 1.6 6 0" />
-      <path class="hs-c" d="M54 44.72 q3 1.6 6 0" /></g>
-      <g><rect class="hs-f" x="64" y="24" width="11" height="44" rx="5.5" />
-      <rect class="hs-n" x="66.2" y="26" width="6.6" height="6.82" rx="3.3" />
-      <path class="hs-c" d="M66.75 39.84 q2.75 1.6 5.5 0" />
-      <path class="hs-c" d="M66.75 51.28 q2.75 1.6 5.5 0" /></g>
-      <rect class="hs-p" x="24" y="50" width="52" height="52" rx="17" />
-      <path class="hs-po" d="M24 62 V85 A17 17 0 0 0 41 102 H59 A17 17 0 0 0 76 85 V62" />
-      <path class="hs-sh" d="M30 52 Q50 57 70 52" />
-    </>
-  )}
-  {/* Tijera: índice y corazón abiertos en V; anular y meñique doblados bajo el pulgar */}
-  {forma === 'tijera' && (
-    <>
-      <rect class="hs-k ppt-cuff" x="27" y="97" width="46" height="23" rx="5" />
-      <path class="hs-kl" d="M29 101 H71" />
-      <g transform="rotate(-12 31 62)"><rect class="hs-f" x="25" y="12" width="12" height="54" rx="6" />
-      <rect class="hs-n" x="27.4" y="14" width="7.2" height="7.44" rx="3.6" />
-      <path class="hs-c" d="M28 31.44 q3 1.6 6 0" />
-      <path class="hs-c" d="M28 45.48 q3 1.6 6 0" /></g>
-      <g transform="rotate(9 45 62)"><rect class="hs-f" x="39" y="6" width="12" height="60" rx="6" />
-      <rect class="hs-n" x="41.4" y="8" width="7.2" height="7.44" rx="3.6" />
-      <path class="hs-c" d="M42 27.6 q3 1.6 6 0" />
-      <path class="hs-c" d="M42 43.2 q3 1.6 6 0" /></g>
-      <rect class="hs-p" x="24" y="50" width="52" height="52" rx="17" />
-      <path class="hs-po" d="M24 62 V85 A17 17 0 0 0 41 102 H59 A17 17 0 0 0 76 85 V62" />
-      <path class="hs-sh" d="M30 52 Q50 57 70 52" />
-      <g><rect class="hs-f" x="52" y="47" width="12" height="23" rx="6" />
-      <path class="hs-c" d="M55 57.35 q3 1.6 6 0" /></g>
-      <g><rect class="hs-f" x="64" y="51" width="11" height="21" rx="5.5" />
-      <path class="hs-c" d="M66.75 60.45 q2.75 1.6 5.5 0" /></g>
-      <g transform="rotate(8 58 70)"><rect class="hs-f hs-t" x="36" y="62" width="40" height="13" rx="6.5" /></g>
-    </>
-  )}
-</g>
-
-<style>
-  .hs-f { fill: url(#ppt-g-f); stroke: #6e4a35; stroke-width: 0.9; }
-  .hs-t { stroke-width: 1; }
-  .hs-p { fill: url(#ppt-g-p); }
-  /* El contorno de la palma no cierra por arriba: así no corta la base de
-     los dedos como una manopla */
-  .hs-po { fill: none; stroke: #6e4a35; stroke-width: 0.9; }
-  .hs-n { fill: #fff; opacity: 0.28; }
-  .hs-c { fill: none; stroke: #7a5038; stroke-width: 0.8; opacity: 0.45; stroke-linecap: round; }
-  .hs-sh { fill: none; stroke: #8a5d42; stroke-width: 3; opacity: 0.25; stroke-linecap: round; }
-  .hs-k { fill: url(#ppt-g-k); transition: fill 0.3s ease-out; }
-  .hs-kl { stroke: #5a5d70; stroke-width: 1; }
-</style>
+<Picture
+  src={IMG[forma]}
+  alt=""
+  widths={[96, 160, 256]}
+  sizes={sizes}
+  formats={['avif', 'webp']}
+  fallbackFormat="webp"
+  loading="eager"
+  draggable="false"
+  pictureAttributes={{ class: className, 'data-forma': forma }}
+/>

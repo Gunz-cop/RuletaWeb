@@ -134,12 +134,16 @@ lee como un disco plano. La regla de "sin degradados" aplica a botones,
 tarjetas y texto; la paleta de latón vive como variables locales
 (`--metal-*`) dentro del componente, no como tokens globales.
 
-Las manos de piedra, papel o tijera (`HandShape.astro`) siguen la misma
-excepción: cada dedo es una cápsula con luz cilíndrica, la palma una luz
-radial y la manga tela oscura. **Una mano nunca se apaga con opacidad ni
-filtro** (perdedor, botón desactivado): sobre el fondo oscuro parece otro
-tono de piel. Se marca con posición y tamaño (el perdedor baja y se
-encoge) y con el acento en la manga del ganador.
+Las manos de piedra, papel o tijera (`HandShape.astro`) son la otra
+salida de la excepción: **cuando un objeto no se puede dibujar bien a mano
+en SVG, se usa una ilustración con licencia libre** servida como imagen
+optimizada (`<Picture>` en AVIF/WebP, regla 1 de AGENTS.md), con su
+licencia junto al archivo en `src/assets/`. Aquí, los emojis 3D de Fluent
+Emoji (Microsoft, MIT), 2–4 KB por mano: el SVG hecho a mano no se
+entendía. El amarillo neutro no asigna tono de piel. **Una mano nunca se
+apaga con opacidad ni filtro** (perdedor, botón desactivado): se marca con
+posición y tamaño (el perdedor baja y se encoge, el ganador crece un poco)
+y con el acento en su nombre.
 
 ### El acento: `--accent-warm`
 
