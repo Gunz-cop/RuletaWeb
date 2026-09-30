@@ -26,6 +26,10 @@ const PUMP_MS = 330;
 const LAND_MS = 380;
 const IDLE_MS = 1700;
 const REDUCED_MS = 200;
+// Al enseñar la jugada, la mano se abre fotograma a fotograma (imágenes en
+// src/assets/ppt/): cinco pasos, el 5.º con rebote, unos 0,35 s en total.
+const FRAME_MS = 70;
+const PASOS = [2, 3, 4, 5, 6];
 
 const FORMAS = ['piedra', 'papel', 'tijera'];
 const NOMBRE = { piedra: 'Piedra', papel: 'Papel', tijera: 'Tijera' };
@@ -105,6 +109,7 @@ function initPPT() {
     rig: $(`ppt-rig-${n}`),
     hand: $(`ppt-hand-${n}`),
     floor: $(`ppt-floor-${n}`),
+    frames: [...($(`ppt-hand-${n}`)?.querySelectorAll('.ppt-shape') ?? [])],
     name: $(`ppt-name-${n}`),
     score: $(`ppt-score-${n}`),
     // La mano derecha es la izquierda en espejo: gira al revés
@@ -113,6 +118,13 @@ function initPPT() {
 
   if (!object || !result || choices.length !== 3 || object.dataset.ready) return;
   object.dataset.ready = 'true';
+
+  // Enciende un fotograma de una mano; `forma` queda en data-forma para CSS
+  // y tests
+  function pintar(l, frame, forma) {
+    l.frames.forEach((p) => p.classList.toggle('is-on', p.dataset.frame === frame));
+    if (l.hand) l.hand.dataset.forma = forma;
+  }
 
   const reducido = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const fin = (a) => a?.finished.catch(() => {});
@@ -266,13 +278,23 @@ function initPPT() {
     }));
   }
 
-  // Aterrizaje: al abrir la mano en la jugada, un pequeño aplastamiento
-  function asentar() {
-    return Promise.all(lados.map((l) => fin(l.rig?.animate([
+  // Aterrizaje: la mano se abre fotograma a fotograma mientras se aplasta
+  // un poco. El reloj de cada paso es una animación vacía de FRAME_MS: así
+  // el ritmo lo lleva la Web Animations API, no un setTimeout.
+  async function abrir(e1, e2) {
+    const jugadas = [e1, e2];
+    lados.forEach((l) => l.rig?.animate([
       { transform: 'scale(1.08, 0.9)' },
       { transform: 'scale(0.97, 1.04)', offset: 0.5 },
       { transform: 'none' },
-    ], { duration: LAND_MS, easing: 'cubic-bezier(0.2, 0.7, 0.3, 1)' }))));
+    ], { duration: FRAME_MS * PASOS.length + LAND_MS / 2, easing: 'cubic-bezier(0.2, 0.7, 0.3, 1)' }));
+    for (const paso of PASOS) {
+      lados.forEach((l, i) => {
+        const e = jugadas[i];
+        if (e !== 'piedra') pintar(l, `${e}-${paso}`, e);
+      });
+      await fin(object.animate([], { duration: FRAME_MS }));
+    }
   }
 
   // --- Ronda ----------------------------------------------------------------------
@@ -282,7 +304,7 @@ function initPPT() {
     delete result.dataset.ganador;
     lados.forEach((l) => {
       l.side?.classList.remove('is-winner', 'is-loser');
-      if (l.hand) l.hand.dataset.forma = 'piedra';
+      pintar(l, 'piedra', 'piedra');
     });
   }
 
@@ -297,18 +319,17 @@ function initPPT() {
     limpiar();
     parar();
 
+    const final = (e) => (e === 'piedra' ? e : `${e}-6`);
     if (reducido()) {
-      lados[0].hand.dataset.forma = e1;
-      lados[1].hand.dataset.forma = e2;
+      pintar(lados[0], final(e1), e1);
+      pintar(lados[1], final(e2), e2);
       await Promise.all(lados.map((l) => fin(l.rig?.animate([{ opacity: 0 }, { opacity: 1 }], { duration: REDUCED_MS }))));
     } else {
       for (const palabra of CANTO) {
         if (turn) turn.textContent = palabra;
         await golpe();
       }
-      lados[0].hand.dataset.forma = e1;
-      lados[1].hand.dataset.forma = e2;
-      await asentar();
+      await abrir(e1, e2);
     }
 
     const g = e1 === e2 ? 'empate' : VENCE[e1] === e2 ? 'j1' : 'j2';

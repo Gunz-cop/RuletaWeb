@@ -135,15 +135,25 @@ tarjetas y texto; la paleta de latón vive como variables locales
 (`--metal-*`) dentro del componente, no como tokens globales.
 
 Las manos de piedra, papel o tijera (`HandShape.astro`) son la otra
-salida de la excepción: **cuando un objeto no se puede dibujar bien a mano
-en SVG, se usa una ilustración con licencia libre** servida como imagen
-optimizada (`<Picture>` en AVIF/WebP, regla 1 de AGENTS.md), con su
-licencia junto al archivo en `src/assets/`. Aquí, los emojis 3D de Fluent
-Emoji (Microsoft, MIT), 2–4 KB por mano: el SVG hecho a mano no se
-entendía. El amarillo neutro no asigna tono de piel. **Una mano nunca se
-apaga con opacidad ni filtro** (perdedor, botón desactivado): se marca con
-posición y tamaño (el perdedor baja y se encoge, el ganador crece un poco)
-y con el acento en su nombre.
+salida de la excepción: **cuando un objeto no sale bien dibujado a mano en
+SVG, se usan imágenes** servidas con `<Picture>` en AVIF/WebP (regla 1 de
+AGENTS.md), con su origen documentado junto al archivo en `src/assets/`.
+Aquí son fotogramas propios generados con ChatGPT (ver
+`src/assets/ppt/ORIGEN.md`, con el prompt de estilo y el procesado):
+
+- **Varios fotogramas, no un vídeo ni un GIF**: el puño y cinco pasos hacia
+  papel y hacia tijera. El JS enciende uno cada vez (`.is-on`) al ritmo de
+  la Web Animations API. El penúltimo se pasa un poco: es el rebote.
+- **Se piden en una sola hoja** (cuadrícula 3×2 de 512 px, fondo
+  transparente, muñeca en el mismo punto): generados por separado salen
+  con luz y proporciones distintas y la animación tiembla.
+- **Se procesan antes de entrar al repo**: limpiar el alfa (los
+  generadores dejan ruido casi transparente en el fondo), alinear por la
+  muñeca y bajar a 384 px.
+- Amarillo neutro: no asigna tono de piel. **Una mano nunca se apaga con
+  opacidad ni filtro** (perdedor, botón desactivado): parecería otro tono
+  de piel. Se marca con posición y tamaño (el perdedor baja y se encoge, el
+  ganador crece un poco) y con el acento en su nombre.
 
 ### El acento: `--accent-warm`
 

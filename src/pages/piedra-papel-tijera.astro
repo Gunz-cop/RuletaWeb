@@ -117,7 +117,7 @@ const schemaLD = {
       <div class="grid grid-cols-3 gap-2 sm:gap-3 w-full max-w-sm" id="ppt-choices" role="group" aria-label="Tu jugada">
         {ELECCIONES.map(({ forma, nombre }) => (
           <button type="button" class="ppt-choice" data-choice={forma}>
-            <HandShape forma={forma} class="ppt-choice-icon" sizes="2.75rem" />
+            <HandShape frame={forma === 'piedra' ? forma : `${forma}-6`} class="ppt-choice-icon" sizes="2.75rem" />
             <span>{nombre}</span>
           </button>
         ))}

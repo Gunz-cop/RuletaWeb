@@ -13,7 +13,8 @@
 // nombre) y crece un poco; el perdedor baja y se encoge. Sin segundo color.
 import HandShape from './HandShape.astro';
 
-const FORMAS = ['piedra', 'papel', 'tijera'] as const;
+// Todos los fotogramas de la mano: el JS enciende uno cada vez (.is-on)
+const FRAMES = ['piedra', ...[2, 3, 4, 5, 6].flatMap((i) => [`papel-${i}`, `tijera-${i}`])];
 const LADOS = [
   { n: 1, nombre: 'Tú' },
   { n: 2, nombre: 'Máquina' },
@@ -25,7 +26,7 @@ const LADOS = [
     <div class="ppt-side flex flex-col items-center" id={`ppt-side-${n}`} data-lado={n}>
       <div class="ppt-rig relative" id={`ppt-rig-${n}`}>
         <div class="ppt-hand" id={`ppt-hand-${n}`} data-forma="piedra" aria-hidden="true">
-          {FORMAS.map((f) => <HandShape forma={f} class="ppt-shape" sizes="(min-width: 1024px) 12rem, (min-width: 640px) 10.5rem, 8.5rem" />)}
+          {FRAMES.map((f) => <HandShape frame={f} class:list={['ppt-shape', { 'is-on': f === 'piedra' }]} sizes="(min-width: 1024px) 12rem, (min-width: 640px) 10.5rem, 8.5rem" />)}
         </div>
       </div>
       <div class="ppt-floor" id={`ppt-floor-${n}`} aria-hidden="true"></div>
@@ -74,8 +75,17 @@ const LADOS = [
 
   /* Los <picture> los pinta HandShape.astro: el alcance de estilos de
      Astro no llega al marcado de un componente hijo, de ahí :global */
+  /* Los fotogramas van apilados; el JS enciende uno con .is-on */
+  .ppt-hand {
+    position: relative;
+  }
+
   .ppt-hand :global(.ppt-shape) {
     display: none;
+  }
+
+  .ppt-hand :global(.ppt-shape.is-on) {
+    display: block;
   }
 
   .ppt-hand :global(img) {
@@ -83,12 +93,6 @@ const LADOS = [
     width: 100%;
     height: 100%;
     pointer-events: none;
-  }
-
-  .ppt-hand[data-forma="piedra"] :global(.ppt-shape[data-forma="piedra"]),
-  .ppt-hand[data-forma="papel"] :global(.ppt-shape[data-forma="papel"]),
-  .ppt-hand[data-forma="tijera"] :global(.ppt-shape[data-forma="tijera"]) {
-    display: block;
   }
 
   .ppt-floor {

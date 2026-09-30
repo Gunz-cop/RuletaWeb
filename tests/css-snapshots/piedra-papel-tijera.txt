@@ -4,9 +4,10 @@
 .ppt-rig[S]{transform-origin:50% 100%;will-change:transform}
 .ppt-hand[S]{width:var(--hand-size);height:var(--hand-size);-webkit-user-select:none;user-select:none}
 .ppt-side[S][data-lado="2"] .ppt-hand[S]{transform:scaleX(-1)}
+.ppt-hand[S]{position:relative}
 .ppt-hand[S] .ppt-shape{display:none}
+.ppt-hand[S] .ppt-shape.is-on{display:block}
 .ppt-hand[S] img{pointer-events:none;width:100%;height:100%;display:block}
-.ppt-hand[S][data-forma=piedra] .ppt-shape[data-forma=piedra],.ppt-hand[S][data-forma=papel] .ppt-shape[data-forma=papel],.ppt-hand[S][data-forma=tijera] .ppt-shape[data-forma=tijera]{display:block}
 .ppt-floor[S]{width:calc(var(--hand-size) * .7);height:calc(var(--hand-size) * .07);margin-top:calc(var(--hand-size) * -.04);will-change:transform, opacity;background:radial-gradient(closest-side,#0000008c,#0000);border-radius:50%}
 .ppt-name[S]{letter-spacing:.1em;text-transform:uppercase;color:var(--text-tertiary);text-overflow:ellipsis;white-space:nowrap;font-size:.75rem;font-weight:600;overflow:hidden}
 .ppt-score[S]{color:var(--text-primary);font-variant-numeric:tabular-nums;font-family:Outfit,sans-serif;font-weight:700}

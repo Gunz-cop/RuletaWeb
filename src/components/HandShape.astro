@@ -1,37 +1,40 @@
 ---
-// Mano de piedra, papel o tijera. Son los emojis 3D de Fluent Emoji
-// (Microsoft, licencia MIT, ver src/assets/ppt/LICENSE.txt): se probó a
-// dibujarlas a mano en SVG y no se entendían. El amarillo neutro, además,
-// no asigna ningún tono de piel a nadie.
+// Un fotograma de mano de piedra, papel o tijera. Son imágenes propias
+// generadas con ChatGPT y procesadas a mano (origen y procesado en
+// src/assets/ppt/ORIGEN.md): dibujadas en SVG no se entendían. El amarillo
+// neutro no asigna ningún tono de piel.
 //
-// Las comparten el objeto (PptHands.astro, las tres formas por mano) y los
-// botones de jugada. Van por <Picture> en AVIF/WebP (AGENTS.md, regla 1):
-// el navegador descarga cada forma una sola vez aunque salga en tres sitios.
-// Siempre `eager`: las formas ocultas con display:none no se cargarían en
-// modo lazy hasta mostrarse, y la mano aparecería vacía al revelar.
+// Fotogramas: `piedra` (el puño, de donde salen las dos series),
+// `papel-2`…`papel-6` y `tijera-2`…`tijera-6`; el 6 es la jugada final.
+// Los usan el objeto (PptHands.astro, todos los fotogramas por mano) y los
+// botones de jugada (solo los finales). Van por <Picture> en AVIF/WebP
+// (AGENTS.md, regla 1), siempre `eager`: un fotograma oculto con
+// display:none no se cargaría en modo lazy hasta mostrarse, y la animación
+// enseñaría huecos.
 import { Picture } from 'astro:assets';
-import piedra from '../assets/ppt/piedra.png';
-import papel from '../assets/ppt/papel.png';
-import tijera from '../assets/ppt/tijera.png';
+import type { ImageMetadata } from 'astro';
 
 interface Props {
-  forma: 'piedra' | 'papel' | 'tijera';
+  frame: string;
   class?: string;
   /** Ancho en CSS, para que el navegador elija la variante justa */
   sizes: string;
 }
-const { forma, class: className, sizes } = Astro.props;
-const IMG = { piedra, papel, tijera };
+const { frame, class: className, sizes } = Astro.props;
+
+const imagenes = import.meta.glob<{ default: ImageMetadata }>('../assets/ppt/*.png', { eager: true });
+const img = imagenes[`../assets/ppt/${frame}.png`]?.default;
+if (!img) throw new Error(`HandShape: no existe el fotograma "${frame}"`);
 ---
 
 <Picture
-  src={IMG[forma]}
+  src={img}
   alt=""
-  widths={[96, 160, 256]}
+  widths={[96, 192, 384]}
   sizes={sizes}
   formats={['avif', 'webp']}
   fallbackFormat="webp"
   loading="eager"
   draggable="false"
-  pictureAttributes={{ class: className, 'data-forma': forma }}
+  pictureAttributes={{ class: className, 'data-frame': frame }}
 />
