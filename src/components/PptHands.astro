@@ -1,0 +1,126 @@
+---
+// Las dos manos de piedra, papel o tijera. Solo marcado y apariencia:
+// piedra-papel-tijera.js las anima con la Web Animations API (entran desde
+// su lado, respiran en reposo, marcan el "piedra, papel, tijera" y enseñan
+// la jugada) y escribe nombres y marcador. Las formas cambian con
+// `data-forma` en cada `.ppt-hand` y el resultado con `.is-winner` /
+// `.is-loser` en cada lado: estados que pone el JS, por eso viven aquí como
+// CSS propio (Tailwind no rastrea src/scripts/).
+//
+// Es un objeto ilustrado: la sombra del suelo lleva degradado (ver
+// DESIGN.md, "Excepción: objetos ilustrados"). El ganador se marca con el
+// único acento del sitio; el perdedor se apaga. Sin segundo color.
+import HandShape from './HandShape.astro';
+
+const FORMAS = ['piedra', 'papel', 'tijera'] as const;
+const LADOS = [
+  { n: 1, nombre: 'Tú' },
+  { n: 2, nombre: 'Máquina' },
+];
+---
+
+<div class="ppt-object grid grid-cols-2 w-full max-w-sm sm:max-w-md mx-auto" id="ppt-object">
+  {LADOS.map(({ n, nombre }) => (
+    <div class="ppt-side flex flex-col items-center" id={`ppt-side-${n}`} data-lado={n}>
+      <div class="ppt-rig relative" id={`ppt-rig-${n}`}>
+        <svg class="ppt-hand block" id={`ppt-hand-${n}`} data-forma="piedra" viewBox="0 0 80 80" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          {FORMAS.map((f) => <HandShape forma={f} class="ppt-shape" />)}
+        </svg>
+      </div>
+      <div class="ppt-floor" id={`ppt-floor-${n}`} aria-hidden="true"></div>
+      <p class="m-0 mt-1 flex items-baseline gap-2 max-w-full">
+        <span class="ppt-name" id={`ppt-name-${n}`}>{nombre}</span>
+        <span class="ppt-score" id={`ppt-score-${n}`}>0</span>
+      </p>
+    </div>
+  ))}
+</div>
+
+<style>
+  .ppt-object {
+    /* Todo se deriva del tamaño de la mano: en pantallas bajas se compacta
+       cambiando un solo valor */
+    --hand-size: 7rem;
+    /* La entrada llega desde fuera de cada lado: sin esto, la mano derecha
+       fuera de su sitio crearía scroll horizontal */
+    overflow-x: clip;
+  }
+
+  @media (min-width: 640px) {
+    .ppt-object { --hand-size: 9rem; }
+  }
+
+  @media (min-width: 1024px) {
+    .ppt-object { --hand-size: 10rem; }
+  }
+
+  .ppt-rig {
+    transform-origin: 50% 100%;
+    will-change: transform;
+  }
+
+  .ppt-hand {
+    width: var(--hand-size);
+    height: var(--hand-size);
+    color: var(--text-primary);
+    transition: color 0.3s ease-out;
+  }
+
+  /* Las manos se miran: la de la derecha es la de la izquierda en espejo */
+  .ppt-side[data-lado="2"] .ppt-hand {
+    transform: scaleX(-1);
+  }
+
+  /* Los <g> los pinta HandShape.astro: el alcance de estilos de Astro no
+     llega al marcado de un componente hijo, de ahí :global */
+  .ppt-hand :global(.ppt-shape) {
+    display: none;
+  }
+
+  .ppt-hand[data-forma="piedra"] :global(.ppt-shape[data-forma="piedra"]),
+  .ppt-hand[data-forma="papel"] :global(.ppt-shape[data-forma="papel"]),
+  .ppt-hand[data-forma="tijera"] :global(.ppt-shape[data-forma="tijera"]) {
+    display: inline;
+  }
+
+  .ppt-floor {
+    width: calc(var(--hand-size) * 0.6);
+    height: calc(var(--hand-size) * 0.08);
+    margin-top: calc(var(--hand-size) * -0.08);
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgb(0 0 0 / 0.55), transparent);
+    will-change: transform, opacity;
+  }
+
+  .ppt-name {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .ppt-score {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .ppt-side {
+    min-width: 0;
+    transition: opacity 0.3s ease-out;
+  }
+
+  .ppt-side.is-winner .ppt-hand,
+  .ppt-side.is-winner .ppt-name {
+    color: var(--accent-warm);
+  }
+
+  .ppt-side.is-loser {
+    opacity: 0.45;
+  }
+</style>

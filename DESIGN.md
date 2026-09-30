@@ -358,21 +358,58 @@ acción principal como cualquier control secundario y nunca la sustituyen.
 no en el oráculo): la respuesta grande en `--text-primary` y el tipo debajo
 en texto terciario, igual que Cara/Cruz en la moneda.
 
-**Excepción de movimiento: el oráculo** (pedida por el propietario). La
-bola 8 tiene más de una animación porque su gracia es el objeto: entra
-rodando al cargar (el 8 gira hasta quedar de frente), flota en reposo,
-en la primera consulta rueda del 8 a la ventana (las dos caras nunca se
-ven a la vez, como en la bola real) y en cada consulta se agita con
-burbujas antes de que el dado emerja desenfocado y se asiente. La ilusión
-de esfera sale de dejar la luz fija por encima de las caras. Todo con
-`element.animate()` y todo desactivado con `prefers-reduced-motion`. No es
-precedente para las demás herramientas: la regla general sigue abajo.
+**Acción principal de varias opciones** (piedra, papel o tijera): cuando
+la acción es elegir una de N (N ≤ 4), en vez de la píldora rellena van N
+botones iguales en una fila (`grid-cols-N`), con borde `--divider-line`,
+radio píldora, icono encima del texto; hover y foco en `--accent-warm` y
+la opción elegida se rellena de acento solo mientras dura la ronda
+(`aria-pressed="true"`). El invariante de acción visible mide el
+contenedor de la fila (`#ppt-choices`).
 
-Movimiento: una sola animación con sentido (el volteo, el giro, la tirada),
-que termina en el resultado. Duración entre 1 y 2 segundos: más larga ya es
-suspense de tragamonedas. Con `prefers-reduced-motion`, un fundido de 200ms.
-Las reglas de implementación del JS están en AGENTS.md ("Lógica de las
-herramientas").
+**Dos jugadores en el mismo móvil**: se elige por turnos con los mismos
+botones; una línea de texto (`#ppt-turn`) dice a quién le toca y pide que
+el otro no mire. La jugada del primero no se marca en ningún sitio hasta
+que elige el segundo. Los nombres son entradas del usuario (debajo de la
+acción, como todo control secundario) y el resultado los usa ("Gana Ana").
+
+**Resultados de más de dos tipos sin segundo color** (sí / no / ni sí ni
+no en el oráculo; ganar / perder / empate en piedra, papel o tijera): la
+respuesta grande en `--text-primary` y el tipo o el motivo debajo en texto
+terciario, igual que Cara/Cruz en la moneda. Si hay un ganador en el
+objeto, se marca con el acento y el perdedor se apaga (opacidad), nunca
+con verde/rojo.
+
+### Ciclo de movimiento (estándar)
+
+Pedido por el propietario tras la moneda y la bola 8: toda herramienta
+migrada o nueva tiene **objeto vivo**, con estas fases, todas con
+`element.animate()` y en este orden:
+
+| Fase | Qué hace | Duración | Moneda | Bola 8 | Piedra, papel o tijera |
+|---|---|---|---|---|---|
+| **Entrada** | El objeto llega al cargar, pasa un poco y vuelve | 0,9–1,1 s | Rueda de canto desde la izquierda | Rueda y el 8 gira de frente | Cada mano entra desde su lado |
+| **Reposo** | Movimiento mínimo en bucle mientras espera | ciclo de 1,5–3 s, ≤ 6px | Se inclina hacia el cursor, destello | Flota | Respiran a destiempo |
+| **Anticipación** | Gesto previo que anuncia la acción | 0,1–0,3 s | Se agacha antes de saltar | Se hunde el dado anterior | La mano se echa atrás en cada golpe |
+| **Acción** | La animación con sentido que produce el resultado | 1–2 s en total | Volteo | Agitado + dado que emerge | "Piedra… papel… tijera…" (3 golpes) |
+| **Aterrizaje** | Se asienta con un pequeño rebote o aplastamiento y aparece el resultado | 0,3–0,4 s | Asienta | El dado se asienta | Aplastamiento al abrir la mano |
+
+Reglas:
+
+- El resultado se escribe al resolver `.finished` de la última fase,
+  nunca con `setTimeout`.
+- **Interrumpible**: la acción cancela la entrada y el reposo
+  (`getAnimations().forEach(a => a.cancel())`) y el reposo no arranca
+  encima si una acción interrumpió la entrada.
+- La entrada que llega desde un lado va dentro de un contenedor con
+  `overflow-x: clip`, o solo desde la izquierda: si no, crea scroll
+  horizontal.
+- Solo `transform` y `opacity` (y `filter` corto si hace falta).
+- `prefers-reduced-motion`: sin entrada, reposo ni anticipación; un fundido
+  de 200 ms y el resultado.
+- Nada de celebraciones (confeti, brillos, sonidos). Como mucho
+  `navigator.vibrate` corto al terminar.
+- Extras que dependen del objeto (burbujas de la bola, cursor de la
+  moneda) son opcionales; las cinco fases no.
 
 ## Cómo decidir entre CSS propio y utilidad de Tailwind
 

@@ -1,0 +1,47 @@
+---
+// Trazo de una mano de piedra, papel o tijera (dedos hacia arriba, viewBox
+// 80×80). Lo comparten el objeto (PptHands.astro, las tres formas por mano)
+// y los botones de elección de la página, así el dibujo vive en un solo
+// sitio y el JS nunca lo escribe (AGENTS.md, regla 6).
+interface Props {
+  forma: 'piedra' | 'papel' | 'tijera';
+  class?: string;
+}
+const { forma, class: className } = Astro.props;
+---
+
+<g class={className} data-forma={forma}>
+  {forma === 'piedra' && (
+    <>
+      <path d="M28 52 C28 52, 22 46, 22 38 C22 34, 25 31, 29 31 C31 31, 33 32, 34 34" />
+      <path d="M34 34 C34 28, 34 24, 38 22 C42 20, 46 22, 46 26 L46 34" />
+      <path d="M46 30 C46 26, 50 24, 53 26 C56 28, 56 31, 56 34" />
+      <path d="M56 32 C56 28, 60 27, 62 30 C64 33, 63 36, 62 40" />
+      <path d="M62 40 C62 40, 63 48, 58 54 C53 60, 44 62, 38 60 C32 58, 28 54, 28 52" />
+      <path d="M34 34 L34 42" opacity="0.4" />
+      <path d="M46 34 L46 42" opacity="0.4" />
+      <path d="M56 34 L56 40" opacity="0.4" />
+    </>
+  )}
+  {forma === 'papel' && (
+    <>
+      <path d="M26 56 C26 56, 22 48, 22 42 C22 38, 25 36, 28 36 L28 54" />
+      <path d="M28 36 L30 18 C30 14, 34 13, 36 16 L36 36" />
+      <path d="M36 36 L37 16 C37 12, 41 11, 43 14 L43 36" />
+      <path d="M43 36 L44 18 C44 14, 48 13, 50 16 L50 38" />
+      <path d="M50 38 L51 24 C51 20, 55 19, 57 22 L57 42" />
+      <path d="M57 42 C57 42, 58 50, 53 56 C48 62, 40 63, 34 61 C28 59, 26 56, 26 56" />
+    </>
+  )}
+  {forma === 'tijera' && (
+    <>
+      <path d="M28 58 C28 58, 24 50, 24 44 C24 40, 27 38, 30 39 L32 42" />
+      <path d="M32 42 L26 16 C25 12, 29 10, 31 14 L38 38" />
+      <path d="M38 38 L38 14 C38 10, 42 9, 43 13 L44 38" />
+      <path d="M44 38 C44 38, 46 36, 48 38 C50 40, 50 42, 50 44" />
+      <path d="M50 44 C50 44, 52 42, 54 44 C56 46, 56 48, 55 50" />
+      <path d="M55 50 C55 50, 55 56, 50 60 C45 64, 38 63, 33 61 C28 59, 28 58, 28 58" />
+      <path d="M48 38 L48 44" opacity="0.3" />
+    </>
+  )}
+</g>

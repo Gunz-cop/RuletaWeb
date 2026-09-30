@@ -705,4 +705,49 @@ export const ESTADOS = [
   },
   ...estadosAccionVisible('/si-o-no', '#btn-ask'),
   ...estadosResponsive('/si-o-no', '#btn-ask'),
+  // Migrado al sistema editorial con la estructura de la moneda. El
+  // resultado, el ganador y las filas del historial los pone
+  // piedra-papel-tijera.js; la acción principal son tres botones iguales.
+  {
+    ruta: '/piedra-papel-tijera',
+    nombre: 'jugada',
+    contexto: { reducedMotion: 'reduce' },
+    clics: ['.ppt-choice[data-choice="piedra"]'],
+    esperarSelector: '#ppt-result[data-estado="final"]',
+    comprobar: [
+      { sel: '#ppt-result', props: ['opacity', 'textAlign'] },
+      { sel: '#ppt-result-main', props: ['fontFamily', 'fontWeight', 'color'] },
+      { sel: '#ppt-hand-1', props: ['display', 'width'] },
+      { sel: '.ppt-choice', props: ['borderTopWidth', 'borderRadius'] },
+      { sel: '.history-row', props: ['display', 'borderBottomWidth', 'borderBottomStyle'] },
+      { sel: '.history-label', props: ['color'] },
+      { sel: '#ppt-names', props: ['display'] },
+    ],
+  },
+  {
+    // Dos jugadores: la jugada del primero no se marca en ningún botón y la
+    // ronda solo se resuelve cuando elige el segundo
+    ruta: '/piedra-papel-tijera',
+    nombre: 'dos-jugadores',
+    contexto: { reducedMotion: 'reduce' },
+    verificarRelacion: async (pagina) => {
+      await pagina.click('[data-mode="dos"]');
+      await pagina.fill('#ppt-name-input-1', 'Ana');
+      await pagina.fill('#ppt-name-input-2', 'Luis');
+      await pagina.click('.ppt-choice[data-choice="tijera"]');
+      const oculta = await pagina.evaluate(() => ({
+        pulsados: document.querySelectorAll('.ppt-choice[aria-pressed="true"]').length,
+        resuelta: document.getElementById('ppt-result').dataset.estado === 'final',
+      }));
+      if (oculta.pulsados || oculta.resuelta) {
+        return { ok: false, mensaje: `tras elegir el jugador 1 se ve su jugada o la ronda ya se resolvió (${JSON.stringify(oculta)})` };
+      }
+      await pagina.click('.ppt-choice[data-choice="papel"]');
+      await pagina.waitForSelector('#ppt-result[data-estado="final"]');
+      const texto = await pagina.textContent('#ppt-result-main');
+      return { ok: texto === 'Gana Ana', mensaje: `tijera contra papel debería decir «Gana Ana» y dice «${texto}»` };
+    },
+  },
+  ...estadosAccionVisible('/piedra-papel-tijera', '#ppt-choices'),
+  ...estadosResponsive('/piedra-papel-tijera', '#ppt-choices'),
 ];

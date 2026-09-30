@@ -504,5 +504,101 @@
       "ok": true,
       "mensaje": "#btn-ask.bottom=579.2px con 1000px visibles (holgura 420.8px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
     }
+  },
+  "/piedra-papel-tijera [jugada]": {
+    "#ppt-result": {
+      "opacity": "1",
+      "textAlign": "center"
+    },
+    "#ppt-result-main": {
+      "fontFamily": "Outfit, system-ui, sans-serif",
+      "fontWeight": "700",
+      "color": "rgb(240, 240, 245)"
+    },
+    "#ppt-hand-1": {
+      "display": "block",
+      "width": "160px"
+    },
+    ".ppt-choice": {
+      "borderTopWidth": "1px",
+      "borderRadius": "999px"
+    },
+    ".history-row": {
+      "display": "grid",
+      "borderBottomWidth": "1px",
+      "borderBottomStyle": "solid"
+    },
+    ".history-label": {
+      "color": "rgb(240, 240, 245)"
+    },
+    "#ppt-names": {
+      "display": "none"
+    }
+  },
+  "/piedra-papel-tijera [dos-jugadores]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "tijera contra papel debería decir «Gana Ana» y dice «Gana Ana»"
+    }
+  },
+  "/piedra-papel-tijera [accion-principal-visible-android-360x560]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#ppt-choices.bottom=433.5px con 560px visibles (holgura 126.5px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/piedra-papel-tijera [accion-principal-visible-iphone-se-375x548]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#ppt-choices.bottom=433.5px con 548px visibles (holgura 114.5px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/piedra-papel-tijera [accion-principal-visible-iphone-393x659]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#ppt-choices.bottom=511.9px con 659px visibles (holgura 147.1px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/piedra-papel-tijera [responsive-fold-cerrado-344x680]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#ppt-choices.bottom=531.9px con 680px visibles (holgura 148.1px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/piedra-papel-tijera [responsive-fold-abierto-673x760]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#ppt-choices.bottom=634.9px con 760px visibles (holgura 125.1px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/piedra-papel-tijera [responsive-tablet-vertical-768x960]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#ppt-choices.bottom=634.9px con 960px visibles (holgura 325.1px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/piedra-papel-tijera [responsive-tablet-horizontal-1024x700]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#ppt-choices.bottom=533.9px con 700px visibles (holgura 166.1px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/piedra-papel-tijera [responsive-movil-horizontal-740x340]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "sin scroll horizontal (740px en 740px)"
+    }
+  },
+  "/piedra-papel-tijera [responsive-escritorio-1280x720]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#ppt-choices.bottom=533.9px con 720px visibles (holgura 186.1px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/piedra-papel-tijera [responsive-escritorio-1920x1000]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#ppt-choices.bottom=533.9px con 1000px visibles (holgura 466.1px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
   }
 }

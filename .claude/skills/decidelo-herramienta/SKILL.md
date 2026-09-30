@@ -61,6 +61,11 @@ Checklist de marcado y estilo:
 - [ ] Nombres de clase propios con prefijo de la herramienta (`coin-`,
       `dice-`…) para no chocar con utilidades de Tailwind.
 - [ ] No uses `padding: X 0` en un elemento que también lleva `.wrap`.
+- [ ] Si un componente hijo pinta marcado que el padre estiliza (p. ej.
+      `HandShape` dentro de `PptHands`), el selector va con `:global()`:
+      el alcance de estilos de Astro no cruza componentes.
+- [ ] Acción de elegir una de N: fila de botones iguales (DESIGN.md,
+      "Acción principal de varias opciones"), no N píldoras rellenas.
 
 Checklist de JS (regla 6 de AGENTS.md):
 
@@ -70,6 +75,9 @@ Checklist de JS (regla 6 de AGENTS.md):
       `.finished`; `prefers-reduced-motion`.
 - [ ] `localStorage` en `try/catch`, claves `decidelo_<herramienta>_<dato>`,
       lectura del formato viejo.
+- [ ] Ciclo de movimiento completo de DESIGN.md: entrada, reposo,
+      anticipación, acción y aterrizaje; interrumpible; entrada lateral
+      dentro de `overflow-x: clip`.
 - [ ] Sin sonidos ni celebraciones; resultado en las palabras del usuario.
 - [ ] El JS no añade clases de Tailwind: usa clases de estado propias
       (`is-shown`).
