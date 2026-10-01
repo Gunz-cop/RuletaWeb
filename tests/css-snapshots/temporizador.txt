@@ -10,6 +10,7 @@
 .tobj-aire-ring[S]{border:1px solid var(--divider-line)}
 .tobj-aire-core[S]{border:1.5px solid var(--accent-warm);will-change:transform;background:radial-gradient(circle at 50% 45%,#e2905a52,#e2905a14 70%);transform:scale(.62)}
 .tobj-aire-text[S]{color:var(--text-primary);letter-spacing:.02em;font-family:Outfit,sans-serif;font-size:1.05rem;font-weight:600}
+.tobj-aire-count[S]{min-height:1.2em;color:var(--text-tertiary);font-variant-numeric:tabular-nums;font-size:.85rem;font-weight:500}
 .tobj-floor[S]{width:calc(var(--obj) * .7);height:calc(var(--obj) * .08);margin-top:calc(var(--obj) * .02);will-change:transform, opacity;background:radial-gradient(#000c 0%,#00000059 45%,#0000 72%)}
 .tobj[S][data-mode=impulso] .tobj-floor[S]{visibility:hidden}
 [S][hidden]{display:none!important}
@@ -44,6 +45,14 @@ select[S].timer-input option[S]{background:var(--bg-surface);color:var(--text-pr
 .timer-alert-ganas[S]{width:100%;max-width:26rem}
 .timer-alert[S] .timer-ganas[S] button[S]{color:#1a0e06;border-color:#1a0e0659}
 .timer-alert[S] .timer-ganas[S] button[S][aria-pressed=true]{color:var(--accent-warm);background:#1a0e06;border-color:#1a0e06}
+.timer-alert-extra[S]{margin:0;font-size:.95rem}
+.timer-alert-extra[S]:empty{display:none}
+.timer-atencion[S] button[S]{color:#1a0e06;cursor:pointer;background:0 0;border:1px solid #1a0e0659;border-radius:999px;padding:.6rem 1rem;font-family:inherit;font-size:1rem}
+.timer-atencion[S] button[S][aria-pressed=true]{color:var(--accent-warm);background:#1a0e06;border-color:#1a0e06}
+.timer-evid-list[S] li{border-bottom:1px solid var(--divider-line);justify-content:space-between;gap:1rem;padding:.6rem 0;font-size:.9rem;display:flex}
+.timer-evid-list[S] .evid-de{color:var(--text-primary);overflow-wrap:anywhere}
+.timer-evid-list[S] .evid-val{color:var(--text-tertiary);font-variant-numeric:tabular-nums;flex-shrink:0}
+.timer-evid-list[S]:empty{display:none}
 .timer-alert-actions[S]{flex-wrap:wrap;justify-content:center;gap:1.25rem;margin-top:.5rem;display:flex}
 .timer-alert-main[S]{color:var(--accent-warm);cursor:pointer;background:#1a0e06;border:0;border-radius:999px;padding:.8rem 2.25rem;font-family:Outfit,sans-serif;font-size:1.1rem;font-weight:700}
 .timer-alert-close[S]{color:#1a0e06;cursor:pointer;background:0 0;border:0;border-bottom:1px solid;padding:.25rem 0;font-family:inherit;font-size:1rem}

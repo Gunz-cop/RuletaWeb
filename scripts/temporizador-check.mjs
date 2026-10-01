@@ -9,6 +9,8 @@ import { webcrypto } from 'node:crypto';
 import {
   MODOS, JUEGOS, juegoPorDefecto, juegoValido, modoValido, normalizarRango,
   duracionAleatoria, formatoDuracion, formatoRango, configDeUrl, convertirHistorialViejo,
+  RESPIRACIONES, normalizarRespiracion, etiquetaRespiracion, resumenEsperas, resumenSesiones,
+  formatoTotal, decimal,
 } from '../src/scripts/temporizador-logica.js';
 
 const fallos = [];
@@ -73,9 +75,47 @@ check(viejo[0].modo === 'papa' && viejo[0].lado === 'Duró 23 s', 'historial vie
 check(viejo[1].modo === 'visible' && !/[💣💥👁]/u.test(viejo[1].texto), 'historial viejo: sin emojis');
 check(convertirHistorialViejo('basura').length === 0, 'historial viejo corrupto');
 
+// Respiración
+for (const [k, r] of Object.entries(RESPIRACIONES)) {
+  check(JSON.stringify(normalizarRespiracion(r.fases)) === JSON.stringify(r.fases), `${k}: patrón fuera de límites`);
+}
+check(JSON.stringify(normalizarRespiracion([0, -2, 0, 99])) === '[1,0,1,12]', 'inhalar y exhalar valen al menos 1 s');
+check(JSON.stringify(normalizarRespiracion(['5', 0, '5.4', 0])) === '[5,0,5,0]', 'respiración desde texto');
+check(normalizarRespiracion([4, 4, 4]) === null && normalizarRespiracion([4, 'x', 4, 4]) === null, 'respiración inválida');
+check(etiquetaRespiracion([4, 0, 6, 0]) === '4-6' && etiquetaRespiracion([4, 4, 4, 4]) === '4-4-4-4' && etiquetaRespiracion([4, 7, 8, 0]) === '4-7-8', 'etiquetaRespiracion');
+
+// Evidencia del impulso
+const espera = (de, antes, despues, seg = 300, parada = false) => ({ t: 0, de, antes, despues, seg, parada });
+check(resumenEsperas([espera('dulce', 8, 4), espera('dulce', 6, 3)]) === null, 'con 2 esperas no hay evidencia');
+check(resumenEsperas('basura') === null, 'esperas corruptas');
+const ev = resumenEsperas([
+  espera('Comer algo dulce', 8, 4, 360),
+  espera('comer  algo dulce ', 7, 5, 240),
+  espera('mirar el móvil', 6, 3, 300),
+  espera('mirar el móvil', 9, null, 120, true),
+  espera('', 5, 5, 300),
+]);
+check(ev && ev.n === 4 && ev.antes === 6.5 && ev.despues === 4.3 && ev.tendencia === 'bajan', `medias del impulso: ${JSON.stringify(ev)}`);
+check(ev.total === 5 && ev.paradas === 1 && ev.segMedia === 300, 'totales y paradas');
+check(ev.porTipo.length === 2 && ev.porTipo[0].n === 2 && ev.porTipo[0].antes === 7.5, 'agrupa por tipo sin mayúsculas ni espacios');
+check(resumenEsperas([espera('a', 3, 6), espera('a', 4, 6), espera('a', 5, 6)]).tendencia === 'suben', 'tendencia que sube');
+check(resumenEsperas([espera('a', 3, 3), espera('a', 3, 3), espera('a', 3, 3)]).porTipo.length === 0, 'un solo tipo no lleva desglose');
+
+// Sesiones de avisos
+const ahora = 10 * 24 * 3600 * 1000;
+const ses = resumenSesiones([
+  { t: ahora - 1000, avisos: 3, seg: 600, atencion: 'respiracion' },
+  { t: ahora - 2 * 24 * 3600 * 1000, avisos: 2, seg: 300, atencion: 'pensando' },
+  { t: ahora - 9 * 24 * 3600 * 1000, avisos: 5, seg: 1200, atencion: '__proto__' },
+], ahora);
+check(ses.n === 3 && ses.seg === 2100 && ses.semana === 2 && ses.conAtencion === 2 && ses.enRespiracion === 1, `sesiones: ${JSON.stringify(ses)}`);
+check(resumenSesiones([]) === null, 'sin sesiones');
+check(formatoTotal(6000) === '1 h 40 min' && formatoTotal(3600) === '1 h' && formatoTotal(90) === '1 min 30 s', 'formatoTotal');
+check(decimal(7.8) === '7,8', 'coma decimal');
+
 if (fallos.length) {
   console.error(`temporizador: ${fallos.length} fallo(s)`);
   for (const f of fallos) console.error(`  - ${f}`);
   process.exit(1);
 }
-console.log('ok     lógica del temporizador (rangos, azar, nombres por país, historial viejo)');
+console.log('ok     lógica del temporizador (rangos, azar, nombres por país, historial viejo, respiración, evidencia)');

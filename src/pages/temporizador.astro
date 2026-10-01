@@ -4,7 +4,7 @@ import AdSlot from '../components/AdSlot.astro';
 import HubGrid from '../components/HubGrid.astro';
 import SeoArticle from '../components/SeoArticle.astro';
 import TimerObject from '../components/TimerObject.astro';
-import { MODOS, JUEGOS, formatoRango } from '../scripts/temporizador-logica.js';
+import { MODOS, JUEGOS, RESPIRACIONES, NOMBRES_FASE, ATENCION, formatoRango } from '../scripts/temporizador-logica.js';
 import { getSocialImageUrl } from '../lib/heroImages';
 
 const title = 'Temporizador Aleatorio: Papa Caliente y Tingo Tango Online';
@@ -40,7 +40,15 @@ const faq = [
   },
   {
     q: '¿Para qué sirve el modo Aguantar un impulso?',
-    a: 'Para cuando te dan ganas de algo que prefieres no hacer ya: comer algo dulce, fumar, mirar el móvil o comprar. Anotas cuántas ganas tienes, esperas sin saber cuánto falta mientras respiras con el círculo y, al sonar, anotas cuántas ganas quedan. No sustituye la ayuda de un profesional.',
+    a: 'Para cuando te dan ganas de algo que prefieres no hacer ya: comer algo dulce, fumar, mirar el móvil o comprar. Anotas cuántas ganas tienes, esperas sin saber cuánto falta mientras respiras con el círculo al ritmo que elijas y, al sonar, anotas cuántas ganas quedan. Con tres esperas o más, ves tu media. No sustituye la ayuda de un profesional.',
+  },
+  {
+    q: '¿Puedo ver si esperar me funciona?',
+    a: 'Sí. Si marcas tus ganas antes y después de cada espera, desde la tercera el bloque «Tu evidencia» te muestra cómo cambiaron de media, separado por tipo de ganas. Todo se guarda solo en tu navegador y lo borras con «Borrar mis esperas».',
+  },
+  {
+    q: '¿Qué tipos de respiración tiene?',
+    a: 'Suave 4-6 (inhala 4 segundos y exhala 6), cuadrada 4-4-4-4, 4-7-8 y una personalizada en la que eliges los segundos de cada fase: inhalar, mantener, exhalar y mantener.',
   },
   {
     q: '¿Qué pasa si tengo el sonido apagado?',
@@ -52,7 +60,7 @@ const faq = [
   },
   {
     q: '¿Se guardan mis datos?',
-    a: 'Solo en tu propio navegador: el modo, el rango, los textos que escribiste y las diez últimas rondas. No se envían a ningún servidor y no hace falta cuenta.',
+    a: 'Solo en tu propio navegador: el modo, el rango, los textos que escribiste, las diez últimas rondas y, para tu evidencia, tus esperas y sesiones. No se envían a ningún servidor y no hace falta cuenta.',
   },
 ];
 
@@ -212,6 +220,25 @@ const schemaLD = {
               ))}
             </div>
           </div>
+          <div>
+            <span class={fieldLabel} id="timer-resp-label">Respiración</span>
+            <div class="flex flex-wrap items-baseline gap-x-6 gap-y-2" id="timer-resps" role="group" aria-labelledby="timer-resp-label">
+              {Object.entries(RESPIRACIONES).map(([clave, r]) => (
+                <button type="button" class={textBtn} data-resp={clave} aria-pressed={clave === 'suave' ? 'true' : 'false'}>{r.etiqueta}</button>
+              ))}
+              <button type="button" class={textBtn} data-resp="propia" aria-pressed="false" aria-controls="timer-resp-propia">Personalizada</button>
+            </div>
+            {/* Patrón propio: cuatro fases en segundos; 0 salta la fase */}
+            <div class="grid grid-cols-4 gap-3 max-w-sm mt-4" id="timer-resp-propia" hidden>
+              {NOMBRES_FASE.map((nombre, i) => (
+                <label class="flex flex-col gap-1 text-xs text-ink-secondary">
+                  <span>{nombre}</span>
+                  <input class="timer-input w-full" type="number" inputmode="numeric" min={i % 2 === 0 ? 1 : 0} max="12" step="1" data-fase={i}>
+                </label>
+              ))}
+            </div>
+            <p class="m-0 mt-2 text-xs text-ink-tertiary">Segundos de cada fase: inhala, mantén, exhala, mantén.</p>
+          </div>
         </div>
 
         {/* Solo en avisos al azar: cuánto dura la sesión */}
@@ -230,6 +257,28 @@ const schemaLD = {
           <span class="text-xs text-ink-tertiary" id="timer-share-msg" aria-live="polite"></span>
         </div>
       </fieldset>
+
+      {/* Tu evidencia: lo que dicen tus propias esperas. Frases y medias,
+          sin gráficos ni premios. El JS lo rellena y lo muestra con 3+ esperas */}
+      <div class="timer-evidence mt-10" data-solo="impulso" hidden>
+        <div id="timer-evidencia" hidden>
+          <h2 class="m-0 mb-3 font-display text-lg">Tu evidencia</h2>
+          <p class="m-0 text-base text-ink-primary" id="timer-evid-main"></p>
+          <p class="m-0 mt-1 text-sm text-ink-tertiary" id="timer-evid-side"></p>
+          <ul class="timer-evid-list list-none m-0 mt-3 p-0" id="timer-evid-tipos"></ul>
+          <button type="button" class={`${textBtn} mt-4 text-sm`} id="timer-evid-clear">Borrar mis esperas</button>
+        </div>
+        <p class="m-0 text-sm text-ink-tertiary" id="timer-evid-empty">Cuando completes tres esperas marcando tus ganas antes y después, aquí verás si esperar te funciona.</p>
+      </div>
+
+      <div class="timer-evidence mt-10" data-solo="avisos" hidden>
+        <div id="timer-sesiones" hidden>
+          <h2 class="m-0 mb-3 font-display text-lg">Tus sesiones</h2>
+          <p class="m-0 text-base text-ink-primary" id="timer-ses-main"></p>
+          <p class="m-0 mt-1 text-sm text-ink-tertiary" id="timer-ses-side"></p>
+          <button type="button" class={`${textBtn} mt-4 text-sm`} id="timer-ses-clear">Borrar mis sesiones</button>
+        </div>
+      </div>
     </section>
 
     <section class="w-full mt-12 sm:mt-16 lg:mt-10 lg:col-start-1 lg:row-start-3" aria-label="Historial de rondas">
@@ -259,6 +308,15 @@ const schemaLD = {
         ))}
       </div>
     </div>
+    <div class="timer-alert-ganas" id="timer-alert-atencion" hidden>
+      <p class="m-0 mb-2" id="timer-alert-atencion-label">¿Dónde estaba tu atención casi siempre?</p>
+      <div class="timer-atencion flex flex-col gap-1.5" role="group" aria-labelledby="timer-alert-atencion-label">
+        {Object.entries(ATENCION).map(([clave, texto]) => (
+          <button type="button" data-atencion={clave} aria-pressed="false">{texto}</button>
+        ))}
+      </div>
+    </div>
+    <p class="timer-alert-extra" id="timer-alert-extra"></p>
     <div class="timer-alert-actions">
       <button type="button" class="timer-alert-main" id="timer-alert-again">Otra ronda</button>
       <button type="button" class="timer-alert-close" id="timer-alert-close">Cerrar</button>
@@ -305,13 +363,32 @@ const schemaLD = {
     <p>Te dan ganas de comer algo dulce, de fumar, de abrir otra vez las redes o de comprar algo que viste. En vez de pelear con las ganas, las observas. Escribe de qué son, marca cuántas tienes del 1 al 10 y pulsa &laquo;Empezar&raquo;. Mientras esperas, un círculo crece y se encoge: inhala mientras crece y exhala mientras se encoge. No hay cuenta atrás que mirar. Cuando suena, marcas cuántas ganas te quedan y el historial guarda el antes y el después.</p>
     <p>La idea viene de una técnica llamada <em>urge surfing</em>, &laquo;surfear las ganas&raquo;: observar el impulso como una ola que sube y baja, sin obedecerla ni pelearla. En un estudio con 123 estudiantes fumadores, quienes recibieron unas instrucciones breves de este tipo no sintieron menos ganas, pero sí fumaron menos cigarrillos en la semana siguiente que el grupo de control<sup><a href="#fuente-4">[4]</a></sup>. Es decir, las ganas no desaparecen, pero cambia lo que haces con ellas. Esta herramienta es un apoyo para lo cotidiano; si un impulso te preocupa, habla con alguien que sepa del tema.</p>
 
-    <h3>Avisos al azar: una campana que te pilla desprevenido</h3>
+    <h3>Elige cómo respirar</h3>
+    <p>En &laquo;Respiración&raquo; eliges el ritmo del círculo. Dentro se lee la fase y los segundos que le quedan, así que también puedes seguirlo con los ojos entrecerrados.</p>
+    <table>
+      <thead>
+        <tr><th>Patrón</th><th>Cómo es</th><th>Para quién</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Suave 4-6</td><td>Inhala 4 s, exhala 6 s</td><td>Para empezar; es el ritmo por defecto</td></tr>
+        <tr><td>Cuadrada 4-4-4-4</td><td>Inhala 4, mantén 4, exhala 4, mantén 4</td><td>Si te ayuda contar en bloques iguales</td></tr>
+        <tr><td>4-7-8</td><td>Inhala 4, mantén 7, exhala 8</td><td>Si ya estás cómodo reteniendo el aire</td></tr>
+        <tr><td>Personalizada</td><td>Cuatro fases de 0 a 12 s</td><td>Para usar el ritmo que ya conoces</td></tr>
+      </tbody>
+    </table>
+    <p>Si en algún momento te mareas o te falta el aire, vuelve a respirar a tu ritmo: la guía es una ayuda, no una prueba.</p>
+
+    <h3>Tu evidencia: ¿esperar te funciona?</h3>
+    <p>Cada vez que completas una espera marcando tus ganas antes y después, el temporizador lo guarda en tu navegador. Desde la tercera, el bloque &laquo;Tu evidencia&raquo; te dice qué pasó de media: &laquo;En tus últimas 10 esperas, las ganas bajaron de 7,8 a 4,1&raquo;. Si escribes de qué son las ganas, lo separa por tipo, para que veas si funciona mejor con el dulce que con el móvil. Lo dice tal cual sale, también si las ganas no bajan: es tu dato, no un premio.</p>
+
+    <h3>Avisos al azar: una campana que llega por sorpresa</h3>
     <p>En este modo el temporizador no para al primer aviso: suena una y otra vez, cada vez en un momento distinto dentro del rango, hasta que pulses &laquo;Parar&raquo; o se acabe la duración que elegiste. Cada aviso es un destello en pantalla y un toque de cuenco. Sirve para varias cosas:</p>
     <ul>
       <li><strong>Meditar o hacer pausas.</strong> En la tradición de Plum Village, la campana sirve para volver al cuerpo, a la respiración y al momento presente<sup><a href="#fuente-5">[5]</a></sup>. Con avisos al azar, la campana llega cuando menos la esperas, que es justo cuando más te ayuda a notar dónde estaba tu atención.</li>
       <li><strong>El juego de la silla o las estatuas.</strong> Pongan música, y cuando suene el aviso, a buscar silla o a quedarse quietos. Nadie puede adivinar el momento, ni siquiera quien maneja el móvil.</li>
       <li><strong>Pausas activas.</strong> Estudiando o trabajando, cada aviso es una señal para estirarte o beber agua.</li>
     </ul>
+    <p>Al terminar una sesión, el temporizador te pregunta dónde estuvo tu atención casi siempre: en la respiración, pensando en otra cosa o distraído con algo de fuera. Responder es opcional. Con las respuestas, &laquo;Tus sesiones&raquo; te muestra cuántas sesiones llevas, cuánto tiempo suman y en cuántas te quedaste con la respiración.</p>
 
     <h2>Ideas para usarlo</h2>
     <table>
@@ -644,6 +721,57 @@ const schemaLD = {
     background: #1a0e06;
     border-color: #1a0e06;
     color: var(--accent-warm);
+  }
+
+  .timer-alert-extra {
+    margin: 0;
+    font-size: 0.95rem;
+  }
+
+  .timer-alert-extra:empty {
+    display: none;
+  }
+
+  .timer-atencion button {
+    padding: 0.6rem 1rem;
+    border: 1px solid rgb(26 14 6 / 0.35);
+    border-radius: 999px;
+    background: transparent;
+    color: #1a0e06;
+    font-family: inherit;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+
+  .timer-atencion button[aria-pressed="true"] {
+    background: #1a0e06;
+    border-color: #1a0e06;
+    color: var(--accent-warm);
+  }
+
+  /* Evidencia por tipo de ganas: lista dividida, sin tarjetas */
+  .timer-evid-list :global(li) {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--divider-line);
+    font-size: 0.9rem;
+  }
+
+  .timer-evid-list :global(.evid-de) {
+    color: var(--text-primary);
+    overflow-wrap: anywhere;
+  }
+
+  .timer-evid-list :global(.evid-val) {
+    flex-shrink: 0;
+    color: var(--text-tertiary);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .timer-evid-list:empty {
+    display: none;
   }
 
   .timer-alert-actions {

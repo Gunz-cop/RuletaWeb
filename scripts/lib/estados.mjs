@@ -868,6 +868,61 @@ export const ESTADOS = [
       return { ok, mensaje: `aviso bloqueante durante la sesión: ${alerta}; resultado: «${res}»` };
     },
   },
+  {
+    // Respiración cuadrada: tras inhalar 4 s llega una retención («Mantén»)
+    ruta: '/temporizador?modo=impulso&min=30&max=30',
+    nombre: 'respiracion-cuadrada',
+    verificarRelacion: async (pagina) => {
+      await pagina.click('[data-resp="cuadrada"]');
+      await pagina.click('#timer-start');
+      try {
+        await pagina.waitForFunction(() => document.getElementById('timer-breath-text').textContent === 'Mantén', null, { timeout: 7000 });
+      } catch (e) {
+        const t = await pagina.textContent('#timer-breath-text');
+        return { ok: false, mensaje: `con 4-4-4-4 no llega la fase «Mantén» (se ve «${t}»)` };
+      }
+      const cuenta = await pagina.textContent('#timer-breath-count');
+      await pagina.click('#timer-start');
+      return { ok: /^[1-4]$/.test(cuenta), mensaje: `fase Mantén con cuenta «${cuenta}»` };
+    },
+  },
+  {
+    // Tu evidencia: con esperas guardadas, la frase de medias y el desglose
+    ruta: '/temporizador?modo=impulso',
+    nombre: 'impulso-evidencia',
+    verificarRelacion: async (pagina) => {
+      await pagina.evaluate(() => {
+        const e = (de, antes, despues) => ({ t: Date.now(), de, antes, despues, seg: 300, parada: false });
+        localStorage.setItem('decidelo_temporizador_esperas', JSON.stringify([
+          e('comer algo dulce', 8, 4), e('comer algo dulce', 6, 4), e('mirar el móvil', 7, 4)]));
+      });
+      await pagina.reload();
+      await pagina.waitForSelector('#timer-evidencia:not([hidden])', { timeout: 5000 });
+      const main = await pagina.textContent('#timer-evid-main');
+      const filas = await pagina.$$eval('#timer-evid-tipos li', (l) => l.length);
+      const ok = main === 'En tus últimas 3 esperas, las ganas bajaron de 7 a 4 de media.' && filas === 2;
+      return { ok, mensaje: `evidencia «${main}» con ${filas} tipos` };
+    },
+  },
+  {
+    // Avisos: al parar la sesión pregunta por la atención y la cuenta queda
+    ruta: '/temporizador?modo=avisos&min=1&max=1',
+    nombre: 'avisos-atencion',
+    contexto: { reducedMotion: 'reduce' },
+    verificarRelacion: async (pagina) => {
+      await pagina.click('#timer-start');
+      await pagina.waitForFunction(() => /^1 aviso/.test(document.getElementById('timer-status').textContent), null, { timeout: 6000 });
+      await pagina.click('#timer-start');
+      await pagina.waitForSelector('#timer-alert.is-shown');
+      if (!(await pagina.isVisible('#timer-alert-atencion'))) {
+        return { ok: false, mensaje: 'al terminar la sesión no pregunta por la atención' };
+      }
+      await pagina.click('[data-atencion="respiracion"]');
+      await pagina.click('#timer-alert-again');
+      const ses = await pagina.textContent('#timer-ses-side');
+      return { ok: ses === 'En 1 de 1 estabas en la respiración casi siempre.', mensaje: `tus sesiones: «${ses}»` };
+    },
+  },
   ...estadosAccionVisible('/temporizador', '#timer-start'),
   ...estadosResponsive('/temporizador', '#timer-start', [
     // El modo impulso muestra más campos; el botón no debe moverse de sitio

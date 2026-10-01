@@ -657,7 +657,7 @@
   "/temporizador?modo=impulso&min=1&max=1 [impulso-registrado]": {
     "relacion": {
       "ok": true,
-      "mensaje": "fila del historial: «01Ganas de mirar el móvilGanas 7 → 3 · 1 s · 22:07»"
+      "mensaje": "fila del historial: «01Ganas de mirar el móvilGanas 7 → 3 · 1 s · 01:01»"
     }
   },
   "/temporizador?modo=avisos&min=1&max=1 [avisos-repetidos]": {
@@ -730,6 +730,24 @@
     "relacion": {
       "ok": true,
       "mensaje": "#timer-start.bottom=420.9px con 560px visibles (holgura 139.1px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/temporizador?modo=impulso&min=30&max=30 [respiracion-cuadrada]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "fase Mantén con cuenta «4»"
+    }
+  },
+  "/temporizador?modo=impulso [impulso-evidencia]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "evidencia «En tus últimas 3 esperas, las ganas bajaron de 7 a 4 de media.» con 2 tipos"
+    }
+  },
+  "/temporizador?modo=avisos&min=1&max=1 [avisos-atencion]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "tus sesiones: «En 1 de 1 estabas en la respiración casi siempre.»"
     }
   }
 }

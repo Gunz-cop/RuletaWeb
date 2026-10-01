@@ -16,7 +16,9 @@
 import {
   MODOS, JUEGOS, TOTALES_AVISOS, juegoPorDefecto, juegoValido, modoValido,
   normalizarRango, duracionAleatoria, formatoDuracion, formatoRango,
-  configDeUrl, convertirHistorialViejo,
+  configDeUrl, convertirHistorialViejo, RESPIRACIONES, NOMBRES_FASE,
+  normalizarRespiracion, etiquetaRespiracion, resumenEsperas, resumenSesiones,
+  formatoTotal, decimal,
 } from './temporizador-logica.js';
 
 const MODO_KEY = 'decidelo_temporizador_modo';
@@ -31,6 +33,12 @@ const HISTORY_KEY = 'decidelo_temporizador_historial';
 // convierte, para que nadie pierda sus rondas con el rediseño.
 const HISTORY_OLD_KEY = 'decidelo_timer_history';
 const HISTORY_MAX = 10;
+const RESP_KEY = 'decidelo_temporizador_respiracion';
+// La evidencia personal guarda más que el historial (que se queda en 10
+// filas mezcladas): sin un puñado de esperas no hay media que valga.
+const ESPERAS_KEY = 'decidelo_temporizador_esperas';
+const SESIONES_KEY = 'decidelo_temporizador_sesiones';
+const REGISTROS_MAX = 200;
 
 const DESCRIPCION = {
   papa: 'Pasen el móvil de mano en mano. Nadie sabe cuándo suena: a quien lo tenga, le toca.',
@@ -198,6 +206,7 @@ function initTemporizador() {
   const steam = $('timer-steam');
   const breathCore = $('timer-breath-core');
   const breathText = $('timer-breath-text');
+  const breathCount = $('timer-breath-count');
   const ondas = [...objeto.querySelectorAll('.tobj-onda')];
 
   const modeButtons = [...document.querySelectorAll('#timer-modes button')];
@@ -226,6 +235,19 @@ function initTemporizador() {
   const urgeInput = $('timer-urge');
   const ganasButtons = [...document.querySelectorAll('#timer-ganas [data-ganas]')];
   const totalButtons = [...document.querySelectorAll('#timer-totales [data-total]')];
+  const respButtons = [...document.querySelectorAll('#timer-resps [data-resp]')];
+  const respPropia = $('timer-resp-propia');
+  const faseInputs = [...respPropia.querySelectorAll('[data-fase]')];
+  const evidBox = $('timer-evidencia');
+  const evidEmpty = $('timer-evid-empty');
+  const evidMain = $('timer-evid-main');
+  const evidSide = $('timer-evid-side');
+  const evidTipos = $('timer-evid-tipos');
+  const evidClear = $('timer-evid-clear');
+  const sesBox = $('timer-sesiones');
+  const sesMain = $('timer-ses-main');
+  const sesSide = $('timer-ses-side');
+  const sesClear = $('timer-ses-clear');
   const btnShare = $('timer-share');
   const shareMsg = $('timer-share-msg');
 
@@ -239,6 +261,9 @@ function initTemporizador() {
   const alertText = $('timer-alert-text');
   const alertGanas = $('timer-alert-ganas');
   const alertGanasButtons = [...alertEl.querySelectorAll('[data-ganas-despues]')];
+  const alertAtencion = $('timer-alert-atencion');
+  const alertAtencionButtons = [...alertAtencion.querySelectorAll('[data-atencion]')];
+  const alertExtra = $('timer-alert-extra');
   const alertMain = $('timer-alert-again');
   const alertClose = $('timer-alert-close');
   const flash = $('timer-flash');
@@ -259,7 +284,13 @@ function initTemporizador() {
     total: TOTALES_AVISOS.includes(readStore(TOTAL_KEY, 0)) ? readStore(TOTAL_KEY, 0) : 0,
     ganasAntes: null,
     history: [],
+    // { clave: 'suave' | 'cuadrada' | '478' } o { propia: [4 fases] }
+    resp: readStore(RESP_KEY, null),
   };
+  if (!state.resp || typeof state.resp !== 'object'
+    || !(Object.hasOwn(RESPIRACIONES, state.resp.clave || '') || normalizarRespiracion(state.resp.propia))) {
+    state.resp = { clave: 'suave' };
+  }
   if (typeof state.rangos !== 'object' || Array.isArray(state.rangos)) state.rangos = {};
   if (url.rango) state.rangos[state.modo] = { custom: url.rango };
   audio.enabled = readStore(SONIDO_KEY, true) !== false;
@@ -279,6 +310,20 @@ function initTemporizador() {
     const i = r && Number.isInteger(r.preset) && r.preset >= 0 && r.preset < presets.length
       ? r.preset : MODOS[modo].porDefecto;
     return presets[i];
+  }
+
+  function fasesActuales() {
+    if (state.resp.propia) return normalizarRespiracion(state.resp.propia);
+    return RESPIRACIONES[state.resp.clave].fases;
+  }
+
+  const registros = (key) => {
+    const l = readStore(key, []);
+    return Array.isArray(l) ? l : [];
+  };
+
+  function guardarRegistro(key, entrada) {
+    writeStore(key, [entrada, ...registros(key)].slice(0, REGISTROS_MAX));
   }
 
   const esCustom = (modo) => !!(state.rangos[modo] && Array.isArray(state.rangos[modo].custom));
@@ -334,7 +379,13 @@ function initTemporizador() {
   }
 
   // --- Interfaz de ajustes --------------------------------------------------
-  const enUnidad = (seg, unidad) => (unidad === 'min' ? Math.round((seg / 60) * 10) / 10 : seg);
+  // Unidad de los campos de «Personalizar»: la del modo, salvo que el rango
+  // no se pueda escribir en medios minutos (llega por un enlace, p. ej. 1–2 s)
+  let unidadCustom = 's';
+  const unidadPara = (def, [min, max]) => (
+    def.unidad === 'min' && min >= 30 && min % 30 === 0 && max % 30 === 0 ? 'min' : 's'
+  );
+  const enUnidad = (seg, unidad) => (unidad === 'min' ? seg / 60 : seg);
 
   function renderRango() {
     const def = MODOS[state.modo];
@@ -348,11 +399,12 @@ function initTemporizador() {
     btnCustom.setAttribute('aria-pressed', String(custom));
     customBox.hidden = !custom;
     const [min, max] = rangoDe(state.modo);
-    inputMin.step = inputMax.step = def.unidad === 'min' ? '0.5' : '1';
-    inputMin.min = inputMax.min = def.unidad === 'min' ? '0.1' : '1';
-    inputMin.value = enUnidad(min, def.unidad);
-    inputMax.value = enUnidad(max, def.unidad);
-    unitEl.textContent = def.unidad === 'min' ? 'minutos' : 'segundos';
+    unidadCustom = unidadPara(def, [min, max]);
+    inputMin.step = inputMax.step = unidadCustom === 'min' ? '0.5' : '1';
+    inputMin.min = inputMax.min = unidadCustom === 'min' ? '0.5' : '1';
+    inputMin.value = enUnidad(min, unidadCustom);
+    inputMax.value = enUnidad(max, unidadCustom);
+    unitEl.textContent = unidadCustom === 'min' ? 'minutos' : 'segundos';
   }
 
   function renderJuego() {
@@ -361,6 +413,59 @@ function initTemporizador() {
     selectJuego.value = state.juego;
     stakeLabel.textContent = j.perder;
     stakeInput.placeholder = j.ejemplo;
+  }
+
+  function renderResp() {
+    const propia = !!state.resp.propia;
+    respButtons.forEach((b) => b.setAttribute('aria-pressed', String(
+      propia ? b.dataset.resp === 'propia' : b.dataset.resp === state.resp.clave,
+    )));
+    respPropia.hidden = !propia;
+    const fases = fasesActuales();
+    faseInputs.forEach((inp, i) => { inp.value = fases[i]; });
+    const btnPropia = respButtons.find((b) => b.dataset.resp === 'propia');
+    btnPropia.textContent = propia ? `Personalizada ${etiquetaRespiracion(fases)}` : 'Personalizada';
+  }
+
+  // Tu evidencia: frases tal cual salen, también si las ganas suben
+  function renderEvidencia() {
+    const r = resumenEsperas(registros(ESPERAS_KEY));
+    evidBox.hidden = !r;
+    evidEmpty.hidden = !!r;
+    if (!r) return;
+    const a = decimal(r.antes);
+    const d = decimal(r.despues);
+    const ultimas = `En tus últimas ${r.n} esperas`;
+    evidMain.textContent = r.tendencia === 'bajan'
+      ? `${ultimas}, las ganas bajaron de ${a} a ${d} de media.`
+      : r.tendencia === 'suben'
+        ? `${ultimas}, las ganas subieron de ${a} a ${d} de media.`
+        : `${ultimas}, las ganas se quedaron en ${a} de media.`;
+    evidSide.textContent = [
+      r.segMedia ? `Esperaste ${formatoDuracion(r.segMedia)} de media` : '',
+      r.paradas ? `${r.paradas} de ${r.total} las paraste antes` : '',
+    ].filter(Boolean).join(' · ');
+    evidTipos.replaceChildren(...r.porTipo.map((t) => {
+      const li = document.createElement('li');
+      const de = document.createElement('span');
+      de.className = 'evid-de';
+      de.textContent = t.de;
+      const val = document.createElement('span');
+      val.className = 'evid-val';
+      val.textContent = `${decimal(t.antes)} → ${decimal(t.despues)} · ${t.n} ${t.n === 1 ? 'vez' : 'veces'}`;
+      li.append(de, val);
+      return li;
+    }));
+  }
+
+  function renderSesiones() {
+    const r = resumenSesiones(registros(SESIONES_KEY));
+    sesBox.hidden = !r;
+    if (!r) return;
+    sesMain.textContent = `${r.n} ${r.n === 1 ? 'sesión' : 'sesiones'} · ${formatoTotal(r.seg)} en total · esta semana: ${r.semana}`;
+    sesSide.textContent = r.conAtencion
+      ? `En ${r.enRespiracion} de ${r.conAtencion} estabas en la respiración casi siempre.`
+      : '';
   }
 
   function renderModo() {
@@ -373,6 +478,9 @@ function initTemporizador() {
     ganasButtons.forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.ganas) === state.ganasAntes)));
     renderRango();
     renderJuego();
+    renderResp();
+    renderEvidencia();
+    renderSesiones();
   }
 
   function renderSonido() {
@@ -480,12 +588,15 @@ function initTemporizador() {
 
   let alAceptar = null;
 
-  function abrirAviso({ kicker, title, text, ganas = false, principal, cerrar = false, onClose }) {
+  function abrirAviso({ kicker, title, text, ganas = false, atencion = false, extra = '', principal, cerrar = false, onClose }) {
     alertKicker.textContent = kicker;
     alertTitle.textContent = title;
     alertText.textContent = text || '';
     alertGanas.hidden = !ganas;
     alertGanasButtons.forEach((b) => b.setAttribute('aria-pressed', 'false'));
+    alertAtencion.hidden = !atencion;
+    alertAtencionButtons.forEach((b) => b.setAttribute('aria-pressed', 'false'));
+    alertExtra.textContent = extra;
     alertMain.textContent = principal;
     alertClose.hidden = !cerrar;
     alAceptar = onClose;
@@ -621,25 +732,36 @@ function initTemporizador() {
     tic();
   }
 
-  // Guía de respiración: 4 s entra el aire, 6 s sale. Encadenada por
-  // `.finished`; se corta sola al cancelar las animaciones de la ronda.
+  // Guía de respiración por fases (inhala, mantén, exhala, mantén) con el
+  // patrón elegido; las fases de 0 s se saltan. Encadenada por `.finished`:
+  // mantener también es una animación (quieta) de la duración de la fase.
+  // Se corta sola al cancelar las animaciones de la ronda.
   async function respirar(r) {
     const quieto = reducedMotion();
+    const fases = fasesActuales();
+    // Tamaño del disco al terminar cada fase: lleno tras inhalar y mantener,
+    // recogido tras exhalar y mantener
+    const lleno = [true, true, false, false];
+    const estado = (grande) => (quieto
+      ? { opacity: grande ? 1 : 0.5 }
+      : { transform: grande ? 'scale(1)' : 'scale(0.62)' });
+    let grande = false;
     while (r.vivo) {
-      breathText.textContent = 'Inhala';
-      const inh = quieto
-        ? breathCore.animate([{ opacity: 0.5 }, { opacity: 1 }], { duration: 4000, fill: 'forwards' })
-        : breathCore.animate([{ transform: 'scale(0.62)' }, { transform: 'scale(1)' }], { duration: 4000, easing: 'ease-in-out', fill: 'forwards' });
-      r.anims.push(inh);
-      try { await inh.finished; } catch (e) { break; }
-      if (!r.vivo) break;
-      breathText.textContent = 'Exhala';
-      const exh = quieto
-        ? breathCore.animate([{ opacity: 1 }, { opacity: 0.5 }], { duration: 6000, fill: 'forwards' })
-        : breathCore.animate([{ transform: 'scale(1)' }, { transform: 'scale(0.62)' }], { duration: 6000, easing: 'ease-in-out', fill: 'forwards' });
-      r.anims.push(exh);
-      try { await exh.finished; } catch (e) { break; }
-      r.anims = r.anims.filter((a) => a !== inh && a !== exh);
+      for (let i = 0; i < 4 && r.vivo; i++) {
+        const seg = fases[i];
+        if (!seg) continue;
+        breathText.textContent = NOMBRES_FASE[i];
+        for (let k = 0; k < seg; k++) {
+          programar(() => { if (r.vivo) breathCount.textContent = String(seg - k); }, k * 1000);
+        }
+        const a = breathCore.animate([estado(grande), estado(lleno[i])], {
+          duration: seg * 1000, easing: 'ease-in-out', fill: 'forwards',
+        });
+        r.anims.push(a);
+        try { await a.finished; } catch (e) { return; }
+        r.anims = r.anims.filter((x) => x !== a);
+        grande = lleno[i];
+      }
     }
   }
 
@@ -682,6 +804,7 @@ function initTemporizador() {
     bloquearAjustes(false);
     statusEl.textContent = '';
     breathText.textContent = 'Respira';
+    breathCount.textContent = '';
 
     if (motivo !== 'parado') {
       if (r.modo === 'papa') {
@@ -730,21 +853,27 @@ function initTemporizador() {
     if (motivo === 'parado') {
       mostrarResultado(`Paraste a los ${formatoDuracion(transcurrido)}`, '', 'Otra vez será');
       guardarEnHistorial(de ? `Ganas de ${de}` : 'Aguantar un impulso', `Paraste a los ${formatoDuracion(transcurrido)}`);
+      guardarRegistro(ESPERAS_KEY, { t: Date.now(), de, antes, despues: null, seg: transcurrido, parada: true });
+      renderEvidencia();
       empezarReposo();
       return;
     }
-    let despues = null;
+    // Lo que decían tus esperas anteriores, para comparar con esta
+    const previo = resumenEsperas(registros(ESPERAS_KEY));
     abrirAviso({
       kicker: 'Aguantar un impulso',
       title: 'Pasó el tiempo',
       text: `Esperaste ${formatoDuracion(r.duracion)}. ${de ? `¿Siguen igual las ganas de ${de}?` : '¿Siguen igual las ganas?'}`,
       ganas: true,
+      extra: previo ? `Tu media hasta hoy: de ${decimal(previo.antes)} a ${decimal(previo.despues)}` : '',
       principal: 'Listo',
       onClose: () => {
-        despues = Number(alertEl.querySelector('[data-ganas-despues][aria-pressed="true"]')?.dataset.ganasDespues) || null;
+        const despues = Number(alertEl.querySelector('[data-ganas-despues][aria-pressed="true"]')?.dataset.ganasDespues) || null;
         const cambio = antes && despues ? `Ganas ${antes} → ${despues}` : despues ? `Ganas al final: ${despues}` : '';
         mostrarResultado('Pasó el tiempo', cambio, `Esperaste ${formatoDuracion(r.duracion)}`);
         guardarEnHistorial(de ? `Ganas de ${de}` : 'Aguantar un impulso', [cambio, formatoDuracion(r.duracion)].filter(Boolean).join(' · '));
+        guardarRegistro(ESPERAS_KEY, { t: Date.now(), de, antes, despues, seg: r.duracion, parada: false });
+        renderEvidencia();
         empezarReposo();
       },
     });
@@ -754,18 +883,26 @@ function initTemporizador() {
     const n = r.avisos;
     const cuantos = `${n} ${n === 1 ? 'aviso' : 'avisos'}`;
     mostrarResultado(cuantos, '', `En ${formatoDuracion(transcurrido)}`);
-    if (n > 0) guardarEnHistorial(cuantos, `Cada ${formatoRango(r.rango)} · ${formatoDuracion(transcurrido)}`);
-    if (motivo === 'fin') {
-      abrirAviso({
-        kicker: 'Avisos al azar',
-        title: 'Fin de la sesión',
-        text: `${cuantos} en ${formatoDuracion(transcurrido)}.`,
-        principal: 'Listo',
-        onClose: () => empezarReposo(),
-      });
-    } else {
+    if (!n) {
       empezarReposo();
+      return;
     }
+    guardarEnHistorial(cuantos, `Cada ${formatoRango(r.rango)} · ${formatoDuracion(transcurrido)}`);
+    // Al cerrar una sesión, una pregunta opcional: con el tiempo, la
+    // respuesta dice más que el número de avisos
+    abrirAviso({
+      kicker: 'Avisos al azar',
+      title: motivo === 'fin' ? 'Fin de la sesión' : 'Sesión terminada',
+      text: `${cuantos} en ${formatoDuracion(transcurrido)}.`,
+      atencion: true,
+      principal: 'Listo',
+      onClose: () => {
+        const atencion = alertEl.querySelector('[data-atencion][aria-pressed="true"]')?.dataset.atencion || null;
+        guardarRegistro(SESIONES_KEY, { t: Date.now(), avisos: n, seg: transcurrido, atencion });
+        renderSesiones();
+        empezarReposo();
+      },
+    });
   }
 
   // --- Eventos --------------------------------------------------------------
@@ -813,7 +950,7 @@ function initTemporizador() {
   });
 
   function leerCustom() {
-    const factor = MODOS[state.modo].unidad === 'min' ? 60 : 1;
+    const factor = unidadCustom === 'min' ? 60 : 1;
     const a = parseFloat(String(inputMin.value).replace(',', '.'));
     const b = parseFloat(String(inputMax.value).replace(',', '.'));
     const n = normalizarRango(a * factor, b * factor);
@@ -862,6 +999,39 @@ function initTemporizador() {
       shareMsg.textContent = enlace;
     }
   });
+
+  respButtons.forEach((b) => b.addEventListener('click', () => {
+    if (b.dataset.resp === 'propia') {
+      state.resp = { propia: state.resp.propia || [...fasesActuales()] };
+    } else {
+      state.resp = { clave: b.dataset.resp };
+    }
+    writeStore(RESP_KEY, state.resp);
+    renderResp();
+  }));
+
+  faseInputs.forEach((inp) => inp.addEventListener('change', () => {
+    const n = normalizarRespiracion(faseInputs.map((x) => x.value));
+    if (n) {
+      state.resp = { propia: n };
+      writeStore(RESP_KEY, state.resp);
+    }
+    renderResp();
+  }));
+
+  evidClear.addEventListener('click', () => {
+    writeStore(ESPERAS_KEY, null);
+    renderEvidencia();
+  });
+
+  sesClear.addEventListener('click', () => {
+    writeStore(SESIONES_KEY, null);
+    renderSesiones();
+  });
+
+  alertAtencionButtons.forEach((b) => b.addEventListener('click', () => {
+    alertAtencionButtons.forEach((x) => x.setAttribute('aria-pressed', String(x === b && x.getAttribute('aria-pressed') !== 'true')));
+  }));
 
   btnClear.addEventListener('click', () => {
     state.history = [];

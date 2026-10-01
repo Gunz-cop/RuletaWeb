@@ -425,6 +425,15 @@ pestaña está oculta, además cambia el `<title>`. Los avisos intermedios
 bloquea. Mientras corre el tiempo se pide `navigator.wakeLock` para que la
 pantalla no se apague.
 
+**Evidencia personal** (temporizador, modo impulso y avisos): cuando una
+herramienta guarda datos del propio visitante para que vea si algo le
+sirve, se muestran como **frases con medias y una lista dividida**, no
+gráficos. Las frases dicen el dato tal cual sale, también si es malo («las
+ganas subieron»): sin rachas, insignias ni premios. Aparece a partir de
+tres registros (con menos, una media dice más de lo que sabe), vive solo
+en `localStorage` con su propio botón de borrar, y el cálculo es lógica
+pura probada con Node (`resumenEsperas`, `resumenSesiones`).
+
 **Nombre del juego por país** (temporizador): el modo de grupo se llama
 como lo busca cada país (tingo, tingo, tango en Colombia; la papa se quema
 en México; patata caliente en España; papa caliente en el resto), con la

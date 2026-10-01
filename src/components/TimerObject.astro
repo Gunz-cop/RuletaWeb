@@ -45,7 +45,12 @@
       <div class="tobj-art tobj-aire">
         <span class="tobj-aire-ring absolute inset-0 rounded-full"></span>
         <span class="tobj-aire-core absolute inset-0 rounded-full" id="timer-breath-core"></span>
-        <span class="tobj-aire-text absolute inset-0 grid place-items-center" id="timer-breath-text">Respira</span>
+        <span class="tobj-aire-text absolute inset-0 flex flex-col items-center justify-center">
+          <span id="timer-breath-text">Respira</span>
+          {/* Segundos que quedan de la fase: en las retenciones no hay
+              movimiento que seguir, así que cuenta el número */}
+          <span class="tobj-aire-count" id="timer-breath-count"></span>
+        </span>
       </div>
 
       <svg class="tobj-art tobj-cuenco" viewBox="0 0 200 150">
@@ -144,6 +149,14 @@
     font-weight: 600;
     font-size: 1.05rem;
     letter-spacing: 0.02em;
+  }
+
+  .tobj-aire-count {
+    min-height: 1.2em;
+    color: var(--text-tertiary);
+    font-size: 0.85rem;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
   }
 
   .tobj-floor {
