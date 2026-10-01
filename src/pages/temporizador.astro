@@ -4,11 +4,12 @@ import AdSlot from '../components/AdSlot.astro';
 import HubGrid from '../components/HubGrid.astro';
 import SeoArticle from '../components/SeoArticle.astro';
 import TimerObject from '../components/TimerObject.astro';
+import TimerDemo from '../components/TimerDemo.astro';
 import { MODOS, JUEGOS, RESPIRACIONES, NOMBRES_FASE, ATENCION, formatoRango } from '../scripts/temporizador-logica.js';
 import { getSocialImageUrl } from '../lib/heroImages';
 
-const title = 'Temporizador Aleatorio: Papa Caliente y Tingo Tango Online';
-const description = '¿Juegan papa caliente o tingo tingo tango? Este temporizador suena en un segundo sorpresa. También para aguantar un impulso o meditar. Gratis.';
+const title = 'Temporizador Aleatorio Online: Papa Caliente y Tingo Tango';
+const description = '¿Juegan papa caliente o tingo tango? Este temporizador sorpresa suena cuando nadie lo espera. También para aguantar impulsos o meditar. Gratis, sin registro.';
 const keywords = 'temporizador aleatorio, papa caliente online, tingo tingo tango, la papa se quema, patata caliente, temporizador sorpresa, campana de meditación aleatoria, aguantar impulsos';
 
 // La imagen vive en src/assets y la optimiza Astro; el JSON-LD necesita
@@ -333,7 +334,7 @@ const schemaLD = {
   <SeoArticle title="Temporizador aleatorio: papa caliente, impulsos y avisos que llegan por sorpresa">
     <p><strong>¿Quieres un temporizador que suene cuando nadie lo espera?</strong> Un reloj normal avisa cuando tú dices. Este <strong>temporizador aleatorio</strong> elige el segundo por su cuenta dentro del rango que le das, y no te lo enseña hasta que suena. Esa sorpresa es la gracia del juego de la <strong>papa caliente</strong> (el <strong>tingo, tingo, tango</strong> en Colombia), y también sirve para aguantar un impulso sin mirar el reloj o para una campana de meditación que llegue por sorpresa. Funciona en el móvil y en el ordenador, es gratis y no pide registro.</p>
 
-    <p>Tiene tres modos, uno por cada uso. Elige el tuyo <a href="#temporizador">arriba</a>, pulsa &laquo;Empezar&raquo; y olvídate del tiempo: ya te avisará.</p>
+    <p>Tiene tres modos, uno por cada uso. Elige el tuyo <a href="#temporizador">arriba</a>, pulsa &laquo;Empezar&raquo; y olvídate del tiempo: ya te avisará. Más abajo, cada modo tiene una animación que enseña cómo se usa.</p>
 
     <h2>Cómo usar el temporizador aleatorio</h2>
     <ol>
@@ -358,10 +359,13 @@ const schemaLD = {
     <h3>Papa caliente: pasa el móvil antes de que se queme</h3>
     <p>Se sientan en círculo, alguien pulsa &laquo;Empezar&raquo; y el móvil pasa de mano en mano, rápido. La papa del dibujo se va poniendo roja y echa vapor, pero no dice cuánto falta: su color sigue al rango, no a la duración elegida. Cuando suena, a quien tenga el móvil le toca. Si escriben algo en &laquo;A quien se le queme&raquo; (&laquo;canta una canción&raquo;, &laquo;lava los platos&raquo;), el aviso lo repite al terminar, para que nadie discuta.</p>
     <p>El tictac se acelera a medida que pasa el tiempo, como en el juego de siempre. Si prefieren jugar en silencio, apaguen el sonido: el aviso en pantalla basta, porque todos están mirando el móvil.</p>
+    <TimerDemo modo="papa">Pulsa &laquo;Empezar&raquo; y pasen el móvil: a quien lo tenga cuando suene, le toca.</TimerDemo>
 
     <h3>Aguantar un impulso: espera sin mirar el reloj</h3>
     <p>Te dan ganas de comer algo dulce, de fumar, de abrir otra vez las redes o de comprar algo que viste. En vez de pelear con las ganas, las observas. Escribe de qué son, marca cuántas tienes del 1 al 10 y pulsa &laquo;Empezar&raquo;. Mientras esperas, un círculo crece y se encoge: inhala mientras crece y exhala mientras se encoge. No hay cuenta atrás que mirar. Cuando suena, marcas cuántas ganas te quedan y el historial guarda el antes y el después.</p>
     <p>La idea viene de una técnica llamada <em>urge surfing</em>, &laquo;surfear las ganas&raquo;: observar el impulso como una ola que sube y baja, sin obedecerla ni pelearla. En un estudio con 123 estudiantes fumadores, quienes recibieron unas instrucciones breves de este tipo no sintieron menos ganas, pero sí fumaron menos cigarrillos en la semana siguiente que el grupo de control<sup><a href="#fuente-4">[4]</a></sup>. Es decir, las ganas no desaparecen, pero cambia lo que haces con ellas. Esta herramienta es un apoyo para lo cotidiano; si un impulso te preocupa, habla con alguien que sepa del tema.</p>
+
+    <TimerDemo modo="impulso">Marca tus ganas, respira con el círculo y, al sonar, marca cuántas quedan.</TimerDemo>
 
     <h3>Elige cómo respirar</h3>
     <p>En &laquo;Respiración&raquo; eliges el ritmo del círculo. Dentro se lee la fase y los segundos que le quedan, así que también puedes seguirlo con los ojos entrecerrados.</p>
@@ -384,11 +388,12 @@ const schemaLD = {
     <h3>Avisos al azar: una campana que llega por sorpresa</h3>
     <p>En este modo el temporizador no para al primer aviso: suena una y otra vez, cada vez en un momento distinto dentro del rango, hasta que pulses &laquo;Parar&raquo; o se acabe la duración que elegiste. Cada aviso es un destello en pantalla y un toque de cuenco. Sirve para varias cosas:</p>
     <ul>
-      <li><strong>Meditar o hacer pausas.</strong> En la tradición de Plum Village, la campana sirve para volver al cuerpo, a la respiración y al momento presente<sup><a href="#fuente-5">[5]</a></sup>. Con avisos al azar, la campana llega cuando menos la esperas, que es justo cuando más te ayuda a notar dónde estaba tu atención.</li>
+      <li><strong>Meditar o hacer pausas.</strong> En la tradición de Plum Village, la campana sirve para volver al cuerpo y a la respiración<sup><a href="#fuente-5">[5]</a></sup>. Con avisos al azar, la campana llega cuando menos la esperas, que es justo cuando más te ayuda a notar dónde estaba tu atención.</li>
       <li><strong>El juego de la silla o las estatuas.</strong> Pongan música, y cuando suene el aviso, a buscar silla o a quedarse quietos. Nadie puede adivinar el momento, ni siquiera quien maneja el móvil.</li>
       <li><strong>Pausas activas.</strong> Estudiando o trabajando, cada aviso es una señal para estirarte o beber agua.</li>
     </ul>
     <p>Al terminar una sesión, el temporizador te pregunta dónde estuvo tu atención casi siempre: en la respiración, pensando en otra cosa o distraído con algo de fuera. Responder es opcional. Con las respuestas, &laquo;Tus sesiones&raquo; te muestra cuántas sesiones llevas, cuánto tiempo suman y en cuántas te quedaste con la respiración.</p>
+    <TimerDemo modo="avisos">Una sola sesión, varios avisos: cada uno llega en un momento que nadie conoce.</TimerDemo>
 
     <h2>Ideas para usarlo</h2>
     <table>
@@ -419,7 +424,7 @@ const schemaLD = {
         <tr><td>Resto de Latinoamérica</td><td>Papa caliente</td><td>Cuando se quema la papa</td></tr>
       </tbody>
     </table>
-    <p>En el tingo, tingo, tango colombiano, alguien con los ojos tapados repite &laquo;tingo, tingo&raquo; mientras el resto se pasa la pelota, y grita &laquo;¡tango!&raquo; cuando quiere: quien la tenga, cumple una prueba<sup><a href="#fuente-2">[2]</a></sup>. En México se canta &laquo;se quema la papa, se quema la papa&raquo; hasta que alguien dice &laquo;se quemó&raquo;<sup><a href="#fuente-3">[3]</a></sup>. La papa o patata caliente de toda la vida usa música: cuando se para, pierde quien tenga el objeto<sup><a href="#fuente-1">[1]</a></sup>. Con el temporizador nadie tiene que taparse los ojos ni manejar la música: todos juegan y nadie hace trampa.</p>
+    <p>El tingo, tingo, tango figura entre los juegos tradicionales de Colombia<sup><a href="#fuente-2">[2]</a></sup>: el grupo se pasa un objeto hasta que se oye &laquo;¡tango!&raquo;, y a quien lo tenga le toca una prueba. En México se canta &laquo;se quema la papa, se quema la papa&raquo; hasta que alguien dice &laquo;se quemó&raquo;<sup><a href="#fuente-3">[3]</a></sup>. La papa o patata caliente de toda la vida usa música: cuando se para, pierde quien tenga el objeto<sup><a href="#fuente-1">[1]</a></sup>. Con el temporizador nadie tiene que taparse los ojos ni manejar la música: todos juegan y nadie hace trampa.</p>
 
     <h2>Trucos para sacarle partido</h2>
     <h3>1. Rangos cortos para grupos grandes</h3>

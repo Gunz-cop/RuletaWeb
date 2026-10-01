@@ -1,0 +1,397 @@
+---
+// Demos animadas de cada modo del temporizador, para el artículo de
+// temporizador.astro. Igual que CoinDemo: solo CSS, sin JS ni vídeo,
+// porque el peso de página es requisito de producto. Son ilustraciones,
+// no UI: los «botones» son contornos y no compiten con «Empezar».
+interface Props {
+  modo: 'papa' | 'impulso' | 'avisos';
+}
+
+const { modo } = Astro.props;
+const capId = `tdemo-cap-${modo}`;
+---
+
+<figure class={`tdemo tdemo-${modo}`} aria-labelledby={capId}>
+  <div class="tdemo-stage" aria-hidden="true">
+    {modo === 'papa' && (
+      <>
+        <div class="tdemo-ring">
+          <span class="tdemo-person" style="--i:0">Ana</span>
+          <span class="tdemo-person" style="--i:1">Leo</span>
+          <span class="tdemo-person tdemo-loser">Sofi</span>
+          <span class="tdemo-person" style="--i:3">Juan</span>
+          <span class="tdemo-potato"></span>
+        </div>
+        <p class="tdemo-result">¡Tango! <small>A Sofi le toca cantar</small></p>
+      </>
+    )}
+
+    {modo === 'impulso' && (
+      <>
+        <div class="tdemo-scale">
+          {Array.from({ length: 10 }, (_, i) => (
+            <span class:list={['tdemo-n', { 'tdemo-before': i === 7, 'tdemo-after': i === 3 }]}>{i + 1}</span>
+          ))}
+        </div>
+        <div class="tdemo-breath">
+          <span class="tdemo-circle"></span>
+          <span class="tdemo-phase tdemo-in">Inhala</span>
+          <span class="tdemo-phase tdemo-out">Exhala</span>
+        </div>
+        <p class="tdemo-result">Ganas: 8 → 4 <small>Antes y después de esperar</small></p>
+      </>
+    )}
+
+    {modo === 'avisos' && (
+      <>
+        <div class="tdemo-flash">Aviso</div>
+        <div class="tdemo-track">
+          <span class="tdemo-progress"></span>
+          <span class="tdemo-dot" style="--x:21%"></span>
+          <span class="tdemo-dot" style="--x:48%"></span>
+          <span class="tdemo-dot" style="--x:83%"></span>
+        </div>
+        <p class="tdemo-legend">Cada aviso llega en un momento distinto</p>
+      </>
+    )}
+
+    <span class="tdemo-btn">Empezar</span>
+  </div>
+  <figcaption id={capId}><slot /></figcaption>
+</figure>
+
+<style>
+  /* Un único ciclo por demo: cada pieza usa su tramo de la línea de
+     tiempo, así nunca se desincronizan entre vueltas. */
+  .tdemo {
+    --t: 8s;
+    margin: 2rem auto;
+    max-width: 22rem;
+  }
+
+  .tdemo-stage {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem 1.25rem;
+    border: 1px solid var(--divider-line);
+    border-radius: 16px;
+    background: var(--bg-body);
+    overflow: hidden;
+  }
+
+  .tdemo-result {
+    margin: 0;
+    min-height: 2.6rem;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 1.35rem;
+    line-height: 1.15;
+    color: var(--text-primary);
+    text-align: center;
+    opacity: 0;
+    animation: tdemo-result var(--t) infinite;
+  }
+
+  .tdemo-result small,
+  .tdemo-legend {
+    display: block;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+  }
+
+  .tdemo-legend {
+    margin: 0;
+    text-align: center;
+  }
+
+  @keyframes tdemo-result {
+    0%, 70% { opacity: 0; transform: translateY(6px); }
+    74%, 94% { opacity: 1; transform: none; }
+    98%, 100% { opacity: 0; transform: none; }
+  }
+
+  /* «Botón» de la ilustración: contorno que se hunde al empezar */
+  .tdemo-btn {
+    padding: 0.5rem 1.4rem;
+    border: 1px solid var(--accent-warm);
+    border-radius: 999px;
+    color: var(--accent-warm);
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    animation: tdemo-press var(--t) infinite;
+  }
+
+  @keyframes tdemo-press {
+    0%, 4% { transform: none; background: transparent; color: var(--accent-warm); }
+    6% { transform: scale(0.94); background: var(--accent-warm); color: #1a0e06; }
+    9%, 100% { transform: none; background: transparent; color: var(--accent-warm); }
+  }
+
+  /* --- Papa caliente: el objeto da vueltas y se calienta ---------------- */
+  .tdemo-ring {
+    position: relative;
+    width: 12rem;
+    height: 8.5rem;
+  }
+
+  .tdemo-person {
+    position: absolute;
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    border: 1px solid var(--divider-line);
+    border-radius: 50%;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+  }
+
+  /* Cuatro sitios: arriba, derecha, abajo, izquierda */
+  .tdemo-person:nth-child(1) { top: 0; left: 4.5rem; }
+  .tdemo-person:nth-child(2) { top: 2.75rem; right: 0; }
+  .tdemo-person:nth-child(3) { bottom: 0; left: 4.5rem; }
+  .tdemo-person:nth-child(4) { top: 2.75rem; left: 0; }
+
+  .tdemo-loser {
+    animation: tdemo-loser var(--t) infinite;
+  }
+
+  @keyframes tdemo-loser {
+    0%, 66% { border-color: var(--divider-line); color: var(--text-secondary); background: transparent; }
+    69%, 94% { border-color: var(--accent-warm); color: #1a0e06; background: var(--accent-warm); }
+    98%, 100% { border-color: var(--divider-line); color: var(--text-secondary); background: transparent; }
+  }
+
+  /* La papa recorre el círculo dos veces y media, cada vez más deprisa y
+     más roja, y se queda en el tercer sitio */
+  .tdemo-potato {
+    position: absolute;
+    top: 3.5rem;
+    left: 5.25rem;
+    width: 1.5rem;
+    height: 1.2rem;
+    border-radius: 50% 45% 50% 45%;
+    background: #c9965c;
+    animation: tdemo-pass var(--t) infinite;
+  }
+
+  @keyframes tdemo-pass {
+    0%, 8%  { transform: translate(0, -2.6rem); background: #c9965c; }
+    16% { transform: translate(4.5rem, 0); }
+    24% { transform: translate(0, 2.6rem); }
+    31% { transform: translate(-4.5rem, 0); background: #d48a4e; }
+    37% { transform: translate(0, -2.6rem); }
+    43% { transform: translate(4.5rem, 0); }
+    48% { transform: translate(0, 2.6rem); background: #e06a3a; }
+    53% { transform: translate(-4.5rem, 0); }
+    57% { transform: translate(0, -2.6rem); }
+    61% { transform: translate(4.5rem, 0); background: #e94a2a; }
+    65%, 94% { transform: translate(0, 2.6rem); background: #ef3b22; }
+    100% { transform: translate(0, -2.6rem); background: #c9965c; }
+  }
+
+  /* --- Impulso: ganas antes, respirar, ganas después -------------------- */
+  .tdemo-scale {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 3px;
+    width: 100%;
+  }
+
+  .tdemo-n {
+    padding: 0.25rem 0;
+    border: 1px solid var(--divider-line);
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-align: center;
+    color: var(--text-primary);
+  }
+
+  .tdemo-before { animation: tdemo-before var(--t) infinite; }
+  .tdemo-after { animation: tdemo-after var(--t) infinite; }
+
+  @keyframes tdemo-before {
+    0%, 1% { background: transparent; color: var(--text-primary); }
+    3%, 66% { background: var(--accent-warm); border-color: var(--accent-warm); color: #1a0e06; }
+    68%, 100% { background: transparent; color: var(--text-primary); }
+  }
+
+  @keyframes tdemo-after {
+    0%, 70% { background: transparent; color: var(--text-primary); }
+    72%, 96% { background: var(--accent-warm); border-color: var(--accent-warm); color: #1a0e06; }
+    98%, 100% { background: transparent; color: var(--text-primary); }
+  }
+
+  .tdemo-breath {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 6rem;
+    height: 6rem;
+  }
+
+  .tdemo-circle {
+    position: absolute;
+    inset: 0;
+    border: 1.5px solid var(--accent-warm);
+    border-radius: 50%;
+    transform: scale(0.5);
+    animation: tdemo-breathe var(--t) ease-in-out infinite;
+  }
+
+  /* Dos respiraciones suaves (inhala más corto que exhala) entre el 10 %
+     y el 66 % del ciclo */
+  @keyframes tdemo-breathe {
+    0%, 10% { transform: scale(0.5); }
+    22% { transform: scale(1); }
+    38% { transform: scale(0.5); }
+    50% { transform: scale(1); }
+    66%, 100% { transform: scale(0.5); }
+  }
+
+  .tdemo-phase {
+    grid-area: 1 / 1;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    opacity: 0;
+  }
+
+  .tdemo-in { animation: tdemo-in var(--t) infinite; }
+  .tdemo-out { animation: tdemo-out var(--t) infinite; }
+
+  @keyframes tdemo-in {
+    0%, 10% { opacity: 0; }
+    11%, 21% { opacity: 1; }
+    22%, 38% { opacity: 0; }
+    39%, 49% { opacity: 1; }
+    50%, 100% { opacity: 0; }
+  }
+
+  @keyframes tdemo-out {
+    0%, 22% { opacity: 0; }
+    23%, 37% { opacity: 1; }
+    38%, 50% { opacity: 0; }
+    51%, 65% { opacity: 1; }
+    66%, 100% { opacity: 0; }
+  }
+
+  /* --- Avisos: la sesión avanza y los avisos caen al azar --------------- */
+  .tdemo-avisos { --t: 9s; }
+
+  .tdemo-track {
+    position: relative;
+    width: 100%;
+    height: 2rem;
+    margin-top: 1.25rem;
+    border-bottom: 1px solid var(--divider-line);
+  }
+
+  .tdemo-progress {
+    position: absolute;
+    left: 0;
+    bottom: -1px;
+    height: 2px;
+    width: 0;
+    background: var(--accent-warm);
+    animation: tdemo-progress var(--t) linear infinite;
+  }
+
+  @keyframes tdemo-progress {
+    0%, 8% { width: 0; }
+    92% { width: 100%; }
+    100% { width: 100%; }
+  }
+
+  /* Cada aviso aparece cuando la barra llega a su sitio. El retraso sale
+     de la posición: 8 % de arranque + x · 84 % del ciclo */
+  .tdemo-dot {
+    position: absolute;
+    left: var(--x);
+    bottom: -0.35rem;
+    width: 0.7rem;
+    height: 0.7rem;
+    margin-left: -0.35rem;
+    border-radius: 50%;
+    background: var(--accent-warm);
+    opacity: 0;
+    animation: none var(--t) infinite;
+  }
+
+  .tdemo-dot:nth-of-type(2) { animation-name: tdemo-dot-1; }
+  .tdemo-dot:nth-of-type(3) { animation-name: tdemo-dot-2; }
+  .tdemo-dot:nth-of-type(4) { animation-name: tdemo-dot-3; }
+
+  @keyframes tdemo-dot-1 {
+    0%, 25% { opacity: 0; transform: scale(0.4); }
+    26% { opacity: 1; transform: scale(1.6); }
+    29%, 96% { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; }
+  }
+
+  @keyframes tdemo-dot-2 {
+    0%, 48% { opacity: 0; transform: scale(0.4); }
+    49% { opacity: 1; transform: scale(1.6); }
+    52%, 96% { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; }
+  }
+
+  @keyframes tdemo-dot-3 {
+    0%, 77% { opacity: 0; transform: scale(0.4); }
+    78% { opacity: 1; transform: scale(1.6); }
+    81%, 96% { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; }
+  }
+
+  /* El destello de la escena, a la vez que cada punto */
+  .tdemo-flash {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: rgb(226 144 90 / 0.92);
+    color: #1a0e06;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 800;
+    font-size: 2rem;
+    opacity: 0;
+    pointer-events: none;
+    animation: tdemo-flash var(--t) infinite;
+  }
+
+  @keyframes tdemo-flash {
+    0%, 25.5% { opacity: 0; }
+    26% { opacity: 1; }
+    29%, 48.5% { opacity: 0; }
+    49% { opacity: 1; }
+    52%, 77.5% { opacity: 0; }
+    78% { opacity: 1; }
+    81%, 100% { opacity: 0; }
+  }
+
+  figcaption {
+    margin-top: 0.75rem;
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+
+  /* Sin movimiento: el estado final, quieto */
+  @media (prefers-reduced-motion: reduce) {
+    .tdemo *, .tdemo *::before { animation: none !important; }
+    .tdemo-result { opacity: 1; }
+    .tdemo-potato { transform: translate(0, 2.6rem); background: #ef3b22; }
+    .tdemo-loser { background: var(--accent-warm); border-color: var(--accent-warm); color: #1a0e06; }
+    .tdemo-after { background: var(--accent-warm); border-color: var(--accent-warm); color: #1a0e06; }
+    .tdemo-circle { transform: scale(0.75); }
+    .tdemo-progress { width: 100%; }
+    .tdemo-dot { opacity: 1; }
+  }
+</style>
