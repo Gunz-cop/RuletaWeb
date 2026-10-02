@@ -1,0 +1,220 @@
+---
+// Mesa con seis dados de seis caras en CSS 3D. Solo marcado y apariencia:
+// dados.js decide los valores, calcula la tirada (vuelo, botes, rodar) y la
+// reproduce con la Web Animations API sobre cada .dice, su .dice-shadow y
+// las capas de luz de cada cara. Los seis dados están siempre en el HTML;
+// el JS oculta los que sobran según cuántos se eligen.
+//
+// El resultado es la cara de ARRIBA, como en una mesa de verdad: la cámara
+// mira la mesa desde arriba e inclinada (.dice-floor, rotateX), y la cara
+// 1 mira al eje z de la mesa en reposo. Caras opuestas suman 7 y 1-2-3
+// giran en sentido antihorario alrededor de su esquina, como un dado
+// occidental. Si cambias una cara de sitio aquí, cambia también NORMAL y
+// ARRIBA en dados.js, o el dado mostrará un número y el texto otro.
+//
+// El dado es un objeto ilustrado, no UI (DESIGN.md, "Excepción: objetos
+// ilustrados"): lleva degradados, relieve y su propia paleta local.
+
+// Posición de los puntos en una rejilla de 3×3 (a b / d c e / f g)
+const CARAS: Record<number, string[]> = {
+  1: ['c'],
+  2: ['a', 'g'],
+  3: ['b', 'c', 'f'],
+  4: ['a', 'b', 'f', 'g'],
+  5: ['a', 'b', 'c', 'f', 'g'],
+  6: ['a', 'b', 'd', 'e', 'f', 'g'],
+};
+const dados = [0, 1, 2, 3, 4, 5];
+---
+
+<div class="dice-stage" id="dice-stage" data-count="2" aria-hidden="true">
+  <div class="dice-floor" id="dice-floor">
+    {dados.map((i) => (
+      <>
+        <div class="dice-shadow" data-shadow={i}></div>
+        <div class="dice" data-die={i}>
+          {/* Núcleo: tres planos cruzados que tapan las aristas que dejan
+              las esquinas redondeadas de las caras */}
+          <span class="dice-core"></span>
+          <span class="dice-core dice-core--y"></span>
+          <span class="dice-core dice-core--x"></span>
+          {Object.entries(CARAS).map(([cara, puntos]) => (
+            <div class="dice-face" data-face={cara}>
+              {puntos.map((p) => <i class={`dice-pip dice-pip--${p}`}></i>)}
+              <span class="dice-shade"></span>
+              <span class="dice-gloss"></span>
+            </div>
+          ))}
+        </div>
+      </>
+    ))}
+  </div>
+</div>
+
+<style>
+  /* ---------- La mesa ---------- */
+  .dice-stage {
+    position: relative;
+    /* stretch: dentro de una columna flex centrada la mesa no tiene
+       contenido en flujo (todo es absoluto) y se quedaría en 0 px de ancho;
+       con overflow-x: clip eso recorta los dados enteros */
+    align-self: stretch;
+    height: 200px;
+    /* A todo el ancho en móvil: con seis dados la fila no cabe dentro del
+       margen de .wrap. overflow-x: clip corta la entrada rodando desde la
+       izquierda sin crear scroll horizontal (y, a diferencia de hidden, no
+       recorta el salto hacia arriba). */
+    margin: 0 -1.5rem;
+    perspective: 900px;
+    perspective-origin: 50% 0%;
+    overflow-x: clip;
+  }
+
+  .dice-floor {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 560px;
+    height: 340px;
+    margin: -150px 0 0 -280px;
+    transform-style: preserve-3d;
+    transform: rotateX(50deg);
+    /* Charco de luz cálida: da suelo a los dados sin dibujar una mesa */
+    background: radial-gradient(ellipse 46% 44% at 50% 46%, rgb(255 236 210 / 0.075), rgb(255 236 210 / 0) 100%);
+    pointer-events: none;
+  }
+
+  @media (min-width: 640px) {
+    .dice-stage {
+      height: 240px;
+      margin: 0.5rem 0 0;
+    }
+  }
+
+  /* ---------- El dado ---------- */
+  .dice,
+  .dice-shadow {
+    --s: 70px;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: var(--s);
+    height: var(--s);
+    margin: calc(var(--s) / -2) 0 0 calc(var(--s) / -2);
+  }
+
+  /* Con más dados, más pequeños: seis en dos filas de tres caben en 344px */
+  .dice-stage[data-count="3"] :is(.dice, .dice-shadow) { --s: 62px; }
+  .dice-stage:is([data-count="4"], [data-count="5"], [data-count="6"]) :is(.dice, .dice-shadow) { --s: 50px; }
+
+  @media (min-width: 640px) {
+    .dice, .dice-shadow { --s: 84px; }
+    .dice-stage[data-count="3"] :is(.dice, .dice-shadow) { --s: 76px; }
+    .dice-stage:is([data-count="4"], [data-count="5"], [data-count="6"]) :is(.dice, .dice-shadow) { --s: 62px; }
+  }
+
+  .dice[hidden],
+  .dice-shadow[hidden] {
+    display: none;
+  }
+
+  .dice {
+    transform-style: preserve-3d;
+  }
+
+  .dice-shadow {
+    border-radius: 24%;
+    background: rgb(0 0 0 / 0.75);
+    filter: blur(calc(var(--s) * 0.07));
+    opacity: 0;
+  }
+
+  .dice-face,
+  .dice-core {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  /* Un poco más pequeño que el dado: a tamaño completo sus bordes llegan
+     justo a la superficie de las caras y asoman como una línea fina */
+  .dice-core {
+    inset: 2%;
+    background: #d9d4c9;
+    backface-visibility: visible;
+    -webkit-backface-visibility: visible;
+    border-radius: 6%;
+  }
+
+  .dice-core--y { transform: rotateY(90deg); }
+  .dice-core--x { transform: rotateX(90deg); }
+
+  .dice-face {
+    --h: calc(var(--s) / 2);
+    display: grid;
+    grid-template: repeat(3, 1fr) / repeat(3, 1fr);
+    padding: 17%;
+    border-radius: 15%;
+    overflow: hidden;
+    background: linear-gradient(140deg, #fdfcf9 0%, #f3f0ea 55%, #e6e1d6 100%);
+    box-shadow:
+      inset 0 0 0 0.5px rgb(0 0 0 / 0.08),
+      inset 0 0 calc(var(--s) * 0.05) rgb(90 80 60 / 0.22);
+  }
+
+  .dice-face[data-face="1"] { transform: translateZ(var(--h)); }
+  .dice-face[data-face="2"] { transform: rotateY(90deg) translateZ(var(--h)); }
+  .dice-face[data-face="3"] { transform: rotateX(90deg) translateZ(var(--h)); }
+  .dice-face[data-face="4"] { transform: rotateX(-90deg) translateZ(var(--h)); }
+  .dice-face[data-face="5"] { transform: rotateY(-90deg) translateZ(var(--h)); }
+  .dice-face[data-face="6"] { transform: rotateY(180deg) translateZ(var(--h)); }
+
+  /* Punto: hueco taladrado. Fondo casi negro, sombra interior arriba y un
+     filo claro abajo, donde el borde del hueco recibe la luz */
+  .dice-pip {
+    width: 80%;
+    aspect-ratio: 1;
+    place-self: center;
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 62%, #2b2b2b 0%, #0b0b0b 55%, #000 100%);
+    box-shadow:
+      inset 0 calc(var(--s) * 0.018) calc(var(--s) * 0.02) rgb(0 0 0 / 0.95),
+      0 calc(var(--s) * 0.008) 0 rgb(255 255 255 / 0.9);
+  }
+
+  /* El 1 grande y rojo, como en los dados clásicos de casino y asiáticos */
+  .dice-face[data-face="1"] .dice-pip {
+    width: 125%;
+    background: radial-gradient(circle at 50% 62%, #c9343a 0%, #a3161d 55%, #6d0b10 100%);
+  }
+
+  .dice-pip--a { grid-area: 1 / 1; }
+  .dice-pip--b { grid-area: 1 / 3; }
+  .dice-pip--d { grid-area: 2 / 1; }
+  .dice-pip--c { grid-area: 2 / 2; }
+  .dice-pip--e { grid-area: 2 / 3; }
+  .dice-pip--f { grid-area: 3 / 1; }
+  .dice-pip--g { grid-area: 3 / 3; }
+
+  /* Luz: dados.js anima la opacidad de estas dos capas en cada cara según
+     hacia dónde apunta la cara en cada instante, así el dado se ilumina de
+     verdad al girar en vez de llevar la luz pintada */
+  .dice-shade,
+  .dice-gloss {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+  }
+
+  .dice-shade {
+    background: #1c1813;
+    opacity: 0.3;
+  }
+
+  .dice-gloss {
+    background: radial-gradient(circle at 34% 28%, rgb(255 255 255 / 0.95), rgb(255 255 255 / 0) 62%);
+    opacity: 0;
+  }
+</style>

@@ -448,45 +448,78 @@ export const ESTADOS = [
     ],
   },
   // --- Dados -------------------------------------------------------------
-  // Los dados, sus caras y sus puntos los construye dados.js al lanzar, así
-  // que en reposo no existen y las capturas no los ven. Estas tres entradas
-  // cubren las tres variantes visuales, que es donde vive la mayor parte
-  // del CSS de la página.
+  // Migrados al sistema editorial: los seis dados están en el HTML
+  // (Dice.astro) y dados.js solo los gira, ilumina y oculta. El resultado lo
+  // muestra una clase que pone el JS y las filas del historial las crea él.
   {
     ruta: '/dados',
-    nombre: 'lanzado-casino',
-    clics: ['[data-theme="casino"]', '#btn-spin'],
-    esperarSelector: '#dice-container .casino-face',
-    espera: 2500,
+    nombre: 'lanzados',
+    clics: ['[data-dice-count="3"]', '#btn-roll'],
+    esperarSelector: '#dice-result.is-shown',
     comprobar: [
-      { sel: '.dice-cube', props: ['transformStyle', 'width', 'height', 'position'] },
-      { sel: '.casino-face', props: ['backgroundColor', 'borderRadius', 'display'] },
-      { sel: '.casino-dot', props: ['backgroundColor', 'borderRadius'] },
-      { sel: '#result-display', props: ['display', 'fontFamily'] },
+      { sel: '#dice-result', props: ['opacity', 'textAlign'] },
+      { sel: '#dice-result-main', props: ['fontFamily', 'fontWeight', 'color'] },
+      { sel: '[data-die="0"]', props: ['display', 'transformStyle', 'width'] },
+      { sel: '[data-die="3"]', props: ['display'] },
+      { sel: '[data-die="0"] .dice-face', props: ['borderRadius', 'backfaceVisibility'] },
+      { sel: '[data-die="0"] .dice-pip', props: ['borderRadius'] },
+      { sel: '.history-row', props: ['display', 'borderBottomWidth', 'borderBottomStyle'] },
+      { sel: '.history-side', props: ['color', 'textAlign'] },
+      { sel: '#btn-roll', props: ['backgroundColor', 'borderRadius'] },
     ],
   },
   {
+    // Lo que ningún estilo computado ve: que la suma escrita sea la de las
+    // caras que quedaron ARRIBA. Lee la matriz real de cada dado visible y
+    // busca qué cara apunta al eje z de la mesa (tabla NORMAL de dados.js).
     ruta: '/dados',
-    nombre: 'lanzado-yugioh',
-    clics: ['[data-theme="yugioh"]', '#btn-spin'],
-    esperarSelector: '#dice-container .yugioh-face',
-    espera: 2500,
-    comprobar: [
-      { sel: '.yugioh-face', props: ['backgroundColor', 'borderRadius', 'display'] },
-      { sel: '.yugioh-dot', props: ['backgroundColor'] },
-    ],
+    nombre: 'suma-coincide-con-las-caras',
+    viewport: { width: 390, height: 844 },
+    verificarRelacion: async (pagina) => {
+      await pagina.click('[data-dice-count="6"]');
+      const errores = [];
+      for (let t = 0; t < 3; t++) {
+        await pagina.click('#btn-roll');
+        await pagina.waitForSelector('#dice-result.is-shown', { timeout: 20000 });
+        const r = await pagina.evaluate(() => {
+          const NORMAL = { 1: [0, 0, 1], 2: [1, 0, 0], 3: [0, -1, 0], 4: [0, 1, 0], 5: [-1, 0, 0], 6: [0, 0, -1] };
+          const caras = [...document.querySelectorAll('[data-die]:not([hidden])')].map((el) => {
+            const m = new DOMMatrix(getComputedStyle(el).transform);
+            const fila = [m.m13, m.m23, m.m33];
+            let mejor = 0;
+            let max = -2;
+            for (const [cara, n] of Object.entries(NORMAL)) {
+              const v = fila[0] * n[0] + fila[1] * n[1] + fila[2] * n[2];
+              if (v > max) { max = v; mejor = Number(cara); }
+            }
+            return { cara: mejor, plana: max > 0.99 };
+          });
+          return {
+            caras,
+            suma: Number(document.getElementById('dice-result').dataset.suma),
+          };
+        });
+        const total = r.caras.reduce((a, c) => a + c.cara, 0);
+        if (r.caras.length !== 6) errores.push(`tirada ${t + 1}: ${r.caras.length} dados visibles, se esperaban 6`);
+        if (r.caras.some((c) => !c.plana)) errores.push(`tirada ${t + 1}: algún dado no quedó plano sobre una cara`);
+        if (total !== r.suma) errores.push(`tirada ${t + 1}: el texto dice ${r.suma} y las caras suman ${total}`);
+      }
+      return errores.length
+        ? { ok: false, mensaje: errores.join('; ') }
+        : { ok: true, mensaje: 'en 3 tiradas de 6 dados la suma escrita es la de las caras de arriba' };
+    },
   },
-  {
-    ruta: '/dados',
-    nombre: 'lanzado-dnd',
-    clics: ['[data-theme="dnd"]', '#btn-spin'],
-    esperarSelector: '#dice-container .d20-wrapper',
-    espera: 2500,
-    comprobar: [
-      { sel: '.d20-wrapper', props: ['display', 'position', 'width', 'height'] },
-      { sel: '.d20-number', props: ['position', 'fontFamily', 'color'] },
-    ],
-  },
+  ...estadosAccionVisible('/dados', '#btn-roll'),
+  ...estadosResponsive('/dados', '#btn-roll', [
+    {
+      nombre: 'seis-dados-fold-cerrado-344x680',
+      viewport: { width: 344, height: 680 },
+      preparar: async (pagina) => {
+        await pagina.click('[data-dice-count="6"]');
+        await pagina.waitForTimeout(2200);
+      },
+    },
+  ]),
   // --- Amigo secreto -----------------------------------------------------
   // Las etiquetas de participante, las filas de enlaces y sus botones los
   // construye amigo-secreto.js con lo que escribe el visitante: en reposo no

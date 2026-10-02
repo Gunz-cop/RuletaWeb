@@ -122,8 +122,9 @@ herramienta migrada (ver "Anatomía de una página de herramienta"), y el
 oráculo sí o no (`si-o-no.astro` + `OracleBall.astro`), la primera
 herramienta con casi todo el marcado en utilidades de Tailwind, piedra,
 papel o tijera (`piedra-papel-tijera.astro` + `PptHands.astro`) y el
-temporizador (`temporizador.astro` + `TimerObject.astro`). El resto
-de herramientas (la ruleta, los dados...) sigue con los botones y tarjetas
+temporizador (`temporizador.astro` + `TimerObject.astro`) y los dados
+(`dados.astro` + `Dice.astro`). El resto
+de herramientas (la ruleta, equipos...) sigue con los botones y tarjetas
 en degradado de la estética anterior — migrarlas es una tarea aparte, una
 herramienta a la vez, porque toca UI interactiva con sus propios tests de
 estado (`npm run test:estado`). El procedimiento está en la skill del
@@ -447,6 +448,27 @@ terciario, igual que Cara/Cruz en la moneda. Si hay un ganador en el
 objeto, se marca con el acento y el perdedor cede (baja, se encoge),
 nunca con verde/rojo.
 
+**Objeto con física calculada** (dados): cuando un objeto 3D tiene que
+parecer físico (rebotar, rodar, recibir la luz), la animación no se
+describe con dos o tres fotogramas sino que se **calcula en JS y se
+entrega a `element.animate()`** como fotogramas clave: unas 100 muestras
+por dado con su `matrix3d`, la opacidad de una capa de sombra y otra de
+brillo en cada cara (según hacia dónde apunta respecto a una luz fija) y
+la sombra en el suelo. Sigue siendo la Web Animations API, con su
+`.finished`, sin librerías ni `requestAnimationFrame`. Reglas:
+
+- **El resultado se decide antes** (`crypto.getRandomValues`) y la
+  trayectoria se construye hacia atrás desde la orientación final, así
+  que termina exactamente en esa cara. La física solo lo enseña.
+- **El resultado se lee como en la vida real**: la cámara mira la mesa
+  desde arriba e inclinada, y vale la cara de arriba. El desglose sigue el
+  orden en que se ven los objetos (por filas, de izquierda a derecha).
+- **Un test comprueba lo que enseña el objeto**, no solo el texto: el
+  estado `suma-coincide-con-las-caras` lee la matriz real de cada dado y
+  verifica que la suma escrita es la de las caras de arriba.
+- Todo el marcado (los seis dados, sus caras y puntos) vive en el
+  componente; el JS solo oculta los que sobran y anima.
+
 ### Ciclo de movimiento (estándar)
 
 Pedido por el propietario tras la moneda y la bola 8: toda herramienta
@@ -460,6 +482,13 @@ migrada o nueva tiene **objeto vivo**, con estas fases, todas con
 | **Anticipación** | Gesto previo que anuncia la acción | 0,1–0,3 s | Se agacha antes de saltar | Se hunde el dado anterior | La mano se echa atrás en cada golpe |
 | **Acción** | La animación con sentido que produce el resultado | 1–2 s en total | Volteo | Agitado + dado que emerge | "Piedra… papel… tijera…" (3 golpes) |
 | **Aterrizaje** | Se asienta con un pequeño rebote o aplastamiento y aparece el resultado | 0,3–0,4 s | Asienta | El dado se asienta | Aplastamiento al abrir la mano |
+
+Los dados encajan en las mismas fases así: **entrada**, ruedan desde la
+izquierda hasta su sitio en la mesa; **reposo**, la cámara respira (menos
+de 2 px; los dados no flotan, porque un dado quieto sobre una mesa no se
+mueve); **anticipación**, se recogen de la mesa y se ladean; **acción y
+aterrizaje**, una sola trayectoria de vuelo, dos botes y rodar volcando de
+arista en arista hasta asentarse.
 
 El temporizador sigue las mismas fases, con una diferencia: su **acción
 dura lo que dura la ronda**, no 1–2 s. La papa cae desde arriba, flota,

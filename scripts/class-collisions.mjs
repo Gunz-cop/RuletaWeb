@@ -38,7 +38,6 @@ const ACEPTADAS = {
     'escalonado visible lo sigue marcando animation-delay. .reveal, que sí ' +
     'usa transition, se escalona con .reveal-delay-N, que Tailwind no genera.',
   'delay-3': 'Ver delay-2.',
-  'delay-4': 'Ver delay-2.',
 };
 
 /**

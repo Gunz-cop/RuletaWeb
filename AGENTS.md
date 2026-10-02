@@ -111,9 +111,11 @@ estado necesita su propio contexto de navegador: el modo foco se recuerda, y
 compartir contexto lo filtraba al estado siguiente.
 
 Cubre amigo secreto —introduce participantes, hace el sorteo y comprueba
-las filas de enlaces, en escritorio y a 390px— y también los dados: sus caras, sus puntos y las tres variantes
-visuales las construye `dados.js` al lanzar, así que en reposo no existen y
-ninguna captura las ve. También cubre la moneda (lanza y mide el resultado
+las filas de enlaces, en escritorio y a 390px— y también los dados: lanza
+tres y mide el resultado y el historial, y en el estado
+`suma-coincide-con-las-caras` lee la matriz 3D real de cada dado para
+comprobar que la suma escrita es la de las caras que quedaron arriba (lo
+que ninguna captura ni estilo computado puede ver). También cubre la moneda (lanza y mide el resultado
 y las filas del historial), el oráculo sí o no (consulta, enlace
 compartido y una sacudida simulada con eventos `devicemotion` sintéticos
 en un contexto táctil: la opción `contexto` de un estado pasa opciones

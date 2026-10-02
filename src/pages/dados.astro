@@ -1,14 +1,14 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import '../styles/dados-js.css';
 import AdSlot from '../components/AdSlot.astro';
 import HubGrid from '../components/HubGrid.astro';
 import SeoArticle from '../components/SeoArticle.astro';
+import Dice from '../components/Dice.astro';
 import { getSocialImageUrl } from '../lib/heroImages';
 
 const title = 'Lanzar Dados Online — Tirar Dados Virtuales 3D Gratis | Decídelo.app';
-const description = 'Lanza dados virtuales en 3D gratis y al instante. Elige lanzar 1, 2 o 3 dados y selecciona entre temáticas Casino de Las Vegas, Calabozos y Dragones (D20) o Yu-Gi-Oh. Sin descargas.';
-const keywords = 'lanzar dados, dados virtuales, dados online, dados 3d, dados casino, dados d20, dado yugioh, dados de rol, tomar decisiones, azar';
+const description = 'Lanza de 1 a 6 dados virtuales en 3D gratis y al instante: ruedan sobre la mesa, ves la suma y cada dado, y queda un historial. Sin descargas ni registro.';
+const keywords = 'lanzar dados, tirar dados, dados virtuales, dados online, dados 3d, dado de 6 caras, tirar dos dados, tomar decisiones, azar';
 
 // La imagen vive en src/assets y la optimiza Astro; el JSON-LD necesita
 // su URL absoluta ya generada, no la ruta pública que tenía antes.
@@ -21,12 +21,12 @@ const schemaLD = {
       "@type": "WebApplication",
       "@id": "https://decidelo.app/dados#webapp",
       "name": "Lanzar Dados Online — Decídelo.app",
-      "description": "Herramienta online e independiente para lanzar dados virtuales (D6 y D20) con física interactiva, sonido y múltiples temáticas.",
+      "description": "Herramienta online para lanzar de 1 a 6 dados virtuales de seis caras en 3D, con la suma, el valor de cada dado y un historial de tiradas.",
       "url": "https://decidelo.app/dados",
       "applicationCategory": "UtilityApplication",
       "operatingSystem": "All",
       "browserRequirements": "Requires JavaScript and HTML5 3D Transforms",
-      "softwareVersion": "2.0.0",
+      "softwareVersion": "3.0.0",
       "inLanguage": "es",
       "offers": {
         "@type": "Offer",
@@ -69,95 +69,83 @@ const schemaLD = {
 ---
 
 <Layout title={title} description={description} keywords={keywords} schemaLD={schemaLD} showHomeHeader={false}>
-  <main class="wrap">
-    
-    <!-- Hero Section -->
-    <section class="hero slide-up delay-1">
-      <h1>Lanzar Dados <span class="gradient-text">Online</span></h1>
-      <p>Tira dados virtuales de alta gama con físicas de giro en 3D y sonido inmersivo. ¡Elige tus dados y ponte a jugar!</p>
-    </section>
+  <Fragment slot="head">
+    {/* Newsreader itálica: acento del sistema editorial (ver DESIGN.md) */}
+    <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@1,400&display=swap" rel="stylesheet">
+  </Fragment>
 
-    <!-- Selectores de cantidad y temática -->
-    <div class="selectors-wrapper slide-up delay-2">
-      <!-- Selector de dados -->
-      <div class="selector-container" id="dice-count-selector">
-        <button class="selector-btn" data-count="1">1 Dado</button>
-        <button class="selector-btn" data-count="2">2 Dados</button>
-        <button class="selector-btn" data-count="3">3 Dados</button>
-      </div>
+  <main class="wrap max-w-2xl pt-5 pb-8 sm:pt-8">
 
-      <!-- Selector de temática -->
-      <div class="selector-container" id="theme-selector">
-        <button class="selector-btn" data-theme="casino">🎰 Casino</button>
-        <button class="selector-btn" data-theme="dnd">🐉 Rol D&D</button>
-        <button class="selector-btn" data-theme="yugioh">🏺 Yu-Gi-Oh</button>
+    <div class="w-full text-center mb-2 sm:mb-5">
+      <h1 class="m-0 mb-2 sm:mb-4 font-display text-[1.7rem] sm:text-5xl leading-tight tracking-tight">Lanzar <em class="font-[Newsreader,Georgia,serif] italic font-normal text-warm">dados</em> online</h1>
+      {/* En pantallas bajas la entradilla cede su sitio al botón (también en
+          portátiles de 720px de alto y tablets en horizontal) */}
+      <p class="m-0 mb-2 sm:mb-0 mx-auto max-w-lg text-sm sm:text-base text-ink-secondary max-sm:[@media(max-height:620px)]:hidden sm:[@media(max-height:760px)]:hidden">Elige cuántos dados y lánzalos. Ruedan sobre la mesa y debajo ves la suma y lo que sacó cada uno.</p>
+    </div>
+
+    <div class="w-full max-w-sm mx-auto">
+      <span class="block mb-2 text-center text-xs font-semibold tracking-widest uppercase text-ink-tertiary" id="dice-count-label">Cuántos dados</span>
+      <div class="grid grid-cols-6 gap-1.5" role="group" aria-labelledby="dice-count-label">
+        {[1, 2, 3, 4, 5, 6].map((n) => (
+          <button type="button" data-dice-count={n} aria-pressed={n === 2 ? 'true' : 'false'} class="py-2 bg-transparent border border-(--divider-line) rounded-full font-display font-semibold text-base text-ink-secondary tabular-nums cursor-pointer aria-pressed:text-ink-primary aria-pressed:border-warm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-warm hover:text-ink-primary hover:border-warm">{n}</button>
+        ))}
       </div>
     </div>
 
-    <!-- Tablero de Lanzamiento -->
-    <section class="game-board slide-up delay-3" aria-label="Tablero de lanzamiento de dados">
-      
-      <!-- Contenedor con la bandeja de dados -->
-      <div class="dice-tray-outer">
-        <div class="dice-tray" id="dice-container">
-          <!-- Generado dinámicamente -->
-        </div>
+    <section class="w-full flex flex-col items-center" aria-label="Lanzar dados">
+      <Dice />
+
+      <p class="dice-result w-full text-center min-h-14 sm:min-h-18 m-0 mb-3 sm:mb-4" id="dice-result" aria-live="polite">
+        <span class="block font-display font-extrabold text-[2.2rem] sm:text-5xl leading-none text-ink-primary tabular-nums" id="dice-result-main"></span>
+        <span class="block mt-1 sm:mt-1.5 text-sm text-ink-tertiary tabular-nums" id="dice-result-side"></span>
+      </p>
+
+      <button id="btn-roll" type="button" class="px-9 py-3.5 border-0 rounded-full bg-warm text-[#1a0e06] font-display font-bold text-lg cursor-pointer transition-transform duration-150 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-warm">Lanzar dados</button>
+
+      {/* Solo en móviles con sensor de movimiento; el JS lo muestra */}
+      <div id="dice-shake" class="flex flex-col items-center gap-1 mt-6 w-full" hidden>
+        <button class="bg-transparent border-0 border-b border-(--divider-line) rounded-none px-0 py-1 font-sans text-base text-ink-primary cursor-pointer hover:text-warm hover:border-current focus-visible:text-warm focus-visible:border-current focus-visible:outline-none aria-pressed:text-warm aria-pressed:border-current" id="btn-shake" type="button" aria-pressed="false">Agitar el móvil para lanzar</button>
+        <p class="m-0 max-w-xs text-center text-xs text-ink-tertiary" id="shake-msg" aria-live="polite"></p>
       </div>
-
-      <!-- Indicador visual del resultado -->
-      <div class="result-display" id="result-display" aria-live="polite">
-        <!-- Rellenado dinámicamente -->
-      </div>
-
-      <!-- Botón de Lanzamiento -->
-      <button class="btn-spin" id="btn-spin">LANZAR</button>
-
-      <!-- Botón para permisos de agitar (iOS) / activar agitación -->
-      <button class="btn-shake-perm" id="shake-permission-btn" style="display: none;">
-        📱 Activar Lanzamiento por Movimiento
-      </button>
-
     </section>
 
-    <!-- Historial de Resultados -->
-    <section class="history-card slide-up delay-4" aria-label="Historial de lanzamientos anteriores">
-      <div class="history-header">
-        <h3>
-          <span>🕒</span> Historial (Últimos 5)
-        </h3>
-        <button class="btn-clear" id="btn-clear">Borrar historial</button>
+    <section class="w-full mt-12 sm:mt-16" aria-label="Historial de tiradas">
+      <div class="flex flex-wrap items-baseline gap-4 pb-3 border-0 border-b border-(--divider-line)">
+        <h2 class="m-0 font-display text-lg">Últimas tiradas</h2>
+        <span class="flex-1 text-sm text-ink-tertiary tabular-nums" id="history-count"></span>
+        <button class="bg-transparent border-0 border-b border-current rounded-none p-0 font-sans text-sm text-ink-secondary cursor-pointer hover:text-warm" id="btn-clear" type="button">Borrar</button>
       </div>
-      <div class="history-list" id="history-list">
-        <span class="history-empty">Sin lanzamientos aún</span>
-      </div>
+      <ol class="dice-history list-none m-0 p-0" id="history-list">
+        <li class="history-empty">Sin tiradas aún</li>
+      </ol>
     </section>
 
   </main>
 
-  <!-- Toast notification -->
-  <div class="toast" id="toast-message">Notificación</div>
-
   <AdSlot position="top" />
 
-  <!-- Sección de Artículo SEO -->
-  <SeoArticle title="¿Cómo funciona el Lanzamiento de Dados Virtual y por qué usarlo?">
-    <p>Lanzar dados es una de las actividades lúdicas y decisionales más antiguas de la humanidad, utilizada desde hace milenios para juegos de mesa, adivinación y toma de decisiones equitativas. En la era digital, no siempre tienes un par de dados en tu bolsillo. Nuestro simulador de <strong>lanzar dados online en 3D</strong> soluciona esto proporcionando un entorno premium libre de distracciones.</p>
-    
-    <p>Esta herramienta ha sido programada con tecnología nativa en el navegador, combinando rotaciones 3D de alta velocidad (60fps) y síntesis de audio a través de la API <strong>Web Audio</strong>. Esto significa que la aplicación carga de forma instantánea y funciona de manera offline sin consumir tus datos de red.</p>
+  {/* Texto provisional: solo se quitó lo que dejó de ser cierto (temas,
+      sonido). La reescritura orientada a CTR es la fase de textos, con la
+      skill decidelo-textos. */}
+  <SeoArticle title="¿Cómo funciona el lanzamiento de dados virtual y por qué usarlo?">
+    <p>Lanzar dados es una de las formas más antiguas de jugar y de decidir al azar. No siempre hay un par de dados a mano: esta herramienta para <strong>lanzar dados online</strong> te deja tirar de uno a seis dados de seis caras desde el móvil o el ordenador, gratis y sin registro.</p>
 
-    <h2>Múltiples Estilos Diseñados para Gamers y Coleccionistas</h2>
-    <p>Hemos adaptado la herramienta a tus necesidades y gustos mediante tres temáticas personalizables cargadas de personalidad:</p>
-    <ul>
-      <li><strong>Casino Las Vegas:</strong> Emulación de los dados de casino profesionales D6. Diseñados en color rojo translúcido, con brillo interno suavizado y pips blancos que recrean las físicas y la elegancia de una mesa de apuestas real.</li>
-      <li><strong>Calabozos y Dragones:</strong> Para los entusiastas del rol de mesa (D&D), recreamos un dado D20 de resina mística con gradientes azul/púrpura. El número central se calcula y cicla de forma dinámica durante el giro, garantizando aleatoriedad sin parpadeos visuales molestos.</li>
-      <li><strong>Yu-Gi-Oh:</strong> Inspirado en el antiguo Egipto de los juegos de sombras. Un dado D6 esculpido en piedra arenisca dorada con jeroglíficos desgastados. En la cara del número 6 se encuentra el legendario <strong>Ojo de Anubis</strong>, grabado en oro y obsidiana.</li>
-    </ul>
+    <h2>Cómo tirar los dados</h2>
+    <ol>
+      <li><strong>Elige cuántos dados</strong> quieres lanzar, de 1 a 6. La herramienta lo recuerda para la próxima vez.</li>
+      <li><strong>Pulsa &laquo;Lanzar dados&raquo;</strong>. Los dados vuelan, rebotan y ruedan sobre la mesa hasta quedarse quietos.</li>
+      <li><strong>Lee el resultado</strong>: la suma en grande y, debajo, lo que sacó cada dado, en el mismo orden en que los ves.</li>
+    </ol>
+    <p>Las últimas diez tiradas quedan en el historial, guardado solo en tu navegador. Lo borras con &laquo;Borrar&raquo;.</p>
 
-    <h2>Ventajas Cognitivas y TDAH-Friendly</h2>
-    <p>Para personas con neurodivergencias como el <strong>TDAH</strong>, elegir una opción entre varias puede resultar exasperante o provocar bloqueo mental debido a la sobreestimulación de posibilidades (parálisis por análisis). Al delegar la elección en un dado (por ejemplo: asociar el número 1 a leer, el 2 a limpiar la habitación, el 3 a descansar), se libera la carga ejecutiva del cerebro. Nuestra interfaz de modo oscuro elegante y limpio minimiza distracciones sensoriales adicionales para ayudarte a enfocar tu atención.</p>
+    <h2>Agitar el móvil para lanzar</h2>
+    <p>En móviles con sensor de movimiento aparece el botón &laquo;Agitar el móvil para lanzar&raquo;. Actívalo y sacude el teléfono como si fuera un cubilete. Un golpe suelto, como dejar el móvil en la mesa, no cuenta: hace falta una sacudida clara.</p>
 
-    <h2>Compatibilidad con Sensor de Movimiento (Agitar Celular)</h2>
-    <p>Para una interactividad premium, implementamos la API <code>DeviceMotionEvent</code>. En dispositivos móviles que cuentan con acelerómetro, puedes lanzar físicamente los dados agitando el teléfono en tu mano, simulando el gesto tradicional de agitar los dados en un vaso antes de tirarlos a la mesa.</p>
+    <h2>¿Los dados virtuales son justos?</h2>
+    <p>Sí. Cada valor sale del generador de números aleatorios criptográfico del navegador (<code>crypto.getRandomValues</code>), y las seis caras tienen exactamente la misma probabilidad. El resultado se decide antes de la animación: el giro y los botes solo lo enseñan. Cada tirada es independiente de la anterior.</p>
+
+    <h2>Usar un dado para decidir</h2>
+    <p>Un dado también sirve para salir de una duda con varias opciones: asigna un número a cada una (1 leer, 2 ordenar la habitación, 3 salir a caminar…) y lanza. Si tienes opciones con nombre, la <a href="/ruleta">ruleta de decisiones</a> es más cómoda; para dos opciones, lanza una <a href="/moneda">moneda</a>.</p>
   </SeoArticle>
 
   <AdSlot position="bottom" />
@@ -174,236 +162,84 @@ const schemaLD = {
 </Layout>
 
 <style>
-  main {
-    padding: 3rem 0;
+  /* Solo queda aquí lo que no puede ser utilidad: los estados que pone el
+     JS y las filas que crea (Tailwind no rastrea src/scripts/). El resto
+     de la página va en utilidades en el propio marcado; el dado, en
+     Dice.astro. */
+
+  /* El sitio no carga el preflight de Tailwind, así que nada gana a `.flex`
+     cuando el JS pone `hidden`: sin esto, los bloques ocultos se verían */
+  [hidden] {
+    display: none !important;
   }
 
-  /* Selectores */
-  .selectors-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 2.5rem;
-    width: 100%;
-    max-width: 520px;
-  }
-
-  .selector-container {
-    display: flex;
-    background: var(--bg-surface);
-    border: 1px solid var(--card-border);
-    border-radius: 999px;
-    padding: 0.35rem;
-    width: 100%;
-    justify-content: space-between;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-  }
-
-  .selector-btn {
-    background: transparent;
-    border: none;
-    color: var(--text-secondary);
-    font-family: 'Inter', sans-serif;
-    font-weight: 600;
-    font-size: 0.88rem;
-    padding: 0.6rem 1.2rem;
-    border-radius: 999px;
-    cursor: pointer;
-    flex: 1;
-    text-align: center;
-    transition: var(--transition);
-    white-space: nowrap;
-  }
-
-  .selector-btn:hover {
-    color: #ffffff;
-  }
-
-  .selector-btn.active {
-    background: var(--accent-gradient);
-    color: #050505;
-    box-shadow: 0 4px 15px rgba(0, 229, 255, 0.2);
-  }
-
-  /* Contenedor de Dados */
-  .dice-tray-outer {
-    background: rgba(0, 0, 0, 0.25);
-    border: 1px solid rgba(255, 255, 255, 0.02);
-    border-radius: var(--radius-md);
-    padding: 1.5rem;
-    width: 100%;
-    margin-bottom: 1.5rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 160px;
-    box-shadow: inset 0 4px 15px rgba(0,0,0,0.4);
-  }
-
-  .dice-tray {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 2rem;
-    width: 100%;
-    perspective: 1000px;
-    flex-wrap: wrap;
-  }
-
-  /* 3D Dice Setup */
-  .dice-scene {
-    width: 80px;
-    height: 80px;
-    perspective: 600px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  /* Transformaciones de las Caras D6 */
-  /* Puntos (Pips) */
-  /* ESTILO 1: Casino Las Vegas */
-  /* ESTILO 3: Yu-Gi-Oh */
-  /* ESTILO 2: Calabozos y Dragones (D20) */
-  /* Sombra del Dado */
-  .dice-shadow {
-    width: 70px;
-    height: 6px;
-    background: rgba(0, 0, 0, 0.55);
-    border-radius: 50%;
-    margin: -0.5rem auto 1.5rem;
-    filter: blur(5px);
-    transition: transform 1.6s cubic-bezier(0.15, 0.85, 0.25, 1), opacity 1.6s;
-  }
-
-  /* Indicador del resultado */
-  .result-display {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.2rem;
-    min-height: 4.2rem;
-    margin-bottom: 1.5rem;
+  .dice-result {
     opacity: 0;
-    transform: translateY(10px);
-    transition: all 0.4s ease;
+    transform: translateY(6px);
+    transition: opacity 0.25s ease-out, transform 0.25s cubic-bezier(0.2, 0.7, 0.3, 1);
   }
 
-  .result-display.show {
+  .dice-result.is-shown {
     opacity: 1;
-    transform: translateY(0);
+    transform: none;
   }
 
-  .sum-value {
-    font-family: 'Outfit', sans-serif;
-    font-size: 2.2rem;
-    font-weight: 800;
-    background: var(--accent-gradient);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    filter: drop-shadow(0 2px 8px rgba(0, 229, 255, 0.3));
+  /* Historial: lista dividida por líneas de 1px, como el oráculo */
+  .dice-history :global(.history-row) {
+    display: grid;
+    grid-template-columns: 2rem 1fr auto;
+    column-gap: 0.75rem;
+    align-items: baseline;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid var(--divider-line);
   }
 
-  .individual-values {
-    color: var(--text-secondary);
-    font-size: 0.95rem;
-    font-weight: 500;
+  .dice-history :global(.history-num) {
+    color: var(--text-tertiary);
+    font-variant-numeric: tabular-nums;
+    font-size: 0.85rem;
   }
 
-  .btn-spin {
-    display: block;
-    margin: 0 auto;
+  .dice-history :global(.history-label) {
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
   }
 
-  /* Float Shake Button */
-  .btn-shake-perm {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px dashed var(--card-border-hover);
-    color: var(--text-secondary);
-    font-family: 'Inter', sans-serif;
-    font-weight: 500;
-    font-size: 0.82rem;
-    padding: 0.6rem 1.2rem;
-    border-radius: var(--radius-md);
-    cursor: pointer;
-    margin: 1.2rem auto 0;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: var(--transition);
-  }
-
-  .btn-shake-perm:hover {
-    color: var(--accent-cyan);
-    border-color: var(--accent-cyan);
-    background: rgba(0, 229, 255, 0.03);
-  }
-
-  /* Historial */
-  .history-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .history-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-    min-height: 40px;
-    justify-content: center;
-    margin-top: 0.75rem;
-  }
-
-  .history-empty {
+  .dice-history :global(.history-side) {
     color: var(--text-tertiary);
     font-size: 0.85rem;
-    font-style: italic;
-    text-align: center;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
   }
 
-  /* Toast notification */
-  .toast {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%) translateY(100px);
-    background: var(--bg-surface-hover);
-    border: 1px solid var(--accent-cyan);
-    border-radius: 999px;
-    padding: 0.6rem 1.5rem;
-    color: #ffffff;
-    font-size: 0.85rem;
-    font-weight: 500;
-    z-index: 999;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
-    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    pointer-events: none;
-  }
-  
-  .toast.show {
-    transform: translateX(-50%) translateY(0);
+  .dice-history :global(.history-row.is-new) {
+    animation: dice-row-in 0.4s cubic-bezier(0.2, 0.7, 0.3, 1);
   }
 
-  /* Hub Section styling */
+  @keyframes dice-row-in {
+    from { opacity: 0; transform: translateY(-6px); }
+  }
+
+  .dice-history :global(.history-empty) {
+    padding: 0.8rem 0;
+    color: var(--text-tertiary);
+    font-size: 0.9rem;
+  }
+
+  @media (min-width: 640px) {
+    .dice-history :global(.history-row) {
+      grid-template-columns: 2.5rem 1fr auto;
+      column-gap: 1rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dice-result { transform: none; }
+    .dice-history :global(.history-row.is-new) { animation: none; }
+  }
+
   .hub-section {
     padding: 3rem 0;
-  }
-
-  /* Responsive adjustments */
-  @media (max-width: 600px) {
-    .dice-tray {
-      gap: 1rem;
-    }
-    .dice-scene {
-      transform: scale(0.85);
-    }
-  }
-  @media (max-width: 380px) {
-    .dice-scene {
-      transform: scale(0.7);
-    }
   }
 </style>
