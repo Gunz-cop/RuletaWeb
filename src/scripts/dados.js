@@ -670,11 +670,18 @@ function initDados() {
 
   // Los controles de rol están debajo, lejos de la mesa: al tirar desde
   // ellos se sube hasta la mesa, o la tirada pasaría sin verse
+  // La cabecera es sticky (global.css): la mesa tiene que quedar DEBAJO de
+  // ella. Antes subía hasta 16 px del borde y la cabecera tapaba media mesa.
+  // Se mira hasta el botón principal, que es con lo que se vuelve a lanzar.
   function verMesa() {
+    // Con el teclado del móvil abierto (venía de escribir una opción) el
+    // desplazamiento se queda corto: se cierra antes
+    if (document.activeElement?.matches?.('input, textarea')) document.activeElement.blur();
+    const tapa = Math.max(0, document.querySelector('header')?.getBoundingClientRect().bottom ?? 0);
     const arriba = stage.getBoundingClientRect().top;
-    const abajo = result.getBoundingClientRect().bottom;
-    if (arriba >= 0 && abajo <= window.innerHeight) return;
-    window.scrollTo({ top: window.scrollY + arriba - 16, behavior: reducido() ? 'auto' : 'smooth' });
+    const abajo = btnRoll.getBoundingClientRect().bottom;
+    if (arriba >= tapa && abajo <= window.innerHeight) return;
+    window.scrollTo({ top: window.scrollY + arriba - tapa - 8, behavior: reducido() ? 'auto' : 'smooth' });
   }
 
   function mostrarError(texto) {

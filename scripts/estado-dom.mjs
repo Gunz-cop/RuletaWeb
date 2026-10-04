@@ -128,12 +128,22 @@ async function medir() {
     // Espera a que los valores dejen de moverse en vez de a un reloj fijo.
     // Una transición a medias da opacity: 0.998 y el test parpadea; esto lo
     // vimos con el modal del ganador, que aparece con un fundido.
+    // Dos lecturas iguales no bastan si hay una transición CSS que aún no ha
+    // arrancado: con la mesa 3D de los dados cargando el hilo, el gris del
+    // dado descartado tardaba hasta un segundo en empezar, el test leía dos
+    // veces el marfil del principio y lo daba por bueno. Así que además se
+    // espera a que no quede ninguna CSSTransition viva en lo que se mide
+    // (las animaciones infinitas, como la marquesina, no cuentan).
+    const enTransicion = () => pagina.evaluate((comprobar) => comprobar.some(({ sel }) => {
+      const el = document.querySelector(sel);
+      return el?.getAnimations().some((a) => a instanceof CSSTransition && a.playState !== 'finished');
+    }), est.comprobar ?? []);
     let previo = JSON.stringify(await leer());
     let medida = previo;
     for (let intento = 0; intento < 20; intento++) {
       await pagina.waitForTimeout(150);
       medida = JSON.stringify(await leer());
-      if (medida === previo) break;
+      if (medida === previo && !(await enTransicion())) break;
       previo = medida;
     }
     salida[`${est.ruta} [${est.nombre}]`] = JSON.parse(medida);

@@ -460,7 +460,12 @@ puro (`src/scripts/dados-fisica.js`: cubos rígidos con gravedad, choques
 con rebote y rozamiento contra la mesa y las paredes, y esferas para que
 no se atraviesen entre ellos) y se prueba con Node en
 `scripts/dados-check.mjs` (600 tiradas: se paran planos, dentro de la
-mesa y sin montarse). three.js y cannon, lo que usan otras webs de dados,
+mesa y sin montarse; y el dado de opciones, que vuelca: menos de 2 de cada
+10 tiradas pueden llegar a la mesa y arrastrarse sin cambiar de cara
+arriba, que es lo que se ve como una caja de cartón). Para que ruede, el
+dado sale de la mano con un giro de eje al azar y fuerza siempre alta, y
+el tapete agarra lo bastante (rozamiento 0,6) para que la arista delantera
+lo haga volcar. three.js y cannon, lo que usan otras webs de dados,
 pesan cientos de KB; esto, unos pocos. Reglas:
 
 - **El resultado se decide antes** (`crypto.getRandomValues`), no lo

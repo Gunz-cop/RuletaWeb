@@ -96,8 +96,10 @@ Los selectores scopeados por Astro se guardan con `[S]` en lugar del hash
 pulsa el botón de modo foco y la pestaña de gestionar, **gira la ruleta de
 verdad** para ver el modal del ganador, y compara los estilos computados con
 `tests/estado-dom.json`. No espera un tiempo fijo: repite la medición hasta
-que los valores dejan de moverse, porque una transición a medias da
-`opacity: 0.998` y el test parpadea. Cubre el fallo que ningún otro test
+que los valores dejan de moverse y no queda ninguna transición CSS viva
+en lo que mide, porque una transición a medias da `opacity: 0.998` y el
+test parpadea (y una que aún no arrancó da dos lecturas iguales del valor
+de partida: le pasaba al dado descartado de los dados). Cubre el fallo que ningún otro test
 ve: cuando una regla deja de encontrar su elemento —por ejemplo al mover una
 sección a un componente, que le cambia el hash de scope de Astro— el CSS se
 sigue emitiendo igual, así que los snapshots no notan nada, pero el elemento

@@ -99,7 +99,11 @@ for (let t = 0; t < MIXTAS; t++) {
 // --- Dado de opciones: uno solo y más grande (88 px en móvil, 104 en escritorio) ------
 // Con las medidas de mesa que calcula caja() en dados.js para una bandeja de
 // 360 px y otra de 672 px
+// También que ruede: un dado que aterriza y se arrastra sin cambiar de cara
+// arriba se ve como una caja de cartón. Antes de darle giro de verdad al
+// salir de la mano pasaba en 4 de cada 10 tiradas del dado de opciones.
 const OPCIONES = 200;
+let arrastrados = 0;
 for (let t = 0; t < OPCIONES; t++) {
   const movil = t % 2 === 0;
   const s = movil ? 88 : 104;
@@ -107,15 +111,24 @@ for (let t = 0; t < OPCIONES; t++) {
   const caja = { izquierda: -mitad, derecha: mitad, fondo: movil ? -104 : -124, frente: s * 0.9 + 20 };
   const [lista] = simular(desdeLaMano(1, caja, s, aleatorio), caja, s);
   const f = lista[lista.length - 1];
+  let cambios = 0;
+  let arriba = caraArriba(lista[0].q).cara;
+  for (const m of lista) {
+    const c = caraArriba(m.q).cara;
+    if (c !== arriba) { cambios++; arriba = c; }
+  }
+  if (cambios <= 1) arrastrados++;
   check(Math.abs(f.x[2] - s / 2) < 0.5, `opciones ${t} (${s} px): no queda apoyado`);
   check(caraArriba(f.q).z > 0.9999, `opciones ${t} (${s} px): no queda plano`);
   check(f.x[0] > caja.izquierda && f.x[0] < caja.derecha && f.x[1] > caja.fondo && f.x[1] < caja.frente,
     `opciones ${t} (${s} px): acaba fuera de la mesa (${f.x[0].toFixed(0)}, ${f.x[1].toFixed(0)})`);
 }
 
+check(arrastrados / OPCIONES < 0.2, `dado de opciones: ${arrastrados} de ${OPCIONES} tiradas se arrastran sin volcar (cambian de cara arriba una vez o ninguna)`);
+
 if (fallos.length) {
   console.error(`FALLA  física de los dados: ${fallos.length} fallo(s)`);
   for (const f of fallos.slice(0, 15)) console.error('  ' + f);
   process.exit(1);
 }
-console.log(`ok     física de los dados (${TIRADAS} tiradas: se paran planos, dentro de la mesa, sin montarse; duración media ${(duracionTotal / TIRADAS).toFixed(2)} s, máx ${duracionMax.toFixed(2)} s; y ${POR_TIPO} por tipo de dado de rol: ${resumen.join(', ')}; y ${MIXTAS} mesas con tipos mezclados; y ${OPCIONES} dados de opciones grandes)`);
+console.log(`ok     física de los dados (${TIRADAS} tiradas: se paran planos, dentro de la mesa, sin montarse; duración media ${(duracionTotal / TIRADAS).toFixed(2)} s, máx ${duracionMax.toFixed(2)} s; y ${POR_TIPO} por tipo de dado de rol: ${resumen.join(', ')}; y ${MIXTAS} mesas con tipos mezclados; y ${OPCIONES} dados de opciones grandes, ${Math.round((arrastrados / OPCIONES) * 100)}% sin volcar)`);

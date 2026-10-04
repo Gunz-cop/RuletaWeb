@@ -145,7 +145,10 @@ export function simular(cuerpos, caja, s, forma = null) {
   const g = s * 46;                  // gravedad en lados por s²: se ve rápido pero legible
   const invI = 6 / (s * s);          // cubo macizo de masa 1: I = s²/6 (igual en todos los ejes)
   const rebote = 0.42;
-  const rozamiento = 0.42;
+  // Agarre del tapete. Con 0.42 un cubo que llegaba plano no podía volcar
+  // sobre su arista (hace falta más agarre que eso) y se deslizaba como una
+  // caja de cartón; con 0.6 el roce en la arista delantera lo hace rodar
+  const rozamiento = 0.6;
   const sinRebote = s * 1.6;         // por debajo de esta velocidad un golpe ya no bota
 
   const estado = cuerpos.map((c) => ({
@@ -325,7 +328,17 @@ export function simular(cuerpos, caja, s, forma = null) {
 // pasarla; la de delante está siempre y ninguno sale hacia quien mira.
 export function desdeLaMano(n, caja, s, aleatorio = Math.random) {
   const entre = (a, b) => a + aleatorio() * (b - a);
-  const giro = () => entre(-16, 16);
+  // Giro con eje al azar y fuerza siempre alta. Antes era un número al azar
+  // por eje (±16 rad/s), y a veces los tres salían pequeños: el dado salía
+  // casi sin girar, aterrizaba y se arrastraba sin cambiar de cara (en el
+  // dado de opciones, 4 de cada 10 tiradas; scripts/dados-check.mjs lo mide)
+  // Con cuatro dados o más se empujan entre ellos y eso ya los hace volcar;
+  // con todo el giro, seis tardaban en pararse más de 3 s
+  const giro = () => {
+    const eje = norm([entre(-1, 1), entre(-1, 1), entre(-1, 1)]);
+    const fuerza = entre(20, 27) * (n >= 4 ? 0.6 : 1);
+    return eje.map((c) => c * fuerza);
+  };
   // Apuntan a la pared izquierda, a media mesa: pegan en ella y rebotan
   const meta = [caja.izquierda + s * entre(0, 0.4), entre(caja.fondo + s, caja.frente - s)];
   return Array.from({ length: n }, (_, i) => {
@@ -344,7 +357,7 @@ export function desdeLaMano(n, caja, s, aleatorio = Math.random) {
       x,
       v: [dir[0] * rapidez, dir[1] * rapidez, s * entre(0, 1.2)],
       q: Q.normalizar([entre(-1, 1), entre(-1, 1), entre(-1, 1), entre(-1, 1)]),
-      w: [giro(), giro(), giro()],
+      w: giro(),
       sale: col * 0.11 + entre(0, 0.03),
     };
   });
