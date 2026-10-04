@@ -102,11 +102,64 @@ const schemaLD = {
 
       <button id="btn-roll" type="button" class="px-9 py-3.5 border-0 rounded-full bg-warm text-[#1a0e06] font-display font-bold text-lg cursor-pointer transition-transform duration-150 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-warm">Lanzar dados</button>
 
+      {/* El tipo va debajo de la acción: encima empujaba el botón fuera de
+          la primera pantalla en los móviles bajos (DESIGN.md, "Controles
+          secundarios debajo de la acción principal") */}
+      <div class="w-full max-w-sm mx-auto mt-6">
+        <span class="block mb-2 text-center text-xs font-semibold tracking-widest uppercase text-ink-tertiary" id="dice-type-label">Tipo de dado</span>
+        <div class="grid grid-cols-6 gap-1.5" role="group" aria-labelledby="dice-type-label">
+          {[4, 6, 8, 10, 12, 20].map((n) => (
+            <button type="button" data-dice-type={n} aria-pressed={n === 6 ? 'true' : 'false'} class="py-2 bg-transparent border border-(--divider-line) rounded-full font-display font-semibold text-base text-ink-secondary tabular-nums cursor-pointer aria-pressed:text-ink-primary aria-pressed:border-warm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-warm hover:text-ink-primary hover:border-warm">D{n}</button>
+          ))}
+        </div>
+      </div>
+
       {/* Solo en móviles con sensor de movimiento; el JS lo muestra */}
       <div id="dice-shake" class="flex flex-col items-center gap-1 mt-6 w-full" hidden>
         <button class="bg-transparent border-0 border-b border-(--divider-line) rounded-none px-0 py-1 font-sans text-base text-ink-primary cursor-pointer hover:text-warm hover:border-current focus-visible:text-warm focus-visible:border-current focus-visible:outline-none aria-pressed:text-warm aria-pressed:border-current" id="btn-shake" type="button" aria-pressed="false">Agitar el móvil para lanzar</button>
         <p class="m-0 max-w-xs text-center text-xs text-ink-tertiary" id="shake-msg" aria-live="polite"></p>
       </div>
+    </section>
+
+    {/* Modo rol: debajo de la acción principal, para que sus controles no
+        empujen el botón fuera de la pantalla en el móvil */}
+    <section class="w-full mt-12 sm:mt-16" aria-labelledby="rol-titulo">
+      <div class="pb-3 border-0 border-b border-(--divider-line)">
+        <h2 class="m-0 font-display text-lg" id="rol-titulo">Tiradas de rol</h2>
+        <p class="m-0 mt-1 text-sm text-ink-secondary">Para juegos de rol como Dungeons &amp; Dragons: escribe la tirada como en tu hoja de personaje.</p>
+      </div>
+
+      <form class="mt-5" id="rol-form" novalidate>
+        <label class="block text-xs font-semibold tracking-widest uppercase text-ink-tertiary" for="rol-tirada">Tirada</label>
+        <div class="flex items-end gap-4">
+          <input class="w-full min-w-0 bg-transparent border-0 border-b border-(--divider-line) rounded-none px-0 py-2 font-sans text-base text-ink-primary placeholder:text-ink-tertiary focus:outline-none focus:border-warm font-display tabular-nums" id="rol-tirada" name="tirada" type="text" inputmode="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="1d20+5" maxlength="40" aria-describedby="rol-ayuda rol-error">
+          <button class="shrink-0 bg-transparent border-0 border-b border-current rounded-none px-0 py-1 font-sans text-base text-ink-primary cursor-pointer hover:text-warm focus-visible:text-warm focus-visible:outline-none" id="btn-rol-tirar" type="submit">Tirar</button>
+        </div>
+        <p class="m-0 mt-2 text-xs text-ink-tertiary" id="rol-ayuda">Dados de d4 a d20, hasta 6 a la vez: 2d6+3, 3d8-1, 1d8+1d6.</p>
+        <p class="rol-error m-0 mt-1 text-sm text-warm" id="rol-error" aria-live="polite"></p>
+      </form>
+
+      <div class="grid grid-cols-3 gap-1.5 mt-5" role="group" aria-label="Tiradas especiales">
+        <button type="button" id="btn-ventaja" class="py-2 bg-transparent border border-(--divider-line) rounded-full font-display font-semibold text-base text-ink-secondary tabular-nums cursor-pointer aria-pressed:text-ink-primary aria-pressed:border-warm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-warm hover:text-ink-primary hover:border-warm px-1 text-sm">Ventaja</button>
+        <button type="button" id="btn-desventaja" class="py-2 bg-transparent border border-(--divider-line) rounded-full font-display font-semibold text-base text-ink-secondary tabular-nums cursor-pointer aria-pressed:text-ink-primary aria-pressed:border-warm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-warm hover:text-ink-primary hover:border-warm px-1 text-sm">Desventaja</button>
+        <button type="button" id="btn-personaje" class="py-2 bg-transparent border border-(--divider-line) rounded-full font-display font-semibold text-base text-ink-secondary tabular-nums cursor-pointer aria-pressed:text-ink-primary aria-pressed:border-warm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-warm hover:text-ink-primary hover:border-warm px-1 text-sm">Personaje</button>
+      </div>
+      <p class="m-0 mt-2 text-xs text-ink-tertiary">Ventaja y desventaja: 2d20 y vale el mayor o el menor (con el modificador de la tirada si es 1d20+algo). Personaje: 4d6 sin el menor, seis veces.</p>
+
+      <ol class="dice-personaje list-none m-0 mt-4 p-0" id="rol-personaje" aria-live="polite" hidden></ol>
+
+      <h3 class="m-0 mt-8 font-display text-base">Tiradas guardadas</h3>
+      <ul class="dice-guardadas list-none m-0 mt-2 p-0 border-0 border-t border-(--divider-line)" id="rol-guardadas">
+        <li class="guardada-vacia">Guarda las que repites, como «Ataque espada: 1d20+5».</li>
+      </ul>
+      <form class="mt-4" id="rol-guardar" novalidate>
+        <label class="block text-xs font-semibold tracking-widest uppercase text-ink-tertiary" for="rol-nombre">Nombre</label>
+        <div class="flex items-end gap-4">
+          <input class="w-full min-w-0 bg-transparent border-0 border-b border-(--divider-line) rounded-none px-0 py-2 font-sans text-base text-ink-primary placeholder:text-ink-tertiary focus:outline-none focus:border-warm" id="rol-nombre" name="nombre" type="text" autocomplete="off" placeholder="Ataque espada" maxlength="30">
+          <button class="shrink-0 bg-transparent border-0 border-b border-current rounded-none px-0 py-1 font-sans text-base text-ink-primary cursor-pointer hover:text-warm focus-visible:text-warm focus-visible:outline-none" id="btn-rol-guardar" type="submit">Guardar tirada</button>
+        </div>
+        <p class="m-0 mt-2 text-xs text-ink-tertiary">Guarda la tirada escrita arriba con este nombre. Se queda en este navegador.</p>
+      </form>
     </section>
 
     <section class="w-full mt-12 sm:mt-16" aria-label="Historial de tiradas">
@@ -219,6 +272,111 @@ const schemaLD = {
 
   @keyframes dice-row-in {
     from { opacity: 0; transform: translateY(-6px); }
+  }
+
+  /* Resultado largo (los seis valores de un personaje): más pequeño para
+     que quepa en una línea a 344px */
+  .dice-result.is-largo :global(#dice-result-main) {
+    font-size: 1.3rem;
+    line-height: 1.7;
+  }
+
+  @media (min-width: 640px) {
+    .dice-result.is-largo :global(#dice-result-main) {
+      font-size: 2rem;
+      line-height: 1.5;
+    }
+  }
+
+  .rol-error:empty {
+    display: none;
+  }
+
+  /* Personaje y tiradas guardadas: filas que crea dados.js, divididas por
+     líneas de 1px como el historial */
+  .dice-personaje :global(.personaje-row),
+  .dice-guardadas :global(.guardada-row) {
+    display: grid;
+    grid-template-columns: 2rem 2.5rem 1fr;
+    column-gap: 0.75rem;
+    align-items: baseline;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--divider-line);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .dice-personaje :global(.personaje-num) {
+    color: var(--text-tertiary);
+    font-size: 0.85rem;
+  }
+
+  .dice-personaje :global(.personaje-valor) {
+    font-family: 'Outfit', system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 1.15rem;
+    color: var(--text-primary);
+  }
+
+  .dice-personaje :global(.personaje-dados) {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+  }
+
+  .dice-personaje :global(s) {
+    color: var(--text-tertiary);
+  }
+
+  .dice-guardadas :global(.guardada-row) {
+    grid-template-columns: 1fr auto;
+    padding: 0;
+  }
+
+  .dice-guardadas :global(.guardada-tirar) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: 0.75rem;
+    min-width: 0;
+    padding: 0.8rem 0;
+    background: transparent;
+    border: 0;
+    text-align: left;
+    font: inherit;
+    color: var(--text-primary);
+    cursor: pointer;
+  }
+
+  .dice-guardadas :global(.guardada-tirar:hover),
+  .dice-guardadas :global(.guardada-tirar:focus-visible) {
+    color: var(--accent-warm);
+    outline: none;
+  }
+
+  .dice-guardadas :global(.guardada-expr) {
+    color: var(--text-tertiary);
+    font-size: 0.9rem;
+  }
+
+  .dice-guardadas :global(.guardada-quitar) {
+    padding: 0.8rem 0 0.8rem 0.75rem;
+    background: transparent;
+    border: 0;
+    font: inherit;
+    font-size: 0.85rem;
+    color: var(--text-tertiary);
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  .dice-guardadas :global(.guardada-quitar:hover) {
+    color: var(--accent-warm);
+  }
+
+  .dice-guardadas :global(.guardada-vacia) {
+    padding: 0.8rem 0;
+    color: var(--text-tertiary);
+    font-size: 0.9rem;
+    border-bottom: 1px solid var(--divider-line);
   }
 
   .dice-history :global(.history-empty) {

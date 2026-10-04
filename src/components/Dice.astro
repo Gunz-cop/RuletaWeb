@@ -24,6 +24,15 @@
 //
 // El dado es un objeto ilustrado, no UI (DESIGN.md, "Excepción: objetos
 // ilustrados"): lleva relieve y su propia paleta local.
+//
+// Dados de rol (D4, D8, D10, D12, D20): poliedros de verdad. Cada cara es un
+// polígono recortado con clip-path y colocado con su matrix3d; la geometría
+// sale de dibujo() (dados-poliedros.js) al construir la página, no en el
+// navegador. Van en un <template> por tipo; dados.js clona el que toca en
+// cada dado (y el del D6 para volver al cubo), así una tirada puede mezclar
+// tipos (1d20+1d6). Las caras se construyen para un dado de 100 px y se
+// escalan con --k (= --s / 100 px, puesto a mano junto a cada --s).
+import { dibujo } from '../scripts/dados-poliedros.js';
 
 // Posición de los puntos en una rejilla de 3×3 (a b / d c e / f g)
 const CARAS: Record<number, string[]> = {
@@ -35,6 +44,7 @@ const CARAS: Record<number, string[]> = {
   6: ['a', 'b', 'd', 'e', 'f', 'g'],
 };
 const dados = [0, 1, 2, 3, 4, 5];
+const ROL = [4, 8, 10, 12, 20].map((lados) => ({ lados, caras: dibujo(lados, 100) }));
 ---
 
 <div class="dice-stage" id="dice-stage" data-count="2" aria-hidden="true">
@@ -44,7 +54,7 @@ const dados = [0, 1, 2, 3, 4, 5];
     {dados.map((i) => (
       <>
         <div class="dice-shadow" data-shadow={i}></div>
-        <div class="dice" data-die={i}>
+        <div class="dice" data-die={i} data-lados="6">
           {Object.entries(CARAS).map(([cara, puntos]) => (
             <div class="dice-face" data-face={cara}>
               {puntos.map((p) => <i class={`dice-pip dice-pip--${p}`}></i>)}
@@ -55,6 +65,34 @@ const dados = [0, 1, 2, 3, 4, 5];
       </>
     ))}
   </div>
+  <template data-plantilla="6">
+    {Object.entries(CARAS).map(([cara, puntos]) => (
+      <div class="dice-face" data-face={cara}>
+        {puntos.map((p) => <i class={`dice-pip dice-pip--${p}`}></i>)}
+        <span class="dice-shade"></span>
+      </div>
+    ))}
+  </template>
+  {ROL.map(({ lados, caras }) => (
+    <template data-plantilla={lados}>
+      {caras.map((c, i) => (
+        <div
+          class="rol-face"
+          data-cara={i}
+          style={`width:${c.w}px;height:${c.h}px;--m:${c.matriz};--clip:polygon(${c.recorte});--cx:${c.centro[0]}px;--cy:${c.centro[1]}px;--encoge:${(1 - 2.4 / Math.min(c.w, c.h)).toFixed(4)}`}
+        >
+          <div class="rol-fill"></div>
+          {c.numeros.map((n) => (
+            <span
+              class:list={['rol-num', { 'is-max': n.valor === lados, 'is-sub': n.subrayado }]}
+              style={`font-size:${n.tam}px;transform:translate(${n.x}px,${n.y}px) translate(-50%,-50%) rotate(${n.giro}deg)`}
+            >{n.valor}</span>
+          ))}
+          <span class="dice-shade"></span>
+        </div>
+      ))}
+    </template>
+  ))}
 </div>
 
 <style>
@@ -226,5 +264,91 @@ const dados = [0, 1, 2, 3, 4, 5];
 
   @media (min-width: 640px) {
     .dice-floor { --wall: 124px; }
+  }
+
+  /* ---------- Dados de rol: poliedros ---------- */
+  /* --k: la escala de las caras, que se construyen para un dado de 100 px.
+     Siempre igual a --s / 100 px (CSS no divide longitudes entre sí) */
+  .dice-stage { --k: 0.7; }
+  .dice-stage[data-count="3"] { --k: 0.62; }
+  .dice-stage:is([data-count="4"], [data-count="5"], [data-count="6"]) { --k: 0.5; }
+
+  @media (min-width: 640px) {
+    .dice-stage { --k: 0.84; }
+    .dice-stage[data-count="3"] { --k: 0.76; }
+    .dice-stage:is([data-count="4"], [data-count="5"], [data-count="6"]) { --k: 0.62; }
+  }
+
+  .dice-shadow.is-rol {
+    border-radius: 50%;
+  }
+
+  /* La cara entera es el filo oscuro; el relleno marfil va encima, un poco
+     más pequeño, así la arista se lee aunque dos caras tengan la misma luz
+     (lo mismo que el filo inset de las caras del cubo, que con un recorte
+     no se puede dibujar). El polígono ya lleva su holgura contra rendijas. */
+  .rol-face {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform-origin: 0 0;
+    transform: scale3d(var(--k), var(--k), var(--k)) var(--m);
+    clip-path: var(--clip);
+    -webkit-clip-path: var(--clip);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    background: #8d8576;
+  }
+
+  .rol-fill {
+    position: absolute;
+    inset: 0;
+    clip-path: var(--clip);
+    -webkit-clip-path: var(--clip);
+    transform-origin: var(--cx) var(--cy);
+    transform: scale(var(--encoge));
+    background: #f6f5f1;
+  }
+
+  .rol-num {
+    position: absolute;
+    left: 0;
+    top: 0;
+    font-family: 'Outfit', system-ui, sans-serif;
+    font-weight: 700;
+    line-height: 1;
+    color: #191612;
+    white-space: nowrap;
+  }
+
+  /* El número más alto en rojo, como el 1 del dado de casino */
+  .rol-num.is-max {
+    color: #b3141c;
+  }
+
+  /* 6 y 9 subrayados, para no confundirlos (D10, D12 y D20) */
+  .rol-num.is-sub {
+    text-decoration: underline;
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.08em;
+  }
+
+  /* Dado descartado (ventaja, desventaja, el menor al crear personaje): se
+     apaga el marfil. No con opacity en el dado: en un elemento con
+     preserve-3d la opacidad lo aplana y se vería el dado de cartón. */
+  .dice-face,
+  .rol-fill {
+    transition: background-color 0.3s ease-out;
+  }
+
+  .dice.is-descartado :is(.dice-face, .rol-fill) {
+    background: #8a847a;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dice-face,
+    .rol-fill {
+      transition: none;
+    }
   }
 </style>

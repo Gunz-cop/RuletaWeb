@@ -135,23 +135,24 @@ const ESQUINAS = [-1, 1].flatMap((a) => [-1, 1].flatMap((b) => [-1, 1].map((c) =
 // cuerpos: [{ x: [x, y, z], v: [vx, vy, vz], q, w: [wx, wy, wz] }]  (en el centro)
 // caja: { izquierda, derecha, fondo, frente } (coordenadas de las paredes)
 // s: lado del dado. Devuelve, por dado, la lista de muestras { x, q }.
-// forma (opcional, dados-poliedros.js): otro sólido en vez del cubo. Lleva
-// sus vértices en medios lados, su radio de choque, la altura a la que
-// queda apoyado y su propio aplanar. Sin forma, el cubo de siempre.
+// forma (opcional, dados-poliedros.js): otro sólido en vez del cubo, para
+// todos los dados, o uno por dado en cuerpos[i].forma (una tirada de
+// 1d20+1d6). Lleva sus vértices en medios lados, su radio de choque, la
+// altura a la que queda apoyado y su propio aplanar. Sin forma, el cubo de
+// siempre, con exactamente las mismas cuentas.
 export function simular(cuerpos, caja, s, forma = null) {
   const h = s / 2;
-  const vertices = forma?.vertices ?? ESQUINAS;
-  const aplanarFinal = forma ? (q) => forma.aplanar(q) : aplanar;
-  const apoyo = h * (forma?.apoyo ?? 1);
   const g = s * 46;                  // gravedad en lados por s²: se ve rápido pero legible
   const invI = 6 / (s * s);          // cubo macizo de masa 1: I = s²/6 (igual en todos los ejes)
-  const radio = s * (forma?.radio ?? 0.74);            // los dados no se acercan más que esto entre sí
   const rebote = 0.42;
   const rozamiento = 0.42;
   const sinRebote = s * 1.6;         // por debajo de esta velocidad un golpe ya no bota
 
   const estado = cuerpos.map((c) => ({
     x: [...c.x], v: [...c.v], q: [...c.q], w: [...c.w], sale: c.sale ?? 0,
+    f: c.forma ?? forma,
+    vertices: (c.forma ?? forma)?.vertices ?? ESQUINAS,
+    radio: s * ((c.forma ?? forma)?.radio ?? 0.74),   // los dados no se acercan más que esto entre sí
     quieto: 0, dormido: false, suelo: false,
     // La pared derecha solo cuenta cuando el dado ya entró: se lanza desde
     // fuera de la mesa, desde la mano
@@ -207,7 +208,7 @@ export function simular(cuerpos, caja, s, forma = null) {
       else if (t > b.sale + 0.4 && b.v[0] > -s * 3) b.v[0] = -s * 3;
 
       const R = Q.mat(b.q);
-      const esquinas = vertices.map((c) => rot(R, mul(c, h)));
+      const esquinas = b.vertices.map((c) => rot(R, mul(c, h)));
       b.suelo = false;
       for (const pl of planos(b)) {
         let hondo = 0;
@@ -217,7 +218,7 @@ export function simular(cuerpos, caja, s, forma = null) {
             hondo = Math.max(hondo, -dentro);
             // Las paredes no sujetan a un poliedro: con rozamiento, uno
             // puntiagudo se quedaba de canto apoyado en ellas
-            choque(b, r, pl.n, pl.e, forma && pl.n[2] !== 1 ? 0 : rozamiento);
+            choque(b, r, pl.n, pl.e, b.f && pl.n[2] !== 1 ? 0 : rozamiento);
           }
         }
         if (hondo > 0) {
@@ -228,7 +229,7 @@ export function simular(cuerpos, caja, s, forma = null) {
       // Rodando sobre la mesa pierde giro poco a poco, como un dado de verdad
       // (un poliedro que aún no está sobre una cara no se frena: tiene que
       // poder volcar hasta ella)
-      const frenar = b.suelo && !(forma && !forma.plana(b.q));
+      const frenar = b.suelo && !(b.f && !b.f.plana(b.q));
       b.w = mul(b.w, frenar ? 0.985 : 0.999);
       b.v = mul(b.v, b.suelo ? 0.996 : 0.9995);
     }
@@ -242,9 +243,10 @@ export function simular(cuerpos, caja, s, forma = null) {
         if (t < a.sale || t < b.sale) continue;
         const d = sub(b.x, a.x);
         const dist = largo(d);
-        if (dist >= radio * 2 || dist < 1e-6) continue;
+        const juntos = a.radio + b.radio;
+        if (dist >= juntos || dist < 1e-6) continue;
         const n = mul(d, 1 / dist);
-        const meter = (radio * 2 - dist) / 2;
+        const meter = (juntos - dist) / 2;
         a.x = sub(a.x, mul(n, meter));
         b.x = add(b.x, mul(n, meter));
         // Un dado quieto al que empujan vuelve a moverse
@@ -280,8 +282,8 @@ export function simular(cuerpos, caja, s, forma = null) {
       // la mesa sin estar sobre una cara, recibe el par de vuelco que le
       // daría su peso, hacia la cara más cercana. El cubo no lo necesita (y
       // así su tirada no cambia).
-      if (forma && b.suelo && largo(b.v) < s * 0.6 && !forma.plana(b.q)) {
-        b.w = add(b.w, mul(forma.vuelco(b.q), VUELCO * PASO));
+      if (b.f && b.suelo && largo(b.v) < s * 0.6 && !b.f.plana(b.q)) {
+        b.w = add(b.w, mul(b.f.vuelco(b.q), VUELCO * PASO));
         b.quieto = 0;
         continue;
       }
@@ -299,9 +301,11 @@ export function simular(cuerpos, caja, s, forma = null) {
 
   // Asentar: unas pocas muestras más en las que el dado queda plano sobre una
   // cara y apoyado en la mesa (la física lo deja casi plano; esto lo remata)
-  return muestras.map((lista) => {
+  return muestras.map((lista, i) => {
+    const f = estado[i].f;
+    const apoyo = h * (f?.apoyo ?? 1);
     const ultima = lista[lista.length - 1];
-    const plana = aplanarFinal(ultima.q);
+    const plana = f ? f.aplanar(ultima.q) : aplanar(ultima.q);
     for (let k = 1; k <= 6; k++) {
       const e = k / 6;
       lista.push({

@@ -75,9 +75,30 @@ for (const lados of LADOS.filter((l) => l !== 6)) {
   resumen.push(`D${lados} máx ${maxD.toFixed(1)} s`);
 }
 
+// --- Mesas mixtas (1d20+1d6+1d4…): cada dado con su forma -------------------------
+const MIXTAS = 200;
+for (let t = 0; t < MIXTAS; t++) {
+  const n = 2 + (t % 5);
+  const s = n >= 4 ? 50 : n === 3 ? 62 : 70;
+  const caja = { izquierda: -170 + s * 0.2, derecha: 170 - s * 0.2, fondo: -104, frente: 70 };
+  const tipos = Array.from({ length: n }, () => LADOS[Math.floor(aleatorio() * LADOS.length)]);
+  const cuerpos = desdeLaMano(n, caja, s, aleatorio).map((c, i) => ({ ...c, forma: tipos[i] === 6 ? null : forma(tipos[i]) }));
+  const muestras = simular(cuerpos, caja, s);
+  const finales = muestras.map((m) => m[m.length - 1]);
+  finales.forEach((fin, i) => {
+    const f = cuerpos[i].forma;
+    const plano = f ? valorArriba(f, fin.q).z : caraArriba(fin.q).z;
+    check(plano > 0.9999, `mixta ${t}: el D${tipos[i]} no queda plano`);
+    check(Math.abs(fin.x[2] - (s / 2) * (f ? f.apoyo : 1)) < 0.5, `mixta ${t}: el D${tipos[i]} no queda apoyado`);
+    for (let j = i + 1; j < finales.length; j++) {
+      check(Math.hypot(fin.x[0] - finales[j].x[0], fin.x[1] - finales[j].x[1]) > s, `mixta ${t}: dados ${i} y ${j} quedan montados`);
+    }
+  });
+}
+
 if (fallos.length) {
   console.error(`FALLA  física de los dados: ${fallos.length} fallo(s)`);
   for (const f of fallos.slice(0, 15)) console.error('  ' + f);
   process.exit(1);
 }
-console.log(`ok     física de los dados (${TIRADAS} tiradas: se paran planos, dentro de la mesa, sin montarse; duración media ${(duracionTotal / TIRADAS).toFixed(2)} s, máx ${duracionMax.toFixed(2)} s; y ${POR_TIPO} por tipo de dado de rol: ${resumen.join(', ')})`);
+console.log(`ok     física de los dados (${TIRADAS} tiradas: se paran planos, dentro de la mesa, sin montarse; duración media ${(duracionTotal / TIRADAS).toFixed(2)} s, máx ${duracionMax.toFixed(2)} s; y ${POR_TIPO} por tipo de dado de rol: ${resumen.join(', ')}; y ${MIXTAS} mesas con tipos mezclados)`);

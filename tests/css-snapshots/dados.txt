@@ -28,6 +28,19 @@
 .dice-wall[S]{height:16px;left:4%;right:4%;top:calc(50% - var(--wall) - 16px);transform-origin:50% 100%;background:linear-gradient(#2a2a33,#16161c);border-top:1px solid #ffffff29;position:absolute;transform:rotateX(-90deg)}
 .dice-wall--left[S]{left:calc(50% + var(--izquierda,-160px) - 16px);width:16px;right:auto;top:calc(50% - var(--wall));height:calc(var(--wall) + var(--frente,80px));transform-origin:100%;background:linear-gradient(90deg,#2a2a33,#16161c);border-top:0;border-left:1px solid #ffffff29;transform:rotateY(90deg)}
 @media (width>=640px){.dice-floor[S]{--wall:124px}}
+.dice-stage[S]{--k:.7}
+.dice-stage[S][data-count="3"]{--k:.62}
+.dice-stage[S]:is([data-count="4"],[data-count="5"],[data-count="6"]){--k:.5}
+@media (width>=640px){.dice-stage[S]{--k:.84}.dice-stage[S][data-count="3"]{--k:.76}.dice-stage[S]:is([data-count="4"],[data-count="5"],[data-count="6"]){--k:.62}}
+.dice-shadow[S].is-rol{border-radius:50%}
+.rol-face[S]{transform-origin:0 0;transform:scale3d(var(--k), var(--k), var(--k)) var(--m);clip-path:var(--clip);-webkit-clip-path:var(--clip);-webkit-backface-visibility:hidden;backface-visibility:hidden;background:#8d8576;position:absolute;top:50%;left:50%}
+.rol-fill[S]{clip-path:var(--clip);-webkit-clip-path:var(--clip);transform-origin:var(--cx) var(--cy);transform:scale(var(--encoge));background:#f6f5f1;position:absolute;inset:0}
+.rol-num[S]{color:#191612;white-space:nowrap;font-family:Outfit,system-ui,sans-serif;font-weight:700;line-height:1;position:absolute;top:0;left:0}
+.rol-num[S].is-max{color:#b3141c}
+.rol-num[S].is-sub{text-underline-offset:.08em;text-decoration:underline .08em}
+.dice-face[S],.rol-fill[S]{transition:background-color .3s ease-out}
+.dice[S].is-descartado [S]:is(.dice-face,.rol-fill){background:#8a847a}
+@media (prefers-reduced-motion:reduce){.dice-face[S],.rol-fill[S]{transition:none}}
 [S][hidden]{display:none!important}
 .dice-result[S]{opacity:0;transition:opacity .25s ease-out,transform .25s cubic-bezier(.2,.7,.3,1);transform:translateY(6px)}
 .dice-result[S].is-shown{opacity:1;transform:none}
@@ -37,6 +50,21 @@
 .dice-history[S] .history-side{color:var(--text-tertiary);font-variant-numeric:tabular-nums;text-align:right;font-size:.85rem}
 .dice-history[S] .history-row.is-new{animation:.4s cubic-bezier(.2,.7,.3,1) dice-row-in}
 @keyframes dice-row-in{0%{opacity:0;transform:translateY(-6px)}}
+.dice-result[S].is-largo #dice-result-main{font-size:1.3rem;line-height:1.7}
+@media (width>=640px){.dice-result[S].is-largo #dice-result-main{font-size:2rem;line-height:1.5}}
+.rol-error[S]:empty{display:none}
+.dice-personaje[S] .personaje-row,.dice-guardadas[S] .guardada-row{border-bottom:1px solid var(--divider-line);font-variant-numeric:tabular-nums;grid-template-columns:2rem 2.5rem 1fr;align-items:baseline;column-gap:.75rem;padding:.6rem 0;display:grid}
+.dice-personaje[S] .personaje-num{color:var(--text-tertiary);font-size:.85rem}
+.dice-personaje[S] .personaje-valor{color:var(--text-primary);font-family:Outfit,system-ui,sans-serif;font-size:1.15rem;font-weight:700}
+.dice-personaje[S] .personaje-dados{color:var(--text-secondary);font-size:.9rem}
+.dice-personaje[S] s{color:var(--text-tertiary)}
+.dice-guardadas[S] .guardada-row{grid-template-columns:1fr auto;padding:0}
+.dice-guardadas[S] .guardada-tirar{text-align:left;min-width:0;font:inherit;color:var(--text-primary);cursor:pointer;background:0 0;border:0;flex-wrap:wrap;align-items:baseline;column-gap:.75rem;padding:.8rem 0;display:flex}
+.dice-guardadas[S] .guardada-tirar:hover,.dice-guardadas[S] .guardada-tirar:focus-visible{color:var(--accent-warm);outline:none}
+.dice-guardadas[S] .guardada-expr{color:var(--text-tertiary);font-size:.9rem}
+.dice-guardadas[S] .guardada-quitar{font:inherit;color:var(--text-tertiary);cursor:pointer;background:0 0;border:0;padding:.8rem 0 .8rem .75rem;font-size:.85rem;text-decoration:underline}
+.dice-guardadas[S] .guardada-quitar:hover{color:var(--accent-warm)}
+.dice-guardadas[S] .guardada-vacia{color:var(--text-tertiary);border-bottom:1px solid var(--divider-line);padding:.8rem 0;font-size:.9rem}
 .dice-history[S] .history-empty{color:var(--text-tertiary);padding:.8rem 0;font-size:.9rem}
 @media (width>=640px){.dice-history[S] .history-row{grid-template-columns:2.5rem 1fr auto;column-gap:1rem}}
 @media (prefers-reduced-motion:reduce){.dice-result[S]{transform:none}.dice-history[S] .history-row.is-new{animation:none}}

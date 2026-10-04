@@ -123,7 +123,7 @@ oráculo sí o no (`si-o-no.astro` + `OracleBall.astro`), la primera
 herramienta con casi todo el marcado en utilidades de Tailwind, piedra,
 papel o tijera (`piedra-papel-tijera.astro` + `PptHands.astro`) y el
 temporizador (`temporizador.astro` + `TimerObject.astro`) y los dados
-(`dados.astro` + `Dice.astro`). El resto
+(`dados.astro` + `Dice.astro`, con D4 a D20 y modo rol). El resto
 de herramientas (la ruleta, equipos...) sigue con los botones y tarjetas
 en degradado de la estética anterior — migrarlas es una tarea aparte, una
 herramienta a la vez, porque toca UI interactiva con sus propios tests de
@@ -492,6 +492,59 @@ pesan cientos de KB; esto, unos pocos. Reglas:
 - **Al terminar cada animación, la última pose se escribe a mano** y
   luego se cancela la animación. Con `commitStyles()` en Safari quedaba un
   dado fantasma: si falla, cancelar devuelve el dado a su pose anterior.
+
+**Dados de rol: poliedros en CSS 3D** (D4, D8, D10, D12, D20 en `/dados`).
+Se probaron primero en un prototipo aislado, que el propietario aprobó en
+su iPhone; las alternativas eran siluetas planas en SVG o fotogramas en
+AVIF. Son sólidos de verdad, sin librerías:
+
+- **La geometría es lógica pura** (`src/scripts/dados-poliedros.js`):
+  vértices de cada sólido, caras por envolvente convexa, numeración con
+  caras opuestas que suman N + 1 (el 20 frente al 1) y las simetrías de
+  giro de cada sólido. `dibujo()` da, por cara, su `matrix3d`, su recorte
+  (`clip-path: polygon()`) y dónde va cada número.
+- **El marcado se construye al compilar**: `Dice.astro` llama a `dibujo()`
+  y deja un `<template>` por tipo (y uno del D6). `dados.js` clona el que
+  toca en cada dado, así una tirada mezcla tipos (1d20+1d6). Las caras se
+  dibujan para un dado de 100 px y se escalan con `--k`, que va puesto a
+  mano junto a cada `--s` (CSS no divide una longitud entre otra).
+- **Arista legible sin `box-shadow`**: la cara entera es el filo oscuro y
+  el relleno marfil va encima, encogido hacia el centro. El polígono lleva
+  0,6 px de holgura, como el medio píxel de más de las caras del cubo.
+- **Misma física**, con los vértices del sólido como colisionador
+  (`simular(..., forma)` o `forma` por cuerpo). Solo para los poliedros:
+  las paredes no tienen rozamiento y, sobre la mesa, un dado que no está
+  sobre una cara recibe un par de vuelco; si no, el D4 y el D8 se quedaban
+  de canto contra una pared y el D12, casi redondo, en equilibrio sobre
+  una arista. Sin forma, el cubo hace exactamente las mismas cuentas.
+- **El valor se decide antes**, igual que en el D6: `renumerarForma()`
+  busca una simetría del sólido que lleve el número elegido a la cara que
+  quedó arriba. Si hay varias, elige la que deja **el número derecho para
+  quien mira**: boca abajo se leía mal.
+- **Lectura**: vale la cara de arriba. En el D4 no hay cara arriba: cada
+  cara lleva tres números, uno por esquina con la cabeza hacia ella, y
+  vale el de la punta, como en los D4 de verdad.
+- **Número más alto en rojo**, como el 1 del dado de casino; el 6 y el 9
+  subrayados en los dados que tienen los dos.
+- **Dado descartado** (ventaja, desventaja, el menor al crear personaje):
+  se apaga el marfil (`.is-descartado`). Nunca con `opacity` en el dado:
+  en un elemento con `preserve-3d` la opacidad lo aplana.
+- Tests: `scripts/dados-check.mjs` tira 300 veces cada tipo y 200 mesas
+  mezcladas; el estado `rol-caras-coinciden-con-el-texto` lee la matriz
+  de cada dado con la geometría del módulo (en el D4, la punta) y la
+  compara con `data-caras` y con el total escrito.
+
+**Tiradas escritas** (modo rol de `/dados`): un campo de texto con la
+notación de los juegos de rol («1d20+5», «3d8-1», «1d8+1d6»). El lector es
+lógica pura (`src/scripts/dados-notacion.js`, probado con Node en
+`scripts/dados-notacion-check.mjs`) y **cada rechazo dice qué falla y cómo
+arreglarlo** («No hay dado de 7 caras. Usa d4, d6, d8, d10, d12 o d20»).
+Como mucho seis dados por tirada: lo que enseña la mesa tiene que
+coincidir con el texto, y no se tira un dado que no se ve. Va debajo de la
+acción principal, con ventaja, desventaja, crear personaje y las tiradas
+guardadas con nombre; al tirar desde ahí la página sube hasta la mesa. El
+historial escribe el desglose con el modificador («17 = 12 + 5») y, al
+lado, la tirada o su nombre («Ataque espada»).
 
 ### Ciclo de movimiento (estándar)
 

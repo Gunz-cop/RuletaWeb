@@ -202,6 +202,40 @@
       "mensaje": "en 3 tiradas de 6 dados la suma escrita es la de las caras de arriba"
     }
   },
+  "/dados [rol-caras-coinciden-con-el-texto]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "en D4, D8, D10, D12, D20 y en 1d20+1d8+1d4+2 el texto es lo que enseñan las caras"
+    }
+  },
+  "/dados [rol-personaje-y-guardada]": {
+    ".dice.is-descartado .rol-fill": {
+      "backgroundColor": "rgb(138, 132, 122)"
+    },
+    ".dice.is-descartado": {
+      "transformStyle": "preserve-3d",
+      "opacity": "1"
+    },
+    ".rol-face": {
+      "position": "absolute",
+      "backfaceVisibility": "hidden"
+    },
+    ".rol-num.is-max": {
+      "color": "rgb(179, 20, 28)",
+      "fontFamily": "Outfit, system-ui, sans-serif"
+    },
+    ".guardada-row": {
+      "display": "grid",
+      "borderBottomWidth": "1px"
+    },
+    ".guardada-expr": {
+      "color": "rgb(90, 90, 110)"
+    },
+    "#rol-tirada": {
+      "fontSize": "16px",
+      "borderBottomWidth": "1px"
+    }
+  },
   "/dados [accion-principal-visible-android-360x560]": {
     "relacion": {
       "ok": true,

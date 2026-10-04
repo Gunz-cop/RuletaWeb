@@ -370,6 +370,7 @@ export function dibujo(lados, ref = 100, holgura = 0.6) {
         subrayado: subrayar && (valor === 6 || valor === 9),
       }];
     }
-    return { n: c.n, matriz, w: r3(w), h: r3(alto), recorte, numeros };
+    // Centro de la cara en el elemento: el relleno se encoge hacia él
+    return { n: c.n, matriz, w: r3(w), h: r3(alto), recorte, centro: [r3(-minX), r3(-minY)], numeros };
   });
 }

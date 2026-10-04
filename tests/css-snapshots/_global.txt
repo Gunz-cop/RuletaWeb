@@ -141,6 +141,7 @@ footer a:hover{color:var(--accent-coral)}
 .mt-2{margin-top:calc(var(--spacing) * 2)}
 .mt-3{margin-top:calc(var(--spacing) * 3)}
 .mt-4{margin-top:calc(var(--spacing) * 4)}
+.mt-5{margin-top:calc(var(--spacing) * 5)}
 .mt-6{margin-top:calc(var(--spacing) * 6)}
 .mt-8{margin-top:calc(var(--spacing) * 8)}
 .mt-10{margin-top:calc(var(--spacing) * 10)}
@@ -245,6 +246,7 @@ footer a:hover{color:var(--accent-coral)}
 .p-6{padding:calc(var(--spacing) * 6)}
 .p-10{padding:calc(var(--spacing) * 10)}
 .px-0{padding-inline:0}
+.px-1{padding-inline:var(--spacing)}
 .px-9{padding-inline:calc(var(--spacing) * 9)}
 .py-1{padding-block:var(--spacing)}
 .py-1\.5{padding-block:calc(var(--spacing) * 1.5)}

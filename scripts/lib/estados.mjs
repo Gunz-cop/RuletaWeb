@@ -127,6 +127,8 @@ async function verificarBotonGirarSobrePanel(pagina) {
 // Misma holgura de un dedo que el invariante de la ruleta, por la misma
 // razón: con >= 0 solo avisaría cuando el botón ya está cortado.
 import { crearReto, nuevoId } from '../../src/scripts/ppt-reto.js';
+import { forma } from '../../src/scripts/dados-poliedros.js';
+import { NORMAL } from '../../src/scripts/dados-fisica.js';
 
 export const VIEWPORTS_MOVIL = {
   'android-360x560': { width: 360, height: 560 },
@@ -508,6 +510,81 @@ export const ESTADOS = [
         ? { ok: false, mensaje: errores.join('; ') }
         : { ok: true, mensaje: 'en 3 tiradas de 6 dados la suma escrita es la de las caras de arriba' };
     },
+  },
+  {
+    // Lo mismo con los dados de rol: en cada tipo (D4 a D20) y en una
+    // tirada escrita que mezcla tipos y lleva modificador, lee la matriz de
+    // cada dado, busca qué valor quedó arriba con la geometría de
+    // dados-poliedros.js (en el D4, la punta) y lo compara con data-caras y
+    // con el total escrito.
+    ruta: '/dados',
+    nombre: 'rol-caras-coinciden-con-el-texto',
+    viewport: { width: 390, height: 844 },
+    verificarRelacion: async (pagina) => {
+      const DIRS = { 6: NORMAL };
+      for (const l of [4, 8, 10, 12, 20]) DIRS[l] = forma(l).dir;
+      const leer = () => pagina.evaluate((dirs) => {
+        const caras = [...document.querySelectorAll('[data-die]:not([hidden])')].map((el) => {
+          const m = new DOMMatrix(getComputedStyle(el).transform);
+          const fila = [m.m13, m.m23, m.m33];
+          let mejor = 0;
+          let max = -2;
+          for (const [v, n] of Object.entries(dirs[el.dataset.lados])) {
+            const z = fila[0] * n[0] + fila[1] * n[1] + fila[2] * n[2];
+            if (z > max) { max = z; mejor = Number(v); }
+          }
+          return { lados: Number(el.dataset.lados), valor: mejor, plana: max > 0.99 };
+        });
+        const r = document.getElementById('dice-result');
+        return {
+          caras,
+          escritas: r.dataset.caras,
+          total: Number(document.getElementById('dice-result-main').textContent),
+        };
+      }, DIRS);
+      const errores = [];
+      await pagina.click('[data-dice-count="3"]');
+      for (const lados of [4, 8, 10, 12, 20]) {
+        await pagina.click(`[data-dice-type="${lados}"]`);
+        await pagina.click('#btn-roll');
+        await pagina.waitForSelector('#dice-result.is-shown', { timeout: 20000 });
+        const r = await leer();
+        const suma = r.caras.reduce((a, c) => a + c.valor, 0);
+        if (r.caras.length !== 3 || r.caras.some((c) => c.lados !== lados)) errores.push(`D${lados}: en la mesa hay ${r.caras.map((c) => 'D' + c.lados).join(', ')}`);
+        if (r.caras.some((c) => !c.plana)) errores.push(`D${lados}: algún dado no quedó plano`);
+        if (r.caras.map((c) => c.valor).join(',') !== r.escritas) errores.push(`D${lados}: las caras dicen ${r.caras.map((c) => c.valor)} y data-caras ${r.escritas}`);
+        if (suma !== r.total) errores.push(`D${lados}: el texto dice ${r.total} y las caras suman ${suma}`);
+      }
+      await pagina.fill('#rol-tirada', '1d20+1d8+1d4+2');
+      await pagina.click('#btn-rol-tirar');
+      await pagina.waitForSelector('#dice-result.is-shown', { timeout: 20000 });
+      const r = await leer();
+      const suma = r.caras.reduce((a, c) => a + c.valor, 0) + 2;
+      if (r.caras.map((c) => c.lados).join(',') !== '20,8,4') errores.push(`1d20+1d8+1d4+2: en la mesa hay ${r.caras.map((c) => 'D' + c.lados).join(', ')}`);
+      if (r.caras.some((c) => !c.plana)) errores.push('1d20+1d8+1d4+2: algún dado no quedó plano');
+      if (suma !== r.total) errores.push(`1d20+1d8+1d4+2: el texto dice ${r.total} y las caras más 2 suman ${suma}`);
+      return errores.length
+        ? { ok: false, mensaje: errores.join('; ') }
+        : { ok: true, mensaje: 'en D4, D8, D10, D12, D20 y en 1d20+1d8+1d4+2 el texto es lo que enseñan las caras' };
+    },
+  },
+  {
+    // Modo rol: lo que crea el JS (fila de personaje, tirada guardada) y el
+    // dado descartado apagado, que con opacity se habría aplanado
+    ruta: '/dados',
+    nombre: 'rol-personaje-y-guardada',
+    escribir: [{ sel: '#rol-tirada', texto: '1d20+5' }, { sel: '#rol-nombre', texto: 'Ataque espada' }],
+    clics: ['#btn-rol-guardar', '#btn-ventaja'],
+    esperarSelector: '.dice.is-descartado',
+    comprobar: [
+      { sel: '.dice.is-descartado .rol-fill', props: ['backgroundColor'] },
+      { sel: '.dice.is-descartado', props: ['transformStyle', 'opacity'] },
+      { sel: '.rol-face', props: ['position', 'backfaceVisibility'] },
+      { sel: '.rol-num.is-max', props: ['color', 'fontFamily'] },
+      { sel: '.guardada-row', props: ['display', 'borderBottomWidth'] },
+      { sel: '.guardada-expr', props: ['color'] },
+      { sel: '#rol-tirada', props: ['fontSize', 'borderBottomWidth'] },
+    ],
   },
   ...estadosAccionVisible('/dados', '#btn-roll'),
   ...estadosResponsive('/dados', '#btn-roll', [
