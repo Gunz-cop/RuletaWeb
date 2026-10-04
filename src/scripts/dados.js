@@ -21,11 +21,12 @@ const SHAKE_KEY = 'decidelo_dados_agitar';
 const HISTORY_MAX = 10;
 const MAX_DADOS = 6;
 
-// Tiempos (ms). La tirada entera ronda 1,9 s con la anticipación: dentro
-// del margen de DESIGN.md para la acción.
-const RECOGER_MS = 200;
-const TIRADA_MS = [1450, 1750];
-const ENTRADA_MS = [1500, 1750];
+// Tiempos (ms). La tirada entera ronda 2 s con la anticipación: en el
+// borde alto del margen de DESIGN.md, porque ahora el dado cruza la mesa,
+// choca con la pared del fondo y vuelve.
+const RECOGER_MS = 230;
+const TIRADA_MS = [1550, 1800];
+const ENTRADA_MS = [1550, 1800];
 const DESLIZAR_MS = 380;
 const REPOSO_MS = 3000;
 const REDUCED_MS = 200;
@@ -107,11 +108,9 @@ const norm = (v) => { const l = Math.hypot(...v); return v.map((c) => c / l); };
 const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 const rot = (R, v) => [dot(R[0], v), dot(R[1], v), dot(R[2], v)];
 
-// Luz desde arriba, a la izquierda y al fondo. MEDIO es el vector entre la
-// luz y la cámara: una cara que apunta ahí refleja un brillo.
+// Luz desde arriba, a la izquierda y al fondo. Las caras que miran hacia
+// quien juega quedan en sombra: así cada arista separa dos tonos distintos.
 const LUZ = norm([-0.45, -0.55, 0.85]);
-const CAM = [0, Math.sin(INCLINACION * RAD), Math.cos(INCLINACION * RAD)];
-const MEDIO = norm(LUZ.map((c, i) => c + CAM[i]));
 
 const qArriba = (valor, giro) => Q.mul(
   Q.eje(0, 0, 1, giro),
@@ -199,7 +198,6 @@ function initDados() {
     caras: [...el.querySelectorAll('.dice-face')].map((f) => ({
       n: NORMAL[f.dataset.face],
       shade: f.querySelector('.dice-shade'),
-      gloss: f.querySelector('.dice-gloss'),
     })),
     valor: azar(6),
     p: [0, 0],
@@ -212,31 +210,33 @@ function initDados() {
   let ultimaTirada = 0;
   let reposo = null;
 
+  // Distancia de la pared del fondo al centro de la mesa (--wall en Dice.astro)
+  const pared = () => parseFloat(getComputedStyle(floor).getPropertyValue('--wall')) || 104;
+
   // --- Un instante de un dado: transform del cubo, luz y sombra ---------------
   function instante(d, p, q, aire) {
     const s = d.el.offsetWidth;
     const h = s / 2;
     const R = Q.mat(q);
     // Apoyo: el vértice más bajo toca la mesa. De canto, el centro sube;
-    // así al volcar sobre una arista el dado no atraviesa el suelo. El 0,9
-    // descuenta las esquinas redondeadas.
+    // así al volcar sobre una arista el dado no atraviesa el suelo.
     const l1 = Math.abs(R[2][0]) + Math.abs(R[2][1]) + Math.abs(R[2][2]);
-    const z = h * (1 + 0.9 * (l1 - 1)) + aire;
+    const z = h * l1 + aire;
+    // Y lo mismo contra la pared del fondo: el vértice más lejano la toca
+    const fondo = -pared() + h * (Math.abs(R[1][0]) + Math.abs(R[1][1]) + Math.abs(R[1][2]));
+    const y = Math.max(p[1], fondo);
     const cubo = `matrix3d(${R[0][0]},${R[1][0]},${R[2][0]},0,${R[0][1]},${R[1][1]},${R[2][1]},0,`
-      + `${R[0][2]},${R[1][2]},${R[2][2]},0,${p[0]},${p[1]},${z},1)`;
+      + `${R[0][2]},${R[1][2]},${R[2][2]},0,${p[0]},${y},${z},1)`;
     const luz = d.caras.map((c) => {
       const n = rot(R, c.n);
-      return {
-        shade: (1 - (0.5 + 0.5 * Math.max(0, dot(n, LUZ)))) * 0.62,
-        gloss: Math.pow(Math.max(0, dot(n, MEDIO)), 18) * 0.55,
-      };
+      return { shade: (1 - (0.4 + 0.6 * Math.max(0, dot(n, LUZ)))) * 0.8 };
     });
     // La sombra se aleja (hacia el lado contrario a la luz), crece y se
     // desvanece cuanto más alto va el dado
-    const alto = z - h * 0.95;
+    const alto = z - h;
     const off = s * 0.06 + alto * 0.45;
     const sombra = {
-      transform: `translate3d(${p[0] + off}px, ${p[1] + off * 0.8}px, 0.5px) `
+      transform: `translate3d(${p[0] + off}px, ${y + off * 0.8}px, 0.5px) `
         + `rotateZ(${Math.atan2(R[1][0], R[0][0])}rad) scale(${1 + alto / (s * 2.5)})`,
       opacity: Math.max(0, 0.9 * (1 - alto / (s * 2.4))),
     };
@@ -246,15 +246,12 @@ function initDados() {
   function pintar(d) {
     const e = instante(d, d.p, d.q, 0);
     d.el.style.transform = e.cubo;
-    e.luz.forEach((l, i) => {
-      d.caras[i].shade.style.opacity = l.shade;
-      d.caras[i].gloss.style.opacity = l.gloss;
-    });
+    e.luz.forEach((l, i) => { d.caras[i].shade.style.opacity = l.shade; });
     d.sombra.style.transform = e.sombra.transform;
     d.sombra.style.opacity = e.sombra.opacity;
   }
 
-  const animados = (d) => [d.el, d.sombra, ...d.caras.flatMap((c) => [c.shade, c.gloss])];
+  const animados = (d) => [d.el, d.sombra, ...d.caras.map((c) => c.shade)];
 
   // Reproduce una lista de instantes: una animación para el cubo, otra para
   // la sombra y una por capa de luz, todas con el mismo reloj
@@ -266,7 +263,6 @@ function initDados() {
     ];
     d.caras.forEach((c, i) => {
       anims.push(c.shade.animate(muestras.map((m) => ({ opacity: m.luz[i].shade })), opts));
-      anims.push(c.gloss.animate(muestras.map((m) => ({ opacity: m.luz[i].gloss })), opts));
     });
     return Promise.all(anims.map(fin)).then(() => {
       anims.forEach((a) => {
@@ -281,59 +277,92 @@ function initDados() {
     lista.forEach((d) => animados(d).forEach((e) => e.getAnimations().forEach((a) => a.finish())));
   }
 
-  // --- La tirada: vuelo, dos botes y rodar hasta asentarse --------------------
-  // desde: { p, q, aire } · hasta: { p, q }. Devuelve las muestras.
+  // --- La tirada: cruza la mesa, choca con la pared del fondo y vuelve ------
+  // Como en una mesa de dados: se lanzan desde quien mira, botan una vez,
+  // pegan en la pared del fondo, rebotan hacia el centro y ruedan hasta
+  // asentarse. desde: { p, q, aire } · hasta: { p, q }. Devuelve las muestras.
   function trayectoria(d, desde, hasta) {
     const s = d.el.offsetWidth;
     const h = s / 2;
-    const dx = hasta.p[0] - desde.p[0];
-    const dy = hasta.p[1] - desde.p[1];
-    const dist = Math.hypot(dx, dy) || 1;
+    // Punto de choque con la pared: entre la salida y el destino, un poco
+    // desviado, para que cada dado pegue en un sitio distinto
+    const choque = [
+      desde.p[0] + (hasta.p[0] - desde.p[0]) * entre(0.55, 0.85) + s * entre(-0.35, 0.35),
+      -pared() + h,
+    ];
+    const ida = [choque[0] - desde.p[0], choque[1] - desde.p[1]];
+    const vuelta = [hasta.p[0] - choque[0], hasta.p[1] - choque[1]];
+    const largoIda = Math.hypot(...ida) || 1;
+    const largoVuelta = Math.hypot(...vuelta) || 1;
     // Rodar sin deslizar: gira alrededor del eje horizontal perpendicular a
-    // la marcha, tanto como avanza
-    const ejeRodar = [-dy / dist, dx / dist, 0];
-    const rodarTotal = dist / (h * 1.25);
+    // la marcha, tanto como avanza. A la ida va casi todo en el aire, así
+    // que rueda menos; a la vuelta, sobre la mesa.
+    const ejeIda = [-ida[1] / largoIda, ida[0] / largoIda, 0];
+    const ejeVuelta = [-vuelta[1] / largoVuelta, vuelta[0] / largoVuelta, 0];
+    const rodarIda = (largoIda / (h * 1.25)) * 0.6;
+    const rodarVuelta = largoVuelta / (h * 1.25);
     // Y en el aire, además, da vueltas sobre un eje cualquiera
     const ejeGiro = norm([entre(-1, 1), entre(-1, 1), entre(-0.6, 0.6)]);
-    const giroTotal = entre(2.2, 3.6) * Math.PI;
-    // Fin del vuelo, del primer bote y del segundo (fracción del tiempo)
-    const [u1, u2, u3] = [0.3, 0.52, 0.66];
-    const salto = s * entre(0.9, 1.2);
-    const bote1 = s * entre(0.45, 0.65);
-    const bote2 = s * entre(0.12, 0.2);
+    const giroTotal = entre(2.2, 3.4) * Math.PI;
 
-    // La orientación es «lo que queda por rodar» · «lo que queda por girar»
-    // · la final. Al principio eso no coincide con la orientación de la que
-    // parte el dado; una corrección que se desvanece en el primer tercio
-    // une las dos sin salto (con el dado girando rápido no se nota).
-    const A0 = Q.mul(Q.eje(...ejeRodar, -rodarTotal), Q.eje(...ejeGiro, -giroTotal));
+    // Fracciones del tiempo: primer bote en la mesa, choque con la pared,
+    // rebote de vuelta y último botecito; después solo rueda
+    const [uBote, uPared, uRebote, uQuieto] = [0.22, 0.4, 0.56, 0.68];
+    const arco = s * entre(0.5, 0.7);
+    const bote = s * entre(0.4, 0.55);
+    const rebote = s * entre(0.35, 0.5);
+    const botecito = s * entre(0.08, 0.14);
+
+    // La orientación es «lo que queda por girar» · «lo que queda por rodar
+    // a la ida» · «… a la vuelta» · la final. Al principio eso no coincide
+    // con la orientación de la que parte el dado; una corrección que se
+    // desvanece en el primer tercio une las dos sin salto (con el dado
+    // girando rápido no se nota).
+    const A0 = Q.mul(Q.mul(Q.eje(...ejeGiro, -giroTotal), Q.eje(...ejeIda, -rodarIda)), Q.eje(...ejeVuelta, -rodarVuelta));
     const correccion = Q.mul(Q.mul(Q.inv(A0), desde.q), Q.inv(hasta.q));
+    const parabola = (x, alto) => 4 * alto * x * (1 - x);
 
     const muestras = [];
     for (let k = 0; k <= MUESTRAS; k++) {
       const u = k / MUESTRAS;
-      const avance = 1 - Math.pow(1 - u, 2.3);
-      let aire = 0;
-      if (u < u1) {
-        const x = u / u1;
-        aire = desde.aire * (1 - x) + 4 * salto * x * (1 - x);
-      } else if (u < u2) {
-        const x = (u - u1) / (u2 - u1);
-        aire = 4 * bote1 * x * (1 - x);
-      } else if (u < u3) {
-        const x = (u - u2) / (u3 - u2);
-        aire = 4 * bote2 * x * (1 - x);
+      let p;
+      let restaIda = 0;
+      let restaVuelta = rodarVuelta;
+      if (u < uPared) {
+        // A la ida apenas frena: pega en la pared con fuerza
+        const e = 1 - Math.pow(1 - u / uPared, 1.25);
+        p = [desde.p[0] + ida[0] * e, desde.p[1] + ida[1] * e];
+        restaIda = rodarIda * (1 - e);
+      } else {
+        // A la vuelta frena cada vez más hasta pararse
+        const e = 1 - Math.pow(1 - (u - uPared) / (1 - uPared), 2.6);
+        p = [choque[0] + vuelta[0] * e, choque[1] + vuelta[1] * e];
+        restaVuelta = rodarVuelta * (1 - e);
       }
-      const giroResta = giroTotal * Math.pow(1 - Math.min(1, u / u3), 1.7);
-      const rodarResta = rodarTotal * (1 - avance);
-      const c = Math.min(1, u / 0.35);
+      let aire = 0;
+      if (u < uBote) aire = desde.aire * (1 - u / uBote) + parabola(u / uBote, arco);
+      else if (u < uPared) aire = parabola((u - uBote) / (uPared - uBote), bote);
+      else if (u < uRebote) aire = parabola((u - uPared) / (uRebote - uPared), rebote);
+      else if (u < uQuieto) aire = parabola((u - uRebote) / (uQuieto - uRebote), botecito);
+      const giroResta = giroTotal * Math.pow(1 - Math.min(1, u / uQuieto), 1.6);
+      const c = Math.min(1, u / 0.3);
       const q = Q.mul(
-        Q.mul(Q.eje(...ejeRodar, -rodarResta), Q.eje(...ejeGiro, -giroResta)),
+        Q.mul(Q.mul(Q.eje(...ejeGiro, -giroResta), Q.eje(...ejeIda, -restaIda)), Q.eje(...ejeVuelta, -restaVuelta)),
         Q.mul(Q.slerp(correccion, Q.ID, c * c * (3 - 2 * c)), hasta.q),
       );
-      muestras.push(instante(d, [desde.p[0] + dx * avance, desde.p[1] + dy * avance], q, aire));
+      muestras.push(instante(d, p, q, aire));
     }
     return muestras;
+  }
+
+  // Desde dónde se lanzan: la mano de quien juega, delante de la mesa (por
+  // debajo de la bandeja en pantalla) y un poco en alto. Los dados salen
+  // juntos, como de una misma mano.
+  function mano(i, s, centro) {
+    return {
+      p: [centro + (i - (cuantos - 1) / 2) * s * 0.55 + s * entre(-0.15, 0.15), s * 3.2 + 70 + s * entre(-0.2, 0.2)],
+      aire: s * 1.1,
+    };
   }
 
   function hueco(i, s) {
@@ -368,9 +397,9 @@ function initDados() {
     reposo = null;
   }
 
-  // Entrada: los dados llegan rodando desde la izquierda
+  // Entrada: los dados se lanzan solos al cargar, igual que en una tirada
   function entrar(lista) {
-    const ancho = stage.offsetWidth;
+    const centro = entre(-0.5, 0.5) * 40;
     return Promise.all(lista.map(({ d, i }, k) => {
       const s = d.el.offsetWidth;
       d.p = hueco(i, s);
@@ -379,24 +408,27 @@ function initDados() {
         pintar(d);
         return fin(d.el.animate([{ opacity: 0 }, { opacity: 1 }], REDUCED_MS));
       }
-      const desde = {
-        p: [-ancho / 2 - s * 2, d.p[1] + entre(-s, s)],
-        aire: s * 1.4,
-        q: Q.eje(entre(-1, 1), entre(-1, 1), entre(-1, 1), entre(0, 6)),
-      };
-      return reproducir(d, trayectoria(d, desde, { p: d.p, q: d.q }), entre(...ENTRADA_MS), k * 90);
+      const desde = { ...mano(i, s, centro), q: Q.eje(entre(-1, 1), entre(-1, 1), entre(-1, 1), entre(0, 6)) };
+      return reproducir(d, trayectoria(d, desde, { p: d.p, q: d.q }), entre(...ENTRADA_MS), k * 60);
     }));
   }
 
-  // Anticipación: se recogen de la mesa (suben y se ladean un poco)
-  function recoger(d, i) {
+  // Anticipación: se recogen de la mesa hacia la mano, cada vez más rápido
+  // (como cuando alguien los barre y los junta antes de tirar)
+  function recoger(d, i, centro) {
     const s = d.el.offsetWidth;
-    const qa = Q.mul(Q.eje(entre(-1, 1), entre(-1, 1), 0, 0.35), d.q);
-    const muestras = Array.from({ length: 9 }, (_, k) => {
-      const e = 1 - Math.pow(1 - k / 8, 3);
-      return instante(d, d.p, Q.slerp(d.q, qa, e), s * 0.55 * e);
+    const destino = mano(i, s, centro);
+    const qa = Q.mul(Q.eje(entre(-1, 1), entre(-1, 1), entre(-1, 1), entre(1, 2.5)), d.q);
+    const muestras = Array.from({ length: 13 }, (_, k) => {
+      const e = Math.pow(k / 12, 2);
+      return instante(
+        d,
+        [d.p[0] + (destino.p[0] - d.p[0]) * e, d.p[1] + (destino.p[1] - d.p[1]) * e],
+        Q.slerp(d.q, qa, e),
+        destino.aire * e,
+      );
     });
-    return reproducir(d, muestras, RECOGER_MS, i * 30).then(() => ({ p: d.p, q: qa, aire: s * 0.55 }));
+    return reproducir(d, muestras, RECOGER_MS, i * 20).then(() => ({ ...destino, q: qa }));
   }
 
   // --- Resultado e historial -------------------------------------------------
@@ -493,13 +525,14 @@ function initDados() {
       });
       await fin(stage.animate([{ opacity: 0 }, { opacity: 1 }], REDUCED_MS));
     } else {
-      const recogidos = await Promise.all(activos.map(recoger));
+      const centro = entre(-0.5, 0.5) * 40;
+      const recogidos = await Promise.all(activos.map((d, i) => recoger(d, i, centro)));
       if (mia !== tirada) return;
       await Promise.all(activos.map((d, i) => {
         d.valor = valores[i];
         d.p = hueco(orden[i], d.el.offsetWidth);
         d.q = qArriba(d.valor, entre(-0.7, 0.7));
-        return reproducir(d, trayectoria(d, recogidos[i], { p: d.p, q: d.q }), entre(...TIRADA_MS), i * 45);
+        return reproducir(d, trayectoria(d, recogidos[i], { p: d.p, q: d.q }), entre(...TIRADA_MS), i * 35);
       }));
     }
     if (mia !== tirada) return;

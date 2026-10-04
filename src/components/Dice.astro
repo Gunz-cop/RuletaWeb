@@ -12,8 +12,18 @@
 // occidental. Si cambias una cara de sitio aquí, cambia también NORMAL y
 // ARRIBA en dados.js, o el dado mostrará un número y el texto otro.
 //
+// Estilo dado de casino: aristas rectas y caras planas con puntos pintados.
+// Las aristas redondeadas se perdían al girar (en Safari el núcleo que
+// tapaba los huecos de las esquinas parpadeaba contra las caras); con un
+// cubo recto las caras se tocan exactamente y no hace falta núcleo.
+//
+// Al fondo de la mesa hay una pared baja: los dados se lanzan desde quien
+// mira, chocan con ella y vuelven, como en una mesa de dados de verdad.
+// Su distancia al centro es --wall, que dados.js lee para calcular el
+// rebote.
+//
 // El dado es un objeto ilustrado, no UI (DESIGN.md, "Excepción: objetos
-// ilustrados"): lleva degradados, relieve y su propia paleta local.
+// ilustrados"): lleva relieve y su propia paleta local.
 
 // Posición de los puntos en una rejilla de 3×3 (a b / d c e / f g)
 const CARAS: Record<number, string[]> = {
@@ -29,20 +39,15 @@ const dados = [0, 1, 2, 3, 4, 5];
 
 <div class="dice-stage" id="dice-stage" data-count="2" aria-hidden="true">
   <div class="dice-floor" id="dice-floor">
+    <div class="dice-wall"></div>
     {dados.map((i) => (
       <>
         <div class="dice-shadow" data-shadow={i}></div>
         <div class="dice" data-die={i}>
-          {/* Núcleo: tres planos cruzados que tapan las aristas que dejan
-              las esquinas redondeadas de las caras */}
-          <span class="dice-core"></span>
-          <span class="dice-core dice-core--y"></span>
-          <span class="dice-core dice-core--x"></span>
           {Object.entries(CARAS).map(([cara, puntos]) => (
             <div class="dice-face" data-face={cara}>
               {puntos.map((p) => <i class={`dice-pip dice-pip--${p}`}></i>)}
               <span class="dice-shade"></span>
-              <span class="dice-gloss"></span>
             </div>
           ))}
         </div>
@@ -76,9 +81,10 @@ const dados = [0, 1, 2, 3, 4, 5];
     top: 50%;
     width: 560px;
     height: 340px;
-    margin: -150px 0 0 -280px;
+    margin: -140px 0 0 -280px;
     transform-style: preserve-3d;
     transform: rotateX(50deg);
+    --wall: 104px;
     /* Charco de luz cálida: da suelo a los dados sin dibujar una mesa */
     background: radial-gradient(ellipse 46% 44% at 50% 46%, rgb(255 236 210 / 0.075), rgb(255 236 210 / 0) 100%);
     pointer-events: none;
@@ -129,38 +135,21 @@ const dados = [0, 1, 2, 3, 4, 5];
     opacity: 0;
   }
 
-  .dice-face,
-  .dice-core {
+  .dice-face {
     position: absolute;
-    inset: 0;
+    /* Medio píxel de más por lado: dos caras rectas que se tocan dejan a
+       veces una rendija antialias por la que asoma el fondo */
+    inset: -0.5px;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
-  }
-
-  /* Un poco más pequeño que el dado: a tamaño completo sus bordes llegan
-     justo a la superficie de las caras y asoman como una línea fina */
-  .dice-core {
-    inset: 2%;
-    background: #d9d4c9;
-    backface-visibility: visible;
-    -webkit-backface-visibility: visible;
-    border-radius: 6%;
-  }
-
-  .dice-core--y { transform: rotateY(90deg); }
-  .dice-core--x { transform: rotateX(90deg); }
-
-  .dice-face {
     --h: calc(var(--s) / 2);
     display: grid;
     grid-template: repeat(3, 1fr) / repeat(3, 1fr);
-    padding: 17%;
-    border-radius: 15%;
-    overflow: hidden;
-    background: linear-gradient(140deg, #fdfcf9 0%, #f3f0ea 55%, #e6e1d6 100%);
-    box-shadow:
-      inset 0 0 0 0.5px rgb(0 0 0 / 0.08),
-      inset 0 0 calc(var(--s) * 0.05) rgb(90 80 60 / 0.22);
+    padding: 15%;
+    background: #f6f5f1;
+    /* Arista fina y oscura en cada cara: aunque dos caras queden con la
+       misma luz, el borde del cubo se sigue leyendo */
+    box-shadow: inset 0 0 0 max(1px, calc(var(--s) * 0.014)) rgb(40 34 26 / 0.28);
   }
 
   .dice-face[data-face="1"] { transform: translateZ(var(--h)); }
@@ -170,23 +159,18 @@ const dados = [0, 1, 2, 3, 4, 5];
   .dice-face[data-face="5"] { transform: rotateY(-90deg) translateZ(var(--h)); }
   .dice-face[data-face="6"] { transform: rotateY(180deg) translateZ(var(--h)); }
 
-  /* Punto: hueco taladrado. Fondo casi negro, sombra interior arriba y un
-     filo claro abajo, donde el borde del hueco recibe la luz */
+  /* Punto pintado a ras, como en los dados de casino: plano, sin relieve */
   .dice-pip {
-    width: 80%;
+    width: 78%;
     aspect-ratio: 1;
     place-self: center;
     border-radius: 50%;
-    background: radial-gradient(circle at 50% 62%, #2b2b2b 0%, #0b0b0b 55%, #000 100%);
-    box-shadow:
-      inset 0 calc(var(--s) * 0.018) calc(var(--s) * 0.02) rgb(0 0 0 / 0.95),
-      0 calc(var(--s) * 0.008) 0 rgb(255 255 255 / 0.9);
+    background: #141414;
   }
 
-  /* El 1 grande y rojo, como en los dados clásicos de casino y asiáticos */
   .dice-face[data-face="1"] .dice-pip {
-    width: 125%;
-    background: radial-gradient(circle at 50% 62%, #c9343a 0%, #a3161d 55%, #6d0b10 100%);
+    width: 105%;
+    background: #b3141c;
   }
 
   .dice-pip--a { grid-area: 1 / 1; }
@@ -197,24 +181,33 @@ const dados = [0, 1, 2, 3, 4, 5];
   .dice-pip--f { grid-area: 3 / 1; }
   .dice-pip--g { grid-area: 3 / 3; }
 
-  /* Luz: dados.js anima la opacidad de estas dos capas en cada cara según
-     hacia dónde apunta la cara en cada instante, así el dado se ilumina de
+  /* Luz: dados.js anima la opacidad de esta capa en cada cara según hacia
+     dónde apunta la cara en cada instante, así el dado se ilumina de
      verdad al girar en vez de llevar la luz pintada */
-  .dice-shade,
-  .dice-gloss {
+  .dice-shade {
     position: absolute;
     inset: 0;
-    border-radius: inherit;
+    background: #17130e;
+    opacity: 0.3;
     pointer-events: none;
   }
 
-  .dice-shade {
-    background: #1c1813;
-    opacity: 0.3;
+  /* ---------- La pared del fondo ---------- */
+  /* Se levanta sobre la línea y = -var(--wall) de la mesa, girando 90° sobre
+     su borde inferior; su cara mira hacia quien juega */
+  .dice-wall {
+    position: absolute;
+    left: 4%;
+    right: 4%;
+    height: 16px;
+    top: calc(50% - var(--wall) - 16px);
+    transform-origin: 50% 100%;
+    transform: rotateX(-90deg);
+    background: linear-gradient(#2a2a33, #16161c);
+    border-top: 1px solid rgb(255 255 255 / 0.16);
   }
 
-  .dice-gloss {
-    background: radial-gradient(circle at 34% 28%, rgb(255 255 255 / 0.95), rgb(255 255 255 / 0) 62%);
-    opacity: 0;
+  @media (min-width: 640px) {
+    .dice-floor { --wall: 124px; }
   }
 </style>

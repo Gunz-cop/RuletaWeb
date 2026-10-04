@@ -1,5 +1,5 @@
 .dice-stage[S]{perspective:900px;perspective-origin:50% 0;align-self:stretch;height:200px;margin:0 -1.5rem;position:relative;overflow-x:clip}
-.dice-floor[S]{width:560px;height:340px;transform-style:preserve-3d;pointer-events:none;background:radial-gradient(46% 44% at 50% 46%,#ffecd213,#ffecd200 100%);margin:-150px 0 0 -280px;position:absolute;top:50%;left:50%;transform:rotateX(50deg)}
+.dice-floor[S]{width:560px;height:340px;transform-style:preserve-3d;--wall:104px;pointer-events:none;background:radial-gradient(46% 44% at 50% 46%,#ffecd213,#ffecd200 100%);margin:-140px 0 0 -280px;position:absolute;top:50%;left:50%;transform:rotateX(50deg)}
 @media (width>=640px){.dice-stage[S]{height:240px;margin:.5rem 0 0}}
 .dice[S],.dice-shadow[S]{--s:70px;width:var(--s);height:var(--s);margin:calc(var(--s) / -2) 0 0 calc(var(--s) / -2);position:absolute;top:50%;left:50%}
 .dice-stage[S][data-count="3"] [S]:is(.dice,.dice-shadow){--s:62px}
@@ -8,19 +8,15 @@
 .dice[S][hidden],.dice-shadow[S][hidden]{display:none}
 .dice[S]{transform-style:preserve-3d}
 .dice-shadow[S]{filter:blur(calc(var(--s) * .07));opacity:0;background:#000000bf;border-radius:24%}
-.dice-face[S],.dice-core[S]{-webkit-backface-visibility:hidden;backface-visibility:hidden;position:absolute;inset:0}
-.dice-core[S]{-webkit-backface-visibility:visible;backface-visibility:visible;background:#d9d4c9;border-radius:6%;inset:2%}
-.dice-core--y[S]{transform:rotateY(90deg)}
-.dice-core--x[S]{transform:rotateX(90deg)}
-.dice-face[S]{--h:calc(var(--s) / 2);box-shadow:inset 0 0 0 .5px #00000014, inset 0 0 calc(var(--s) * .05) #5a503c38;background:linear-gradient(140deg,#fdfcf9 0%,#f3f0ea 55%,#e6e1d6 100%);border-radius:15%;grid-template:repeat(3,1fr)/repeat(3,1fr);padding:17%;display:grid;overflow:hidden}
+.dice-face[S]{-webkit-backface-visibility:hidden;backface-visibility:hidden;--h:calc(var(--s) / 2);box-shadow:inset 0 0 0 max(1px, calc(var(--s) * .014)) #28221a47;background:#f6f5f1;grid-template:repeat(3,1fr)/repeat(3,1fr);padding:15%;display:grid;position:absolute;inset:-.5px}
 .dice-face[S][data-face="1"]{transform:translateZ(var(--h))}
 .dice-face[S][data-face="2"]{transform:rotateY(90deg) translateZ(var(--h))}
 .dice-face[S][data-face="3"]{transform:rotateX(90deg) translateZ(var(--h))}
 .dice-face[S][data-face="4"]{transform:rotateX(-90deg) translateZ(var(--h))}
 .dice-face[S][data-face="5"]{transform:rotateY(-90deg) translateZ(var(--h))}
 .dice-face[S][data-face="6"]{transform:rotateY(180deg) translateZ(var(--h))}
-.dice-pip[S]{aspect-ratio:1;width:80%;box-shadow:inset 0 calc(var(--s) * .018) calc(var(--s) * .02) #000000f2, 0 calc(var(--s) * .008) 0 #ffffffe6;background:radial-gradient(circle at 50% 62%,#2b2b2b 0%,#0b0b0b 55%,#000 100%);border-radius:50%;place-self:center}
-.dice-face[S][data-face="1"] .dice-pip[S]{background:radial-gradient(circle at 50% 62%,#c9343a 0%,#a3161d 55%,#6d0b10 100%);width:125%}
+.dice-pip[S]{aspect-ratio:1;background:#141414;border-radius:50%;place-self:center;width:78%}
+.dice-face[S][data-face="1"] .dice-pip[S]{background:#b3141c;width:105%}
 .dice-pip--a[S]{grid-area:1/1}
 .dice-pip--b[S]{grid-area:1/3}
 .dice-pip--d[S]{grid-area:2/1}
@@ -28,9 +24,9 @@
 .dice-pip--e[S]{grid-area:2/3}
 .dice-pip--f[S]{grid-area:3/1}
 .dice-pip--g[S]{grid-area:3/3}
-.dice-shade[S],.dice-gloss[S]{border-radius:inherit;pointer-events:none;position:absolute;inset:0}
-.dice-shade[S]{opacity:.3;background:#1c1813}
-.dice-gloss[S]{opacity:0;background:radial-gradient(circle at 34% 28%,#fffffff2,#fff0 62%)}
+.dice-shade[S]{opacity:.3;pointer-events:none;background:#17130e;position:absolute;inset:0}
+.dice-wall[S]{height:16px;left:4%;right:4%;top:calc(50% - var(--wall) - 16px);transform-origin:50% 100%;background:linear-gradient(#2a2a33,#16161c);border-top:1px solid #ffffff29;position:absolute;transform:rotateX(-90deg)}
+@media (width>=640px){.dice-floor[S]{--wall:124px}}
 [S][hidden]{display:none!important}
 .dice-result[S]{opacity:0;transition:opacity .25s ease-out,transform .25s cubic-bezier(.2,.7,.3,1);transform:translateY(6px)}
 .dice-result[S].is-shown{opacity:1;transform:none}

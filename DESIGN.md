@@ -452,9 +452,9 @@ nunca con verde/rojo.
 parecer físico (rebotar, rodar, recibir la luz), la animación no se
 describe con dos o tres fotogramas sino que se **calcula en JS y se
 entrega a `element.animate()`** como fotogramas clave: unas 100 muestras
-por dado con su `matrix3d`, la opacidad de una capa de sombra y otra de
-brillo en cada cara (según hacia dónde apunta respecto a una luz fija) y
-la sombra en el suelo. Sigue siendo la Web Animations API, con su
+por dado con su `matrix3d`, la opacidad de una capa de sombra en cada
+cara (según hacia dónde apunta respecto a una luz fija) y la sombra en el
+suelo. Sigue siendo la Web Animations API, con su
 `.finished`, sin librerías ni `requestAnimationFrame`. Reglas:
 
 - **El resultado se decide antes** (`crypto.getRandomValues`) y la
@@ -468,6 +468,16 @@ la sombra en el suelo. Sigue siendo la Web Animations API, con su
   verifica que la suma escrita es la de las caras de arriba.
 - Todo el marcado (los seis dados, sus caras y puntos) vive en el
   componente; el JS solo oculta los que sobran y anima.
+- **Aristas rectas y caras planas**, estilo dado de casino (pedido por el
+  propietario). Con esquinas redondeadas hacía falta un núcleo interior
+  para tapar los huecos, y al girar las aristas se perdían y en Safari
+  parpadeaban. Cada cara lleva un filo oscuro fino para que la arista se
+  lea aunque dos caras queden con la misma luz.
+- **La tirada cruza la mesa**: los dados salen de la mano de quien juega
+  (delante y debajo de la mesa en pantalla), botan, chocan con una pared
+  baja al fondo (`.dice-wall`, a `--wall` del centro), rebotan y ruedan de
+  vuelta. Un dado que solo sube y baja en su sitio se lee como una
+  burbuja, no como un lanzamiento.
 
 ### Ciclo de movimiento (estándar)
 
@@ -483,12 +493,12 @@ migrada o nueva tiene **objeto vivo**, con estas fases, todas con
 | **Acción** | La animación con sentido que produce el resultado | 1–2 s en total | Volteo | Agitado + dado que emerge | "Piedra… papel… tijera…" (3 golpes) |
 | **Aterrizaje** | Se asienta con un pequeño rebote o aplastamiento y aparece el resultado | 0,3–0,4 s | Asienta | El dado se asienta | Aplastamiento al abrir la mano |
 
-Los dados encajan en las mismas fases así: **entrada**, ruedan desde la
-izquierda hasta su sitio en la mesa; **reposo**, la cámara respira (menos
-de 2 px; los dados no flotan, porque un dado quieto sobre una mesa no se
-mueve); **anticipación**, se recogen de la mesa y se ladean; **acción y
-aterrizaje**, una sola trayectoria de vuelo, dos botes y rodar volcando de
-arista en arista hasta asentarse.
+Los dados encajan en las mismas fases así: **entrada**, se lanzan solos al
+cargar, como una tirada; **reposo**, la cámara respira (menos de 2 px; los
+dados no flotan, porque un dado quieto sobre una mesa no se mueve);
+**anticipación**, se recogen hacia la mano, cada vez más rápido; **acción
+y aterrizaje**, una sola trayectoria: bote en la mesa, choque con la pared
+del fondo, rebote y rodar volcando de arista en arista hasta asentarse.
 
 El temporizador sigue las mismas fases, con una diferencia: su **acción
 dura lo que dura la ronda**, no 1–2 s. La papa cae desde arriba, flota,
