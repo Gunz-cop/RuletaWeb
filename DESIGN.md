@@ -448,18 +448,26 @@ terciario, igual que Cara/Cruz en la moneda. Si hay un ganador en el
 objeto, se marca con el acento y el perdedor cede (baja, se encoge),
 nunca con verde/rojo.
 
-**Objeto con física calculada** (dados): cuando un objeto 3D tiene que
+**Objeto con física simulada** (dados): cuando un objeto 3D tiene que
 parecer físico (rebotar, rodar, recibir la luz), la animación no se
-describe con dos o tres fotogramas sino que se **calcula en JS y se
-entrega a `element.animate()`** como fotogramas clave: unas 100 muestras
-por dado con su `matrix3d`, la opacidad de una capa de sombra en cada
-cara (según hacia dónde apunta respecto a una luz fija) y la sombra en el
-suelo. Sigue siendo la Web Animations API, con su
-`.finished`, sin librerías ni `requestAnimationFrame`. Reglas:
+describe con dos o tres fotogramas sino que se **simula entera en JS y se
+entrega a `element.animate()`** como fotogramas clave: una muestra cada
+1/60 s por dado con su `matrix3d`, la opacidad de una capa de sombra en
+cada cara (según hacia dónde apunta respecto a una luz fija) y la sombra
+en el suelo. Sigue siendo la Web Animations API, con su `.finished`, sin
+librerías ni `requestAnimationFrame`. La simulación vive en un módulo
+puro (`src/scripts/dados-fisica.js`: cubos rígidos con gravedad, choques
+con rebote y rozamiento contra la mesa y las paredes, y esferas para que
+no se atraviesen entre ellos) y se prueba con Node en
+`scripts/dados-check.mjs` (600 tiradas: se paran planos, dentro de la
+mesa y sin montarse). three.js y cannon, lo que usan otras webs de dados,
+pesan cientos de KB; esto, unos pocos. Reglas:
 
-- **El resultado se decide antes** (`crypto.getRandomValues`) y la
-  trayectoria se construye hacia atrás desde la orientación final, así
-  que termina exactamente en esa cara. La física solo lo enseña.
+- **El resultado se decide antes** (`crypto.getRandomValues`), no lo
+  decide la física. La física decide cómo cae el dado y `renumerar()`
+  gira sus etiquetas (no su movimiento) para que la cara de arriba sea la
+  elegida: un cubo girado 90° sobre sí mismo tiene la misma forma, así que
+  la trayectoria simulada sigue siendo válida.
 - **El resultado se lee como en la vida real**: la cámara mira la mesa
   desde arriba e inclinada, y vale la cara de arriba. El desglose sigue el
   orden en que se ven los objetos (por filas, de izquierda a derecha).
@@ -473,11 +481,13 @@ suelo. Sigue siendo la Web Animations API, con su
   para tapar los huecos, y al girar las aristas se perdían y en Safari
   parpadeaban. Cada cara lleva un filo oscuro fino para que la arista se
   lea aunque dos caras queden con la misma luz.
-- **La tirada cruza la mesa**: los dados salen de la mano de quien juega
-  (delante y debajo de la mesa en pantalla), botan, chocan con una pared
-  baja al fondo (`.dice-wall`, a `--wall` del centro), rebotan y ruedan de
-  vuelta. Un dado que solo sube y baja en su sitio se lee como una
-  burbuja, no como un lanzamiento.
+- **La tirada cruza la mesa**, como en la página de referencia que eligió
+  el propietario (echaloasuerte.com/dice): los dados entran por la derecha
+  desde fuera de la pantalla, en diagonal hacia el fondo, pegan en la
+  pared baja del fondo (`.dice-wall`, a `--wall` del centro) y en los
+  lados, rebotan entre ellos y se paran donde los deja la física. Salen
+  de dos en dos, como una mano que los va soltando. Un dado que solo sube
+  y baja en su sitio se lee como una burbuja, no como un lanzamiento.
 
 ### Ciclo de movimiento (estándar)
 
@@ -496,9 +506,9 @@ migrada o nueva tiene **objeto vivo**, con estas fases, todas con
 Los dados encajan en las mismas fases así: **entrada**, se lanzan solos al
 cargar, como una tirada; **reposo**, la cámara respira (menos de 2 px; los
 dados no flotan, porque un dado quieto sobre una mesa no se mueve);
-**anticipación**, se recogen hacia la mano, cada vez más rápido; **acción
-y aterrizaje**, una sola trayectoria: bote en la mesa, choque con la pared
-del fondo, rebote y rodar volcando de arista en arista hasta asentarse.
+**anticipación**, se recogen hacia la mano, fuera de la pantalla por la
+derecha, cada vez más rápido; **acción y aterrizaje**, la simulación:
+vuelan, pegan en el fondo y los lados, botan y ruedan hasta pararse.
 
 El temporizador sigue las mismas fases, con una diferencia: su **acción
 dura lo que dura la ronda**, no 1–2 s. La papa cae desde arriba, flota,
