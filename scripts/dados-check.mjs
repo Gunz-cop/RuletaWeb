@@ -6,6 +6,7 @@
  * de renumerar la cara de arriba es siempre el valor elegido.
  */
 import { simular, desdeLaMano, renumerar, caraArriba, Q } from '../src/scripts/dados-fisica.js';
+import { forma, valorArriba, renumerarForma, LADOS } from '../src/scripts/dados-poliedros.js';
 
 const fallos = [];
 const check = (ok, msg) => { if (!ok) fallos.push(msg); };
@@ -41,9 +42,42 @@ for (let t = 0; t < TIRADAS; t++) {
   });
 }
 
+// --- Dados de rol ------------------------------------------------------------
+const POR_TIPO = 300;
+const resumen = [];
+for (const lados of LADOS.filter((l) => l !== 6)) {
+  const f = forma(lados);
+  check(f.caras.length === (lados === 4 ? 4 : lados), `D${lados}: ${f.caras.length} caras`);
+  check(Object.keys(f.dir).length === lados, `D${lados}: ${Object.keys(f.dir).length} valores`);
+  let maxD = 0;
+  for (let t = 0; t < POR_TIPO; t++) {
+    const n = 1 + (t % 6);
+    const s = n >= 4 ? 50 : n === 3 ? 62 : 70;
+    const caja = { izquierda: -170 + s * 0.2, derecha: 170 - s * 0.2, fondo: -104, frente: 70 };
+    const muestras = simular(desdeLaMano(n, caja, s, aleatorio), caja, s, f);
+    maxD = Math.max(maxD, muestras[0].length / 60);
+    const finales = muestras.map((m) => m[m.length - 1]);
+    finales.forEach((fin, i) => {
+      const h = s / 2;
+      check(Math.abs(fin.x[2] - h * f.apoyo) < 0.5, `D${lados} tirada ${t}: dado ${i} no queda apoyado`);
+      check(valorArriba(f, fin.q).z > 0.9999, `D${lados} tirada ${t}: dado ${i} no queda plano`);
+      check(fin.x[0] > caja.izquierda && fin.x[0] < caja.derecha && fin.x[1] > caja.fondo && fin.x[1] < caja.frente,
+        `D${lados} tirada ${t}: dado ${i} acaba fuera de la mesa`);
+      for (let j = i + 1; j < finales.length; j++) {
+        const d = Math.hypot(fin.x[0] - finales[j].x[0], fin.x[1] - finales[j].x[1]);
+        check(d > s, `D${lados} tirada ${t}: dados ${i} y ${j} quedan montados`);
+      }
+      const v = 1 + Math.floor(aleatorio() * lados);
+      const P = renumerarForma(f, fin.q, v, aleatorio);
+      check(P && valorArriba(f, Q.mul(fin.q, P)).valor === v, `D${lados} tirada ${t}: renumerar a ${v} no lo deja arriba`);
+    });
+  }
+  resumen.push(`D${lados} máx ${maxD.toFixed(1)} s`);
+}
+
 if (fallos.length) {
   console.error(`FALLA  física de los dados: ${fallos.length} fallo(s)`);
   for (const f of fallos.slice(0, 15)) console.error('  ' + f);
   process.exit(1);
 }
-console.log(`ok     física de los dados (${TIRADAS} tiradas: se paran planos, dentro de la mesa, sin montarse; duración media ${(duracionTotal / TIRADAS).toFixed(2)} s, máx ${duracionMax.toFixed(2)} s)`);
+console.log(`ok     física de los dados (${TIRADAS} tiradas: se paran planos, dentro de la mesa, sin montarse; duración media ${(duracionTotal / TIRADAS).toFixed(2)} s, máx ${duracionMax.toFixed(2)} s; y ${POR_TIPO} por tipo de dado de rol: ${resumen.join(', ')})`);
