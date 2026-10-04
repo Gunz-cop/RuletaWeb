@@ -32,6 +32,10 @@
 // cada dado (y el del D6 para volver al cubo), así una tirada puede mezclar
 // tipos (1d20+1d6). Las caras se construyen para un dado de 100 px y se
 // escalan con --k (= --s / 100 px, puesto a mano junto a cada --s).
+//
+// Dado de opciones: un D6 con las opciones del visitante escritas en las
+// caras (plantilla "op"). Rueda con la misma física que el D6 de puntos; la
+// cara 1 sigue siendo la del eje z, así que NORMAL y ARRIBA valen igual.
 import { dibujo } from '../scripts/dados-poliedros.js';
 
 // Posición de los puntos en una rejilla de 3×3 (a b / d c e / f g)
@@ -69,6 +73,17 @@ const ROL = [4, 8, 10, 12, 20].map((lados) => ({ lados, caras: dibujo(lados, 100
     {Object.entries(CARAS).map(([cara, puntos]) => (
       <div class="dice-face" data-face={cara}>
         {puntos.map((p) => <i class={`dice-pip dice-pip--${p}`}></i>)}
+        <span class="dice-shade"></span>
+      </div>
+    ))}
+  </template>
+  {/* Dado de opciones: el mismo cubo, con el texto del visitante en vez de
+      puntos. dados.js escribe cada cara (textContent) y marca las que no
+      llevan opción con .is-vacia */}
+  <template data-plantilla="op">
+    {Object.keys(CARAS).map((cara) => (
+      <div class="dice-face dice-face--texto" data-face={cara}>
+        <span class="dice-texto"></span>
         <span class="dice-shade"></span>
       </div>
     ))}
@@ -210,6 +225,55 @@ const ROL = [4, 8, 10, 12, 20].map((lados) => ({ lados, caras: dibujo(lados, 100
   .dice-face[data-face="1"] .dice-pip {
     width: 105%;
     background: #b3141c;
+  }
+
+  /* ---------- Dado de opciones ---------- */
+  /* Más grande que un dado suelto: lleva texto y va solo en la mesa. La
+     física lee el tamaño de offsetWidth, así que no hay que tocarla. */
+  .dice-stage.is-opciones :is(.dice, .dice-shadow) { --s: 88px; }
+
+  @media (min-width: 640px) {
+    .dice-stage.is-opciones :is(.dice, .dice-shadow) { --s: 104px; }
+  }
+
+  .dice-face--texto {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 9%;
+  }
+
+  /* Tinta de los puntos, en Outfit: el texto va impreso en la cara como los
+     puntos de un dado de casino. Hasta tres líneas; las opciones largas
+     (.is-largo, .is-muy-largo, que pone dados.js) bajan de cuerpo */
+  .dice-texto {
+    font-family: 'Outfit', system-ui, sans-serif;
+    font-weight: 700;
+    font-size: calc(var(--s) * 0.17);
+    line-height: 1.08;
+    color: #141414;
+    text-align: center;
+    overflow-wrap: anywhere;
+    hyphens: auto;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+  }
+
+  .dice-texto.is-largo {
+    font-size: calc(var(--s) * 0.125);
+  }
+
+  .dice-texto.is-muy-largo {
+    font-size: calc(var(--s) * 0.1);
+  }
+
+  /* Cara sin opción: «otra vez» en pequeño y gris, que se lea como hueco */
+  .dice-face--texto.is-vacia .dice-texto {
+    font-weight: 400;
+    font-size: calc(var(--s) * 0.12);
+    color: #7a7468;
   }
 
   .dice-pip--a { grid-area: 1 / 1; }

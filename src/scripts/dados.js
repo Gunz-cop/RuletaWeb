@@ -20,10 +20,16 @@
 // Cada dado de la mesa puede ser de cualquier tipo: su marcado se clona de
 // la plantilla del tipo que toca (Dice.astro). Así una tirada de rol puede
 // mezclar tipos (1d20+1d6). Con el D6 todo hace exactamente lo de siempre.
+//
+// Dado de opciones: un D6 con lo que escribe el visitante en las caras
+// (plantilla "op"). Se elige una cara de 1 a 6 con crypto, como en
+// cualquier D6, y si es una cara sin opción («otra vez») el dado vuelve a
+// rodar. Por qué así y no eligiendo entre las opciones: dados-opciones.js.
 
 import { NORMAL, Q, rot, dot, norm, simular, desdeLaMano, renumerar, MUESTRAS_POR_S } from './dados-fisica.js';
 import { forma, renumerarForma, aplanarForma, alturaApoyo } from './dados-poliedros.js';
 import { parsear, resolver, ventaja, sinElMenor, LADOS_VALIDOS } from './dados-notacion.js';
+import { validar, carasDe, enlace, leerEnlace, leerGuardado, MAX_OPCIONES } from './dados-opciones.js';
 
 const COUNT_KEY = 'decidelo_dados_count';
 const TIPO_KEY = 'decidelo_dados_tipo';
@@ -31,9 +37,12 @@ const HISTORY_KEY = 'decidelo_dados_history';
 const SHAKE_KEY = 'decidelo_dados_agitar';
 const TIRADA_KEY = 'decidelo_dados_tirada';
 const GUARDADAS_KEY = 'decidelo_dados_guardadas';
+const OPCIONES_KEY = 'decidelo_dados_opciones';
 const HISTORY_MAX = 10;
 const GUARDADAS_MAX = 20;
 const MAX_DADOS = 6;
+// Clave de plantilla del dado de opciones (las demás son el número de lados)
+const OP = 'op';
 
 // Tiempos (ms). La tirada dura lo que tarda la física en parar los dados
 // (entre 1,2 y 2,2 s, ver scripts/dados-check.mjs) más la anticipación.
@@ -47,6 +56,8 @@ const LENTO_PERSONAJE = 1;
 const PAUSA_PERSONAJE_MS = 450;
 const REPOSO_MS = 3000;
 const REDUCED_MS = 200;
+// Pausa para leer «otra vez» antes de que el dado vuelva a rodar
+const OTRA_VEZ_MS = 700;
 
 // Detección de sacudida, igual que el oráculo (si-o-no.js): varias lecturas
 // fuertes seguidas, para que un golpe suelto no lance solo.
@@ -79,6 +90,12 @@ const HUECOS = {
 // Luz desde arriba, a la izquierda y al fondo. Las caras que miran hacia
 // quien juega quedan en sombra: así cada arista separa dos tonos distintos.
 const LUZ = norm([-0.45, -0.55, 0.85]);
+
+// Dado de opciones: hacia dónde apuntan la parte de arriba y la derecha del
+// texto de cada cara, en ejes del dado (sale de los transform de
+// .dice-face en Dice.astro, igual que NORMAL)
+const TEXTO_ARRIBA = { 1: [0, -1, 0], 2: [0, -1, 0], 3: [0, 0, -1], 4: [0, 0, 1], 5: [0, -1, 0], 6: [0, -1, 0] };
+const TEXTO_DERECHA = { 1: [1, 0, 0], 2: [0, 0, -1], 3: [1, 0, 0], 4: [1, 0, 0], 5: [0, 0, 1], 6: [-1, 0, 0] };
 
 const qArriba = (valor, giro) => Q.mul(
   Q.eje(0, 0, 1, giro),
@@ -193,9 +210,10 @@ function initDados() {
   const reducido = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const fin = (a) => a?.finished.catch(() => {});
 
-  // Plantillas del marcado de cada tipo de dado (Dice.astro)
+  // Plantillas del marcado de cada tipo de dado (Dice.astro): por número de
+  // lados, y "op" para el dado de opciones
   const plantillas = Object.fromEntries(
-    [...stage.querySelectorAll('template[data-plantilla]')].map((t) => [Number(t.dataset.plantilla), t]),
+    [...stage.querySelectorAll('template[data-plantilla]')].map((t) => [t.dataset.plantilla, t]),
   );
 
   // Las caras de un dado: su normal (para la luz) y su capa de sombra
@@ -216,6 +234,7 @@ function initDados() {
     const d = {
       el,
       sombra: floor.querySelector(`[data-shadow="${el.dataset.die}"]`),
+      clave: 6,
       lados: 6,
       f: null,
       valor: azar(6),
@@ -227,10 +246,13 @@ function initDados() {
   });
 
   // Cambia el dado de tipo clonando la plantilla. Sin animación: se hace
-  // con el dado recogido o justo antes de lanzarlo.
-  function prepararDado(d, lados) {
-    if (d.lados === lados || !plantillas[lados]) return;
-    d.el.replaceChildren(plantillas[lados].content.cloneNode(true));
+  // con el dado recogido o justo antes de lanzarlo. clave: los lados, u OP
+  // (un D6 con texto en las caras).
+  function prepararDado(d, clave) {
+    if (d.clave === clave || !plantillas[clave]) return;
+    d.el.replaceChildren(plantillas[clave].content.cloneNode(true));
+    const lados = clave === OP ? 6 : clave;
+    d.clave = clave;
     d.lados = lados;
     d.f = lados === 6 ? null : forma(lados);
     d.el.dataset.lados = String(lados);
@@ -245,6 +267,7 @@ function initDados() {
   let ocupado = false;
   let ultimaTirada = 0;
   let reposo = null;
+  let modoOp = false; // el dado de opciones está en la mesa
 
   // Distancia de la pared del fondo al centro de la mesa (--wall en Dice.astro)
   const pared = () => parseFloat(getComputedStyle(floor).getPropertyValue('--wall')) || 104;
@@ -268,8 +291,10 @@ function initDados() {
   // de tamaño con la cantidad (data-count en Dice.astro).
   function ponerEnMesa(tipos) {
     stage.dataset.count = String(tipos.length);
+    stage.classList.toggle('is-opciones', tipos.includes(OP));
     dados.forEach((d, i) => {
       if (i < tipos.length) prepararDado(d, tipos[i]);
+      if (i < tipos.length && tipos[i] === OP) rotular(d);
       d.el.hidden = i >= tipos.length;
       d.sombra.hidden = i >= tipos.length;
     });
@@ -378,6 +403,7 @@ function initDados() {
       d.valor = valores[i];
       d.p = [ultima.x[0], ultima.x[1]];
       d.q = Q.mul(ultima.q, P);
+      if (d.clave === OP) enderezar(d);
       const muestras = lista.map((m) => pose(d, m.x, Q.mul(m.q, P)));
       return reproducir(d, muestras, ((lista.length - 1) / MUESTRAS_POR_S) * 1000 * lento);
     }));
@@ -398,6 +424,7 @@ function initDados() {
     } else {
       d.q = qArriba(valor, entre(-0.6, 0.6));
     }
+    if (d.clave === OP) enderezar(d);
     pintar(d);
   }
 
@@ -433,7 +460,7 @@ function initDados() {
   // necesita a todos en la mesa a la vez, así que se vuelven a lanzar todos,
   // conservando sus valores.
   function entrar() {
-    const activos = ponerEnMesa(Array(cuantos).fill(tipo));
+    const activos = ponerEnMesa(tiposMesa());
     if (reducido()) {
       return Promise.all(activos.map((d, i) => {
         colocar(d, d.valor, i);
@@ -461,6 +488,9 @@ function initDados() {
     const mia = ++tirada;
     ocupado = true;
     ultimaTirada = Date.now();
+    // Lo que hay en la mesa decide qué lanza el botón principal
+    modoOp = tipos.includes(OP);
+    aplicarSeleccion();
     const antes = enMesa();
     terminar(dados);
     pararReposo();
@@ -502,6 +532,7 @@ function initDados() {
     result.classList.remove('is-shown', 'is-largo');
     result.removeAttribute('data-suma');
     result.removeAttribute('data-caras');
+    result.removeAttribute('data-opcion');
     dados.forEach((d) => d.el.classList.remove('is-descartado'));
   }
 
@@ -572,8 +603,10 @@ function initDados() {
   });
 
   // --- Lanzar -------------------------------------------------------------------
-  // La acción principal: `cuantos` dados del tipo elegido
+  // La acción principal: `cuantos` dados del tipo elegido, o el dado de
+  // opciones si es el que está en la mesa
   async function lanzar() {
+    if (modoOp) return lanzarOpciones();
     const valores = Array.from({ length: cuantos }, () => azar(tipo));
     if (!(await lanzarEnMesa(Array(cuantos).fill(tipo), valores))) return;
     const enOrden = ordenVisual(enMesa()).map((d) => d.valor);
@@ -594,10 +627,12 @@ function initDados() {
   btnRoll.addEventListener('click', lanzar);
 
   // --- Cuántos dados y de qué tipo -----------------------------------------------
+  // Con el dado de opciones en la mesa no hay cantidad ni tipo marcados:
+  // pulsar uno vuelve a los dados de puntos
   function aplicarSeleccion() {
-    countBtns.forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.diceCount) === cuantos)));
-    typeBtns.forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.diceType) === tipo)));
-    btnRoll.textContent = tipo === 6
+    countBtns.forEach((b) => b.setAttribute('aria-pressed', String(!modoOp && Number(b.dataset.diceCount) === cuantos)));
+    typeBtns.forEach((b) => b.setAttribute('aria-pressed', String(!modoOp && Number(b.dataset.diceType) === tipo)));
+    btnRoll.textContent = modoOp ? 'Lanzar este dado' : tipo === 6
       ? (cuantos === 1 ? 'Lanzar dado' : 'Lanzar dados')
       : `Lanzar ${cuantos === 1 ? '' : cuantos}d${tipo}`;
   }
@@ -614,7 +649,8 @@ function initDados() {
 
   countBtns.forEach((b) => b.addEventListener('click', () => {
     const nuevo = Number(b.dataset.diceCount);
-    if ((nuevo === cuantos && enMesa().every((d) => d.lados === tipo) && enMesa().length === cuantos) || !HUECOS[nuevo]) return;
+    if ((nuevo === cuantos && enMesa().every((d) => d.clave === tipo) && enMesa().length === cuantos) || !HUECOS[nuevo]) return;
+    modoOp = false;
     cuantos = nuevo;
     writeStore(COUNT_KEY, cuantos);
     cambiarMesa();
@@ -622,7 +658,8 @@ function initDados() {
 
   typeBtns.forEach((b) => b.addEventListener('click', () => {
     const nuevo = Number(b.dataset.diceType);
-    if ((nuevo === tipo && enMesa().every((d) => d.lados === tipo) && enMesa().length === cuantos) || !LADOS_VALIDOS.includes(nuevo)) return;
+    if ((nuevo === tipo && enMesa().every((d) => d.clave === tipo) && enMesa().length === cuantos) || !LADOS_VALIDOS.includes(nuevo)) return;
+    modoOp = false;
     tipo = nuevo;
     writeStore(TIPO_KEY, tipo);
     cambiarMesa();
@@ -838,6 +875,193 @@ function initDados() {
     renderGuardadas();
   });
 
+  // --- Dado de opciones ----------------------------------------------------------
+  // El visitante escribe de dos a seis opciones; cada una va en una cara y
+  // la de arriba es la elegida. Mientras está en la mesa, el botón principal
+  // (y agitar el móvil) lo lanzan a él; la cantidad o el tipo de dado
+  // devuelven la mesa a los dados de puntos.
+  const opForm = $('op-form');
+  const opPara = $('op-para');
+  const opCasillas = [...document.querySelectorAll('[data-op-casilla]')].slice(0, MAX_OPCIONES);
+  const opMsg = $('op-msg');
+  const btnOpShare = $('btn-op-share');
+
+  // Ejemplos para empezar: rellenan el formulario y ponen el dado en la mesa
+  const EJEMPLOS = {
+    comida: { para: '¿Qué comemos?', opciones: ['Pizza', 'Hamburguesa', 'Sushi', 'Arepas', 'Pollo asado', 'Ensalada'] },
+    reto: { para: '¿Verdad o reto?', opciones: ['Verdad', 'Reto'] },
+    plan: { para: '¿Qué hacemos hoy?', opciones: ['Película', 'Salir a caminar', 'Juego de mesa'] },
+  };
+
+  // El dado vigente: lo último válido que se escribió
+  let dadoOp = null; // { para, opciones }
+  let carasOp = Array(6).fill(null);
+  let ultimaOp = '';
+
+  function tiposMesa() {
+    return modoOp ? [OP] : Array(cuantos).fill(tipo);
+  }
+
+  // Escribe en cada cara su opción (o «otra vez»). Siempre textContent: es
+  // texto del visitante, o de un enlace que pudo escribir cualquiera.
+  function rotular(d) {
+    d.el.querySelectorAll('.dice-face--texto').forEach((cara) => {
+      const texto = carasOp[Number(cara.dataset.face) - 1];
+      const span = cara.querySelector('.dice-texto');
+      span.textContent = texto ?? 'otra vez';
+      // Cuerpo según lo largo del texto y de su palabra más larga, que no
+      // se puede partir sin que se lea mal
+      const largo = (texto ?? '').length;
+      const palabra = Math.max(0, ...(texto ?? '').split(' ').map((p) => p.length));
+      span.classList.toggle('is-largo', largo > 9 || palabra > 7);
+      span.classList.toggle('is-muy-largo', largo > 18 || palabra > 10);
+      cara.classList.toggle('is-vacia', texto == null);
+    });
+  }
+
+  // El texto de la cara que va a quedar arriba se imprime girado de 90 en
+  // 90 grados (la cara es cuadrada, un dado impreso así es igual de real)
+  // para que se lea derecho desde donde mira quien juega. Se decide con la
+  // pose final antes de animar, así no salta al aterrizar.
+  function enderezar(d) {
+    const R = Q.mat(d.q);
+    d.el.querySelectorAll('.dice-face--texto').forEach((cara) => {
+      const c = Number(cara.dataset.face);
+      let giro = 0;
+      if (c === d.valor) {
+        let mejor = -2;
+        for (let k = 0; k < 4; k++) {
+          const a = (k * Math.PI) / 2;
+          const v = TEXTO_ARRIBA[c].map((u, i) => Math.cos(a) * u + Math.sin(a) * TEXTO_DERECHA[c][i]);
+          // En la mesa, «lejos de quien mira» es y negativa
+          const lejos = -rot(R, v)[1];
+          if (lejos > mejor) { mejor = lejos; giro = k * 90; }
+        }
+      }
+      cara.querySelector('.dice-texto').style.rotate = `${giro}deg`;
+    });
+  }
+
+  function mensajeOp(texto, error = false) {
+    if (!opMsg) return;
+    opMsg.textContent = texto;
+    opMsg.classList.toggle('is-error', error);
+  }
+
+  const leerFormulario = () => validar(opPara?.value, opCasillas.map((c) => c.value));
+
+  function guardarFormulario() {
+    writeStore(OPCIONES_KEY, { para: opPara?.value.trim() ?? '', opciones: opCasillas.map((c) => c.value.trim()) });
+  }
+
+  function rellenar({ para, opciones }) {
+    if (opPara) opPara.value = para;
+    opCasillas.forEach((c, i) => { c.value = opciones[i] ?? ''; });
+  }
+
+  // Fija el dado vigente; si está en la mesa, sus caras cambian al escribir
+  function fijarDado(r) {
+    dadoOp = { para: r.para, opciones: r.opciones };
+    carasOp = carasDe(r.opciones);
+    if (modoOp) enMesa().forEach((d) => { if (d.clave === OP) rotular(d); });
+  }
+
+  // Pone el dado de opciones en la mesa, rodando hasta su sitio, sin
+  // resultado. Entra con la cara 1 arriba, que siempre lleva opción.
+  function ponerDadoOp() {
+    modoOp = true;
+    dados[0].valor = 1;
+    cambiarMesa();
+    verMesa();
+  }
+
+  async function lanzarOpciones() {
+    if (!dadoOp) return;
+    if (rolPersonaje) rolPersonaje.hidden = true;
+    verMesa();
+    // Las caras de esta tirada: si el visitante edita mientras rueda, el
+    // resultado sigue siendo el del dado que se lanzó
+    const { para, opciones } = dadoOp;
+    const caras = carasOp;
+    let cara;
+    for (;;) {
+      cara = azar(6);
+      const mia = await lanzarEnMesa([OP], [cara]);
+      if (!mia) return;
+      if (caras[cara - 1] != null) break;
+      mostrarTexto('Otra vez', 'Cayó la cara sin opción: el dado vuelve a rodar', cara);
+      await pausa(reducido() ? REDUCED_MS * 2 : OTRA_VEZ_MS);
+      if (mia !== tirada) return;
+    }
+    const elegida = caras[cara - 1];
+    ultimaOp = elegida;
+    mostrarTexto(
+      elegida,
+      para ? `${para} · entre ${opciones.length} opciones` : `Entre ${opciones.length} opciones`,
+      cara,
+      elegida.length > 14,
+    );
+    result.dataset.opcion = elegida;
+    guardar({ sum: cara, details: [cara], texto: elegida, lado: para || 'Dado de opciones' });
+  }
+
+  opForm?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const r = leerFormulario();
+    if (!r.ok) {
+      mensajeOp(r.error, true);
+      opCasillas.find((c) => !c.value.trim())?.focus();
+      return;
+    }
+    mensajeOp('');
+    guardarFormulario();
+    fijarDado(r);
+    lanzarOpciones();
+  });
+
+  opForm?.addEventListener('input', () => {
+    guardarFormulario();
+    const r = leerFormulario();
+    if (r.ok) fijarDado(r);
+    if (opMsg?.classList.contains('is-error')) mensajeOp('');
+  });
+
+  document.querySelectorAll('[data-op-ejemplo]').forEach((b) => b.addEventListener('click', () => {
+    const ej = EJEMPLOS[b.dataset.opEjemplo];
+    if (!ej) return;
+    rellenar(ej);
+    guardarFormulario();
+    mensajeOp('');
+    fijarDado(validar(ej.para, ej.opciones));
+    ponerDadoOp();
+  }));
+
+  btnOpShare?.addEventListener('click', async () => {
+    const r = leerFormulario();
+    if (!r.ok) {
+      mensajeOp(r.error, true);
+      return;
+    }
+    mensajeOp('');
+    guardarFormulario();
+    fijarDado(r);
+    const url = enlace(location.href, r);
+    const salio = ultimaOp && r.opciones.includes(ultimaOp) ? ` A mí me salió «${ultimaOp}».` : '';
+    const texto = `${r.para ? `${r.para} ` : ''}Lanza mi dado: ${r.opciones.join(', ')}.${salio}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: 'Decídelo.app — dado de opciones', text: texto, url });
+        return;
+      }
+      await navigator.clipboard.writeText(`${texto} ${url}`);
+      mensajeOp('Enlace copiado. Pégalo donde quieras.');
+    } catch (e) {
+      // Compartir cancelado o portapapeles bloqueado: se muestra el enlace
+      if (e?.name === 'AbortError') return;
+      mensajeOp(url);
+    }
+  });
+
   // --- Agitar el móvil para lanzar -------------------------------------------
   // Mismo patrón que el oráculo: solo en pantallas táctiles con sensor, y
   // siempre activado con un toque (iOS solo da el permiso desde un gesto).
@@ -925,6 +1149,51 @@ function initDados() {
     const ultima = readStore(TIRADA_KEY, '');
     if (typeof ultima === 'string' && parsear(ultima).ok) rolTirada.value = ultima;
   }
+  // Un dado compartido (#opcion=…) se abre en la mesa, listo para lanzar.
+  // El fragmento se quita de la barra: si luego se edita el dado y se
+  // recarga, manda lo editado y no el enlace.
+  function abrirCompartido(compartido) {
+    rellenar(compartido);
+    guardarFormulario();
+    mensajeOp('');
+    modoOp = true;
+    fijarDado(compartido);
+    dados[0].valor = 1;
+    window.history.replaceState?.(null, '', location.pathname + location.search);
+  }
+
+  function anunciarCompartido(compartido) {
+    if (!compartido.para) return;
+    resultMain.textContent = compartido.para;
+    resultSide.textContent = `Te compartieron este dado: ${compartido.opciones.length} opciones`;
+    result.classList.remove('is-largo');
+    result.classList.add('is-shown');
+  }
+
+  const compartido = leerEnlace(location.hash);
+  const guardado = leerGuardado(readStore(OPCIONES_KEY, null));
+  if (compartido) {
+    abrirCompartido(compartido);
+    anunciarCompartido(compartido);
+  } else if (guardado) {
+    rellenar(guardado);
+    const r = leerFormulario();
+    if (r.ok) fijarDado(r);
+  }
+
+  // Otro enlace pegado en la misma pestaña solo cambia el fragmento: la
+  // página no se recarga, así que se escucha aquí
+  function alCambiarFragmento() {
+    const otro = leerEnlace(location.hash);
+    if (!otro) return;
+    abrirCompartido(otro);
+    cambiarMesa();
+    anunciarCompartido(otro);
+    verMesa();
+  }
+  window.addEventListener('hashchange', alCambiarFragmento);
+  document.addEventListener('astro:before-swap', () => window.removeEventListener('hashchange', alCambiarFragmento), { once: true });
+
   aplicarSeleccion();
   renderHistory();
   renderGuardadas();

@@ -96,9 +96,26 @@ for (let t = 0; t < MIXTAS; t++) {
   });
 }
 
+// --- Dado de opciones: uno solo y más grande (88 px en móvil, 104 en escritorio) ------
+// Con las medidas de mesa que calcula caja() en dados.js para una bandeja de
+// 360 px y otra de 672 px
+const OPCIONES = 200;
+for (let t = 0; t < OPCIONES; t++) {
+  const movil = t % 2 === 0;
+  const s = movil ? 88 : 104;
+  const mitad = (movil ? 180 : 320) - s * 0.6;
+  const caja = { izquierda: -mitad, derecha: mitad, fondo: movil ? -104 : -124, frente: s * 0.9 + 20 };
+  const [lista] = simular(desdeLaMano(1, caja, s, aleatorio), caja, s);
+  const f = lista[lista.length - 1];
+  check(Math.abs(f.x[2] - s / 2) < 0.5, `opciones ${t} (${s} px): no queda apoyado`);
+  check(caraArriba(f.q).z > 0.9999, `opciones ${t} (${s} px): no queda plano`);
+  check(f.x[0] > caja.izquierda && f.x[0] < caja.derecha && f.x[1] > caja.fondo && f.x[1] < caja.frente,
+    `opciones ${t} (${s} px): acaba fuera de la mesa (${f.x[0].toFixed(0)}, ${f.x[1].toFixed(0)})`);
+}
+
 if (fallos.length) {
   console.error(`FALLA  física de los dados: ${fallos.length} fallo(s)`);
   for (const f of fallos.slice(0, 15)) console.error('  ' + f);
   process.exit(1);
 }
-console.log(`ok     física de los dados (${TIRADAS} tiradas: se paran planos, dentro de la mesa, sin montarse; duración media ${(duracionTotal / TIRADAS).toFixed(2)} s, máx ${duracionMax.toFixed(2)} s; y ${POR_TIPO} por tipo de dado de rol: ${resumen.join(', ')}; y ${MIXTAS} mesas con tipos mezclados)`);
+console.log(`ok     física de los dados (${TIRADAS} tiradas: se paran planos, dentro de la mesa, sin montarse; duración media ${(duracionTotal / TIRADAS).toFixed(2)} s, máx ${duracionMax.toFixed(2)} s; y ${POR_TIPO} por tipo de dado de rol: ${resumen.join(', ')}; y ${MIXTAS} mesas con tipos mezclados; y ${OPCIONES} dados de opciones grandes)`);

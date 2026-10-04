@@ -7,8 +7,8 @@ import Dice from '../components/Dice.astro';
 import { getSocialImageUrl } from '../lib/heroImages';
 
 const title = 'Lanzar Dados Online — Tirar Dados Virtuales 3D Gratis | Decídelo.app';
-const description = 'Lanza de 1 a 6 dados virtuales en 3D gratis y al instante: ruedan sobre la mesa, ves la suma y cada dado, y queda un historial. Sin descargas ni registro.';
-const keywords = 'lanzar dados, tirar dados, dados virtuales, dados online, dados 3d, dado de 6 caras, tirar dos dados, tomar decisiones, azar';
+const description = 'Lanza de 1 a 6 dados virtuales en 3D gratis y ve la suma al instante, o crea un dado con tus propias opciones en las caras y compártelo. Sin registro.';
+const keywords = 'lanzar dados, tirar dados, dados virtuales, dados online, dados 3d, dado de 6 caras, tirar dos dados, dado de opciones, dado personalizado, dado de preguntas, tomar decisiones, azar';
 
 // La imagen vive en src/assets y la optimiza Astro; el JSON-LD necesita
 // su URL absoluta ya generada, no la ruta pública que tenía antes.
@@ -21,7 +21,7 @@ const schemaLD = {
       "@type": "WebApplication",
       "@id": "https://decidelo.app/dados#webapp",
       "name": "Lanzar Dados Online — Decídelo.app",
-      "description": "Herramienta online para lanzar de 1 a 6 dados virtuales de seis caras en 3D, con la suma, el valor de cada dado y un historial de tiradas.",
+      "description": "Herramienta online para lanzar de 1 a 6 dados virtuales en 3D, con la suma, el valor de cada dado y un historial de tiradas, y para crear un dado con opciones propias escritas en las caras y compartirlo con un enlace.",
       "url": "https://decidelo.app/dados",
       "applicationCategory": "UtilityApplication",
       "operatingSystem": "All",
@@ -121,6 +121,44 @@ const schemaLD = {
       </div>
     </section>
 
+    {/* Dado de opciones: lo que distingue esta página de otro lanzador de
+        dados. Va justo debajo de la acción principal (no encima, que
+        empujaría el botón fuera de la primera pantalla) y antes del modo
+        rol, que es para un público más pequeño */}
+    <section class="w-full mt-12 sm:mt-16" aria-labelledby="op-titulo">
+      <div class="pb-3 border-0 border-b border-(--divider-line)">
+        <h2 class="m-0 font-display text-lg" id="op-titulo">Dado de opciones</h2>
+        <p class="m-0 mt-1 text-sm text-ink-secondary">Escribe tus opciones y cada una va en una cara del dado. La que queda arriba es la elegida.</p>
+      </div>
+
+      <div class="grid grid-cols-3 gap-1.5 mt-5" role="group" aria-label="Ejemplos de dado de opciones">
+        <button type="button" data-op-ejemplo="comida" class="py-2 bg-transparent border border-(--divider-line) rounded-full font-display font-semibold text-base text-ink-secondary tabular-nums cursor-pointer aria-pressed:text-ink-primary aria-pressed:border-warm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-warm hover:text-ink-primary hover:border-warm px-1 text-sm">Qué comemos</button>
+        <button type="button" data-op-ejemplo="reto" class="py-2 bg-transparent border border-(--divider-line) rounded-full font-display font-semibold text-base text-ink-secondary tabular-nums cursor-pointer aria-pressed:text-ink-primary aria-pressed:border-warm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-warm hover:text-ink-primary hover:border-warm px-1 text-sm">Verdad o reto</button>
+        <button type="button" data-op-ejemplo="plan" class="py-2 bg-transparent border border-(--divider-line) rounded-full font-display font-semibold text-base text-ink-secondary tabular-nums cursor-pointer aria-pressed:text-ink-primary aria-pressed:border-warm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-warm hover:text-ink-primary hover:border-warm px-1 text-sm">Plan de hoy</button>
+      </div>
+
+      <form class="mt-5" id="op-form" novalidate>
+        <label class="block text-xs font-semibold tracking-widest uppercase text-ink-tertiary" for="op-para">Qué decides (opcional)</label>
+        <input class="w-full min-w-0 bg-transparent border-0 border-b border-(--divider-line) rounded-none px-0 py-2 font-sans text-base text-ink-primary placeholder:text-ink-tertiary focus:outline-none focus:border-warm" id="op-para" name="para" type="text" autocomplete="off" placeholder="¿Qué cenamos?" maxlength="40">
+
+        <fieldset class="m-0 mt-5 p-0 border-0 min-w-0">
+          <legend class="block p-0 text-xs font-semibold tracking-widest uppercase text-ink-tertiary">Opciones, de 2 a 6</legend>
+          <div class="grid grid-cols-2 gap-x-4">
+            {[1, 2, 3, 4, 5, 6].map((n) => (
+              <input class="w-full min-w-0 bg-transparent border-0 border-b border-(--divider-line) rounded-none px-0 py-2 font-sans text-base text-ink-primary placeholder:text-ink-tertiary focus:outline-none focus:border-warm" data-op-casilla={n} name={`opcion${n}`} type="text" autocomplete="off" maxlength="24" aria-label={`Opción ${n}`} placeholder={`Opción ${n}`}>
+            ))}
+          </div>
+        </fieldset>
+        <p class="m-0 mt-2 text-xs text-ink-tertiary">Con 2, 3 o 6 opciones todas las caras llevan una. Con 4 o 5, las que sobran dicen «otra vez» y el dado vuelve a rodar: así ninguna opción tiene más caras que otra.</p>
+
+        <div class="flex flex-wrap items-baseline gap-x-6 gap-y-2 mt-4">
+          <button class="shrink-0 bg-transparent border-0 border-b border-current rounded-none px-0 py-1 font-sans text-base text-ink-primary cursor-pointer hover:text-warm focus-visible:text-warm focus-visible:outline-none" id="btn-op-tirar" type="submit">Lanzar mi dado</button>
+          <button class="shrink-0 bg-transparent border-0 border-b border-current rounded-none px-0 py-1 font-sans text-base text-ink-secondary cursor-pointer hover:text-warm focus-visible:text-warm focus-visible:outline-none" id="btn-op-share" type="button">Compartir este dado</button>
+        </div>
+        <p class="op-msg m-0 mt-2 text-sm text-ink-tertiary" id="op-msg" aria-live="polite"></p>
+      </form>
+    </section>
+
     {/* Modo rol: debajo de la acción principal, para que sus controles no
         empujen el botón fuera de la pantalla en el móvil */}
     <section class="w-full mt-12 sm:mt-16" aria-labelledby="rol-titulo">
@@ -197,8 +235,15 @@ const schemaLD = {
     <h2>¿Los dados virtuales son justos?</h2>
     <p>Sí. Cada valor sale del generador de números aleatorios criptográfico del navegador (<code>crypto.getRandomValues</code>), y las seis caras tienen exactamente la misma probabilidad. El resultado se decide antes de la animación: el giro y los botes solo lo enseñan. Cada tirada es independiente de la anterior.</p>
 
-    <h2>Usar un dado para decidir</h2>
-    <p>Un dado también sirve para salir de una duda con varias opciones: asigna un número a cada una (1 leer, 2 ordenar la habitación, 3 salir a caminar…) y lanza. Si tienes opciones con nombre, la <a href="/ruleta">ruleta de decisiones</a> es más cómoda; para dos opciones, lanza una <a href="/moneda">moneda</a>.</p>
+    <h2>Dado de opciones: escribe tus propias caras</h2>
+    <p>Un dado también sirve para salir de una duda con varias opciones, sin tener que acordarte de qué número era cada una. En <strong>Dado de opciones</strong> escribes de dos a seis opciones y cada una queda impresa en una cara del dado. Lo lanzas y la opción que queda arriba es la elegida. Si quieres, escribe también qué estás decidiendo («¿Qué cenamos?»): sale junto al resultado y en el historial.</p>
+    <p>Un dado tiene seis caras, así que el reparto depende de cuántas opciones escribas:</p>
+    <ul>
+      <li><strong>2, 3 o 6 opciones</strong>: todas las caras llevan una y cada opción ocupa las mismas caras (con dos, tres caras cada una; con tres, dos caras opuestas cada una).</li>
+      <li><strong>4 o 5 opciones</strong>: las caras que sobran dicen «otra vez». Si cae una de ellas, el dado vuelve a rodar solo, como harías en una mesa. Así ninguna opción tiene más caras que otra y todas tienen la misma probabilidad.</li>
+    </ul>
+    <p>Con <strong>«Compartir este dado»</strong> mandas un enlace con tus opciones: quien lo abre ve el mismo dado en su mesa y lo lanza desde su móvil. Las opciones viajan dentro del propio enlace, no pasan por ningún servidor, y en tu navegador quedan guardadas para la próxima vez.</p>
+    <p>Algunas ideas: qué comer o qué plan hacer hoy, verdad o reto en una reunión, un dado de preguntas o de emociones para una clase, o quién friega los platos. Si tienes más de seis opciones, la <a href="/ruleta">ruleta de decisiones</a> admite muchas más; para dos, también puedes lanzar una <a href="/moneda">moneda</a>.</p>
   </SeoArticle>
 
   <AdSlot position="bottom" />
@@ -290,6 +335,18 @@ const schemaLD = {
 
   .rol-error:empty {
     display: none;
+  }
+  /* Mensaje del dado de opciones: avisos en terciario, errores en acento
+     (is-error lo pone dados.js). Un enlace sin portapapeles se escribe
+     entero y tiene que poder partirse */
+  .op-msg {
+    overflow-wrap: anywhere;
+  }
+  .op-msg:empty {
+    display: none;
+  }
+  .op-msg.is-error {
+    color: var(--accent-warm);
   }
 
   /* Personaje y tiradas guardadas: filas que crea dados.js, divididas por

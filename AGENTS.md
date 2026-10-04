@@ -117,7 +117,11 @@ tres y mide el resultado y el historial, y en el estado
 comprobar que la suma escrita es la de las caras que quedaron arriba (lo
 que ninguna captura ni estilo computado puede ver); lo mismo hace
 `rol-caras-coinciden-con-el-texto` con los dados de rol (D4 a D20) y con
-una tirada escrita que mezcla tipos y lleva modificador. También cubre la moneda (lanza y mide el resultado
+una tirada escrita que mezcla tipos y lleva modificador, y lo mismo hace
+`opciones-cara-coincide-con-el-texto` con el dado de opciones (el texto
+escrito es el de la cara de arriba, también tras un «otra vez»); un dado
+compartido por enlace tiene su propio estado y su invariante de acción
+visible. También cubre la moneda (lanza y mide el resultado
 y las filas del historial), el oráculo sí o no (consulta, enlace
 compartido y una sacudida simulada con eventos `devicemotion` sintéticos
 en un contexto táctil: la opción `contexto` de un estado pasa opciones

@@ -236,6 +236,52 @@
       "borderBottomWidth": "1px"
     }
   },
+  "/dados [opciones-cara-coincide-con-el-texto]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "en 4 tiradas del dado de opciones el texto es el de la cara de arriba"
+    }
+  },
+  "/dados#para=%C2%BFQui%C3%A9n+lava%3F&opcion=Ana&opcion=Luis&opcion=Sof%C3%ADa [opciones-enlace-compartido]": {
+    "#dice-stage": {
+      "height": "240px"
+    },
+    "[data-die=\"0\"]": {
+      "width": "104px",
+      "transformStyle": "preserve-3d"
+    },
+    "[data-die=\"1\"]": {
+      "display": "none"
+    },
+    "[data-die=\"0\"] .dice-face--texto": {
+      "display": "flex",
+      "alignItems": "center",
+      "backgroundColor": "rgb(246, 245, 241)"
+    },
+    "[data-die=\"0\"] .dice-texto": {
+      "fontFamily": "Outfit, system-ui, sans-serif",
+      "fontWeight": "700",
+      "fontSize": "17.68px",
+      "color": "rgb(20, 20, 20)",
+      "textAlign": "center"
+    },
+    "#op-para": {
+      "fontSize": "16px",
+      "borderBottomWidth": "1px"
+    },
+    "[data-op-casilla=\"1\"]": {
+      "fontSize": "16px",
+      "borderBottomWidth": "1px"
+    },
+    "[data-op-ejemplo=\"comida\"]": {
+      "borderRadius": "3.35544e+07px",
+      "borderTopWidth": "1px"
+    },
+    "#btn-op-tirar": {
+      "borderBottomWidth": "1px",
+      "backgroundColor": "rgba(0, 0, 0, 0)"
+    }
+  },
   "/dados [accion-principal-visible-android-360x560]": {
     "relacion": {
       "ok": true,
@@ -252,6 +298,24 @@
     "relacion": {
       "ok": true,
       "mensaje": "#btn-roll.bottom=571.6px con 659px visibles (holgura 87.4px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/dados#para=%C2%BFQui%C3%A9n+lava%3F&opcion=Ana&opcion=Luis [accion-principal-visible-android-360x560]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#btn-roll.bottom=526.8px con 560px visibles (holgura 33.2px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/dados#para=%C2%BFQui%C3%A9n+lava%3F&opcion=Ana&opcion=Luis [accion-principal-visible-iphone-se-375x548]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#btn-roll.bottom=526.8px con 548px visibles (holgura 21.2px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/dados#para=%C2%BFQui%C3%A9n+lava%3F&opcion=Ana&opcion=Luis [accion-principal-visible-iphone-393x659]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#btn-roll.bottom=574.8px con 659px visibles (holgura 84.2px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
     }
   },
   "/dados [responsive-fold-cerrado-344x680]": {

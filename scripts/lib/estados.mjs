@@ -586,7 +586,72 @@ export const ESTADOS = [
       { sel: '#rol-tirada', props: ['fontSize', 'borderBottomWidth'] },
     ],
   },
+  {
+    // Dado de opciones: el texto que dice la página es el de la cara que
+    // quedó ARRIBA (misma lectura de la matriz que con los números). Con 4
+    // opciones hay caras «otra vez», así que también se cubre el relanzado.
+    ruta: '/dados',
+    nombre: 'opciones-cara-coincide-con-el-texto',
+    viewport: { width: 390, height: 844 },
+    verificarRelacion: async (pagina) => {
+      const opciones = ['Cine', 'Parque', 'Biblioteca municipal', 'Museo'];
+      for (const [i, t] of opciones.entries()) await pagina.fill(`[data-op-casilla="${i + 1}"]`, t);
+      const errores = [];
+      for (let t = 0; t < 4; t++) {
+        await pagina.click(t === 0 ? '#btn-op-tirar' : '#btn-roll');
+        await pagina.waitForSelector('#dice-result[data-opcion]', { timeout: 30000 });
+        const r = await pagina.evaluate(() => {
+          const NORMAL = { 1: [0, 0, 1], 2: [1, 0, 0], 3: [0, -1, 0], 4: [0, 1, 0], 5: [-1, 0, 0], 6: [0, 0, -1] };
+          const dados = [...document.querySelectorAll('[data-die]:not([hidden])')];
+          const m = new DOMMatrix(getComputedStyle(dados[0]).transform);
+          const fila = [m.m13, m.m23, m.m33];
+          let mejor = 0;
+          let max = -2;
+          for (const [cara, n] of Object.entries(NORMAL)) {
+            const v = fila[0] * n[0] + fila[1] * n[1] + fila[2] * n[2];
+            if (v > max) { max = v; mejor = cara; }
+          }
+          return {
+            visibles: dados.length,
+            plana: max > 0.99,
+            arriba: dados[0].querySelector(`.dice-face[data-face="${mejor}"] .dice-texto`)?.textContent,
+            opcion: document.getElementById('dice-result').dataset.opcion,
+            escrito: document.getElementById('dice-result-main').textContent,
+          };
+        });
+        if (r.visibles !== 1) errores.push(`tirada ${t + 1}: ${r.visibles} dados en la mesa, se esperaba 1`);
+        if (!r.plana) errores.push(`tirada ${t + 1}: el dado no quedó plano`);
+        if (r.arriba !== r.opcion || r.escrito !== r.opcion) errores.push(`tirada ${t + 1}: arriba «${r.arriba}», data-opcion «${r.opcion}», escrito «${r.escrito}»`);
+        if (!opciones.includes(r.opcion)) errores.push(`tirada ${t + 1}: salió «${r.opcion}», que no es una opción`);
+      }
+      return errores.length
+        ? { ok: false, mensaje: errores.join('; ') }
+        : { ok: true, mensaje: 'en 4 tiradas del dado de opciones el texto es el de la cara de arriba' };
+    },
+  },
+  {
+    // Enlace compartido: el dado llega a la mesa con sus caras escritas,
+    // la pregunta en el resultado y el botón principal lo lanza
+    ruta: '/dados#para=%C2%BFQui%C3%A9n+lava%3F&opcion=Ana&opcion=Luis&opcion=Sof%C3%ADa',
+    nombre: 'opciones-enlace-compartido',
+    clics: ['#btn-roll'],
+    esperarSelector: '#dice-result[data-opcion]',
+    comprobar: [
+      { sel: '#dice-stage', props: ['height'] },
+      { sel: '[data-die="0"]', props: ['width', 'transformStyle'] },
+      { sel: '[data-die="1"]', props: ['display'] },
+      { sel: '[data-die="0"] .dice-face--texto', props: ['display', 'alignItems', 'backgroundColor'] },
+      { sel: '[data-die="0"] .dice-texto', props: ['fontFamily', 'fontWeight', 'fontSize', 'color', 'textAlign'] },
+      { sel: '#op-para', props: ['fontSize', 'borderBottomWidth'] },
+      { sel: '[data-op-casilla="1"]', props: ['fontSize', 'borderBottomWidth'] },
+      { sel: '[data-op-ejemplo="comida"]', props: ['borderRadius', 'borderTopWidth'] },
+      { sel: '#btn-op-tirar', props: ['borderBottomWidth', 'backgroundColor'] },
+    ],
+  },
   ...estadosAccionVisible('/dados', '#btn-roll'),
+  // Quien abre un dado compartido ve la pregunta en el resultado y un dado
+  // más grande: el botón tiene que seguir cabiendo en la primera pantalla
+  ...estadosAccionVisible('/dados#para=%C2%BFQui%C3%A9n+lava%3F&opcion=Ana&opcion=Luis', '#btn-roll'),
   ...estadosResponsive('/dados', '#btn-roll', [
     {
       nombre: 'seis-dados-fold-cerrado-344x680',

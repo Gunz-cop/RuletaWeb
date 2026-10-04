@@ -123,7 +123,7 @@ oráculo sí o no (`si-o-no.astro` + `OracleBall.astro`), la primera
 herramienta con casi todo el marcado en utilidades de Tailwind, piedra,
 papel o tijera (`piedra-papel-tijera.astro` + `PptHands.astro`) y el
 temporizador (`temporizador.astro` + `TimerObject.astro`) y los dados
-(`dados.astro` + `Dice.astro`, con D4 a D20 y modo rol). El resto
+(`dados.astro` + `Dice.astro`, con D4 a D20, modo rol y dado de opciones). El resto
 de herramientas (la ruleta, equipos...) sigue con los botones y tarjetas
 en degradado de la estética anterior — migrarlas es una tarea aparte, una
 herramienta a la vez, porque toca UI interactiva con sus propios tests de
@@ -545,6 +545,37 @@ acción principal, con ventaja, desventaja, crear personaje y las tiradas
 guardadas con nombre; al tirar desde ahí la página sube hasta la mesa. El
 historial escribe el desglose con el modificador («17 = 12 + 5») y, al
 lado, la tirada o su nombre («Ataque espada»).
+
+**Dado de opciones** (`/dados`): el objeto de la herramienta lleva las
+palabras del usuario. Se escriben de dos a seis opciones (y, si se quiere,
+qué se decide) y cada una queda impresa en una cara de un D6 más grande
+(plantilla `op` de `Dice.astro`, misma física y misma tabla `NORMAL`). Es
+lo que convierte el lanzador de dados en una herramienta de Decídelo.
+
+- **El dado no miente con el dibujo.** Se elige una cara de 1 a 6, como en
+  cualquier D6. Con 2, 3 o 6 opciones el reparto es exacto (con 3, cada
+  una en un par de caras opuestas: nunca se ve dos veces a la vez); con 4
+  o 5, las caras sobrantes dicen «otra vez» y si sale una el dado vuelve a
+  rodar solo. Repetir opciones para llenar caras las haría más probables, y
+  elegir entre las opciones y fingir la cara sería mentir con el objeto.
+- **El texto de la cara de arriba se lee derecho**: se imprime girado de 90
+  en 90 grados según la pose final, calculada antes de animar, así no salta
+  al aterrizar.
+- **Modo por lo que hay en la mesa**: con el dado de opciones en la mesa,
+  el botón principal dice «Lanzar este dado» y agitar el móvil lo lanza a
+  él; elegir cantidad o tipo devuelve los dados de puntos. Los ejemplos
+  («Qué comemos», «Verdad o reto», «Plan de hoy») rellenan el formulario y
+  ponen el dado en la mesa sin lanzarlo. Escribir con el dado en la mesa
+  cambia sus caras al momento.
+- **Compartir** va en el fragmento (`#para=…&opcion=…`), como los retos de
+  piedra, papel o tijera: las opciones pueden ser nombres de gente y el
+  fragmento no llega a ningún servidor. Quien abre el enlace ve el dado en
+  la mesa y la pregunta en el resultado; el fragmento se quita de la barra
+  para que una recarga respete lo que edite después.
+- Lógica pura en `src/scripts/dados-opciones.js`, probada con Node en
+  `scripts/dados-opciones-check.mjs`; el estado
+  `opciones-cara-coincide-con-el-texto` comprueba que el texto escrito es
+  el de la cara de arriba.
 
 ### Ciclo de movimiento (estándar)
 
