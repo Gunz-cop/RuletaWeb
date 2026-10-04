@@ -36,6 +36,8 @@ const TIPO_KEY = 'decidelo_dados_tipo';
 const HISTORY_KEY = 'decidelo_dados_history';
 const SHAKE_KEY = 'decidelo_dados_agitar';
 const TIRADA_KEY = 'decidelo_dados_tirada';
+const MODO_KEY = 'decidelo_dados_modo';
+const MODOS = ['normales', 'opciones', 'rol'];
 const GUARDADAS_KEY = 'decidelo_dados_guardadas';
 const OPCIONES_KEY = 'decidelo_dados_opciones';
 const HISTORY_MAX = 10;
@@ -267,7 +269,10 @@ function initDados() {
   let ocupado = false;
   let ultimaTirada = 0;
   let reposo = null;
-  let modoOp = false; // el dado de opciones está en la mesa
+  // Qué se lanza: dados normales, el dado de opciones o una tirada de rol.
+  // Lo elige el selector de arriba y decide qué hace el botón principal.
+  let modoActual = MODOS.includes(readStore(MODO_KEY, '')) ? readStore(MODO_KEY, '') : 'normales';
+  const enOpciones = () => modoActual === 'opciones';
 
   // Distancia de la pared del fondo al centro de la mesa (--wall en Dice.astro)
   const pared = () => parseFloat(getComputedStyle(floor).getPropertyValue('--wall')) || 104;
@@ -488,9 +493,6 @@ function initDados() {
     const mia = ++tirada;
     ocupado = true;
     ultimaTirada = Date.now();
-    // Lo que hay en la mesa decide qué lanza el botón principal
-    modoOp = tipos.includes(OP);
-    aplicarSeleccion();
     const antes = enMesa();
     terminar(dados);
     pararReposo();
@@ -603,10 +605,11 @@ function initDados() {
   });
 
   // --- Lanzar -------------------------------------------------------------------
-  // La acción principal: `cuantos` dados del tipo elegido, o el dado de
-  // opciones si es el que está en la mesa
+  // La acción principal: la del modo. En normales, `cuantos` dados del tipo
+  // elegido.
   async function lanzar() {
-    if (modoOp) return lanzarOpciones();
+    if (modoActual === 'opciones') return lanzarOpciones();
+    if (modoActual === 'rol') return lanzarRol();
     const valores = Array.from({ length: cuantos }, () => azar(tipo));
     if (!(await lanzarEnMesa(Array(cuantos).fill(tipo), valores))) return;
     const enOrden = ordenVisual(enMesa()).map((d) => d.valor);
@@ -627,14 +630,20 @@ function initDados() {
   btnRoll.addEventListener('click', lanzar);
 
   // --- Cuántos dados y de qué tipo -----------------------------------------------
-  // Con el dado de opciones en la mesa no hay cantidad ni tipo marcados:
-  // pulsar uno vuelve a los dados de puntos
+  // El texto del botón dice qué va a lanzar en cada modo
   function aplicarSeleccion() {
-    countBtns.forEach((b) => b.setAttribute('aria-pressed', String(!modoOp && Number(b.dataset.diceCount) === cuantos)));
-    typeBtns.forEach((b) => b.setAttribute('aria-pressed', String(!modoOp && Number(b.dataset.diceType) === tipo)));
-    btnRoll.textContent = modoOp ? 'Lanzar este dado' : tipo === 6
-      ? (cuantos === 1 ? 'Lanzar dado' : 'Lanzar dados')
-      : `Lanzar ${cuantos === 1 ? '' : cuantos}d${tipo}`;
+    countBtns.forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.diceCount) === cuantos)));
+    typeBtns.forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.diceType) === tipo)));
+    if (modoActual === 'opciones') {
+      btnRoll.textContent = 'Lanzar este dado';
+    } else if (modoActual === 'rol') {
+      const t = parsear(rolTirada?.value);
+      btnRoll.textContent = t.ok ? `Tirar ${t.texto}` : 'Tirar';
+    } else {
+      btnRoll.textContent = tipo === 6
+        ? (cuantos === 1 ? 'Lanzar dado' : 'Lanzar dados')
+        : `Lanzar ${cuantos === 1 ? '' : cuantos}d${tipo}`;
+    }
   }
 
   function cambiarMesa() {
@@ -650,7 +659,6 @@ function initDados() {
   countBtns.forEach((b) => b.addEventListener('click', () => {
     const nuevo = Number(b.dataset.diceCount);
     if ((nuevo === cuantos && enMesa().every((d) => d.clave === tipo) && enMesa().length === cuantos) || !HUECOS[nuevo]) return;
-    modoOp = false;
     cuantos = nuevo;
     writeStore(COUNT_KEY, cuantos);
     cambiarMesa();
@@ -659,7 +667,6 @@ function initDados() {
   typeBtns.forEach((b) => b.addEventListener('click', () => {
     const nuevo = Number(b.dataset.diceType);
     if ((nuevo === tipo && enMesa().every((d) => d.clave === tipo) && enMesa().length === cuantos) || !LADOS_VALIDOS.includes(nuevo)) return;
-    modoOp = false;
     tipo = nuevo;
     writeStore(TIPO_KEY, tipo);
     cambiarMesa();
@@ -716,22 +723,29 @@ function initDados() {
     });
   }
 
-  rolForm?.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const t = parsear(rolTirada.value);
+  // La tirada escrita, desde el botón principal o con Intro en el campo
+  function lanzarRol() {
+    const t = parsear(rolTirada?.value);
     if (!t.ok) {
       mostrarError(t.error);
-      rolTirada.focus();
+      rolTirada?.focus();
       return;
     }
     mostrarError('');
     rolTirada.value = t.texto;
     writeStore(TIRADA_KEY, t.texto);
+    aplicarSeleccion();
     tirarNotacion(t);
+  }
+
+  rolForm?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    lanzarRol();
   });
 
   rolTirada?.addEventListener('input', () => {
     if (rolError?.textContent) mostrarError('');
+    aplicarSeleccion();
   });
 
   // Ventaja y desventaja: 2d20 y vale el mayor o el menor. Si la tirada
@@ -892,6 +906,9 @@ function initDados() {
   const opCasillas = [...document.querySelectorAll('[data-op-casilla]')].slice(0, MAX_OPCIONES);
   const opMsg = $('op-msg');
   const btnOpShare = $('btn-op-share');
+  const opAviso = $('op-aviso');
+  const modoBtns = [...document.querySelectorAll('[data-modo]')];
+  const paneles = [...document.querySelectorAll('[data-panel]')];
 
   // Ejemplos para empezar: rellenan el formulario y ponen el dado en la mesa
   const EJEMPLOS = {
@@ -905,8 +922,15 @@ function initDados() {
   let carasOp = Array(6).fill(null);
   let ultimaOp = '';
 
+  // Los dados que se ponen en la mesa al entrar o al cambiar de modo. En
+  // rol, los de la tirada escrita (o un d20 si no se entiende).
   function tiposMesa() {
-    return modoOp ? [OP] : Array(cuantos).fill(tipo);
+    if (modoActual === 'opciones') return [OP];
+    if (modoActual === 'rol') {
+      const t = parsear(rolTirada?.value);
+      return t.ok ? t.grupos.flatMap((g) => Array(g.cantidad).fill(g.lados)) : [20];
+    }
+    return Array(cuantos).fill(tipo);
   }
 
   // Escribe en cada cara su opción (o «otra vez»). Siempre textContent: es
@@ -966,24 +990,39 @@ function initDados() {
     opCasillas.forEach((c, i) => { c.value = opciones[i] ?? ''; });
   }
 
-  // Fija el dado vigente; si está en la mesa, sus caras cambian al escribir
+  // Fija el dado vigente; si está en la mesa, sus caras cambian al escribir.
+  // El aviso de «otra vez» solo aparece cuando hay caras así (4 o 5).
   function fijarDado(r) {
     dadoOp = { para: r.para, opciones: r.opciones };
     carasOp = carasDe(r.opciones);
-    if (modoOp) enMesa().forEach((d) => { if (d.clave === OP) rotular(d); });
+    const vacias = carasOp.filter((c) => c === null).length;
+    if (opAviso) {
+      opAviso.textContent = vacias
+        ? `${vacias === 1 ? 'Una cara dice' : `${vacias} caras dicen`} «otra vez»: si sale, el dado vuelve a rodar.`
+        : '';
+    }
+    if (enOpciones()) enMesa().forEach((d) => { if (d.clave === OP) rotular(d); });
   }
 
   // Pone el dado de opciones en la mesa, rodando hasta su sitio, sin
   // resultado. Entra con la cara 1 arriba, que siempre lleva opción.
   function ponerDadoOp() {
-    modoOp = true;
     dados[0].valor = 1;
     cambiarMesa();
     verMesa();
   }
 
   async function lanzarOpciones() {
-    if (!dadoOp) return;
+    // Lo escrito manda: si se borró todo, se dice qué falta en vez de
+    // lanzar el último dado válido sin que se vea por qué
+    const r = leerFormulario();
+    if (!r.ok) {
+      mensajeOp(r.error, true);
+      opCasillas.find((c) => !c.value.trim())?.focus();
+      return;
+    }
+    mensajeOp('');
+    fijarDado(r);
     if (rolPersonaje) rolPersonaje.hidden = true;
     verMesa();
     // Las caras de esta tirada: si el visitante edita mientras rueda, el
@@ -1014,15 +1053,7 @@ function initDados() {
 
   opForm?.addEventListener('submit', (e) => {
     e.preventDefault();
-    const r = leerFormulario();
-    if (!r.ok) {
-      mensajeOp(r.error, true);
-      opCasillas.find((c) => !c.value.trim())?.focus();
-      return;
-    }
-    mensajeOp('');
     guardarFormulario();
-    fijarDado(r);
     lanzarOpciones();
   });
 
@@ -1068,6 +1099,35 @@ function initDados() {
       mensajeOp(url);
     }
   });
+
+  // --- Modo -----------------------------------------------------------------------
+  function pintarModo() {
+    modoBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.modo === modoActual)));
+    paneles.forEach((p) => { p.hidden = p.dataset.panel !== modoActual; });
+  }
+
+  // Cambiar de modo cambia los dados de la mesa (entran rodando) y el
+  // botón. La primera vez en «Tus opciones» el dado llega con un ejemplo
+  // escrito, para que se vea qué es antes de leer nada.
+  function cambiarModo(nuevo) {
+    if (nuevo === modoActual || !MODOS.includes(nuevo)) return;
+    modoActual = nuevo;
+    writeStore(MODO_KEY, modoActual);
+    pintarModo();
+    mostrarError('');
+    mensajeOp('');
+    if (enOpciones()) {
+      if (!dadoOp) {
+        rellenar(EJEMPLOS.comida);
+        guardarFormulario();
+        fijarDado(validar(EJEMPLOS.comida.para, EJEMPLOS.comida.opciones));
+      }
+      dados[0].valor = 1;
+    }
+    cambiarMesa();
+  }
+
+  modoBtns.forEach((b) => b.addEventListener('click', () => cambiarModo(b.dataset.modo)));
 
   // --- Agitar el móvil para lanzar -------------------------------------------
   // Mismo patrón que el oráculo: solo en pantallas táctiles con sensor, y
@@ -1163,7 +1223,9 @@ function initDados() {
     rellenar(compartido);
     guardarFormulario();
     mensajeOp('');
-    modoOp = true;
+    modoActual = 'opciones';
+    writeStore(MODO_KEY, modoActual);
+    pintarModo();
     fijarDado(compartido);
     dados[0].valor = 1;
     window.history.replaceState?.(null, '', location.pathname + location.search);
@@ -1187,6 +1249,13 @@ function initDados() {
     const r = leerFormulario();
     if (r.ok) fijarDado(r);
   }
+  // Se volvió a la página en «Tus opciones» sin un dado escrito: el ejemplo
+  if (enOpciones() && !dadoOp) {
+    rellenar(EJEMPLOS.comida);
+    guardarFormulario();
+    fijarDado(validar(EJEMPLOS.comida.para, EJEMPLOS.comida.opciones));
+  }
+  if (enOpciones()) dados[0].valor = 1;
 
   // Otro enlace pegado en la misma pestaña solo cambia el fragmento: la
   // página no se recarga, así que se escucha aquí
@@ -1201,6 +1270,7 @@ function initDados() {
   window.addEventListener('hashchange', alCambiarFragmento);
   document.addEventListener('astro:before-swap', () => window.removeEventListener('hashchange', alCambiarFragmento), { once: true });
 
+  pintarModo();
   aplicarSeleccion();
   renderHistory();
   renderGuardadas();

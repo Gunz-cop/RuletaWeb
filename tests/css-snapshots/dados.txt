@@ -61,7 +61,12 @@
 @media (width>=640px){.dice-result[S].is-largo #dice-result-main{font-size:2rem;line-height:1.5}}
 .rol-error[S]:empty{display:none}
 .op-msg[S]{overflow-wrap:anywhere}
-.op-msg[S]:empty{display:none}
+.op-msg[S]:empty,.op-aviso[S]:empty{display:none}
+.dice-modos[S]{border:1px solid var(--divider-line);border-radius:999px;padding:3px;display:inline-flex}
+.dice-modos[S] button[S]{color:var(--text-secondary);white-space:nowrap;cursor:pointer;background:0 0;border:0;border-radius:999px;padding:.45rem .85rem;font-family:Outfit,sans-serif;font-size:.875rem;font-weight:600;transition:color .15s,background-color .15s}
+.dice-modos[S] button[S][aria-pressed=true]{background:var(--bg-surface-alt);color:var(--text-primary)}
+.dice-modos[S] button[S]:focus-visible{outline:2px solid var(--accent-warm);outline-offset:1px}
+@media (hover:hover){.dice-modos[S] button[S]:hover{color:var(--accent-warm)}}
 .op-msg[S].is-error{color:var(--accent-warm)}
 .dice-personaje[S] .personaje-row,.dice-guardadas[S] .guardada-row{border-bottom:1px solid var(--divider-line);font-variant-numeric:tabular-nums;grid-template-columns:2rem 2.5rem 1fr;align-items:baseline;column-gap:.75rem;padding:.6rem 0;display:grid}
 .dice-personaje[S] .personaje-num{color:var(--text-tertiary);font-size:.85rem}

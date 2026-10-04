@@ -14,6 +14,12 @@ const keywords = 'lanzar dados, tirar dados, dados virtuales, dados online, dado
 // su URL absoluta ya generada, no la ruta pública que tenía antes.
 const socialImage = await getSocialImageUrl('/blog/dados.png');
 
+// Clases que se repiten en los controles de los tres modos
+const etiqueta = 'block mb-2 text-center text-xs font-semibold tracking-widest uppercase text-ink-tertiary';
+const pastilla = 'py-2 bg-transparent border border-(--divider-line) rounded-full font-display font-semibold text-base text-ink-secondary tabular-nums cursor-pointer aria-pressed:text-ink-primary aria-pressed:border-warm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-warm hover:text-ink-primary hover:border-warm';
+const campo = 'w-full min-w-0 bg-transparent border-0 border-b border-(--divider-line) rounded-none px-0 py-2 font-sans text-base text-ink-primary placeholder:text-ink-tertiary focus:outline-none focus:border-warm';
+const textoBtn = 'bg-transparent border-0 border-b border-current rounded-none px-0 py-1 font-sans text-base text-ink-secondary cursor-pointer hover:text-warm focus-visible:text-warm focus-visible:outline-none';
+
 const schemaLD = {
   "@context": "https://schema.org",
   "@graph": [
@@ -76,19 +82,19 @@ const schemaLD = {
 
   <main class="wrap max-w-2xl pt-5 pb-8 sm:pt-8">
 
-    <div class="w-full text-center mb-2 sm:mb-5">
+    <div class="w-full text-center mb-1 sm:mb-4">
       <h1 class="m-0 mb-2 sm:mb-4 font-display text-[1.7rem] sm:text-5xl leading-tight tracking-tight">Lanzar <em class="font-[Newsreader,Georgia,serif] italic font-normal text-warm">dados</em> online</h1>
       {/* En pantallas bajas la entradilla cede su sitio al botón (también en
           portátiles de 720px de alto y tablets en horizontal) */}
-      <p class="m-0 mb-2 sm:mb-0 mx-auto max-w-lg text-sm sm:text-base text-ink-secondary max-sm:[@media(max-height:620px)]:hidden sm:[@media(max-height:760px)]:hidden">Elige cuántos dados y lánzalos. Ruedan sobre la mesa y debajo ves la suma y lo que sacó cada uno.</p>
-    </div>
-
-    <div class="w-full max-w-sm mx-auto">
-      <span class="block mb-2 text-center text-xs font-semibold tracking-widest uppercase text-ink-tertiary" id="dice-count-label">Cuántos dados</span>
-      <div class="grid grid-cols-6 gap-1.5" role="group" aria-labelledby="dice-count-label">
-        {[1, 2, 3, 4, 5, 6].map((n) => (
-          <button type="button" data-dice-count={n} aria-pressed={n === 2 ? 'true' : 'false'} class="py-2 bg-transparent border border-(--divider-line) rounded-full font-display font-semibold text-base text-ink-secondary tabular-nums cursor-pointer aria-pressed:text-ink-primary aria-pressed:border-warm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-warm hover:text-ink-primary hover:border-warm">{n}</button>
-        ))}
+      <p class="m-0 mb-3 mx-auto max-w-lg text-sm sm:text-base text-ink-secondary max-sm:[@media(max-height:620px)]:hidden sm:[@media(max-height:760px)]:hidden">Dados normales, con tus propias opciones o de rol. Ruedan sobre la mesa como de verdad.</p>
+      {/* El modo es lo primero que se decide: arriba, en una sola pieza, como
+          en el temporizador. Antes los tres usos iban apilados y había que
+          bajar y leer para descubrir que existían el dado de opciones y el
+          modo rol. Cada modo enseña solo sus controles, debajo del botón. */}
+      <div class="dice-modos" id="dice-modos" role="group" aria-label="Qué dados lanzas">
+        <button type="button" data-modo="normales" aria-pressed="true">Normales</button>
+        <button type="button" data-modo="opciones" aria-pressed="false">Tus opciones</button>
+        <button type="button" data-modo="rol" aria-pressed="false">Rol</button>
       </div>
     </div>
 
@@ -100,104 +106,83 @@ const schemaLD = {
         <span class="block mt-1 sm:mt-1.5 text-sm text-ink-tertiary tabular-nums" id="dice-result-side"></span>
       </p>
 
+      {/* Un solo botón principal: hace lo del modo elegido */}
       <button id="btn-roll" type="button" class="px-9 py-3.5 border-0 rounded-full bg-warm text-[#1a0e06] font-display font-bold text-lg cursor-pointer transition-transform duration-150 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-warm">Lanzar dados</button>
 
-      {/* El tipo va debajo de la acción: encima empujaba el botón fuera de
-          la primera pantalla en los móviles bajos (DESIGN.md, "Controles
-          secundarios debajo de la acción principal") */}
-      <div class="w-full max-w-sm mx-auto mt-6">
-        <span class="block mb-2 text-center text-xs font-semibold tracking-widest uppercase text-ink-tertiary" id="dice-type-label">Tipo de dado</span>
+      {/* Los controles de cada modo van debajo de la acción: encima
+          empujaban el botón fuera de la primera pantalla en los móviles
+          bajos (DESIGN.md, "Controles secundarios debajo de la acción
+          principal"). El JS enseña solo el panel del modo elegido. */}
+      <div class="w-full max-w-sm mx-auto mt-6" data-panel="normales">
+        <span class={etiqueta} id="dice-count-label">Cuántos dados</span>
+        <div class="grid grid-cols-6 gap-1.5" role="group" aria-labelledby="dice-count-label">
+          {[1, 2, 3, 4, 5, 6].map((n) => (
+            <button type="button" data-dice-count={n} aria-pressed={n === 2 ? 'true' : 'false'} class={pastilla}>{n}</button>
+          ))}
+        </div>
+        <span class={`${etiqueta} mt-5`} id="dice-type-label">Tipo de dado</span>
         <div class="grid grid-cols-6 gap-1.5" role="group" aria-labelledby="dice-type-label">
           {[4, 6, 8, 10, 12, 20].map((n) => (
-            <button type="button" data-dice-type={n} aria-pressed={n === 6 ? 'true' : 'false'} class="py-2 bg-transparent border border-(--divider-line) rounded-full font-display font-semibold text-base text-ink-secondary tabular-nums cursor-pointer aria-pressed:text-ink-primary aria-pressed:border-warm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-warm hover:text-ink-primary hover:border-warm">D{n}</button>
+            <button type="button" data-dice-type={n} aria-pressed={n === 6 ? 'true' : 'false'} class={pastilla}>D{n}</button>
           ))}
         </div>
       </div>
 
+      {/* Dado de opciones: cada opción va en una cara. Escribir cambia las
+          caras del dado de la mesa al momento; Intro o el botón lo lanzan */}
+      <div class="w-full mt-6" data-panel="opciones" hidden>
+        {/* Cada ejemplo, del ancho de su texto: en tres columnas iguales
+            «Verdad o reto» se partía en dos líneas a 375px */}
+        <div class="flex flex-wrap justify-center gap-1.5" role="group" aria-label="Ejemplos">
+          <button type="button" data-op-ejemplo="comida" class={`${pastilla} px-3 text-sm`}>Comida</button>
+          <button type="button" data-op-ejemplo="reto" class={`${pastilla} px-3 text-sm`}>Verdad o reto</button>
+          <button type="button" data-op-ejemplo="plan" class={`${pastilla} px-3 text-sm`}>Planes</button>
+        </div>
+
+        <form class="mt-4" id="op-form" novalidate>
+          <input class={campo} id="op-para" name="para" type="text" autocomplete="off" placeholder="¿Qué decides? (opcional)" aria-label="Qué decides (opcional)" maxlength="40">
+          <div class="grid grid-cols-2 gap-x-4 mt-1">
+            {[1, 2, 3, 4, 5, 6].map((n) => (
+              <input class={campo} data-op-casilla={n} name={`opcion${n}`} type="text" autocomplete="off" maxlength="24" aria-label={`Opción ${n}`} placeholder={`Opción ${n}`}>
+            ))}
+          </div>
+          {/* Solo con 4 o 5 opciones: cuántas caras dicen «otra vez» */}
+          <p class="op-aviso m-0 mt-2 text-xs text-ink-tertiary" id="op-aviso" aria-live="polite"></p>
+          <p class="op-msg m-0 mt-2 text-sm text-ink-tertiary" id="op-msg" aria-live="polite"></p>
+          <button class={`${textoBtn} mt-4`} id="btn-op-share" type="button">Compartir este dado</button>
+        </form>
+      </div>
+
+      {/* Rol: la tirada escrita la lanza el botón principal (o Intro) */}
+      <div class="w-full mt-6" data-panel="rol" hidden>
+        <form id="rol-form" novalidate>
+          <input class={`${campo} font-display tabular-nums`} id="rol-tirada" name="tirada" type="text" inputmode="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="1d20+5" maxlength="40" aria-label="Tirada" aria-describedby="rol-ayuda rol-error">
+          <p class="m-0 mt-2 text-xs text-ink-tertiary" id="rol-ayuda">De d4 a d20, hasta 6 dados: 2d6+3, 3d8-1, 1d8+1d6.</p>
+          <p class="rol-error m-0 mt-1 text-sm text-warm" id="rol-error" aria-live="polite"></p>
+        </form>
+
+        <div class="grid grid-cols-3 gap-1.5 mt-5" role="group" aria-label="Tiradas especiales">
+          <button type="button" id="btn-ventaja" class={`${pastilla} px-1 text-sm`} title="2d20, vale el mayor">Ventaja</button>
+          <button type="button" id="btn-desventaja" class={`${pastilla} px-1 text-sm`} title="2d20, vale el menor">Desventaja</button>
+          <button type="button" id="btn-personaje" class={`${pastilla} px-1 text-sm`} title="4d6 sin el menor, seis veces">Personaje</button>
+        </div>
+
+        <ol class="dice-personaje list-none m-0 mt-4 p-0" id="rol-personaje" aria-live="polite" hidden></ol>
+
+        <ul class="dice-guardadas list-none m-0 mt-6 p-0 border-0 border-t border-(--divider-line)" id="rol-guardadas" aria-label="Tiradas guardadas">
+          <li class="guardada-vacia">Guarda las que repites, como «Ataque espada: 1d20+5».</li>
+        </ul>
+        <form class="flex items-end gap-4 mt-3" id="rol-guardar" novalidate>
+          <input class={campo} id="rol-nombre" name="nombre" type="text" autocomplete="off" placeholder="Nombre de la tirada" aria-label="Nombre de la tirada" maxlength="30">
+          <button class={`${textoBtn} shrink-0`} id="btn-rol-guardar" type="submit">Guardar tirada</button>
+        </form>
+      </div>
+
       {/* Solo en móviles con sensor de movimiento; el JS lo muestra */}
-      <div id="dice-shake" class="flex flex-col items-center gap-1 mt-6 w-full" hidden>
+      <div id="dice-shake" class="flex flex-col items-center gap-1 mt-8 w-full" hidden>
         <button class="bg-transparent border-0 border-b border-(--divider-line) rounded-none px-0 py-1 font-sans text-base text-ink-primary cursor-pointer hover:text-warm hover:border-current focus-visible:text-warm focus-visible:border-current focus-visible:outline-none aria-pressed:text-warm aria-pressed:border-current" id="btn-shake" type="button" aria-pressed="false">Agitar el móvil para lanzar</button>
         <p class="m-0 max-w-xs text-center text-xs text-ink-tertiary" id="shake-msg" aria-live="polite"></p>
       </div>
-    </section>
-
-    {/* Dado de opciones: lo que distingue esta página de otro lanzador de
-        dados. Va justo debajo de la acción principal (no encima, que
-        empujaría el botón fuera de la primera pantalla) y antes del modo
-        rol, que es para un público más pequeño */}
-    <section class="w-full mt-12 sm:mt-16" aria-labelledby="op-titulo">
-      <div class="pb-3 border-0 border-b border-(--divider-line)">
-        <h2 class="m-0 font-display text-lg" id="op-titulo">Dado de opciones</h2>
-        <p class="m-0 mt-1 text-sm text-ink-secondary">Escribe tus opciones y cada una va en una cara del dado. La que queda arriba es la elegida.</p>
-      </div>
-
-      <div class="grid grid-cols-3 gap-1.5 mt-5" role="group" aria-label="Ejemplos de dado de opciones">
-        <button type="button" data-op-ejemplo="comida" class="py-2 bg-transparent border border-(--divider-line) rounded-full font-display font-semibold text-base text-ink-secondary tabular-nums cursor-pointer aria-pressed:text-ink-primary aria-pressed:border-warm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-warm hover:text-ink-primary hover:border-warm px-1 text-sm">Qué comemos</button>
-        <button type="button" data-op-ejemplo="reto" class="py-2 bg-transparent border border-(--divider-line) rounded-full font-display font-semibold text-base text-ink-secondary tabular-nums cursor-pointer aria-pressed:text-ink-primary aria-pressed:border-warm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-warm hover:text-ink-primary hover:border-warm px-1 text-sm">Verdad o reto</button>
-        <button type="button" data-op-ejemplo="plan" class="py-2 bg-transparent border border-(--divider-line) rounded-full font-display font-semibold text-base text-ink-secondary tabular-nums cursor-pointer aria-pressed:text-ink-primary aria-pressed:border-warm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-warm hover:text-ink-primary hover:border-warm px-1 text-sm">Plan de hoy</button>
-      </div>
-
-      <form class="mt-5" id="op-form" novalidate>
-        <label class="block text-xs font-semibold tracking-widest uppercase text-ink-tertiary" for="op-para">Qué decides (opcional)</label>
-        <input class="w-full min-w-0 bg-transparent border-0 border-b border-(--divider-line) rounded-none px-0 py-2 font-sans text-base text-ink-primary placeholder:text-ink-tertiary focus:outline-none focus:border-warm" id="op-para" name="para" type="text" autocomplete="off" placeholder="¿Qué cenamos?" maxlength="40">
-
-        <fieldset class="m-0 mt-5 p-0 border-0 min-w-0">
-          <legend class="block p-0 text-xs font-semibold tracking-widest uppercase text-ink-tertiary">Opciones, de 2 a 6</legend>
-          <div class="grid grid-cols-2 gap-x-4">
-            {[1, 2, 3, 4, 5, 6].map((n) => (
-              <input class="w-full min-w-0 bg-transparent border-0 border-b border-(--divider-line) rounded-none px-0 py-2 font-sans text-base text-ink-primary placeholder:text-ink-tertiary focus:outline-none focus:border-warm" data-op-casilla={n} name={`opcion${n}`} type="text" autocomplete="off" maxlength="24" aria-label={`Opción ${n}`} placeholder={`Opción ${n}`}>
-            ))}
-          </div>
-        </fieldset>
-        <p class="m-0 mt-2 text-xs text-ink-tertiary">Con 2, 3 o 6 opciones todas las caras llevan una. Con 4 o 5, las que sobran dicen «otra vez» y el dado vuelve a rodar: así ninguna opción tiene más caras que otra.</p>
-
-        <div class="flex flex-wrap items-baseline gap-x-6 gap-y-2 mt-4">
-          <button class="shrink-0 bg-transparent border-0 border-b border-current rounded-none px-0 py-1 font-sans text-base text-ink-primary cursor-pointer hover:text-warm focus-visible:text-warm focus-visible:outline-none" id="btn-op-tirar" type="submit">Lanzar mi dado</button>
-          <button class="shrink-0 bg-transparent border-0 border-b border-current rounded-none px-0 py-1 font-sans text-base text-ink-secondary cursor-pointer hover:text-warm focus-visible:text-warm focus-visible:outline-none" id="btn-op-share" type="button">Compartir este dado</button>
-        </div>
-        <p class="op-msg m-0 mt-2 text-sm text-ink-tertiary" id="op-msg" aria-live="polite"></p>
-      </form>
-    </section>
-
-    {/* Modo rol: debajo de la acción principal, para que sus controles no
-        empujen el botón fuera de la pantalla en el móvil */}
-    <section class="w-full mt-12 sm:mt-16" aria-labelledby="rol-titulo">
-      <div class="pb-3 border-0 border-b border-(--divider-line)">
-        <h2 class="m-0 font-display text-lg" id="rol-titulo">Tiradas de rol</h2>
-        <p class="m-0 mt-1 text-sm text-ink-secondary">Para juegos de rol como Dungeons &amp; Dragons: escribe la tirada como en tu hoja de personaje.</p>
-      </div>
-
-      <form class="mt-5" id="rol-form" novalidate>
-        <label class="block text-xs font-semibold tracking-widest uppercase text-ink-tertiary" for="rol-tirada">Tirada</label>
-        <div class="flex items-end gap-4">
-          <input class="w-full min-w-0 bg-transparent border-0 border-b border-(--divider-line) rounded-none px-0 py-2 font-sans text-base text-ink-primary placeholder:text-ink-tertiary focus:outline-none focus:border-warm font-display tabular-nums" id="rol-tirada" name="tirada" type="text" inputmode="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="1d20+5" maxlength="40" aria-describedby="rol-ayuda rol-error">
-          <button class="shrink-0 bg-transparent border-0 border-b border-current rounded-none px-0 py-1 font-sans text-base text-ink-primary cursor-pointer hover:text-warm focus-visible:text-warm focus-visible:outline-none" id="btn-rol-tirar" type="submit">Tirar</button>
-        </div>
-        <p class="m-0 mt-2 text-xs text-ink-tertiary" id="rol-ayuda">Dados de d4 a d20, hasta 6 a la vez: 2d6+3, 3d8-1, 1d8+1d6.</p>
-        <p class="rol-error m-0 mt-1 text-sm text-warm" id="rol-error" aria-live="polite"></p>
-      </form>
-
-      <div class="grid grid-cols-3 gap-1.5 mt-5" role="group" aria-label="Tiradas especiales">
-        <button type="button" id="btn-ventaja" class="py-2 bg-transparent border border-(--divider-line) rounded-full font-display font-semibold text-base text-ink-secondary tabular-nums cursor-pointer aria-pressed:text-ink-primary aria-pressed:border-warm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-warm hover:text-ink-primary hover:border-warm px-1 text-sm">Ventaja</button>
-        <button type="button" id="btn-desventaja" class="py-2 bg-transparent border border-(--divider-line) rounded-full font-display font-semibold text-base text-ink-secondary tabular-nums cursor-pointer aria-pressed:text-ink-primary aria-pressed:border-warm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-warm hover:text-ink-primary hover:border-warm px-1 text-sm">Desventaja</button>
-        <button type="button" id="btn-personaje" class="py-2 bg-transparent border border-(--divider-line) rounded-full font-display font-semibold text-base text-ink-secondary tabular-nums cursor-pointer aria-pressed:text-ink-primary aria-pressed:border-warm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-warm hover:text-ink-primary hover:border-warm px-1 text-sm">Personaje</button>
-      </div>
-      <p class="m-0 mt-2 text-xs text-ink-tertiary">Ventaja y desventaja: 2d20 y vale el mayor o el menor (con el modificador de la tirada si es 1d20+algo). Personaje: 4d6 sin el menor, seis veces.</p>
-
-      <ol class="dice-personaje list-none m-0 mt-4 p-0" id="rol-personaje" aria-live="polite" hidden></ol>
-
-      <h3 class="m-0 mt-8 font-display text-base">Tiradas guardadas</h3>
-      <ul class="dice-guardadas list-none m-0 mt-2 p-0 border-0 border-t border-(--divider-line)" id="rol-guardadas">
-        <li class="guardada-vacia">Guarda las que repites, como «Ataque espada: 1d20+5».</li>
-      </ul>
-      <form class="mt-4" id="rol-guardar" novalidate>
-        <label class="block text-xs font-semibold tracking-widest uppercase text-ink-tertiary" for="rol-nombre">Nombre</label>
-        <div class="flex items-end gap-4">
-          <input class="w-full min-w-0 bg-transparent border-0 border-b border-(--divider-line) rounded-none px-0 py-2 font-sans text-base text-ink-primary placeholder:text-ink-tertiary focus:outline-none focus:border-warm" id="rol-nombre" name="nombre" type="text" autocomplete="off" placeholder="Ataque espada" maxlength="30">
-          <button class="shrink-0 bg-transparent border-0 border-b border-current rounded-none px-0 py-1 font-sans text-base text-ink-primary cursor-pointer hover:text-warm focus-visible:text-warm focus-visible:outline-none" id="btn-rol-guardar" type="submit">Guardar tirada</button>
-        </div>
-        <p class="m-0 mt-2 text-xs text-ink-tertiary">Guarda la tirada escrita arriba con este nombre. Se queda en este navegador.</p>
-      </form>
     </section>
 
     <section class="w-full mt-12 sm:mt-16" aria-label="Historial de tiradas">
@@ -223,7 +208,7 @@ const schemaLD = {
 
     <h2>Cómo tirar los dados</h2>
     <ol>
-      <li><strong>Elige cuántos dados</strong> quieres lanzar, de 1 a 6. La herramienta lo recuerda para la próxima vez.</li>
+      <li><strong>Elige qué lanzar</strong> junto al título: «Normales», «Tus opciones» o «Rol». En «Normales», debajo del botón eliges cuántos dados (de 1 a 6) y de qué tipo. La herramienta lo recuerda para la próxima vez.</li>
       <li><strong>Pulsa &laquo;Lanzar dados&raquo;</strong>. Los dados vuelan, rebotan y ruedan sobre la mesa hasta quedarse quietos.</li>
       <li><strong>Lee el resultado</strong>: la suma en grande y, debajo, lo que sacó cada dado, en el mismo orden en que los ves.</li>
     </ol>
@@ -236,7 +221,7 @@ const schemaLD = {
     <p>Sí. Cada valor sale del generador de números aleatorios criptográfico del navegador (<code>crypto.getRandomValues</code>), y las seis caras tienen exactamente la misma probabilidad. El resultado se decide antes de la animación: el giro y los botes solo lo enseñan. Cada tirada es independiente de la anterior.</p>
 
     <h2>Dado de opciones: escribe tus propias caras</h2>
-    <p>Un dado también sirve para salir de una duda con varias opciones, sin tener que acordarte de qué número era cada una. En <strong>Dado de opciones</strong> escribes de dos a seis opciones y cada una queda impresa en una cara del dado. Lo lanzas y la opción que queda arriba es la elegida. Si quieres, escribe también qué estás decidiendo («¿Qué cenamos?»): sale junto al resultado y en el historial.</p>
+    <p>Un dado también sirve para salir de una duda con varias opciones, sin tener que acordarte de qué número era cada una. Elige <strong>«Tus opciones»</strong> arriba, junto al título, y escribe de dos a seis opciones (o toca un ejemplo) y cada una queda impresa en una cara del dado. Lo lanzas y la opción que queda arriba es la elegida. Si quieres, escribe también qué estás decidiendo («¿Qué cenamos?»): sale junto al resultado y en el historial.</p>
     <p>Un dado tiene seis caras, así que el reparto depende de cuántas opciones escribas:</p>
     <ul>
       <li><strong>2, 3 o 6 opciones</strong>: todas las caras llevan una y cada opción ocupa las mismas caras (con dos, tres caras cada una; con tres, dos caras opuestas cada una).</li>
@@ -342,8 +327,44 @@ const schemaLD = {
   .op-msg {
     overflow-wrap: anywhere;
   }
-  .op-msg:empty {
+  .op-msg:empty,
+  .op-aviso:empty {
     display: none;
+  }
+  /* Selector de modo: el mismo control que el del temporizador
+     (.timer-modes): una pieza con borde y la opción elegida rellena del
+     gris de superficie, no del acento, que es solo del botón principal */
+  .dice-modos {
+    display: inline-flex;
+    padding: 3px;
+    border: 1px solid var(--divider-line);
+    border-radius: 999px;
+  }
+  .dice-modos button {
+    padding: 0.45rem 0.85rem;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--text-secondary);
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color 0.15s, background-color 0.15s;
+  }
+  .dice-modos button[aria-pressed="true"] {
+    background: var(--bg-surface-alt);
+    color: var(--text-primary);
+  }
+  .dice-modos button:focus-visible {
+    outline: 2px solid var(--accent-warm);
+    outline-offset: 1px;
+  }
+  @media (hover: hover) {
+    .dice-modos button:hover {
+      color: var(--accent-warm);
+    }
   }
   .op-msg.is-error {
     color: var(--accent-warm);

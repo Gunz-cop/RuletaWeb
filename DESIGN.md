@@ -378,6 +378,15 @@ un botón que no hace nada. Se activan siempre con un toque del visitante
 (iOS solo concede el permiso del sensor desde un gesto), van debajo de la
 acción principal como cualquier control secundario y nunca la sustituyen.
 
+**Selector de modo** (temporizador, dados): cuando una herramienta tiene
+varios usos, el modo es lo primero que se decide y va arriba, bajo el
+título, en una sola pieza (borde `--divider-line`, radio píldora, la
+opción elegida rellena de `--bg-surface-alt`, no del acento). Cada modo
+enseña solo sus controles, debajo de la acción principal; nunca se apilan
+todos los usos en la página para que el visitante los descubra bajando.
+Dos o tres modos con nombres de una o dos palabras, que quepan en una
+línea a 344px.
+
 **Acción principal de varias opciones** (piedra, papel o tijera): cuando
 la acción es elegir una de N (N ≤ 4), en vez de la píldora rellena van N
 botones iguales en una fila (`grid-cols-N`), con borde `--divider-line`,
@@ -545,8 +554,9 @@ lógica pura (`src/scripts/dados-notacion.js`, probado con Node en
 `scripts/dados-notacion-check.mjs`) y **cada rechazo dice qué falla y cómo
 arreglarlo** («No hay dado de 7 caras. Usa d4, d6, d8, d10, d12 o d20»).
 Como mucho seis dados por tirada: lo que enseña la mesa tiene que
-coincidir con el texto, y no se tira un dado que no se ve. Va debajo de la
-acción principal, con ventaja, desventaja, crear personaje y las tiradas
+coincidir con el texto, y no se tira un dado que no se ve. Es el modo
+«Rol»: la tirada escrita la lanza el botón principal (o Intro) y debajo
+van ventaja, desventaja, crear personaje y las tiradas
 guardadas con nombre; al tirar desde ahí la página sube hasta la mesa. El
 historial escribe el desglose con el modificador («17 = 12 + 5») y, al
 lado, la tirada o su nombre («Ataque espada»).
@@ -566,12 +576,21 @@ lo que convierte el lanzador de dados en una herramienta de Decídelo.
 - **El texto de la cara de arriba se lee derecho**: se imprime girado de 90
   en 90 grados según la pose final, calculada antes de animar, así no salta
   al aterrizar.
-- **Modo por lo que hay en la mesa**: con el dado de opciones en la mesa,
-  el botón principal dice «Lanzar este dado» y agitar el móvil lo lanza a
-  él; elegir cantidad o tipo devuelve los dados de puntos. Los ejemplos
-  («Qué comemos», «Verdad o reto», «Plan de hoy») rellenan el formulario y
-  ponen el dado en la mesa sin lanzarlo. Escribir con el dado en la mesa
-  cambia sus caras al momento.
+- **Un modo de tres, arriba**: «Normales · Tus opciones · Rol» bajo el
+  título, con el mismo control que el temporizador. Antes los tres usos
+  iban apilados y el propietario no veía que existían sin bajar y leer.
+  Cada modo enseña solo sus controles, debajo del botón principal (también
+  la cantidad de dados, que antes iba encima: así cupo el selector y el
+  botón subió unos 30 px en todos los móviles). El botón principal y
+  agitar el móvil hacen lo del modo: «Lanzar dados», «Lanzar este dado» o
+  «Tirar 2d6+3». El modo se recuerda (`decidelo_dados_modo`); un enlace
+  compartido abre «Tus opciones». La primera vez en «Tus opciones» el dado
+  llega con un ejemplo escrito, para que se entienda sin leer. Los
+  ejemplos (Comida, Verdad o reto, Planes) rellenan el formulario y ponen
+  el dado en la mesa sin lanzarlo; escribir cambia sus caras al momento.
+- **Texto solo cuando hace falta**: sin párrafos de explicación en los
+  paneles. El aviso de «otra vez» aparece solo con 4 o 5 opciones; lo de
+  ventaja, desventaja y personaje va en el `title` de cada botón.
 - **Compartir** va en el fragmento (`#para=…&opcion=…`), como los retos de
   piedra, papel o tijera: las opciones pueden ser nombres de gente y el
   fragmento no llega a ningún servidor. Quien abre el enlace ve el dado en

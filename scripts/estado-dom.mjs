@@ -82,6 +82,9 @@ async function medir() {
     // sigue, en vez de reventar el proceso con una excepción de Playwright
     // que no dice qué estado era ni deja correr los demás.
     try {
+      // `antes`: clics que tienen que ir antes de escribir, como elegir el
+      // modo que enseña los campos (en los dados, rol u opciones)
+      for (const sel of est.antes ?? []) await pagina.click(sel);
       for (const { sel, texto } of est.escribir ?? []) await pagina.fill(sel, texto);
       for (const sel of est.clics ?? []) await pagina.click(sel);
       if (est.esperarSelector) {

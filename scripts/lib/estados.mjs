@@ -555,8 +555,9 @@ export const ESTADOS = [
         if (r.caras.map((c) => c.valor).join(',') !== r.escritas) errores.push(`D${lados}: las caras dicen ${r.caras.map((c) => c.valor)} y data-caras ${r.escritas}`);
         if (suma !== r.total) errores.push(`D${lados}: el texto dice ${r.total} y las caras suman ${suma}`);
       }
+      await pagina.click('[data-modo="rol"]');
       await pagina.fill('#rol-tirada', '1d20+1d8+1d4+2');
-      await pagina.click('#btn-rol-tirar');
+      await pagina.click('#btn-roll');
       await pagina.waitForSelector('#dice-result.is-shown', { timeout: 20000 });
       const r = await leer();
       const suma = r.caras.reduce((a, c) => a + c.valor, 0) + 2;
@@ -573,6 +574,7 @@ export const ESTADOS = [
     // dado descartado apagado, que con opacity se habría aplanado
     ruta: '/dados',
     nombre: 'rol-personaje-y-guardada',
+    antes: ['[data-modo="rol"]'],
     escribir: [{ sel: '#rol-tirada', texto: '1d20+5' }, { sel: '#rol-nombre', texto: 'Ataque espada' }],
     clics: ['#btn-rol-guardar', '#btn-ventaja'],
     esperarSelector: '.dice.is-descartado',
@@ -595,10 +597,12 @@ export const ESTADOS = [
     viewport: { width: 390, height: 844 },
     verificarRelacion: async (pagina) => {
       const opciones = ['Cine', 'Parque', 'Biblioteca municipal', 'Museo'];
-      for (const [i, t] of opciones.entries()) await pagina.fill(`[data-op-casilla="${i + 1}"]`, t);
+      // Al entrar en el modo, el dado llega con el ejemplo de seis opciones
+      await pagina.click('[data-modo="opciones"]');
+      for (let i = 0; i < 6; i++) await pagina.fill(`[data-op-casilla="${i + 1}"]`, opciones[i] ?? '');
       const errores = [];
       for (let t = 0; t < 4; t++) {
-        await pagina.click(t === 0 ? '#btn-op-tirar' : '#btn-roll');
+        await pagina.click('#btn-roll');
         await pagina.waitForSelector('#dice-result[data-opcion]', { timeout: 30000 });
         const r = await pagina.evaluate(() => {
           const NORMAL = { 1: [0, 0, 1], 2: [1, 0, 0], 3: [0, -1, 0], 4: [0, 1, 0], 5: [-1, 0, 0], 6: [0, 0, -1] };
@@ -645,7 +649,11 @@ export const ESTADOS = [
       { sel: '#op-para', props: ['fontSize', 'borderBottomWidth'] },
       { sel: '[data-op-casilla="1"]', props: ['fontSize', 'borderBottomWidth'] },
       { sel: '[data-op-ejemplo="comida"]', props: ['borderRadius', 'borderTopWidth'] },
-      { sel: '#btn-op-tirar', props: ['borderBottomWidth', 'backgroundColor'] },
+      { sel: '#btn-op-share', props: ['borderBottomWidth', 'backgroundColor'] },
+      { sel: '.dice-modos', props: ['display', 'borderTopWidth', 'borderRadius'] },
+      { sel: '.dice-modos [aria-pressed="true"]', props: ['backgroundColor', 'color', 'fontFamily'] },
+      { sel: '[data-panel="normales"]', props: ['display'] },
+      { sel: '[data-panel="opciones"]', props: ['display'] },
     ],
   },
   ...estadosAccionVisible('/dados', '#btn-roll'),
