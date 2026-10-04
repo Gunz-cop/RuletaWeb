@@ -291,15 +291,16 @@ export function simular(cuerpos, caja, s) {
 }
 
 // --- La mano: de dónde y cómo salen los dados -----------------------------------
-// Como en la página de referencia que eligió el propietario: desde la
-// derecha y por delante (fuera de la pantalla, desde la mano), lanzados en
-// diagonal hacia el fondo y la izquierda, en alto y girando. Entran ya a la
+// Como pidió el propietario: desde la derecha (fuera de la pantalla, desde
+// la mano), lanzados hacia la pared izquierda, en alto y girando; pegan en
+// ella y rebotan. Entran ya a la
 // altura de la mesa, así que solo cruzan la pared derecha, que se activa al
 // pasarla; la de delante está siempre y ninguno sale hacia quien mira.
 export function desdeLaMano(n, caja, s, aleatorio = Math.random) {
   const entre = (a, b) => a + aleatorio() * (b - a);
   const giro = () => entre(-16, 16);
-  const meta = [entre(caja.izquierda * 0.6, caja.derecha * 0.1), caja.fondo + s * entre(0.4, 1.2)];
+  // Apuntan a la pared izquierda, a media mesa: pegan en ella y rebotan
+  const meta = [caja.izquierda + s * entre(0, 0.4), entre(caja.fondo + s, caja.frente - s)];
   return Array.from({ length: n }, (_, i) => {
     // En la mano van de dos en dos: cada pareja sale un poco después que la
     // anterior, desde el mismo sitio, como una mano que los va soltando

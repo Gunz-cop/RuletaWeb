@@ -26,6 +26,7 @@
 .dice-pip--g[S]{grid-area:3/3}
 .dice-shade[S]{opacity:.3;pointer-events:none;background:#17130e;position:absolute;inset:0}
 .dice-wall[S]{height:16px;left:4%;right:4%;top:calc(50% - var(--wall) - 16px);transform-origin:50% 100%;background:linear-gradient(#2a2a33,#16161c);border-top:1px solid #ffffff29;position:absolute;transform:rotateX(-90deg)}
+.dice-wall--left[S]{left:calc(50% + var(--izquierda,-160px) - 16px);width:16px;right:auto;top:calc(50% - var(--wall));height:calc(var(--wall) + var(--frente,80px));transform-origin:100%;background:linear-gradient(90deg,#2a2a33,#16161c);border-top:0;border-left:1px solid #ffffff29;transform:rotateY(90deg)}
 @media (width>=640px){.dice-floor[S]{--wall:124px}}
 [S][hidden]{display:none!important}
 .dice-result[S]{opacity:0;transition:opacity .25s ease-out,transform .25s cubic-bezier(.2,.7,.3,1);transform:translateY(6px)}

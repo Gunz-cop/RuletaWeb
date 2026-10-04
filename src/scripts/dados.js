@@ -26,7 +26,10 @@ const MAX_DADOS = 6;
 
 // Tiempos (ms). La tirada dura lo que tarda la física en parar los dados
 // (entre 1,2 y 2,2 s, ver scripts/dados-check.mjs) más la anticipación.
-const RECOGER_MS = 230;
+const RECOGER_MS = 220;
+// La física se reproduce a cámara lenta: a velocidad real (1,2–2,1 s) la
+// tirada se veía demasiado rápida para seguirla con la vista
+const LENTO = 1.5;
 const REPOSO_MS = 3000;
 const REDUCED_MS = 200;
 
@@ -171,16 +174,24 @@ function initDados() {
     return { izquierda: -mitad, derecha: mitad, fondo: -pared(), frente: s * 0.9 + 20 };
   }
 
+  // La pared izquierda se dibuja donde la física la pone (depende del ancho
+  // de la bandeja y del tamaño de los dados)
+  function marcarParedes(mesa) {
+    floor.style.setProperty('--izquierda', `${mesa.izquierda}px`);
+    floor.style.setProperty('--frente', `${mesa.frente}px`);
+  }
+
   // --- Una pose de un dado: transform del cubo, luz y sombra -----------------
-  // x: centro del dado en la mesa [x, y, z]; q: orientación
-  function pose(d, x, q) {
+  // x: centro del dado en la mesa [x, y, z]; q: orientación; k: escala
+  // (1 normal, 0 desaparecido: así se van los dados antes de cada tirada)
+  function pose(d, x, q, k = 1) {
     const s = d.el.offsetWidth;
     const h = s / 2;
     const R = Q.mat(q);
     const [px, y, z] = x;
     const p = [px, y];
-    const cubo = `matrix3d(${R[0][0]},${R[1][0]},${R[2][0]},0,${R[0][1]},${R[1][1]},${R[2][1]},0,`
-      + `${R[0][2]},${R[1][2]},${R[2][2]},0,${p[0]},${y},${z},1)`;
+    const cubo = `matrix3d(${R[0][0] * k},${R[1][0] * k},${R[2][0] * k},0,${R[0][1] * k},${R[1][1] * k},${R[2][1] * k},0,`
+      + `${R[0][2] * k},${R[1][2] * k},${R[2][2] * k},0,${p[0]},${y},${z},1)`;
     const luz = d.caras.map((c) => {
       const n = rot(R, c.n);
       return { shade: (1 - (0.4 + 0.6 * Math.max(0, dot(n, LUZ)))) * 0.8 };
@@ -192,7 +203,7 @@ function initDados() {
     const sombra = {
       transform: `translate3d(${p[0] + off}px, ${y + off * 0.8}px, 0.5px) `
         + `rotateZ(${Math.atan2(R[1][0], R[0][0])}rad) scale(${1 + alto / (s * 2.5)})`,
-      opacity: Math.max(0, 0.9 * (1 - alto / (s * 2.4))),
+      opacity: Math.max(0, 0.9 * (1 - alto / (s * 2.4))) * k,
     };
     return { cubo, luz, sombra };
   }
@@ -206,7 +217,11 @@ function initDados() {
   }
 
   function pintar(d) {
-    const e = instante(d, d.p, d.q, 0);
+    aplicar(d, instante(d, d.p, d.q, 0));
+  }
+
+  // Escribe una pose en los estilos del dado (sin animación)
+  function aplicar(d, e) {
     d.el.style.transform = e.cubo;
     e.luz.forEach((l, i) => { d.caras[i].shade.style.opacity = l.shade; });
     d.sombra.style.transform = e.sombra.transform;
@@ -226,11 +241,13 @@ function initDados() {
     d.caras.forEach((c, i) => {
       anims.push(c.shade.animate(muestras.map((m) => ({ opacity: m.luz[i].shade })), opts));
     });
+    // Al terminar, la última pose se escribe a mano antes de cancelar. No se
+    // usa commitStyles(): si falla (Safari con algunos matrix3d), cancelar
+    // devuelve el dado un instante a su pose anterior y se ve un dado
+    // fantasma en la mesa mientras los demás aún no han entrado.
     return Promise.all(anims.map(fin)).then(() => {
-      anims.forEach((a) => {
-        try { a.commitStyles(); } catch (e) { /* dado oculto a mitad de la animación */ }
-        a.cancel();
-      });
+      aplicar(d, muestras[muestras.length - 1]);
+      anims.forEach((a) => a.cancel());
     });
   }
 
@@ -246,6 +263,7 @@ function initDados() {
   function tirar(activos, valores) {
     const s = activos[0].el.offsetWidth;
     const mesa = caja(s);
+    marcarParedes(mesa);
     const sims = simular(desdeLaMano(activos.length, mesa, s), mesa, s);
     return Promise.all(activos.map((d, i) => {
       const lista = sims[i];
@@ -255,7 +273,7 @@ function initDados() {
       d.p = [ultima.x[0], ultima.x[1]];
       d.q = Q.mul(ultima.q, P);
       const muestras = lista.map((m) => pose(d, m.x, Q.mul(m.q, P)));
-      return reproducir(d, muestras, ((lista.length - 1) / MUESTRAS_POR_S) * 1000);
+      return reproducir(d, muestras, ((lista.length - 1) / MUESTRAS_POR_S) * 1000 * LENTO);
     }));
   }
 
@@ -305,23 +323,16 @@ function initDados() {
     return tirar(activos, activos.map((d) => d.valor));
   }
 
-  // Anticipación: se recogen de la mesa hacia la mano, a la derecha y fuera
-  // de la pantalla, cada vez más rápido. Desde ahí se vuelven a lanzar.
+  // Anticipación: los dados de la mesa se encogen en su sitio y desaparecen;
+  // después entran lanzados desde la derecha
   function recoger(d, i) {
-    const s = d.el.offsetWidth;
-    const mesa = caja(s);
-    const destino = [mesa.derecha + s * 2.5, mesa.frente - s * entre(0.5, 2)];
-    const qa = Q.mul(Q.eje(entre(-1, 1), entre(-1, 1), entre(-1, 1), entre(1, 2.5)), d.q);
-    const muestras = Array.from({ length: 13 }, (_, k) => {
-      const e = Math.pow(k / 12, 2);
-      return instante(
-        d,
-        [d.p[0] + (destino[0] - d.p[0]) * e, d.p[1] + (destino[1] - d.p[1]) * e],
-        Q.slerp(d.q, qa, e),
-        s * 1.2 * e,
-      );
+    const R = Q.mat(d.q);
+    const z = (d.el.offsetWidth / 2) * (Math.abs(R[2][0]) + Math.abs(R[2][1]) + Math.abs(R[2][2]));
+    const muestras = Array.from({ length: 9 }, (_, k) => {
+      const e = 1 - Math.pow(1 - k / 8, 2);
+      return pose(d, [d.p[0], d.p[1], z * (1 - e)], d.q, 1 - e);
     });
-    return reproducir(d, muestras, RECOGER_MS, i * 20);
+    return reproducir(d, muestras, RECOGER_MS, i * 25);
   }
 
   // --- Resultado e historial -------------------------------------------------
@@ -444,6 +455,7 @@ function initDados() {
       d.sombra.hidden = i >= cuantos;
     });
     btnRoll.textContent = cuantos === 1 ? 'Lanzar dado' : 'Lanzar dados';
+    marcarParedes(caja(dados[0].el.offsetWidth));
   }
 
   countBtns.forEach((b) => b.addEventListener('click', () => {

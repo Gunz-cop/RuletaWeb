@@ -17,10 +17,10 @@
 // tapaba los huecos de las esquinas parpadeaba contra las caras); con un
 // cubo recto las caras se tocan exactamente y no hace falta núcleo.
 //
-// Al fondo de la mesa hay una pared baja: los dados se lanzan desde quien
-// mira, chocan con ella y vuelven, como en una mesa de dados de verdad.
-// Su distancia al centro es --wall, que dados.js lee para calcular el
-// rebote.
+// Al fondo y a la izquierda de la mesa hay paredes bajas: los dados se
+// lanzan desde la derecha, chocan con ellas y rebotan, como en una mesa de
+// dados de verdad. La distancia del fondo al centro es --wall, que
+// dados.js lee para la física; la izquierda la pone dados.js.
 //
 // El dado es un objeto ilustrado, no UI (DESIGN.md, "Excepción: objetos
 // ilustrados"): lleva relieve y su propia paleta local.
@@ -40,6 +40,7 @@ const dados = [0, 1, 2, 3, 4, 5];
 <div class="dice-stage" id="dice-stage" data-count="2" aria-hidden="true">
   <div class="dice-floor" id="dice-floor">
     <div class="dice-wall"></div>
+    <div class="dice-wall dice-wall--left"></div>
     {dados.map((i) => (
       <>
         <div class="dice-shadow" data-shadow={i}></div>
@@ -205,6 +206,22 @@ const dados = [0, 1, 2, 3, 4, 5];
     transform: rotateX(-90deg);
     background: linear-gradient(#2a2a33, #16161c);
     border-top: 1px solid rgb(255 255 255 / 0.16);
+  }
+
+  /* La izquierda se levanta sobre la línea x = var(--izquierda), de la pared
+     del fondo hasta el frente de la mesa; dados.js pone las dos variables
+     con las medidas que usa la física */
+  .dice-wall--left {
+    left: calc(50% + var(--izquierda, -160px) - 16px);
+    right: auto;
+    width: 16px;
+    top: calc(50% - var(--wall));
+    height: calc(var(--wall) + var(--frente, 80px));
+    transform-origin: 100% 50%;
+    transform: rotateY(90deg);
+    background: linear-gradient(to right, #2a2a33, #16161c);
+    border-top: 0;
+    border-left: 1px solid rgb(255 255 255 / 0.16);
   }
 
   @media (min-width: 640px) {

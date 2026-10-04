@@ -481,13 +481,17 @@ pesan cientos de KB; esto, unos pocos. Reglas:
   para tapar los huecos, y al girar las aristas se perdían y en Safari
   parpadeaban. Cada cara lleva un filo oscuro fino para que la arista se
   lea aunque dos caras queden con la misma luz.
-- **La tirada cruza la mesa**, como en la página de referencia que eligió
-  el propietario (echaloasuerte.com/dice): los dados entran por la derecha
-  desde fuera de la pantalla, en diagonal hacia el fondo, pegan en la
-  pared baja del fondo (`.dice-wall`, a `--wall` del centro) y en los
-  lados, rebotan entre ellos y se paran donde los deja la física. Salen
-  de dos en dos, como una mano que los va soltando. Un dado que solo sube
-  y baja en su sitio se lee como una burbuja, no como un lanzamiento.
+- **La tirada cruza la mesa** (referencia del propietario:
+  echaloasuerte.com/dice): los dados entran por la derecha desde fuera de
+  la pantalla, pegan en la pared baja de la izquierda (`.dice-wall--left`)
+  y en la del fondo (`.dice-wall`, a `--wall` del centro), rebotan entre
+  ellos y se paran donde los deja la física. Salen de dos en dos, como
+  una mano que los va soltando, y la física se reproduce a cámara lenta
+  (×1,5): a velocidad real no se seguía con la vista. Un dado que solo
+  sube y baja en su sitio se lee como una burbuja, no como un lanzamiento.
+- **Al terminar cada animación, la última pose se escribe a mano** y
+  luego se cancela la animación. Con `commitStyles()` en Safari quedaba un
+  dado fantasma: si falla, cancelar devuelve el dado a su pose anterior.
 
 ### Ciclo de movimiento (estándar)
 
@@ -506,9 +510,9 @@ migrada o nueva tiene **objeto vivo**, con estas fases, todas con
 Los dados encajan en las mismas fases así: **entrada**, se lanzan solos al
 cargar, como una tirada; **reposo**, la cámara respira (menos de 2 px; los
 dados no flotan, porque un dado quieto sobre una mesa no se mueve);
-**anticipación**, se recogen hacia la mano, fuera de la pantalla por la
-derecha, cada vez más rápido; **acción y aterrizaje**, la simulación:
-vuelan, pegan en el fondo y los lados, botan y ruedan hasta pararse.
+**anticipación**, los dados de la mesa se encogen en su sitio y
+desaparecen; **acción y aterrizaje**, la simulación: entran por la
+derecha, pegan en la pared izquierda, botan y ruedan hasta pararse.
 
 El temporizador sigue las mismas fases, con una diferencia: su **acción
 dura lo que dura la ronda**, no 1–2 s. La papa cae desde arriba, flota,
