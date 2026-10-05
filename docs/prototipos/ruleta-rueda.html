@@ -154,6 +154,8 @@ button { cursor: pointer; }
   will-change: transform;
 }
 .wheel-slices { position: absolute; inset: 0; width: 100%; height: 100%; display: block; overflow: visible; }
+/* El rotor es un cuadrado girado: sin esto las esquinas del <svg>, fuera del círculo, se quedan con los toques de los controles vecinos */
+.wheel-slices, .wheel-labels { pointer-events: none; }
 .wheel-slice { stroke: var(--wheel-trazo); stroke-width: 0.8; transition: opacity 0.2s; }
 .wheel-slice.tono-0 { fill: var(--wheel-p0); }
 .wheel-slice.tono-1 { fill: var(--wheel-p1); }
