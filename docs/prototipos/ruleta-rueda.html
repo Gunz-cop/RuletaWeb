@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;600;700&family=Newsreader:ital,wght@1,400;1,500&display=swap" rel="stylesheet">
 <!--
-  Prototipo del issue #7, iteración 2 (SDD v1.5: §6.1, §6.2, §6.5, §6.12–§6.14
+  Prototipo del issue #7, iteración 2 (SDD v1.7: §6.1, §6.2, §6.5, §6.12–§6.14
   y §12). Un solo archivo, sin librerías ni scripts externos. NO es una página
   del sitio: vive en docs/ y se publica aparte, porque todo lo que está en src/
   o public/ llega a producción. La lógica pura (sorteo, plan de giro, finales,
@@ -117,10 +117,9 @@ button { cursor: pointer; }
   display: block; position: relative; padding: 0; border: 0; background: none;
   width: var(--wheel-d); aspect-ratio: 1; margin-inline: auto;
   border-radius: 50%;
-  /* Las etiquetas miden en cqw: así no hace falta ResizeObserver */
-  container-type: inline-size;
   touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
 }
+.wheel-frame { display: block; position: absolute; inset: 0; border-radius: 50%; /* Las etiquetas miden en cqw: así no hace falta ResizeObserver. El contenedor es este <span> y no el <button>: en algunos WebKit un botón no es contenedor */ container-type: inline-size; }
 .wheel-box:disabled { cursor: default; }
 .wheel-box:focus-visible { outline: 2px solid var(--accent-warm); outline-offset: 5px; }
 .wheel-box, .btn-spin { --ink-on-warm: #1a0e06; } /* texto sobre --accent-warm (DESIGN.md) */
@@ -349,7 +348,10 @@ button { cursor: pointer; }
 body.is-foco .site-head, body.is-foco .tool-hero, body.is-foco .tool-inputs, body.is-foco .tool-hist,
 body.is-foco .result-actions { display: none; }
 body.is-foco .tool { grid-template-columns: minmax(0, 1fr); grid-template-areas: "wheel"; }
-body.is-foco .wheel-box, .tool-wheel:fullscreen .wheel-box { --wheel-d: min(100%, calc(100svh - 200px), 44rem); }
+body.is-foco .wheel-box { --wheel-d: min(100%, calc(100svh - 200px), 44rem); }
+.tool-wheel:fullscreen .wheel-box { --wheel-d: min(100%, calc(100svh - 200px), 44rem); }
+/* aparte: un selector que un navegador no entiende invalida toda la lista */
+.tool-wheel:-webkit-full-screen .wheel-box { --wheel-d: min(100%, calc(100svh - 200px), 44rem); }
 .tool-wheel:fullscreen { background: var(--bg-body); display: flex; flex-direction: column; justify-content: center; padding: 16px; overflow: auto; }
 
 @media (min-width: 640px) {
@@ -439,6 +441,7 @@ body.is-foco .wheel-box, .tool-wheel:fullscreen .wheel-box { --wheel-d: min(100%
   <section class="tool-wheel" aria-label="Ruleta">
     <div class="wheel-stage">
       <button class="wheel-box" id="rueda" type="button" aria-label="Girar la ruleta" aria-describedby="rueda-desc">
+        <span class="wheel-frame">
         <svg class="wheel-pointer" id="puntero" viewBox="0 0 24 30" aria-hidden="true"><path d="M12 30 2 7Q12-2 22 7Z"/></svg>
         <span class="wheel-rotor" id="rotor" data-densidad="1">
           <svg class="wheel-slices" id="gajos" viewBox="0 0 200 200" aria-hidden="true"></svg>
@@ -446,6 +449,7 @@ body.is-foco .wheel-box, .tool-wheel:fullscreen .wheel-box { --wheel-d: min(100%
         </span>
         <span class="wheel-hub" id="cubo" aria-hidden="true"></span>
         <span class="wheel-empty">Escribe al menos una opción</span>
+        </span>
       </button>
       <span class="sr-only" id="rueda-desc"></span>
       <div class="wheel-tools">
@@ -500,6 +504,7 @@ body.is-foco .wheel-box, .tool-wheel:fullscreen .wheel-box { --wheel-d: min(100%
       <button class="text-btn" id="ordenar" type="button">Ordenar</button>
       <button class="text-btn" id="vaciar" type="button">Vaciar</button>
       <button class="text-btn" id="compartir" type="button">Compartir</button>
+      <button class="text-btn" id="reiniciar" type="button" hidden>Reiniciar cuentas</button>
       <span class="share-status" id="compartir-estado" role="status"></span>
     </div>
   </section>
@@ -647,7 +652,8 @@ function margenReposo(angulo, n) {
   return Math.min(dentro, s - dentro);
 }
 // Amplitud del balanceo de reposo, calculada con la pose (SDD §6.3, v1.4).
-function amplitudReposo(margen) { return Math.min(1.5, 0.4 * margen); }
+// Con la rueda grande también se limita por píxeles: nunca más de 6 px en el borde (radio en px).
+function amplitudReposo(margen, radio = Infinity) { return Math.min(1.5, 0.4 * margen, ((6 / radio) * 180) / Math.PI); }
 
 /* --- Final con suspenso (SDD §6.13) --- */
 // Intervalo de la pose final dentro del gajo ganador, medido en el sentido del
@@ -912,6 +918,11 @@ function voltear(conFundido) {
   }).catch(() => {});
 }
 
+function quitarMarca() {
+  rueda.classList.remove('has-ganador');
+  rueda.querySelectorAll('.is-ganador').forEach((el) => el.classList.remove('is-ganador'));
+  estado.ganador = -1;
+}
 function marcarGanador(i) {
   const path = gajosEl.querySelector(`[data-i="${i}"]`);
   if (!path) return;
@@ -938,7 +949,7 @@ function reposo() {
   if (reducido() || estado.girando || entradaViva || document.hidden || estado.n === 0) return;
   // La amplitud sale de la pose, no de N: tras un final con suspenso el puntero
   // puede quedar cerca de una frontera (SDD §6.3).
-  const amp = amplitudReposo(margenReposo(estado.theta, estado.n));
+  const amp = amplitudReposo(margenReposo(estado.theta, estado.n), rueda.getBoundingClientRect().width / 2);
   const t = estado.theta, e = 'ease-in-out';
   reposoAnim = rotor.animate([
     { transform: `rotate(${t}deg)`, easing: e },
@@ -997,12 +1008,12 @@ async function girar(opts = {}) {
   if (hayCambios()) repintar();             // RF-05: lo pendiente se aplica antes de planificar
   if (estado.n === 0) return;
   estado.girando = true;
-  estado.foco = [btnGirar, rueda].find((el) => el === document.activeElement) || null; // antes de deshabilitar
+  // Vuelve al control que lanzó el giro; con el atajo global o arrastrando, al botón principal (SDD §7)
+  estado.foco = opts.origen ? btnGirar : [btnGirar, rueda].find((el) => el === document.activeElement) || null; // antes de deshabilitar
   btnGirar.disabled = true;
   rueda.disabled = true;
   ocultarResultado();
-  rueda.classList.remove('has-ganador');
-  rueda.querySelectorAll('.is-ganador').forEach((el) => el.classList.remove('is-ganador'));
+  quitarMarca();
   if (estado.sonido) audio()?.resume?.();
 
   const n = estado.n;
@@ -1013,7 +1024,8 @@ async function girar(opts = {}) {
   const final = eligeFinal(n);                       // se sortea aparte, independiente del ganador
   const vueltas = opts.vueltas || 5 + indiceAlAzar(3);
   const dur = Math.min(7000, Math.max(5000, vueltas * 1000 + (unidad() - 0.5) * 600)); // 5–7 s (D4)
-  $('ultimo-final').textContent = `Último final: ${NOMBRE_FINAL[final]}${n < 2 || n > 30 ? ' (con una sola opción o con más de 30 es siempre Normal)' : ''}.`;
+  $('ultimo-final').textContent = reducido() ? 'Último final: Normal (con movimiento reducido solo hay fundido).'
+    : `Último final: ${NOMBRE_FINAL[final]}${n < 2 || n > 30 ? ' (con una sola opción o con más de 30 es siempre Normal)' : ''}.`;
 
   cancelarTodo();
   entradaViva = false;
@@ -1060,7 +1072,7 @@ async function girar(opts = {}) {
 function terminar(ganador, opcionesGiro, nGiro, pregunta, refs) {
   estado.ganador = ganador;
   marcarGanador(ganador);
-  let principal = opcionesGiro[ganador], lado = pregunta || `1 de ${nGiro} opciones`;
+  let principal = opcionesGiro[ganador], lado = pregunta || (nGiro === 1 ? 'Única opción' : `1 de ${nGiro} opciones`);
   const salio = principal;
   const h = { opcion: salio, para: pregunta };
   estado.historial.unshift(h);
@@ -1078,7 +1090,7 @@ function terminar(ganador, opcionesGiro, nGiro, pregunta, refs) {
     actualizarFilas();
     const quedan = activas();
     if (!ref) {
-      lado = pregunta || `1 de ${nGiro} opciones`; // la lista cambió durante el giro: no hay nada que eliminar
+      lado = pregunta || (nGiro === 1 ? 'Única opción' : `1 de ${nGiro} opciones`); // la lista cambió durante el giro: no hay nada que eliminar
     } else if (quedan.length === 1) {
       estado.campeon = quedan[0];
       principal = `Ganó ${quedan[0].t.trim()}`;
@@ -1086,7 +1098,7 @@ function terminar(ganador, opcionesGiro, nGiro, pregunta, refs) {
     } else {
       lado = pregunta || `Se eliminó «${salio}» · quedan ${quedan.length}`;
     }
-    if (ref) avisar(`«${salio}» eliminada`, () => restaurar(foto));
+    if (ref) avisar(`«${salio}» eliminada`, () => { restaurar(foto); ocultarResultado(); quitarMarca(); });
   }
   renderHistorial();
   mostrarResultado(principal, lado, salio);
@@ -1133,12 +1145,19 @@ function actualizarBoton() {
 
 // Repinta la rueda con la lista actual. Si la lista cambió, el resultado vigente
 // se oculta y con él la marca del ganador (RF-06); si no, se conservan.
+// Pose de reposo de una rueda nueva: el puntero a mitad del primer gajo, nunca sobre una frontera
+// (con margen 0 la amplitud del reposo sería 0 y la rueda quedaría quieta).
+const poseInicial = (n) => -0.5 * (360 / n);
 function repintar() {
   const igual = !hayCambios();
   const g = estado.ganador;
   pararReposo();
   pintar();
-  if (igual && g >= 0) { estado.ganador = g; marcarGanador(g); } else ocultarResultado();
+  if (igual && g >= 0) { estado.ganador = g; marcarGanador(g); }
+  else if (!igual) {
+    ocultarResultado();
+    if (estado.n > 0) { escribirPose(poseInicial(estado.n)); voltear(false); }
+  }
   reposo();
 }
 // Cualquier edición del visitante: se aplica ya, salvo durante el giro (RF-05).
@@ -1156,8 +1175,8 @@ function volverAEmpezar() {
 }
 
 /* --- Editor en lista (SDD §6.14.5) --- */
-function fotoLista() { return estado.items.map((i) => ({ ...i })); }
-function restaurar(foto) { estado.items = foto.map((i) => ({ ...i })); renderLista(); editado(); }
+function fotoLista() { return { items: estado.items.map((i) => ({ ...i })), cuentas: { ...estado.cuentas } }; }
+function restaurar(foto) { estado.items = foto.items.map((i) => ({ ...i })); estado.cuentas = { ...foto.cuentas }; renderLista(); editado(); }
 
 function etiquetaOpciones() {
   $('etq-opciones').textContent = `Opciones · ${activas().length}${estado.items.length > activas().length ? ` de ${estado.items.length}` : ''}`;
@@ -1230,6 +1249,7 @@ listaEl.addEventListener('click', (ev) => {
   } else if (ev.target.closest('.opt-del')) {
     const foto = fotoLista();
     estado.items.splice(estado.items.indexOf(it), 1);
+    delete estado.cuentas[it.t.trim()]; // borrar una opción borra su cuenta
     renderLista();
     avisar(`«${it.t.trim() || 'Opción'}» borrada`, () => restaurar(foto));
     editado();
@@ -1275,9 +1295,10 @@ txtOpciones.addEventListener('input', () => {
 function cargar(lista) {
   const foto = fotoLista();
   estado.items = lista.map((t) => ({ t, oculta: false }));
+  estado.cuentas = {}; // un ejemplo reinicia las cuentas
   renderLista();
   editado();
-  if (foto.length) avisar('Se cambió la lista', () => restaurar(foto));
+  if (foto.items.length) avisar('Se cambió la lista', () => restaurar(foto));
 }
 document.querySelectorAll('[data-ejemplo]').forEach((b) => b.addEventListener('click', () => cargar(EJEMPLOS[b.dataset.ejemplo])));
 $('mezclar').addEventListener('click', () => {
@@ -1293,7 +1314,14 @@ $('ordenar').addEventListener('click', () => {
 $('vaciar').addEventListener('click', () => {
   const foto = fotoLista();
   estado.items = [];
+  estado.cuentas = {};
   renderLista(); editado(); avisar('Lista vaciada', () => restaurar(foto));
+});
+$('reiniciar').addEventListener('click', () => {
+  const foto = fotoLista();
+  estado.cuentas = {};
+  actualizarFilas();
+  avisar('Cuentas reiniciadas', () => restaurar(foto));
 });
 $('quitar').addEventListener('click', () => {
   const it = estado.refsRueda[estado.ganador];
@@ -1314,10 +1342,17 @@ function avisar(texto, deshacer) {
   avisoTimer = setTimeout(cerrarAviso, DESHACER_MS);
 }
 function cerrarAviso() { $('aviso').hidden = true; avisoUndo = null; clearTimeout(avisoTimer); }
-$('aviso-deshacer').addEventListener('click', () => { const f = avisoUndo; cerrarAviso(); f?.(); });
+$('aviso-deshacer').addEventListener('click', () => {
+  const f = avisoUndo;
+  const teniaFoco = document.activeElement === $('aviso-deshacer');
+  cerrarAviso();
+  f?.();
+  if (teniaFoco) (btnGirar.disabled ? rueda : btnGirar).focus({ preventScroll: true }); // el foco no se pierde en <body>
+});
 $('aviso').addEventListener('pointerenter', () => clearTimeout(avisoTimer));
 $('aviso').addEventListener('pointerleave', () => { if (!$('aviso').hidden) avisoTimer = setTimeout(cerrarAviso, DESHACER_MS); });
 $('aviso').addEventListener('focusin', () => clearTimeout(avisoTimer));
+$('aviso').addEventListener('focusout', () => { if (!$('aviso').hidden) { clearTimeout(avisoTimer); avisoTimer = setTimeout(cerrarAviso, DESHACER_MS); } });
 
 /* --- Historial --- */
 function renderHistorial() {
@@ -1337,6 +1372,7 @@ document.querySelectorAll('.mode-opt').forEach((b) => b.addEventListener('click'
   document.querySelectorAll('.mode-opt').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
   if (estado.modo !== 'eliminar') { estado.campeon = null; actualizarBoton(); }
   pintarPuntos();
+  $('reiniciar').hidden = estado.modo !== 'contar'; // «Reiniciar cuentas» solo en Contar
   const q = $('quitar'); // «Quitar» solo en Normal
   if (estado.modo !== 'normal') { q.hidden = true; $('acciones-resultado').hidden = true; }
 }));
@@ -1393,7 +1429,7 @@ rueda.addEventListener('click', () => {            // tocar la rueda; Espacio e 
   girar();
 });
 document.addEventListener('keydown', (ev) => {    // Ctrl/Cmd+Intro desde cualquier sitio
-  if (ev.key === 'Enter' && (ev.ctrlKey || ev.metaKey)) { ev.preventDefault(); girar(); }
+  if (ev.key === 'Enter' && (ev.ctrlKey || ev.metaKey)) { ev.preventDefault(); girar({ origen: 'atajo' }); }
 });
 
 // Arrastrar la rueda con el dedo o el ratón: la fuerza solo elige las vueltas (5–7), nunca el ganador.
@@ -1434,7 +1470,7 @@ const soltar = (ev, cancelado) => {
   if (cancelado) { voltear(true); reposo(); return; }
   const m = d.muestras, a = m[0], b = m[m.length - 1];
   const w = Math.abs(b.total - a.total) / Math.max(0.016, (b.t - a.t) / 1000); // °/s
-  girar({ vueltas: w < 450 ? 5 : w < 900 ? 6 : 7 });
+  girar({ vueltas: w < 450 ? 5 : w < 900 ? 6 : 7, origen: 'arrastre' });
 };
 rueda.addEventListener('pointerup', (ev) => soltar(ev, false));
 rueda.addEventListener('pointercancel', (ev) => soltar(ev, true));
@@ -1492,6 +1528,7 @@ document.addEventListener('visibilitychange', () => {
 /* --- Arranque --- */
 estado.items = EJEMPLOS[6].map((t) => ({ t, oculta: false }));
 renderLista();
+escribirPose(poseInicial(estado.items.length));
 pintar();
 entrar();
 // Calienta el cálculo del plan (el primer giro con 4× de CPU tardaba 300 ms en arrancar)
