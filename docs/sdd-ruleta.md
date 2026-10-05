@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Estado | v1.4 (decisiones del propietario §12; auditado §14; bloqueantes §15) — pendiente de las decisiones del propietario de §12 |
+| Estado | v1.5 (decisiones del propietario §12; auditado §14; bloqueantes §15) — pendiente de las decisiones del propietario de §12 |
 | Fecha | 2026-10-05 |
 | Alcance | `src/pages/ruleta.astro`, sus componentes y su JS, tests de estado de `/ruleta`, texto SEO de la página |
 | Normas que manda | `AGENTS.md` → `DESIGN.md` → skill `decidelo-herramienta` → skills de terceros |
@@ -259,7 +259,9 @@ MÓVIL (base, < 640px)                 ESCRITORIO (≥ 1024px)
   más grande** (`3fr`), editor a la derecha (`2fr`), como Wheel of Names y
   Picker Wheel: es la colocación que el visitante ya conoce (v1.4; cambia
   respecto a la moneda y se documenta). La rueda crece con la pantalla
-  hasta `min(calc(100svh - 200px), 44rem)`. La rueda se limita por alto
+  hasta `min(calc(100svh - Xpx), 44rem)`, con X ajustado con la medida para
+  que en 1280×720 queden rueda y botón enteros con holgura ≥ 16 px (el
+  valor de 200 px de la v1.4 no deja holgura; #15). La rueda se limita por alto
   (`calc(100svh - 240px)`) para que quepa entera en 1280×720.
 - Debajo, sin cambios: `AdSlot`, `SeoArticle`, `HubGrid` (con el `AdSlot`
   superior después de la herramienta, como en la moneda).
@@ -321,7 +323,7 @@ patrón que `dados-fisica.js`/`dados-check.mjs`). Funciones:
 | `indiceAlAzar(n, rnd)` | Entero uniforme en `[0, n)` con muestreo por rechazo sobre `Uint32`. `rnd` inyectable para los tests. |
 | `geometria(n)` | Para cada gajo: ángulo inicial, final y medio; `d` del `<path>` (con N = 1, círculo completo). |
 | `tonoDe(i, n)` | Índice de tono con vecinos distintos, incluido el cierre del círculo (N impar). |
-| `planGiro({ anguloActual, ganador, n, rnd })` | Ángulo final = vueltas enteras (5–7) + el que deja el puntero en `ganador`, con desfase en [0,15; 0,85] del gajo. Devuelve los fotogramas del rotor (muestreados a 60 Hz sobre una curva de **deceleración constante**, `θ(t) = θ_total · (1 − (1 − t/T)²)`, con `easing: linear` entre muestras; la velocidad inicial es el doble de la media. No se usa una cúbica: arrancaría al triple de la media y con ~13 opciones la rueda parecería girar hacia atrás por efecto rueda de carro; #14), los del puntero (un golpe en cada cruce de frontera, calculado con la misma curva; si dos cruces caen a menos de 50 ms, el puntero se queda levantado en vez de golpear: con 100 opciones y 6 vueltas hay 600 cruces en 4 s, más que fotogramas), la duración y el ángulo final normalizado a `[0, 360)`. |
+| `planGiro({ anguloActual, ganador, n, rnd })` | Ángulo final = vueltas enteras (5–7) + el que deja el puntero en `ganador`, con desfase en [0,15; 0,85] del gajo. Devuelve los fotogramas del rotor (muestreados a 60 Hz, `easing: linear` entre muestras) sobre una **curva por tramos** (#15): (1) **fase rápida** en el primer 70 % del tiempo `T₁ = 0,7·T`, con deceleración constante de `v₀` a `v₁`; (2) **cola** en el 30 % final `T_c = 0,3·T`, `θ(τ) = θ_c · (1 − (1 − τ)³)` con `τ = t'/T_c`, que recorre `θ_c = min(90°, 1,5 × gajo)` si N ≤ 30 y `θ_c = 90°` si N > 30. Empalme sin salto de velocidad: `v₁ = 3·θ_c / T_c`, y `v₀ = 2·(θ_total − θ_c)/T₁ − v₁`. Con 5–7 vueltas en 5–7 s el arranque queda en ≈ 14–15°/fotograma, menos que con la curva única de la v1.3 (antes 20°) y muy por debajo de una cuártica (22°), los del puntero (un golpe en cada cruce de frontera, calculado con la misma curva; si dos cruces caen a menos de 50 ms, el puntero se queda levantado en vez de golpear: con 100 opciones y 6 vueltas hay 600 cruces en 4 s, más que fotogramas), la duración y el ángulo final normalizado a `[0, 360)`. |
 | `gajoBajoPuntero(angulo, n)` | Inverso de lo anterior; lo usan el test de Node y el test de estado. |
 | `aterrizaje(n)` | Rebote máximo = `min(2°, 0,1 × gajo)`. |
 | `amplitudReposo(margen)` | Amplitud del balanceo de reposo = `min(1,5°, 0,4 × margen)`, donde `margen` es la distancia real del puntero a la frontera más cercana en la pose de reposo. Con los finales de §6.13 el puntero puede quedar cerca del borde, así que la amplitud se calcula con la pose, no con N (#14, v1.4). |
@@ -467,8 +469,11 @@ Siguiendo «Cómo decidir entre CSS propio y utilidad de Tailwind»:
   (lo comprueba `wheel-contrast.mjs`).
 - `tonoDe(i, n, 8)`: dos vecinos nunca comparten tono, tampoco el último y el
   primero.
-- **Ganador**: el gajo ganador conserva su color y el resto se atenúa
-  (capa oscura al 55 %), con un contorno claro de 2 px en el ganador. Con
+- **Ganador**: el gajo ganador conserva su color y el resto se atenúa con
+  una **capa oscura al 30 %** (al 55 % las etiquetas bajaban a 2,6–4,0:1 e
+  incumplían RNF-07; al 30 % el peor caso es 4,85:1, #15). Para que la
+  marca siga siendo clara: contorno claro de 3 px en el ganador y su
+  etiqueta en peso 700. Con
   una paleta de ocho colores, pintarlo de `--accent-warm` se confundiría con
   un gajo más.
 - El botón principal y el foco siguen en `--accent-warm`: el pastel es solo
@@ -495,9 +500,14 @@ termina la animación. Así el suspenso no cambia ninguna probabilidad.
   intervalos de la tabla se recortan para respetarlo: con N = 30 (gajo de
   12°), «Por los pelos» queda en [0,125; 0,15] y «Casi se pasa» en
   [0,85; 0,875].
-- **Cola lenta**: en el último 30 % del tiempo la rueda recorre como mucho
-  1,5 gajos y nunca más de 90°; en «Casi se pasa» y «Por los pelos», el
-  último gajo se cruza (o casi) por debajo de 30°/s.
+- **Cola lenta**: la cola de `planGiro` (§6.3) recorre en el último 30 % del
+  tiempo `θ_c = min(90°, 1,5 gajos)` (90° con N > 30). En «Casi se pasa» y
+  «Por los pelos», la frontera decisiva se cruza (o casi) por debajo de
+  30°/s, cosa que la cola cúbica garantiza porque el puntero está a menos
+  de 0,15 gajo del final.
+- **Sentido de los intervalos**: el desfase se mide en el sentido del giro;
+  0 es la frontera por la que entra el puntero en el gajo ganador y 1 la de
+  salida, hacia el «gajo siguiente».
 - El puntero y el tic acompañan: los golpes se espacian al frenar.
 - `ruleta-check.mjs` comprueba que la frecuencia de cada final y la de cada
   ganador son independientes (χ² sobre la tabla de contingencia).
@@ -531,7 +541,9 @@ control donde se usa):
    el suspenso lo diseñamos nosotros.
 3. **Modo, arriba y en una pieza** (patrón «Selector de modo» de DESIGN.md):
    **Normal · Eliminar · Contar**. Normal: el ganador sigue en la rueda.
-   Eliminar: tras cada giro el ganador se oculta solo (con «Deshacer»);
+   Eliminar: tras cada giro el ganador se oculta solo (con «Deshacer»). El
+   ocultado entra como cambio pendiente (RF-05): el resultado sigue a la
+   vista con «Girar otra vez» y la rueda se repinta en la siguiente acción;
    cuando queda una opción, «Ganó X» y «Volver a empezar». Contar: cada
    opción acumula sus victorias en la lista y en el historial.
 4. **Acciones tras el resultado, bajo el resultado** (nunca en una ventana):
@@ -700,3 +712,4 @@ resolvieron cambiando este documento. Cada fila enlaza el issue.
 | #14 | La plantilla `<template><path/></template>` no pinta: el `<path>` se parsea sin espacio de nombres SVG. | `<template><svg><path/></svg></template>` y se clona el hijo del `<svg>`. | §6.2 |
 | #7 (ciclo 2 de auditoría) | RF-05 («se aplica al terminar») chocaba con O2: al aterrizar, la rueda se repintaba con la lista escrita durante el giro y el resultado quedaba sobre otra rueda. | Lo escrito durante el giro se aplica en la siguiente acción del visitante, no al aterrizar; el resultado vigente se oculta cuando la rueda cambia de lista. Además: resultado largo con `.is-largo`, umbrales de densidad y alto de la rueda medidos en el prototipo. | O2, RF-05, RF-06, §6.1, §6.2 |
 | Propietario (prototipo v1) | D1–D8 (§12): paleta pastel, tic opcional, final con suspenso, entrada más suave, controles rediseñados, escritorio. | §6.1, §6.5, §6.12–§6.14, §6.9, O6, RNF-03, RNF-06, §7. Revisión propia de la v1.4: intervalos de los finales recortados al margen mínimo; RNF-06 decía 5 KB mientras O6 decía 6,3 (residuo de A10). | v1.4 |
+| #15 | (1) La «cola lenta» de §6.13 era imposible con la curva única de §6.3 (el último 30 % del tiempo recorría el 9 % del total, 162–227°). (2) La atenuación al 55 % de §6.12 dejaba las etiquetas en 2,6–4,0:1, por debajo de RNF-07. Menores: alto de la rueda en escritorio, sentido de los intervalos, ocultado en modo Eliminar. | (1) Curva por tramos con cola cúbica y empalme de velocidad. (2) Atenuación al 30 % con contorno de 3 px y etiqueta 700. Menores confirmados como los leyó la sesión. | §6.3, §6.12, §6.13, §6.14, §6.1 |
