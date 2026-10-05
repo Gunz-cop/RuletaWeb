@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#07070a">
 <meta name="color-scheme" content="dark">
@@ -28,7 +28,6 @@
   --text-secondary: #8b8b9e;
   --text-tertiary: #5a5a6e;
   --accent-warm: #e2905a;
-  --ink-on-warm: #1a0e06;
   --divider-line: rgba(240, 240, 245, 0.12);
   --radius-sm: 6px;
   --radius-md: 12px;
@@ -86,6 +85,7 @@ button, input, textarea { font: inherit; color: inherit; touch-action: manipulat
   overflow-x: clip;
   padding-top: 14px; /* espacio para el puntero, que asoma por encima del borde */
 }
+.wheel-box, .btn-spin { --ink-on-warm: #1a0e06; } /* texto sobre --accent-warm (DESIGN.md) */
 .wheel-box {
   --wheel-d: min(100%, calc(100svh - 324px), 32rem); /* con entradilla (alto > 620 px) */
   position: relative;
@@ -191,7 +191,7 @@ button, input, textarea { font: inherit; color: inherit; touch-action: manipulat
 
 .btn-spin-wrap { display: flex; justify-content: center; margin-top: 8px; }
 .btn-spin {
-  min-width: 220px; height: 48px; padding: 0 32px; border: 0; cursor: pointer;
+  min-width: 200px; height: 48px; padding: 0 32px; border: 0; cursor: pointer;
   border-radius: var(--radius-xl);
   background: var(--accent-warm); color: var(--ink-on-warm);
   font: 700 1rem var(--font-display);
@@ -625,7 +625,8 @@ async function entrar() {
   ];
   const op = { duration: ENTRADA_MS, easing: 'cubic-bezier(0.25, 0.8, 0.3, 1)' };
   const a = rotor.animate(k, op);
-  cubo.animate(k.map((f) => ({ ...f, transform: f.transform.replace(/ rotate\([^)]*\)/, '') })), op);
+  // El cubo recorre lo mismo que el rotor (en cqw: el 100 % de su propio ancho sería otro).
+  cubo.animate([{ transform: 'translateX(-125cqw)' }, { transform: 'translateX(6cqw)', offset: 0.7 }, { transform: 'translateX(0)' }], op);
   try { await a.finished; } catch { entradaViva = false; return; } // la interrumpió un giro
   entradaViva = false;
   if (!estado.girando) reposo();
@@ -642,6 +643,8 @@ async function girar() {
   if (estado.tic) { const c = audio(); c?.resume?.(); }
 
   const n = estado.n;
+  const opcionesGiro = estado.opciones.slice();  // lo que enseña la rueda ahora; lo escrito durante el giro no cuenta
+  estado.foco = document.activeElement === btnGirar;
   const ganador = indiceAlAzar(n);               // se decide ANTES de animar
   const dur = estado.duracion === 'corta' ? 2000 : 3500 + 1000 * (u32() / U32);
 
@@ -653,11 +656,14 @@ async function girar() {
     const objetivo = -(ganador + 0.15 + 0.7 * (u32() / U32)) * (360 / n);
     escribirPose(objetivo);
     await esperar(rotor.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200 }));
-    return terminar(ganador);
+    return terminar(ganador, opcionesGiro, n);
   }
 
-  // Anticipación: el rotor retrocede 8° y el puntero se levanta.
+  // El plan se calcula antes de la anticipación, para que no cueste un fotograma al arrancar.
   const t0 = estado.theta;
+  const plan = planGiro({ anguloActual: t0 - ANTICIPACION_GRADOS, ganador, n, duracion: dur });
+
+  // Anticipación: el rotor retrocede 8° y el puntero se levanta.
   const ant = rotor.animate(
     [{ transform: `rotate(${t0}deg)` }, { transform: `rotate(${t0 - ANTICIPACION_GRADOS}deg)` }],
     { duration: ANTICIPACION_MS, easing: 'ease-out', fill: 'forwards' });
@@ -667,7 +673,6 @@ async function girar() {
   await esperar(ant);
 
   // Acción: giro planificado. Las animaciones nuevas tapan a la anticipación.
-  const plan = planGiro({ anguloActual: t0 - ANTICIPACION_GRADOS, ganador, n, duracion: dur });
   const accion = rotor.animate(plan.rotor, { duration: plan.duracion, easing: 'linear', fill: 'forwards' });
   const accionP = puntero.animate(plan.puntero, { duration: plan.duracion, easing: 'linear', fill: 'forwards' });
   ant.cancel(); antP.cancel();
@@ -684,26 +689,30 @@ async function girar() {
   await esperar(aterriza);
   escribirPose(fin);                                  // pose final a mano…
   [rotor, puntero].forEach((el) => el.getAnimations().forEach((a) => a.cancel())); // …y luego se cancela
-  terminar(ganador);
+  terminar(ganador, opcionesGiro, n);
 }
 
-function terminar(ganador) {
+function marcarGanador(i) {
+  gajosEl.children[i]?.classList.add('is-ganador');
+  etiquetasEl.children[i]?.classList.add('is-ganador');
+}
+
+function terminar(ganador, opcionesGiro, nGiro) {
   estado.ganador = ganador;
-  const g = gajosEl.children[ganador], e = etiquetasEl.children[ganador];
-  g?.classList.add('is-ganador');
-  e?.classList.add('is-ganador');
+  marcarGanador(ganador);
   const principal = document.createElement('span');
   principal.className = 'ruleta-result-main';
-  principal.textContent = estado.opciones[ganador];
+  principal.textContent = opcionesGiro[ganador];
   const lateral = document.createElement('span');
   lateral.className = 'ruleta-result-side';
-  lateral.textContent = inpPregunta.value.trim() || `1 de ${estado.n} opciones`;
+  lateral.textContent = inpPregunta.value.trim() || `1 de ${nGiro} opciones`;
   resultadoEl.replaceChildren(principal, lateral);
   voltear(true);
   navigator.vibrate?.(15);
   estado.girando = false;
   if (estado.pendiente) { estado.pendiente = false; pintar(); } // lo escrito durante el giro se aplica ahora
   btnGirar.disabled = estado.n === 0;
+  if (estado.foco && !btnGirar.disabled) btnGirar.focus({ preventScroll: true }); // el foco se queda en el botón (SDD §7)
   reposo(); // vuelve tras cada resultado, con la amplitud acotada al gajo
 }
 
@@ -772,7 +781,11 @@ document.querySelectorAll('[data-paleta].proto-opt').forEach((b) => b.addEventLi
   estado.paleta = b.dataset.paleta;
   rueda.dataset.paleta = estado.paleta;
   document.querySelectorAll('.proto-opt[data-paleta]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
-  if (!estado.girando) { const t = estado.theta; pintar(); escribirPose(t); }
+  if (!estado.girando) {
+    const g = estado.ganador;
+    pintar();
+    if (g >= 0 && g < estado.n) { estado.ganador = g; marcarGanador(g); }
+  }
 }));
 document.querySelectorAll('.proto-opt[data-n]').forEach((b) => b.addEventListener('click', () => {
   txtOpciones.value = EJEMPLOS[b.dataset.n].join('\n');
@@ -792,6 +805,7 @@ $('tic').addEventListener('click', (ev) => {
 $('info-compartir').textContent = navigator.share
   ? 'Este navegador tiene navigator.share: «Compartir» abre el menú del sistema.'
   : 'Este navegador no tiene navigator.share: «Compartir» copia el enlace. Ábrelo en el iPhone para valorar D5.';
+$('info-compartir').textContent += ' El enlace es el de SDD §6.10; la /ruleta de hoy aún no lo lee (fase 4): aquí solo se valora el menú. En el iPhone, el tic no suena con el interruptor de timbre en silencio.';
 
 const fab = $('ir-controles');
 if ('IntersectionObserver' in window) {
