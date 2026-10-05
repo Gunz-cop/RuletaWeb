@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Estado | v1.7 (decisiones del propietario §12; auditado §14; bloqueantes §15) — pendiente de las decisiones del propietario de §12 |
+| Estado | v1.8 — diseño aprobado por el propietario (prototipo v2, §6.15); auditado §14; bloqueantes §15 — pendiente de las decisiones del propietario de §12 |
 | Fecha | 2026-10-05 |
 | Alcance | `src/pages/ruleta.astro`, sus componentes y su JS, tests de estado de `/ruleta`, texto SEO de la página |
 | Normas que manda | `AGENTS.md` → `DESIGN.md` → skill `decidelo-herramienta` → skills de terceros |
@@ -470,11 +470,12 @@ Siguiendo «Cómo decidir entre CSS propio y utilidad de Tailwind»:
 ### 6.12 Paleta pastel viva (D2)
 
 - Variables locales `--wheel-p0…p7` en `Wheel.astro` (objeto ilustrado; no
-  son tokens globales). Ocho tonos pastel con saturación suficiente para
-  verse alegres sobre la tinta del sitio, por ejemplo coral `#ffb4a2`,
-  melocotón `#ffd6a5`, limón `#fdffb6`, menta `#caffbf`, agua `#9bf6ff`,
-  cielo `#a0c4ff`, lavanda `#bdb2ff`, rosa `#ffc6ff`. Los valores finales se
-  fijan en el prototipo v2 con aprobación del propietario.
+  son tokens globales). **Paleta aprobada por el propietario: «Pastel vivo»**
+  (prototipo v2, 2026-10-05): coral `#ffa08d`, melocotón `#ffc15e`, limón
+  `#f3f06a`, menta `#7de8a8`, agua `#62dff0`, cielo `#99b8ff`, lavanda
+  `#bcadff`, rosa `#ff9fef`. Contraste de las etiquetas `#1a1a24`: mínimo
+  8,68:1 a todo color y 4,69:1 atenuado. Los puntos de color de cada fila
+  del editor usan los mismos tonos.
 - Etiquetas en tinta oscura (`#1a1a24`), con contraste ≥ 4,5:1 en cada tono
   (lo comprueba `wheel-contrast.mjs`).
 - `tonoDe(i, n, 8)`: dos vecinos nunca comparten tono, tampoco el último y el
@@ -581,6 +582,35 @@ control donde se usa):
 8. **Sin pesos ni probabilidades distintas**: la página promete que todas
    las opciones tienen la misma probabilidad.
 
+### 6.15 Implementación de referencia: el prototipo v2
+
+El prototipo aprobado por el propietario el 2026-10-05
+(`docs/prototipos/ruleta-rueda.html`, rama `claude/ruleta-7-prototipo`,
+commit `4b4e43f`; publicado en https://claude.ai/artifact/PU9ttGx8uNSwnc32Prm9Jh)
+es la **referencia visual y de comportamiento** de las fases 2 y 3. Probado
+por el propietario en Safari de iPhone, incluido el arrastre.
+
+- **#8** parte de la lógica entre `//LOGICA-INICIO` y `//LOGICA-FIN` del
+  prototipo y la convierte en `ruleta-logica.js` con sus pruebas; donde
+  este SDD y el prototipo difieran, manda el SDD (y la diferencia se anota).
+- **#9** reproduce el marcado, el CSS y el controlador del prototipo con la
+  arquitectura del sitio (componente, Tailwind donde toca, `localStorage`,
+  View Transitions). La barra «Controles del prototipo», la variante
+  «Pastel» y el selector de final **no** pasan al sitio.
+
+Decisiones que cierran lo que la auditoría del prototipo dejó abierto (v1.8):
+
+| Tema | Decisión |
+|---|---|
+| Aviso «Deshacer» | **Arriba** en móvil (`top: 72px`), arriba a la derecha desde 1024 px: abajo tapaba «Girar ruleta» 7 s en 360×560. |
+| Alto mínimo de la rueda | Suelo de `12rem`; en móvil horizontal y ventanas muy bajas se acepta scroll vertical (coincide con `accion: false` de `movil-horizontal` en `estadosResponsive`). |
+| Rueda en escritorio con muchas opciones | La columna de la rueda es `position: sticky; top: 16px` desde 1024 px: sigue a la vista mientras se recorre una lista larga. |
+| `planGiro().anguloFinal` | Normalizado a `[0, 360)` en el módulo (el prototipo lo normaliza al escribir la pose). |
+| Reposo y tamaño | La amplitud se recalcula al cambiar el tamaño de la rueda (`resize` y `fullscreenchange`). |
+| Arrastre con cambios pendientes | Empezar a arrastrar es una «siguiente acción» (RF-05): se repinta antes. |
+| Cambiar la lista durante la entrada | Cancela la entrada y escribe la pose; sin saltos al terminar. |
+| Ctrl/Cmd+Intro desde un campo | El foco se queda en ese campo (§7). |
+
 ## 7. Accesibilidad
 
 - La rueda (v1.4): es también un control de giro, así que el contenedor
@@ -591,7 +621,8 @@ control donde se usa):
   decorativo (`aria-hidden`). Hoy el único «botón» es el cubo, sin texto
   visible fuera de la rueda.
 - Foco: tras girar vuelve al control que lanzó el giro (el botón o la
-  rueda); si se giró con el atajo global o arrastrando, al botón principal.
+  rueda); si se giró arrastrando, al botón principal; con el atajo
+  Ctrl/Cmd+Intro desde un campo, el foco se queda en ese campo (v1.8).
   (Hoy salta al modal.)
 - Pestañas con `role="tablist"`, flechas izquierda/derecha y
   `aria-selected` (hoy faltan las flechas).
@@ -675,7 +706,7 @@ documenta en DESIGN.md en la fase 3.
 | Id | Pregunta | Decisión |
 |---|---|---|
 | D1 | Sonido | **Se conserva el tic** al cruzar cada gajo, **desactivado por defecto** y recordado en `decidelo_ruleta_sonido`. Sin arpegio de ganador. Excepción a la regla 6, como el temporizador. |
-| D2 | Paleta de la rueda | **Ni A ni B**: los tonos de tinta «lo hacen ver aburrido». Paleta **pastel viva** (§6.12): una actividad de grupo tiene que disfrutarse. Excepción al «un solo acento» limitada al objeto ilustrado. |
+| D2 | Paleta de la rueda | **«Pastel vivo»** (§6.12), elegida tras el prototipo v2. Antes, **ni A ni B**: los tonos de tinta «lo hacen ver aburrido». Paleta **pastel viva** (§6.12): una actividad de grupo tiene que disfrutarse. Excepción al «un solo acento» limitada al objeto ilustrado. |
 | D3 | Hoja inferior de móvil | Se quita (sin objeción en la prueba). La edición se rediseña en §6.14. |
 | D4 | Duración y final | Giro más largo y **final con suspenso** (§6.13): frena despacio, a veces parece que cae en otro gajo y no (o sí), y no siempre para en el centro del gajo, sin abusar del efecto. Se descarta el giro de 2 s. |
 | D5 | Compartir | `navigator.share` y, si no existe, copiar el enlace. |
@@ -736,3 +767,4 @@ resolvieron cambiando este documento. Cada fila enlaza el issue.
 | #15 | (1) La «cola lenta» de §6.13 era imposible con la curva única de §6.3 (el último 30 % del tiempo recorría el 9 % del total, 162–227°). (2) La atenuación al 55 % de §6.12 dejaba las etiquetas en 2,6–4,0:1, por debajo de RNF-07. Menores: alto de la rueda en escritorio, sentido de los intervalos, ocultado en modo Eliminar. | (1) Curva por tramos con cola cúbica y empalme de velocidad. (2) Atenuación al 30 % con contorno de 3 px y etiqueta 700. Menores confirmados como los leyó la sesión. | §6.3, §6.12, §6.13, §6.14, §6.1 |
 | Auditoría v2, ciclo 1 (#7) | Cuatro descuadres del SDD con lo medido: alto de la rueda en móvil, amplitud de §15 desfasada, reposo «≤ 6 px» falso en ruedas grandes, frecuencias de finales sin la anti-repetición. | Corregidos con las cifras del prototipo; el reposo se limita también en píxeles. | §6.1, §6.5, §6.13, §15 | v1.6 |
 | Auditoría v2, ciclo 2 (#7) | Alto de la rueda sin fórmula para todos los formatos; «Deshacer» durante el giro; reinicio de las cuentas de Contar; destino del foco; posición del aviso. | Adoptado lo que hace el prototipo, que es razonable: hero de alto fijo con invariante en todos los formatos; Deshacer en giro = cambio pendiente; cuentas por texto con «Reiniciar cuentas»; foco al control que giró; aviso dentro de la zona de la rueda. | §6.1, RF-05, §6.14, §7 | v1.7 |
+| Propietario (prototipo v2) y auditoría v2 ciclo 5 | Paleta elegida: «Pastel vivo». Abiertos del prototipo: posición del aviso, suelo de la rueda, rueda en escritorio con muchas opciones, normalización del ángulo, reposo al redimensionar, arrastre con cambios pendientes, lista durante la entrada, foco con el atajo. | Prototipo v2 como implementación de referencia (§6.15) y una decisión por cada abierto. | §6.12, §6.15, §7, §12 | v1.8 |
