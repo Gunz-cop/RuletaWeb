@@ -1,0 +1,812 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#07070a">
+<meta name="color-scheme" content="dark">
+<title>Prototipo de la rueda · Decídelo.app</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;600;700&family=Newsreader:ital,wght@1,400;1,500&display=swap" rel="stylesheet">
+<!--
+  Prototipo del issue #7 (SDD §6.1, §6.2, §6.5 y §12). Un solo archivo, sin
+  librerías ni scripts externos. NO es una página del sitio: vive en docs/ y se
+  publica aparte, porque todo lo que está en src/ o public/ llega a producción.
+  La lógica pura (sorteo, plan de giro, fotogramas del puntero) es la de
+  SDD §6.3; el módulo definitivo es el issue #8.
+-->
+<style>
+/* Tokens del sitio (DESIGN.md, «Color: qué usar para qué» y radios), copiados
+   a propósito: este archivo no importa nada del sitio. */
+:root {
+  --bg-body: #07070a;
+  --bg-surface: #0f0f15;
+  --bg-surface-alt: #14141d;
+  --text-primary: #f0f0f5;
+  --text-secondary: #8b8b9e;
+  --text-tertiary: #5a5a6e;
+  --accent-warm: #e2905a;
+  --ink-on-warm: #1a0e06;
+  --divider-line: rgba(240, 240, 245, 0.12);
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Outfit', 'Inter', system-ui, sans-serif;
+  --font-serif: 'Newsreader', Georgia, serif;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--bg-body);
+  color: var(--text-primary);
+  font: 400 1rem/1.5 var(--font-sans);
+  -webkit-tap-highlight-color: transparent;
+}
+button, input, textarea { font: inherit; color: inherit; touch-action: manipulation; }
+:focus-visible { outline: 2px solid var(--accent-warm); outline-offset: 3px; }
+
+.wrap { max-width: 1100px; margin: 0 auto; padding-inline: 16px; }
+
+/* ---------- Maqueta: cabecera del sitio (64 px, sin Foco ni Sonido) ---------- */
+.site-head { height: 64px; border-bottom: 1px solid var(--divider-line); }
+.site-head .wrap { height: 100%; display: flex; align-items: center; justify-content: space-between; }
+.site-logo { font: 700 1.15rem var(--font-display); letter-spacing: -0.01em; }
+.site-back { font-size: 0.85rem; color: var(--text-secondary); }
+
+/* ---------- Maqueta: anatomía de la página (SDD §6.1) ---------- */
+.tool {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "hero" "wheel" "inputs";
+  padding-bottom: 32px;
+}
+.tool-hero { grid-area: hero; padding-top: 8px; }
+.tool-wheel { grid-area: wheel; }
+.tool-inputs { grid-area: inputs; padding-top: 24px; }
+
+.tool-hero h1 {
+  margin: 0;
+  font: 600 clamp(1.5rem, 5.5vw, 2.6rem)/1.1 var(--font-display);
+  letter-spacing: -0.02em;
+}
+.tool-hero h1 em { font: italic 400 1.08em var(--font-serif); color: var(--accent-warm); letter-spacing: 0; }
+.lede { margin: 6px 0 0; color: var(--text-secondary); font-size: 0.95rem; line-height: 1.4; }
+/* La entradilla se oculta si el alto es corto (SDD §6.1) */
+@media (max-width: 639px) and (max-height: 620px) { .lede { display: none; } }
+
+/* ---------- La rueda (SDD §6.2) ---------- */
+.wheel-stage {
+  /* La entrada llega desde la izquierda: se recorta en horizontal, no en vertical. */
+  overflow-x: clip;
+  padding-top: 14px; /* espacio para el puntero, que asoma por encima del borde */
+}
+.wheel-box {
+  --wheel-d: min(100%, calc(100svh - 324px), 32rem); /* con entradilla (alto > 620 px) */
+  position: relative;
+  width: var(--wheel-d);
+  aspect-ratio: 1;
+  margin-inline: auto;
+  /* Las etiquetas miden en cqw: así no hace falta ResizeObserver */
+  container-type: inline-size;
+}
+/* Sin entradilla (SDD §6.1) la rueda gana 48 px; el valor se ajustó con la medida, no a ojo */
+@media (max-width: 639px) and (max-height: 620px) { .wheel-box { --wheel-d: min(100%, calc(100svh - 272px), 32rem); } }
+@media (min-width: 640px) { .wheel-box { --wheel-d: min(100%, calc(100svh - 264px), 36rem); } }
+@media (min-width: 1024px) { .wheel-box { --wheel-d: min(100%, calc(100svh - 240px), 36rem); } }
+
+/* Paletas de la rueda (D2). Variables locales del objeto ilustrado: nunca tokens globales. */
+.wheel-box { --wheel-aro: rgba(240, 240, 245, 0.2); --wheel-trazo: rgba(240, 240, 245, 0.14); }
+.wheel-box[data-paleta="A"] {
+  /* Tintas alternas y un cálido apagado; el ganador usa --accent-warm. */
+  --wheel-t0: #1c1c27; --wheel-t1: #2a2a3c; --wheel-t2: #4b3527;
+}
+.wheel-box[data-paleta="B"] {
+  /* Seis tonos apagados variados. */
+  --wheel-t0: #34506b; --wheel-t1: #4f5f3a; --wheel-t2: #703f4c;
+  --wheel-t3: #3b6159; --wheel-t4: #5d4b78; --wheel-t5: #77592f;
+}
+
+.wheel-pointer {
+  position: absolute; z-index: 2; left: 50%; top: -14px;
+  width: 24px; height: 30px; margin-left: -12px;
+  transform-origin: 50% 20%;
+  fill: var(--accent-warm);
+  pointer-events: none;
+}
+.wheel-rotor {
+  position: absolute; inset: 0;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--wheel-aro);
+  will-change: transform;
+}
+.wheel-slices { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.wheel-slice { stroke: var(--wheel-trazo); stroke-width: 0.8; transition: fill 0.15s; }
+.wheel-slice.tono-0 { fill: var(--wheel-t0); }
+.wheel-slice.tono-1 { fill: var(--wheel-t1); }
+.wheel-slice.tono-2 { fill: var(--wheel-t2); }
+.wheel-slice.tono-3 { fill: var(--wheel-t3); }
+.wheel-slice.tono-4 { fill: var(--wheel-t4); }
+.wheel-slice.tono-5 { fill: var(--wheel-t5); }
+.wheel-slice.is-ganador { fill: var(--accent-warm); }
+
+.wheel-labels { position: absolute; inset: 0; pointer-events: none; }
+/* Tamaño de letra por escalones de N (16/13/11/9 px, como hoy) y el radio donde
+   empieza el texto, para que dos etiquetas vecinas no se pisen cerca del cubo. */
+.wheel-rotor[data-densidad="1"] { --fs: 16px; --inner: 12cqw; --lw: 35cqw; }
+.wheel-rotor[data-densidad="2"] { --fs: 13px; --inner: 16cqw; --lw: 31cqw; }
+.wheel-rotor[data-densidad="3"] { --fs: 11px; --inner: 19cqw; --lw: 28cqw; }
+.wheel-rotor[data-densidad="4"] { --fs: 9px;  --inner: 24cqw; --lw: 23cqw; }
+.wheel-label {
+  --lh: calc(var(--fs) * 1.25);
+  position: absolute; left: 50%; top: 50%;
+  width: var(--lw); height: var(--lh); margin-top: calc(var(--lh) / -2);
+  transform-origin: 0 50%;
+  transform: rotate(calc(var(--a) - 90deg)) translateX(var(--inner));
+  font: 600 var(--fs)/var(--lh) var(--font-display);
+  color: var(--text-primary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  text-align: right; /* pegado al borde */
+}
+/* Mitad izquierda en reposo: gira 180° sobre su caja y cambia la alineación */
+.wheel-label.is-volteada {
+  transform: rotate(calc(var(--a) - 90deg)) translateX(calc(var(--inner) + var(--lw))) rotate(180deg);
+  text-align: left;
+}
+.wheel-label.is-ganador { color: var(--ink-on-warm); }
+
+.wheel-hub {
+  position: absolute; z-index: 1; pointer-events: none;
+  left: calc(50% - 8cqw); top: calc(50% - 8cqw);
+  width: 16cqw; height: 16cqw; border-radius: 50%;
+  background: var(--bg-body); border: 2px solid var(--wheel-aro);
+}
+.wheel-hub::after {
+  content: ''; position: absolute; inset: 36%; border-radius: 50%; background: var(--accent-warm);
+}
+.wheel-empty {
+  position: absolute; inset: 0; display: none; align-items: center; justify-content: center;
+  padding: 18cqw; text-align: center; color: var(--text-secondary); font-size: 0.95rem;
+  border-radius: 50%; box-shadow: 0 0 0 2px var(--wheel-aro);
+}
+.wheel-box[data-vacia] .wheel-empty { display: flex; }
+.wheel-box[data-vacia] .wheel-rotor, .wheel-box[data-vacia] .wheel-hub { display: none; }
+
+/* ---------- Resultado, acción y entradas ---------- */
+.ruleta-result {
+  margin: 8px 0 0; min-height: 48px; text-align: center;
+  display: flex; flex-direction: column; justify-content: center;
+}
+.ruleta-result-main {
+  font: 600 1.6rem/1.15 var(--font-display); letter-spacing: -0.01em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ruleta-result-side { font-size: 0.8rem; color: var(--text-tertiary); line-height: 1.3; }
+.ruleta-result:empty { visibility: hidden; }
+
+.btn-spin-wrap { display: flex; justify-content: center; margin-top: 8px; }
+.btn-spin {
+  min-width: 220px; height: 48px; padding: 0 32px; border: 0; cursor: pointer;
+  border-radius: var(--radius-xl);
+  background: var(--accent-warm); color: var(--ink-on-warm);
+  font: 700 1rem var(--font-display);
+}
+.btn-spin:disabled { background: var(--bg-surface-alt); color: var(--text-tertiary); cursor: default; }
+
+.field-label {
+  display: block; margin: 0 0 4px;
+  font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-tertiary);
+}
+.field-line, .field-box {
+  display: block; width: 100%; background: transparent; font-size: 16px; /* 16 px: Safari no hace zoom al enfocar */
+  border: 0; border-bottom: 1px solid var(--divider-line); border-radius: 0;
+  padding: 10px 0; min-height: 44px;
+}
+.field-box { border: 1px solid var(--divider-line); border-radius: var(--radius-md); padding: 12px; resize: vertical; min-height: 11rem; line-height: 1.5; }
+.field-line:focus, .field-box:focus { outline: none; border-color: var(--accent-warm); }
+.field-line::placeholder, .field-box::placeholder { color: var(--text-tertiary); }
+.field + .field { margin-top: 20px; }
+.field-hint { margin: 6px 0 0; font-size: 0.8rem; color: var(--text-tertiary); }
+
+.text-actions { display: flex; flex-wrap: wrap; gap: 4px 20px; margin-top: 8px; }
+.text-btn {
+  min-height: 44px; padding: 0; background: none; border: 0; cursor: pointer;
+  color: var(--text-primary); font-size: 0.95rem; font-weight: 600;
+  text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1px;
+}
+.share-status { align-self: center; font-size: 0.8rem; color: var(--text-secondary); }
+
+@media (min-width: 640px) {
+  .tool-hero { padding-top: 24px; }
+  .lede { font-size: 1.05rem; }
+}
+@media (min-width: 1024px) {
+  .tool {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+    grid-template-areas: "hero wheel" "inputs wheel";
+    column-gap: 48px;
+  }
+  .tool-hero { padding-top: 32px; }
+  .tool-wheel { padding-top: 16px; }
+  .tool-inputs { padding-top: 16px; }
+}
+
+/* ---------- Controles del prototipo: NO son parte del diseño que se aprueba ---------- */
+.proto-bar {
+  position: relative; margin: 24px 16px 32px; max-width: 1068px;
+  padding: 28px 16px 16px;
+  border: 2px dashed var(--text-secondary); border-radius: var(--radius-lg);
+  background: var(--bg-surface);
+}
+@media (min-width: 1100px) { .proto-bar { margin-inline: auto; } }
+.proto-chip {
+  position: absolute; top: -13px; left: 14px; margin: 0; padding: 3px 12px;
+  background: var(--text-primary); color: var(--bg-body); border-radius: 999px;
+  font: 700 0.72rem var(--font-sans); letter-spacing: 0.08em; text-transform: uppercase;
+}
+.proto-nota { margin: 0 0 12px; font-size: 0.85rem; color: var(--text-secondary); }
+.proto-grupo { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 14px; }
+.proto-grupo > .proto-etq { flex: 1 0 100%; font-size: 0.8rem; font-weight: 600; color: var(--text-primary); }
+.proto-opt {
+  min-width: 44px; min-height: 44px; padding: 0 16px; cursor: pointer;
+  border: 1px solid var(--divider-line); border-radius: 999px; background: transparent;
+  font-size: 0.9rem; color: var(--text-secondary);
+}
+.proto-opt[aria-pressed="true"] { background: var(--text-primary); border-color: var(--text-primary); color: var(--bg-body); font-weight: 600; }
+.proto-info { margin: 14px 0 0; font-size: 0.8rem; color: var(--text-secondary); line-height: 1.45; }
+.proto-decisiones { margin: 16px 0 0; padding-left: 20px; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; }
+.proto-decisiones strong { color: var(--text-primary); }
+
+.proto-fab {
+  position: fixed; z-index: 5; right: 16px; bottom: 16px; width: 44px; height: 44px;
+  display: grid; place-items: center; border-radius: 50%;
+  background: var(--bg-surface); color: var(--text-secondary); border: 2px dashed var(--text-secondary);
+  transition: opacity 0.2s;
+}
+.proto-fab[hidden] { display: none; }
+.proto-fab svg { width: 20px; height: 20px; }
+
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .wheel-slice { transition: none; } }
+</style>
+</head>
+<body>
+
+<!-- Maqueta de la cabecera del sitio -->
+<header class="site-head" aria-hidden="true">
+  <div class="wrap">
+    <span class="site-logo">Decídelo.app</span>
+    <span class="site-back">← Volver al Hub</span>
+  </div>
+</header>
+
+<main class="wrap tool">
+  <section class="tool-hero">
+    <h1>Ruleta aleatoria, que <em>decida el azar</em></h1>
+    <p class="lede">Escribe tus opciones y deja que el azar elija: todas tienen la misma probabilidad.</p>
+  </section>
+
+  <section class="tool-wheel" aria-label="Ruleta">
+    <div class="wheel-stage">
+      <div class="wheel-box" id="rueda" data-paleta="A">
+        <svg class="wheel-pointer" id="puntero" viewBox="0 0 24 30" aria-hidden="true"><path d="M12 30 2 7Q12-2 22 7Z"/></svg>
+        <div class="wheel-rotor" id="rotor" role="img" data-densidad="1">
+          <svg class="wheel-slices" id="gajos" viewBox="0 0 200 200" aria-hidden="true"></svg>
+          <div class="wheel-labels" id="etiquetas" aria-hidden="true"></div>
+        </div>
+        <div class="wheel-hub" id="cubo" aria-hidden="true"></div>
+        <div class="wheel-empty">Escribe al menos una opción</div>
+      </div>
+    </div>
+    <p class="ruleta-result" id="resultado" aria-live="polite"></p>
+    <div class="btn-spin-wrap"><button class="btn-spin" id="girar" type="button">Girar ruleta</button></div>
+  </section>
+
+  <section class="tool-inputs" aria-label="Entradas">
+    <div class="field">
+      <label class="field-label" for="pregunta">¿Qué se decide?</label>
+      <input class="field-line" id="pregunta" type="text" maxlength="60" placeholder="¿Qué comemos hoy?" autocomplete="off">
+    </div>
+    <div class="field">
+      <label class="field-label" for="opciones">Opciones · una por línea</label>
+      <textarea class="field-box" id="opciones" spellcheck="false" autocomplete="off"></textarea>
+      <p class="field-hint" id="aviso-n" hidden>Con más de 40 opciones la rueda no pinta etiquetas; el resultado dice cuál salió.</p>
+    </div>
+    <div class="text-actions">
+      <button class="text-btn" id="compartir" type="button">Compartir</button>
+      <span class="share-status" id="compartir-estado" role="status"></span>
+    </div>
+  </section>
+</main>
+
+<!-- ===== Controles del prototipo ===== -->
+<aside class="proto-bar" id="controles" aria-labelledby="proto-chip">
+  <p class="proto-chip" id="proto-chip">Controles del prototipo</p>
+  <p class="proto-nota">Esta barra no forma parte del diseño que se aprueba: solo sirve para comparar. Lo que se aprueba es todo lo que hay encima.</p>
+
+  <div class="proto-grupo" role="group" aria-labelledby="etq-paleta">
+    <span class="proto-etq" id="etq-paleta">Paleta de la rueda (D2)</span>
+    <button class="proto-opt" type="button" data-paleta="A" aria-pressed="true">A · tintas y un cálido</button>
+    <button class="proto-opt" type="button" data-paleta="B" aria-pressed="false">B · seis tonos</button>
+  </div>
+  <div class="proto-grupo" role="group" aria-labelledby="etq-n">
+    <span class="proto-etq" id="etq-n">Número de opciones</span>
+    <button class="proto-opt" type="button" data-n="2" aria-pressed="false">2</button>
+    <button class="proto-opt" type="button" data-n="6" aria-pressed="true">6</button>
+    <button class="proto-opt" type="button" data-n="13" aria-pressed="false">13</button>
+    <button class="proto-opt" type="button" data-n="40" aria-pressed="false">40</button>
+  </div>
+  <div class="proto-grupo" role="group" aria-labelledby="etq-dur">
+    <span class="proto-etq" id="etq-dur">Duración del giro (D4)</span>
+    <button class="proto-opt" type="button" data-dur="larga" aria-pressed="true">3,5–4,5 s</button>
+    <button class="proto-opt" type="button" data-dur="corta" aria-pressed="false">2 s</button>
+  </div>
+  <div class="proto-grupo" role="group" aria-labelledby="etq-tic">
+    <span class="proto-etq" id="etq-tic">Tic al cruzar cada gajo (D1)</span>
+    <button class="proto-opt" type="button" id="tic" aria-pressed="false">Desactivado</button>
+  </div>
+  <p class="proto-info" id="info-compartir"></p>
+
+  <ol class="proto-decisiones">
+    <li><strong>D1</strong> · sin sonido por defecto; activa el tic y decide si se queda como excepción.</li>
+    <li><strong>D2</strong> · compara las paletas A y B con 6, 13 y 40 opciones.</li>
+    <li><strong>D3</strong> · sin hoja inferior: escribe en el cuadro de abajo, sube y gira.</li>
+    <li><strong>D4</strong> · compara el giro largo con el de 2 s.</li>
+    <li><strong>D5</strong> · «Compartir» abre el menú del sistema.</li>
+  </ol>
+</aside>
+
+<a class="proto-fab" id="ir-controles" href="#controles" aria-label="Ir a los controles del prototipo" title="Controles del prototipo">
+  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M3 5h8M15 5h2M3 10h2M9 10h8M3 15h9M16 15h1"/><circle cx="13" cy="5" r="1.8"/><circle cx="7" cy="10" r="1.8"/><circle cx="14" cy="15" r="1.8"/></svg>
+</a>
+
+<template id="wheel-slice-tpl"><svg><path class="wheel-slice"/></svg></template>
+<template id="wheel-label-tpl"><span class="wheel-label"></span></template>
+
+<script>
+(() => {
+'use strict';
+
+/* ===== Lógica pura (SDD §6.3) =====================================
+   Sin DOM. El módulo definitivo será src/scripts/ruleta-logica.js (#8). */
+//LOGICA-INICIO
+const U32 = 4294967296;
+const u32 = () => {
+  try { return crypto.getRandomValues(new Uint32Array(1))[0]; }
+  catch { return Math.floor(Math.random() * U32); } // respaldo, como manda AGENTS.md
+};
+const mod = (a, m) => ((a % m) + m) % m;
+
+function leerOpciones(texto) {
+  return texto.split('\n').map((l) => l.trim()).filter(Boolean);
+}
+
+// Entero uniforme en [0, n) con muestreo por rechazo: sin sesgo de módulo.
+function indiceAlAzar(n, rnd = u32) {
+  const lim = U32 - (U32 % n);
+  let x;
+  do { x = rnd(); } while (x >= lim);
+  return x % n;
+}
+
+const RADIO = 98, CENTRO = 100;
+function punto(grados) {
+  const r = (grados * Math.PI) / 180;
+  return [CENTRO + RADIO * Math.sin(r), CENTRO - RADIO * Math.cos(r)];
+}
+// Gajo i: de i·s a (i+1)·s en grados desde el puntero (arriba), en sentido horario.
+function geometria(n) {
+  const s = 360 / n;
+  return Array.from({ length: n }, (_, i) => {
+    const ini = i * s, fin = (i + 1) * s;
+    let d;
+    if (n === 1) {
+      d = `M${CENTRO} ${CENTRO - RADIO}A${RADIO} ${RADIO} 0 1 1 ${CENTRO} ${CENTRO + RADIO}A${RADIO} ${RADIO} 0 1 1 ${CENTRO} ${CENTRO - RADIO}Z`;
+    } else {
+      const [x1, y1] = punto(ini), [x2, y2] = punto(fin);
+      d = `M${CENTRO} ${CENTRO}L${x1.toFixed(3)} ${y1.toFixed(3)}A${RADIO} ${RADIO} 0 ${s > 180 ? 1 : 0} 1 ${x2.toFixed(3)} ${y2.toFixed(3)}Z`;
+    }
+    return { ini, fin, med: ini + s / 2, d };
+  });
+}
+
+// Tono de cada gajo: dos vecinos nunca comparten tono, tampoco el último y el
+// primero. Hace falta una paleta de ≥ 3 tonos para que N impar tenga solución.
+function tonoDe(i, n, tonos) {
+  if (n <= 1) return 0;
+  const t = i % tonos;
+  if (i === n - 1 && t === 0) {
+    const previo = (i - 1) % tonos;
+    for (let c = 1; c < tonos; c++) if (c !== previo) return c;
+  }
+  return t;
+}
+
+// Gajo que queda bajo el puntero con el rotor girado `angulo` grados (horario).
+function gajoBajoPuntero(angulo, n) {
+  return Math.min(n - 1, Math.floor(mod(-angulo, 360) / (360 / n)));
+}
+
+// Rebote máximo del aterrizaje: nunca cruza a otro gajo (RNF-03).
+function aterrizaje(n) { return Math.min(2, 0.1 * (360 / n)); }
+
+const FPS_MUESTRA = 60;
+const PUNTERO_MAX = -18;      // grados del puntero levantado
+const FUSION_MS = 50;         // cruces más juntos que esto: el puntero se queda levantado
+// Curva de frenado: deceleración constante (1 − (1 − t)²). Su velocidad
+// inicial es 2× la media; con una cúbica sería 3× y a 60 Hz la rueda parecería
+// girar hacia atrás con N ≈ 13.
+const freno = (t) => 1 - (1 - t) * (1 - t);
+const frenoInverso = (p) => 1 - Math.sqrt(1 - p);
+
+/* Plan del giro. `anguloActual` es el ángulo del rotor al empezar la acción.
+   Devuelve fotogramas de rotor (60 Hz, lineales entre muestras), fotogramas del
+   puntero (un golpe por cruce de frontera; los cruces a < 50 ms lo dejan
+   levantado), la duración y el ángulo final. */
+function planGiro({ anguloActual, ganador, n, duracion, rnd = u32 }) {
+  const s = 360 / n;
+  const vueltas = 5 + indiceAlAzar(3, rnd);
+  const desfase = 0.15 + 0.7 * (rnd() / U32);
+  const rebote = aterrizaje(n);
+  const objetivo = -(ganador + desfase) * s;
+  const recorrido = mod(objetivo - anguloActual, 360) + 360 * vueltas; // hasta el reposo
+  const total = recorrido + rebote;                                    // la acción se pasa un poco
+  const K = Math.max(2, Math.round((duracion / 1000) * FPS_MUESTRA));
+
+  const rotor = [];
+  for (let k = 0; k <= K; k++) {
+    const t = k / K;
+    rotor.push({ offset: t, transform: `rotate(${(anguloActual + total * freno(t)).toFixed(3)}deg)` });
+  }
+
+  // Cruces: la frontera j está en el ángulo j·s del rotor.
+  const cruces = [];
+  for (let j = Math.floor(anguloActual / s) + 1; j * s <= anguloActual + total; j++) {
+    const p = (j * s - anguloActual) / total;
+    cruces.push(frenoInverso(p) * duracion);
+  }
+  const grupos = [];
+  for (const ms of cruces) {
+    const g = grupos[grupos.length - 1];
+    if (g && ms - g.fin < FUSION_MS) g.fin = ms; else grupos.push({ ini: ms, fin: ms });
+  }
+  const puntero = [];
+  const poner = (ms, grados) => {
+    const t = Math.min(1, Math.max(puntero.length ? puntero[puntero.length - 1].offset : 0, ms / duracion));
+    puntero.push({ offset: t, transform: `rotate(${grados}deg)` });
+  };
+  // Sale levantado (anticipación) y baja antes del primer golpe, si le da tiempo.
+  poner(0, PUNTERO_MAX);
+  if (grupos.length && grupos[0].ini >= 60) poner(Math.min(50, grupos[0].ini), 0);
+  grupos.forEach((g, i) => {
+    const siguiente = i + 1 < grupos.length ? grupos[i + 1].ini : duracion;
+    const suelta = g.fin + 20;
+    poner(g.ini, i === 0 && g.ini < 60 ? PUNTERO_MAX : 0);
+    poner(g.ini + 20, PUNTERO_MAX);
+    if (suelta > g.ini + 20) poner(suelta, PUNTERO_MAX);
+    poner(Math.min(suelta + 50, siguiente), 0);
+  });
+  poner(duracion, 0);
+
+  return {
+    rotor, puntero, duracion,
+    golpes: grupos.map((g) => g.ini),
+    rebote,
+    anguloFinal: anguloActual + recorrido,
+  };
+}
+//LOGICA-FIN
+
+/* ===== Controlador ================================================= */
+const $ = (id) => document.getElementById(id);
+const rueda = $('rueda'), rotor = $('rotor'), cubo = $('cubo'), puntero = $('puntero');
+const gajosEl = $('gajos'), etiquetasEl = $('etiquetas');
+const btnGirar = $('girar'), resultadoEl = $('resultado');
+const txtOpciones = $('opciones'), inpPregunta = $('pregunta');
+const tplGajo = $('wheel-slice-tpl'), tplEtq = $('wheel-label-tpl');
+const reducido = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const PALETAS = { A: 3, B: 6 };           // nº de tonos
+const ENTRADA_MS = 1000, REPOSO_MS = 3000, ANTICIPACION_MS = 200, ATERRIZAJE_MS = 350;
+const ANTICIPACION_GRADOS = 8;
+// ¿El reposo vuelve a mecerse tras el resultado? El SDD no lo dice y con N ≥ 37
+// ±1,5° cruzaría la frontera del ganador (ver el bloqueante enlazado en #7).
+const REPOSO_TRAS_RESULTADO = false;
+
+const EJEMPLOS = {
+  2: ['Pizza', 'Tacos'],
+  6: ['Pizza', 'Tacos', 'Sushi', 'Hamburguesa', 'Ensalada', 'Pasta'],
+  13: ['Pizza', 'Tacos', 'Sushi', 'Hamburguesa', 'Ensalada', 'Pasta', 'Arepas', 'Empanadas',
+       'Ceviche', 'Lasaña', 'Paella', 'Pollo asado con papas criollas', 'Sándwich de aguacate'],
+  40: ['Pizza', 'Tacos', 'Sushi', 'Hamburguesa', 'Ensalada', 'Pasta', 'Arepas', 'Empanadas',
+       'Ceviche', 'Lasaña', 'Paella', 'Pollo asado', 'Bandeja paisa', 'Ajiaco', 'Sancocho',
+       'Falafel', 'Ramen', 'Pad thai', 'Curry', 'Burrito', 'Quesadillas', 'Pozole', 'Risotto',
+       'Gazpacho', 'Tortilla', 'Croquetas', 'Fajitas', 'Kebab', 'Pho', 'Dumplings', 'Nachos',
+       'Pescado frito', 'Arroz chino', 'Wrap de pollo', 'Hot dog', 'Pancakes', 'Tamales',
+       'Chilaquiles', 'Mondongo', 'Salmón al horno'],
+};
+
+const estado = {
+  n: 0, opciones: [], theta: 0, girando: false, pendiente: false,
+  paleta: 'A', duracion: 'larga', tic: false, ganador: -1,
+};
+
+/* --- Pintado: clona plantillas, pone d, texto y --a. Nada de innerHTML. --- */
+function densidad(n) { return n > 25 ? 4 : n > 18 ? 3 : n > 10 ? 2 : 1; }
+
+function pintar() {
+  const n = estado.n = estado.opciones.length;
+  gajosEl.replaceChildren();
+  etiquetasEl.replaceChildren();
+  estado.ganador = -1;
+  rueda.toggleAttribute('data-vacia', n === 0);
+  btnGirar.disabled = n === 0 || estado.girando;
+  $('aviso-n').hidden = n <= 40;
+  rotor.setAttribute('aria-label', n === 0 ? 'Ruleta sin opciones'
+    : n > 12 ? `Ruleta con ${n} opciones`
+    : `Ruleta con ${n} opciones: ${estado.opciones.join(', ')}`);
+  if (n === 0) return;
+  const tonos = PALETAS[estado.paleta];
+  const geo = geometria(n);
+  rotor.dataset.densidad = densidad(n);
+  geo.forEach((g, i) => {
+    const path = tplGajo.content.firstElementChild.firstElementChild.cloneNode(true);
+    path.setAttribute('d', g.d);
+    path.classList.add(`tono-${tonoDe(i, n, tonos)}`);
+    gajosEl.append(path);
+    if (n > 40) return; // sin etiquetas con N > 40 (SDD §6.2)
+    const etq = tplEtq.content.firstElementChild.cloneNode(true);
+    etq.textContent = estado.opciones[i];
+    etq.style.setProperty('--a', `${g.med}deg`);
+    etiquetasEl.append(etq);
+  });
+  voltear(false);
+}
+
+// Etiquetas que en reposo quedarían boca abajo (mitad izquierda): se voltean.
+// `conFundido` hace el cambio con un fundido de 150 ms, solo en las que cambian.
+function voltear(conFundido) {
+  const etqs = [...etiquetasEl.children];
+  const cambian = [];
+  etqs.forEach((el, i) => {
+    const w = (i + 0.5) * (360 / estado.n) + estado.theta;
+    const volteada = Math.sin((w * Math.PI) / 180) < -1e-9;
+    if (el.classList.contains('is-volteada') !== volteada) cambian.push([el, volteada]);
+  });
+  if (!conFundido || reducido()) { cambian.forEach(([el, v]) => el.classList.toggle('is-volteada', v)); return; }
+  const fuera = cambian.map(([el]) => el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 75, fill: 'forwards' }));
+  Promise.all(fuera.map((a) => a.finished)).then(() => {
+    cambian.forEach(([el, v]) => el.classList.toggle('is-volteada', v));
+    cambian.forEach(([el]) => el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 75 }));
+    fuera.forEach((a) => a.cancel());
+  }).catch(() => {});
+}
+
+function escribirPose(grados) {
+  estado.theta = mod(grados, 360);
+  rotor.style.transform = `rotate(${estado.theta}deg)`;
+}
+
+/* --- Ciclo de movimiento (SDD §6.5): todo con element.animate() --- */
+let reposoAnim = null;
+const cancelarTodo = () => {
+  [rotor, cubo, puntero].forEach((el) => el.getAnimations().forEach((a) => a.cancel()));
+  reposoAnim = null;
+};
+function pararReposo() { reposoAnim?.cancel(); reposoAnim = null; }
+
+function reposo() {
+  pararReposo();
+  if (reducido() || estado.girando || document.hidden || estado.n === 0) return;
+  const t = estado.theta, e = 'ease-in-out';
+  reposoAnim = rotor.animate([
+    { transform: `rotate(${t}deg)`, easing: e },
+    { transform: `rotate(${t + 1.5}deg)`, offset: 0.25, easing: e },
+    { transform: `rotate(${t}deg)`, offset: 0.5, easing: e },
+    { transform: `rotate(${t - 1.5}deg)`, offset: 0.75, easing: e },
+    { transform: `rotate(${t}deg)`, easing: e },
+  ], { duration: REPOSO_MS, iterations: Infinity });
+}
+
+let entradaViva = false;
+async function entrar() {
+  if (reducido()) return;
+  entradaViva = true;
+  const k = [
+    { transform: 'translateX(-125%) rotate(-143deg)' },
+    { transform: 'translateX(6%) rotate(8deg)', offset: 0.7 },
+    { transform: 'translateX(0) rotate(0deg)' },
+  ];
+  const op = { duration: ENTRADA_MS, easing: 'cubic-bezier(0.25, 0.8, 0.3, 1)' };
+  const a = rotor.animate(k, op);
+  cubo.animate(k.map((f) => ({ ...f, transform: f.transform.replace(/ rotate\([^)]*\)/, '') })), op);
+  try { await a.finished; } catch { entradaViva = false; return; } // la interrumpió un giro
+  entradaViva = false;
+  if (!estado.girando) reposo();
+}
+
+const esperar = (a) => a.finished.catch(() => {});
+
+async function girar() {
+  if (estado.girando || estado.n === 0) return;
+  estado.girando = true;
+  btnGirar.disabled = true;
+  resultadoEl.replaceChildren();
+  rueda.querySelectorAll('.is-ganador').forEach((el) => el.classList.remove('is-ganador'));
+  if (estado.tic) { const c = audio(); c?.resume?.(); }
+
+  const n = estado.n;
+  const ganador = indiceAlAzar(n);               // se decide ANTES de animar
+  const dur = estado.duracion === 'corta' ? 2000 : 3500 + 1000 * (u32() / U32);
+
+  // Interrumpe entrada y reposo; el reposo no vuelve a arrancar encima.
+  cancelarTodo();
+  entradaViva = false;
+
+  if (reducido()) {
+    const objetivo = -(ganador + 0.15 + 0.7 * (u32() / U32)) * (360 / n);
+    escribirPose(objetivo);
+    await esperar(rotor.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200 }));
+    return terminar(ganador);
+  }
+
+  // Anticipación: el rotor retrocede 8° y el puntero se levanta.
+  const t0 = estado.theta;
+  const ant = rotor.animate(
+    [{ transform: `rotate(${t0}deg)` }, { transform: `rotate(${t0 - ANTICIPACION_GRADOS}deg)` }],
+    { duration: ANTICIPACION_MS, easing: 'ease-out', fill: 'forwards' });
+  const antP = puntero.animate(
+    [{ transform: 'rotate(0deg)' }, { transform: `rotate(${PUNTERO_MAX}deg)` }],
+    { duration: ANTICIPACION_MS, easing: 'ease-out', fill: 'forwards' });
+  await esperar(ant);
+
+  // Acción: giro planificado. Las animaciones nuevas tapan a la anticipación.
+  const plan = planGiro({ anguloActual: t0 - ANTICIPACION_GRADOS, ganador, n, duracion: dur });
+  const accion = rotor.animate(plan.rotor, { duration: plan.duracion, easing: 'linear', fill: 'forwards' });
+  const accionP = puntero.animate(plan.puntero, { duration: plan.duracion, easing: 'linear', fill: 'forwards' });
+  ant.cancel(); antP.cancel();
+  programarTics(plan.golpes);
+  await Promise.all([esperar(accion), esperar(accionP)]);
+
+  // Aterrizaje: la acción se pasó `rebote` grados; vuelve y se asienta.
+  const fin = plan.anguloFinal, b = plan.rebote;
+  const aterriza = rotor.animate([
+    { transform: `rotate(${fin + b}deg)` },
+    { transform: `rotate(${fin - 0.3 * b}deg)`, offset: 0.45 },
+    { transform: `rotate(${fin}deg)` },
+  ], { duration: ATERRIZAJE_MS, easing: 'ease-in-out', fill: 'forwards' });
+  await esperar(aterriza);
+  escribirPose(fin);                                  // pose final a mano…
+  [rotor, puntero].forEach((el) => el.getAnimations().forEach((a) => a.cancel())); // …y luego se cancela
+  terminar(ganador);
+}
+
+function terminar(ganador) {
+  estado.ganador = ganador;
+  const g = gajosEl.children[ganador], e = etiquetasEl.children[ganador];
+  g?.classList.add('is-ganador');
+  e?.classList.add('is-ganador');
+  const principal = document.createElement('span');
+  principal.className = 'ruleta-result-main';
+  principal.textContent = estado.opciones[ganador];
+  const lateral = document.createElement('span');
+  lateral.className = 'ruleta-result-side';
+  lateral.textContent = inpPregunta.value.trim() || `1 de ${estado.n} opciones`;
+  resultadoEl.replaceChildren(principal, lateral);
+  voltear(true);
+  navigator.vibrate?.(15);
+  estado.girando = false;
+  if (estado.pendiente) { estado.pendiente = false; pintar(); } // lo escrito durante el giro se aplica ahora
+  btnGirar.disabled = estado.n === 0;
+  if (REPOSO_TRAS_RESULTADO) reposo();
+}
+
+/* --- Tic opcional (D1): Web Audio, desactivado por defecto --- */
+let ctxAudio = null;
+function audio() {
+  try { ctxAudio ||= new (window.AudioContext || window.webkitAudioContext)(); } catch { /* sin audio */ }
+  return ctxAudio;
+}
+function programarTics(golpes) {
+  if (!estado.tic) return;
+  const c = audio();
+  if (!c) return;
+  const t0 = c.currentTime + 0.02;
+  golpes.forEach((ms) => {
+    const t = t0 + ms / 1000, o = c.createOscillator(), g = c.createGain();
+    o.type = 'triangle';
+    o.frequency.value = 1500;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.07, t + 0.002);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.03);
+    o.connect(g).connect(c.destination);
+    o.start(t);
+    o.stop(t + 0.04);
+  });
+}
+
+/* --- Entradas --- */
+function leerTextarea() {
+  estado.opciones = leerOpciones(txtOpciones.value);
+  if (estado.girando) { estado.pendiente = true; return; } // RF-05: se aplica al terminar
+  pararReposo();
+  resultadoEl.replaceChildren();
+  pintar();
+  reposo();
+}
+txtOpciones.addEventListener('input', leerTextarea);
+btnGirar.addEventListener('click', girar);
+
+/* --- Compartir (D5, SDD §6.10) --- */
+const estadoCompartir = $('compartir-estado');
+$('compartir').addEventListener('click', async () => {
+  const opciones = leerOpciones(txtOpciones.value);
+  const aviso = (t) => { estadoCompartir.textContent = t; };
+  if (!opciones.length) return aviso('Escribe al menos una opción.');
+  if (opciones.length > 100 || opciones.some((o) => o.length > 60)) return aviso('Máximo 100 opciones de 60 caracteres.');
+  const pregunta = inpPregunta.value.trim();
+  const hash = (pregunta ? `para=${encodeURIComponent(pregunta)}&` : '') +
+    opciones.map((o) => `opcion=${encodeURIComponent(o)}`).join('&');
+  const url = `https://decidelo.app/ruleta#${hash}`;
+  if (url.length > 2000) return aviso('Son demasiadas opciones para un enlace; quita algunas.');
+  const datos = { title: 'Ruleta de Decídelo', text: pregunta || 'Mi ruleta', url };
+  try {
+    if (navigator.share) { await navigator.share(datos); aviso(''); }
+    else { await navigator.clipboard.writeText(url); aviso('Enlace copiado.'); }
+  } catch (e) {
+    aviso(e && e.name === 'AbortError' ? '' : 'No se pudo compartir.');
+  }
+});
+
+/* --- Controles del prototipo --- */
+function marcar(grupo, attr, valor) {
+  document.querySelectorAll(`[${attr}]`).forEach((b) => b.setAttribute('aria-pressed', String(b.getAttribute(attr) === String(valor))));
+}
+document.querySelectorAll('[data-paleta].proto-opt').forEach((b) => b.addEventListener('click', () => {
+  estado.paleta = b.dataset.paleta;
+  rueda.dataset.paleta = estado.paleta;
+  document.querySelectorAll('.proto-opt[data-paleta]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+  if (!estado.girando) { const t = estado.theta; pintar(); escribirPose(t); }
+}));
+document.querySelectorAll('.proto-opt[data-n]').forEach((b) => b.addEventListener('click', () => {
+  txtOpciones.value = EJEMPLOS[b.dataset.n].join('\n');
+  document.querySelectorAll('.proto-opt[data-n]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+  leerTextarea();
+}));
+document.querySelectorAll('.proto-opt[data-dur]').forEach((b) => b.addEventListener('click', () => {
+  estado.duracion = b.dataset.dur;
+  document.querySelectorAll('.proto-opt[data-dur]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+}));
+$('tic').addEventListener('click', (ev) => {
+  estado.tic = !estado.tic;
+  ev.currentTarget.setAttribute('aria-pressed', String(estado.tic));
+  ev.currentTarget.textContent = estado.tic ? 'Activado' : 'Desactivado';
+  if (estado.tic) audio()?.resume?.(); // iOS solo lo desbloquea desde un toque
+});
+$('info-compartir').textContent = navigator.share
+  ? 'Este navegador tiene navigator.share: «Compartir» abre el menú del sistema.'
+  : 'Este navegador no tiene navigator.share: «Compartir» copia el enlace. Ábrelo en el iPhone para valorar D5.';
+
+const fab = $('ir-controles');
+if ('IntersectionObserver' in window) {
+  new IntersectionObserver(([e]) => { fab.hidden = e.isIntersecting; }, { threshold: 0.1 }).observe($('controles'));
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) pararReposo();
+  else if (!estado.girando && !entradaViva && REPOSO_TRAS_RESULTADO === false && estado.ganador < 0) reposo();
+});
+
+/* --- Arranque --- */
+txtOpciones.value = EJEMPLOS[6].join('\n');
+estado.opciones = leerOpciones(txtOpciones.value);
+pintar();
+entrar();
+})();
+</script>
+</body>
+</html>
