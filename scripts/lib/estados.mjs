@@ -144,6 +144,12 @@ async function avisoDentroDeLaVentana(pagina) {
     if (!r) { fallos.push(`${vp.width}×${vp.height}: #undo-toast no existe en el DOM`); continue; }
     const dentro = r.top >= -TOLERANCIA_PX && r.left >= -TOLERANCIA_PX &&
       r.bottom <= vp.height + TOLERANCIA_PX && r.right <= vp.width + TOLERANCIA_PX;
+    // Un aviso ya oculto (display:none) mide todo 0 y "cae dentro": sin esto
+    // el test pasaría sin haber medido nada si el aviso expirara antes.
+    if (r.bottom === 0 && r.right === 0) {
+      fallos.push(`${vp.width}×${vp.height}: #undo-toast ya estaba oculto al medir`);
+      continue;
+    }
     if (!dentro) {
       fallos.push(`${vp.width}×${vp.height}: #undo-toast cae en top=${r.top.toFixed(0)} bottom=${r.bottom.toFixed(0)} ` +
         `left=${r.left.toFixed(0)} right=${r.right.toFixed(0)}, fuera de la ventana`);

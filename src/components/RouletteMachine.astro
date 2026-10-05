@@ -158,30 +158,30 @@ const Heading = headingLevel;
     </div> {/* app-grid */}
   </div> {/* wrap */}
 
-  {/* Aviso de "Deshacer" tras vaciar la ruleta, en vez del confirm() que
-       había antes. `hidden` empieza puesto para que no ocupe espacio ni se
-       lea con el lector de pantalla hasta que roulette.js lo active.
-
-       Sin aria-live propio: el <p> del mensaje no lleva uno porque un
-       contenedor que arranca `hidden` (fuera del árbol de accesibilidad) y
-       se destapa un frame antes de escribir el texto depende de que el
-       lector note la aparición Y la mutación en esa ventana, y no todos lo
-       garantizan. roulette.js anuncia el mismo texto por #sr-announcer
-       (Layout.astro), que ya vive siempre en el DOM y ya usa announceWinner
-       para el ganador -- así el anuncio no depende de cuándo se destapa
-       este bloque. El toast queda como pieza puramente visual.
-
-       Dos botones, ninguno dentro de una región anunciada: "Deshacer" y
-       "Cerrar" son <button> normales, alcanzables con Tab como cualquier
-       otro control de la página, sin necesidad de moverles el foco a la
-       fuerza. "Cerrar" es el único recurso en táctil para descartar el
-       aviso antes de los 7s -- ahí no hay Escape. */}
 </section>
 {/* El aviso cuelga fuera de .roulette-section a propósito (RNF-11): la
      sección lleva .reveal, y su `transform` convierte a la sección en el
      bloque contenedor de todo descendiente position:fixed. Dentro, el aviso
      se anclaba al fondo de la sección y a 1280×720 salía en top=762px,
      fuera de la pantalla. El JS lo busca por id, así que no le afecta. */}
+{/* Aviso de "Deshacer" tras vaciar la ruleta, en vez del confirm() que
+     había antes. `hidden` empieza puesto para que no ocupe espacio ni se
+     lea con el lector de pantalla hasta que roulette.js lo active.
+
+     Sin aria-live propio: el <p> del mensaje no lleva uno porque un
+     contenedor que arranca `hidden` (fuera del árbol de accesibilidad) y
+     se destapa un frame antes de escribir el texto depende de que el
+     lector note la aparición Y la mutación en esa ventana, y no todos lo
+     garantizan. roulette.js anuncia el mismo texto por #sr-announcer
+     (Layout.astro), que ya vive siempre en el DOM y ya usa announceWinner
+     para el ganador -- así el anuncio no depende de cuándo se destapa
+     este bloque. El toast queda como pieza puramente visual.
+
+     Dos botones, ninguno dentro de una región anunciada: "Deshacer" y
+     "Cerrar" son <button> normales, alcanzables con Tab como cualquier
+     otro control de la página, sin necesidad de moverles el foco a la
+     fuerza. "Cerrar" es el único recurso en táctil para descartar el
+     aviso antes de los 7s -- ahí no hay Escape. */}
 <div id="undo-toast" class="undo-toast" hidden>
   <p id="undo-toast-message" class="undo-toast-message"></p>
   <div class="undo-toast-actions">
