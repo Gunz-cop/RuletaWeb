@@ -278,8 +278,9 @@ button { cursor: pointer; }
 
 .editor-head { display: flex; align-items: flex-end; justify-content: space-between; margin-top: 20px; }
 .editor-head .field-label { margin: 0; padding-bottom: 12px; }
-.opt-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--divider-line); flex: 1 1 auto; min-height: 0; overflow-y: auto; max-height: 22rem; }
-@media (min-width: 1024px) { .opt-list { max-height: none; min-height: 8rem; } }
+.opt-wrap { display: flex; flex-direction: column; flex: none; min-height: 0; }
+.opt-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--divider-line); flex: 0 1 auto; min-height: 0; overflow-y: auto; max-height: 22rem; }
+@media (min-width: 1024px) { .opt-list { max-height: none; } }
 .opt-row { display: flex; align-items: center; gap: 4px; min-height: 44px; border-bottom: 1px solid var(--divider-line); }
 .opt-dot { flex: none; width: 14px; height: 14px; border-radius: 50%; margin-right: 8px; background: var(--text-tertiary); }
 .opt-dot.tono-0 { background: var(--wheel-p0); } .opt-dot.tono-1 { background: var(--wheel-p1); }
@@ -357,7 +358,10 @@ body.is-foco .wheel-box, .tool-wheel:fullscreen .wheel-box { --wheel-d: min(100%
   .tool-hero h1 { font-size: clamp(1.8rem, 2.4vw, 2.4rem); }
   .tool-wheel { padding-top: 16px; }
   /* contain: size: el editor no empuja la altura de la fila; la fija la rueda, y la lista se estira o desplaza */
-  .tool-inputs { padding-top: 8px; contain: size; min-height: 26rem; }
+  .tool-inputs { padding-top: 8px; }
+  /* La lista + «Añadir opción» crece desde base 0 (mínimo 8rem): llena el alto que deja la rueda y,
+     si no cabe, la fila crece en vez de montarse sobre el historial */
+  .opt-wrap { flex: 1 1 0; min-height: 8rem; }
   /* En escritorio el alto de «Quitar…» está reservado: aparecer no mueve nada ni lo saca de la ventana */
   .result-actions[hidden] { display: flex; visibility: hidden; }
   .result-actions { min-height: 44px; }
@@ -444,6 +448,10 @@ body.is-foco .wheel-box, .tool-wheel:fullscreen .wheel-box { --wheel-d: min(100%
     </div>
     <p class="ruleta-result" id="resultado" aria-live="polite"></p>
     <div class="btn-spin-wrap"><button class="btn-spin" id="girar" type="button">Girar ruleta</button></div>
+    <div class="aviso" id="aviso" role="status" hidden>
+      <span id="aviso-texto"></span>
+      <button class="text-btn" id="aviso-deshacer" type="button">Deshacer</button>
+    </div>
     <div class="result-actions" id="acciones-resultado" hidden>
       <button class="text-btn is-quiet" id="quitar" type="button" hidden></button>
     </div>
@@ -458,11 +466,13 @@ body.is-foco .wheel-box, .tool-wheel:fullscreen .wheel-box { --wheel-d: min(100%
       <span class="field-label" id="etq-opciones">Opciones</span>
       <button class="text-btn" id="pegar-toggle" type="button" aria-expanded="false" aria-controls="pegar-panel">Pegar lista</button>
     </div>
+    <div class="opt-wrap">
     <ul class="opt-list" id="lista" aria-labelledby="etq-opciones"></ul>
     <form class="add-row" id="alta" autocomplete="off">
       <label class="sr-only" for="nueva">Añadir opción</label>
       <input class="field-line" id="nueva" type="text" placeholder="Añadir opción" enterkeyhint="enter" autocomplete="off" autocapitalize="sentences">
     </form>
+    </div>
     <div class="paste-panel" id="pegar-panel" hidden>
       <label class="sr-only" for="opciones">Opciones, una por línea</label>
       <textarea class="field-box" id="opciones" spellcheck="false" autocomplete="off" placeholder="Una opción por línea"></textarea>
@@ -492,10 +502,6 @@ body.is-foco .wheel-box, .tool-wheel:fullscreen .wheel-box { --wheel-d: min(100%
   </section>
 </main>
 
-<div class="aviso" id="aviso" role="status" hidden>
-  <span id="aviso-texto"></span>
-  <button class="text-btn" id="aviso-deshacer" type="button">Deshacer</button>
-</div>
 
 <!-- ===== Controles del prototipo ===== -->
 <aside class="proto-bar" id="controles" aria-labelledby="proto-chip">
@@ -522,7 +528,7 @@ body.is-foco .wheel-box, .tool-wheel:fullscreen .wheel-box { --wheel-d: min(100%
     <button class="proto-opt" type="button" data-final="pelos" aria-pressed="false">Por los pelos</button>
     <button class="proto-opt" type="button" data-final="atras" aria-pressed="false">Vuelta atrás</button>
   </div>
-  <p class="proto-info" id="info-final">Con «Aleatorio» salen los pesos del SDD (65 / 15 / 15 / 5 %) y nunca dos finales distintos de «Normal» seguidos; con 31 o más opciones, o con una sola, el final es siempre Normal.</p>
+  <p class="proto-info" id="info-final">Con «Aleatorio» salen los pesos del SDD (65 / 15 / 15 / 5 %) y nunca dos finales distintos de «Normal» seguidos; con una sola opción o con más de 30, el final es siempre Normal.</p>
   <p class="proto-info" id="ultimo-final" aria-live="off"></p>
   <p class="proto-info" id="info-compartir"></p>
 
@@ -996,7 +1002,7 @@ async function girar(opts = {}) {
   const final = eligeFinal(n);                       // se sortea aparte, independiente del ganador
   const vueltas = opts.vueltas || 5 + indiceAlAzar(3);
   const dur = Math.min(7000, Math.max(5000, vueltas * 1000 + (unidad() - 0.5) * 600)); // 5–7 s (D4)
-  $('ultimo-final').textContent = `Último final: ${NOMBRE_FINAL[final]}${n < 2 || n > 30 ? ' (con 1 o más de 30 opciones es siempre Normal)' : ''}.`;
+  $('ultimo-final').textContent = `Último final: ${NOMBRE_FINAL[final]}${n < 2 || n > 30 ? ' (con una sola opción o con más de 30 es siempre Normal)' : ''}.`;
 
   cancelarTodo();
   entradaViva = false;
@@ -1045,16 +1051,18 @@ function terminar(ganador, opcionesGiro, nGiro, pregunta, refs) {
   marcarGanador(ganador);
   let principal = opcionesGiro[ganador], lado = pregunta || `1 de ${nGiro} opciones`;
   const salio = principal;
-  estado.historial.unshift({ opcion: salio, para: pregunta });
+  const h = { opcion: salio, para: pregunta };
+  estado.historial.unshift(h);
   estado.historial.length = Math.min(estado.historial.length, 20);
   if (estado.modo === 'contar') {
     estado.cuentas[salio] = (estado.cuentas[salio] || 0) + 1;
-    renderLista();
+    h.cuenta = estado.cuentas[salio]; // el historial también lleva la cuenta (SDD §6.14.3)
+    actualizarFilas();
   } else if (estado.modo === 'eliminar' && nGiro >= 2) {
     // El ganador se oculta solo, como cambio pendiente (RF-05): el resultado sigue a la vista.
     const foto = fotoLista();
     if (refs[ganador]) refs[ganador].oculta = true;
-    renderLista();
+    actualizarFilas();
     const quedan = activas();
     if (quedan.length === 1) {
       estado.campeon = quedan[0];
@@ -1136,6 +1144,22 @@ function volverAEmpezar() {
 function fotoLista() { return estado.items.map((i) => ({ ...i })); }
 function restaurar(foto) { estado.items = foto.map((i) => ({ ...i })); renderLista(); editado(); }
 
+function nombrarFila(fila) {
+  const t = fila._item.t.trim(), i = estado.items.indexOf(fila._item) + 1;
+  fila.querySelector('.opt-text').setAttribute('aria-label', `Opción ${i}`);
+  fila.querySelector('.opt-vis').setAttribute('aria-label', t ? `Mostrar «${t}» en la rueda` : 'Mostrar en la rueda');
+  fila.querySelector('.opt-del').setAttribute('aria-label', t ? `Borrar «${t}»` : 'Borrar opción');
+}
+// Pone al día clases, contadores y nombres de las filas existentes, sin recrearlas (no pierden el foco).
+function actualizarFilas() {
+  [...listaEl.children].forEach((fila) => {
+    fila.classList.toggle('is-oculta', fila._item.oculta);
+    fila.querySelector('.opt-vis').setAttribute('aria-checked', String(!fila._item.oculta));
+    nombrarFila(fila);
+  });
+  pintarPuntos();
+  $('etq-opciones').textContent = `Opciones · ${activas().length}${estado.items.length > activas().length ? ` de ${estado.items.length}` : ''}`;
+}
 function pintarPuntos() {
   let k = 0;
   const n = activas().length;
@@ -1160,9 +1184,8 @@ function renderLista() {
     vis.setAttribute('aria-checked', String(!it.oculta));
     listaEl.append(fila);
   });
-  pintarPuntos();
+  actualizarFilas();
   renderPegar();
-  $('etq-opciones').textContent = `Opciones · ${activas().length}${estado.items.length > activas().length ? ` de ${estado.items.length}` : ''}`;
 }
 function renderPegar() {
   if (document.activeElement !== txtOpciones) txtOpciones.value = estado.items.map((i) => i.t).join('\n');
@@ -1172,6 +1195,7 @@ listaEl.addEventListener('input', (ev) => {
   const fila = ev.target.closest('.opt-row');
   if (!fila || !ev.target.matches('.opt-text')) return;
   fila._item.t = ev.target.value;
+  nombrarFila(fila);
   pintarPuntos();
   renderPegar();
   editado();
@@ -1182,10 +1206,7 @@ listaEl.addEventListener('click', (ev) => {
   const it = fila._item;
   if (ev.target.closest('.opt-vis')) {
     it.oculta = !it.oculta;
-    fila.classList.toggle('is-oculta', it.oculta);
-    fila.querySelector('.opt-vis').setAttribute('aria-checked', String(!it.oculta));
-    pintarPuntos(); renderPegar();
-    $('etq-opciones').textContent = `Opciones · ${activas().length}${estado.items.length > activas().length ? ` de ${estado.items.length}` : ''}`;
+    actualizarFilas(); renderPegar();
     editado();
   } else if (ev.target.closest('.opt-del')) {
     const foto = fotoLista();
@@ -1195,15 +1216,7 @@ listaEl.addEventListener('click', (ev) => {
     editado();
   }
 });
-listaEl.addEventListener('focusout', (ev) => { // una fila vacía al salir se quita sin avisar
-  const fila = ev.target.closest('.opt-row');
-  if (fila && ev.target.matches('.opt-text') && ev.target.value.trim() === '' && estado.items.includes(fila._item)) {
-    estado.items.splice(estado.items.indexOf(fila._item), 1);
-    fila.remove();
-    pintarPuntos();
-    editado();
-  }
-});
+// Una fila vacía se queda (la rueda la ignora): borrar siempre pasa por su botón, que sí se deshace.
 listaEl.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' && ev.target.matches('.opt-text')) { ev.preventDefault(); inpNueva.focus(); } });
 
 // «Añadir opción»: Intro añade y deja el teclado abierto para la siguiente.
@@ -1291,7 +1304,7 @@ $('aviso').addEventListener('focusin', () => clearTimeout(avisoTimer));
 function renderHistorial() {
   $('historial').replaceChildren(...estado.historial.map((h) => {
     const li = document.createElement('li');
-    li.append(document.createTextNode(h.opcion));
+    li.append(document.createTextNode(h.cuenta ? `${h.opcion} ×${h.cuenta}` : h.opcion));
     if (h.para) { const s = document.createElement('span'); s.textContent = h.para; li.append(s); }
     return li;
   }));
@@ -1399,7 +1412,7 @@ const soltar = (ev, cancelado) => {
   if (!d.mov) return;                                   // un toque: lo gestiona «click»
   suprimirClick = true;
   setTimeout(() => { suprimirClick = false; }, 80);
-  if (cancelado) { reposo(); return; }
+  if (cancelado) { voltear(true); reposo(); return; }
   const m = d.muestras, a = m[0], b = m[m.length - 1];
   const w = Math.abs(b.total - a.total) / Math.max(0.016, (b.t - a.t) / 1000); // °/s
   girar({ vueltas: w < 450 ? 5 : w < 900 ? 6 : 7 });
