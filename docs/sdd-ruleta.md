@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Estado | v1.6 (decisiones del propietario §12; auditado §14; bloqueantes §15) — pendiente de las decisiones del propietario de §12 |
+| Estado | v1.7 (decisiones del propietario §12; auditado §14; bloqueantes §15) — pendiente de las decisiones del propietario de §12 |
 | Fecha | 2026-10-05 |
 | Alcance | `src/pages/ruleta.astro`, sus componentes y su JS, tests de estado de `/ruleta`, texto SEO de la página |
 | Normas que manda | `AGENTS.md` → `DESIGN.md` → skill `decidelo-herramienta` → skills de terceros |
@@ -170,7 +170,7 @@ fase de texto.
 | RF-02 | Sin opciones activas, la rueda muestra un estado vacío con texto («Escribe al menos una opción») y el botón principal queda desactivado. Con una sola opción, la rueda es un círculo completo y el giro funciona (gana esa). |
 | RF-03 | Campo «¿Qué se decide?» (opcional, máx. 60 caracteres). Si tiene texto, el resultado lo repite encima del ganador. |
 | RF-04 | «Girar ruleta» elige un ganador uniforme entre las opciones **activas**, anima la rueda hasta que el puntero señala ese gajo y escribe el resultado al resolver `.finished`. |
-| RF-05 | Durante el giro el botón queda desactivado y la lista no cambia la rueda: lo escrito se guarda (`localStorage`) pero **no se aplica al aterrizar**. El resultado se muestra sobre la rueda que giró, con las opciones, N y la pregunta congeladas al empezar. Lo pendiente se aplica en la **siguiente acción** del visitante: al volver a escribir, al ocultar/activar una opción o al pulsar «Girar ruleta» (se repinta la rueda antes de planificar el giro). Así nunca hay un resultado sobre una rueda que no lo produjo (§15). |
+| RF-05 | Durante el giro el botón queda desactivado y la lista no cambia la rueda: lo escrito se guarda (`localStorage`) pero **no se aplica al aterrizar**. El resultado se muestra sobre la rueda que giró, con las opciones, N y la pregunta congeladas al empezar. Lo pendiente se aplica en la **siguiente acción** del visitante: al volver a escribir, al ocultar/activar una opción o al pulsar «Girar ruleta» (se repinta la rueda antes de planificar el giro). Así nunca hay un resultado sobre una rueda que no lo produjo (§15). Un «Deshacer» pulsado durante el giro es un cambio de lista más: queda pendiente igual. |
 | RF-06 | El resultado aparece bajo la rueda: el texto de la opción grande en Outfit; debajo, en terciario, «¿Qué se decide?» o «1 de N opciones». Se anuncia por `aria-live="polite"`. Un texto largo usa el patrón `.is-largo` de los dados: tamaño menor y hasta dos líneas dentro del mismo alto reservado; solo pasado eso, elipsis. **El resultado vigente se oculta en cuanto la rueda se repinta con otra lista** (queda en el historial), y con él la marca `is-ganador`. |
 | RF-07 | Tras un resultado, botón de texto «Quitar «X» y seguir»: oculta esa opción (no la borra) para eliminatorias; deshacible con el aviso existente, que deja de ser solo de «Vaciar»: guarda una foto genérica `{tipo, texto, ocultas}` y su mensaje dice qué se deshace. |
 | RF-08 | Lista «Ocultas»: ver todas las opciones con casilla para ocultar/activar sin borrar, y «Activar todas». Mantiene la identidad por índice y el emparejamiento por texto actuales (`updateFromTextarea`). |
@@ -256,6 +256,14 @@ MÓVIL (base, < 640px)                 ESCRITORIO (≥ 1024px)
   se ajusta con el invariante, nunca bajando el umbral). `svh` y no `dvh`:
   el tamaño de la rueda no debe saltar cuando aparece o se va la barra de
   Safari.
+- **Alto de la rueda en todos los formatos (v1.7)**: el hero tiene alto
+  fijo (h1 y entradilla reservan siempre dos líneas; el `em` con
+  `line-height: 1`) y `--wheel-d` resta del alto útil todo lo demás, más lo
+  que el h1 crece con el ancho. Constantes de referencia del prototipo v2:
+  `−371 / −322 / −394 px` por tramo más `2,2·h1 − 52,8 px`. Lo que manda no
+  es la constante sino el invariante: holgura ≥ 16 px bajo el botón en
+  **todos** los formatos de `estadosResponsive` y en los tres móviles de
+  referencia (medido en v2: 17,2–20,2 px de 344 a 1023 px).
 - **Desde 640 px** (`sm:`): una columna, rueda mayor, márgenes de la escala.
 - **Desde 1024 px** (`lg:`): dos columnas, **rueda a la izquierda y
   más grande** (`3fr`), editor a la derecha (`2fr`), como Wheel of Names y
@@ -550,7 +558,10 @@ control donde se usa):
    ocultado entra como cambio pendiente (RF-05): el resultado sigue a la
    vista con «Girar otra vez» y la rueda se repinta en la siguiente acción;
    cuando queda una opción, «Ganó X» y «Volver a empezar». Contar: cada
-   opción acumula sus victorias en la lista y en el historial.
+   opción acumula sus victorias en la lista y en el historial. Las cuentas
+   van por texto de la opción; se reinician con «Vaciar», al cargar un
+   ejemplo o con «Reiniciar cuentas» (botón de texto visible solo en
+   Contar), y borrar una opción borra su cuenta.
 4. **Acciones tras el resultado, bajo el resultado** (nunca en una ventana):
    «Girar otra vez» y, en Normal, «Quitar «X»». El resultado no se tapa.
 5. **Editor de opciones en lista, no solo cuadro de texto**: filas de 44 px
@@ -563,7 +574,10 @@ control donde se usa):
 6. **Ejemplos para empezar**: fichas «Comida», «Verdad o reto», «Nombres»
    que llenan la lista (como los ejemplos del dado de opciones).
 7. **Herramientas de la lista** en una fila de texto: Mezclar · Ordenar ·
-   Vaciar · Compartir. Nada pide confirmación: todo se deshace.
+   Vaciar · Compartir. Nada pide confirmación: todo se deshace. El aviso
+   «Deshacer» vive dentro de la zona de la rueda (así se ve también en
+   pantalla completa): abajo y centrado en móvil, arriba a la derecha desde
+   1024 px para no tapar los iconos.
 8. **Sin pesos ni probabilidades distintas**: la página promete que todas
    las opciones tienen la misma probabilidad.
 
@@ -576,7 +590,9 @@ control donde se usa):
 - El botón principal es el único control que gira; el cubo central es
   decorativo (`aria-hidden`). Hoy el único «botón» es el cubo, sin texto
   visible fuera de la rueda.
-- Foco: tras girar, se queda en el botón principal (hoy salta al modal).
+- Foco: tras girar vuelve al control que lanzó el giro (el botón o la
+  rueda); si se giró con el atajo global o arrastrando, al botón principal.
+  (Hoy salta al modal.)
 - Pestañas con `role="tablist"`, flechas izquierda/derecha y
   `aria-selected` (hoy faltan las flechas).
 - Aviso de «Deshacer»: se conserva tal cual (ya cumple 2.2.1 y foco).
@@ -719,3 +735,4 @@ resolvieron cambiando este documento. Cada fila enlaza el issue.
 | Propietario (prototipo v1) | D1–D8 (§12): paleta pastel, tic opcional, final con suspenso, entrada más suave, controles rediseñados, escritorio. | §6.1, §6.5, §6.12–§6.14, §6.9, O6, RNF-03, RNF-06, §7. Revisión propia de la v1.4: intervalos de los finales recortados al margen mínimo; RNF-06 decía 5 KB mientras O6 decía 6,3 (residuo de A10). | v1.4 |
 | #15 | (1) La «cola lenta» de §6.13 era imposible con la curva única de §6.3 (el último 30 % del tiempo recorría el 9 % del total, 162–227°). (2) La atenuación al 55 % de §6.12 dejaba las etiquetas en 2,6–4,0:1, por debajo de RNF-07. Menores: alto de la rueda en escritorio, sentido de los intervalos, ocultado en modo Eliminar. | (1) Curva por tramos con cola cúbica y empalme de velocidad. (2) Atenuación al 30 % con contorno de 3 px y etiqueta 700. Menores confirmados como los leyó la sesión. | §6.3, §6.12, §6.13, §6.14, §6.1 |
 | Auditoría v2, ciclo 1 (#7) | Cuatro descuadres del SDD con lo medido: alto de la rueda en móvil, amplitud de §15 desfasada, reposo «≤ 6 px» falso en ruedas grandes, frecuencias de finales sin la anti-repetición. | Corregidos con las cifras del prototipo; el reposo se limita también en píxeles. | §6.1, §6.5, §6.13, §15 | v1.6 |
+| Auditoría v2, ciclo 2 (#7) | Alto de la rueda sin fórmula para todos los formatos; «Deshacer» durante el giro; reinicio de las cuentas de Contar; destino del foco; posición del aviso. | Adoptado lo que hace el prototipo, que es razonable: hero de alto fijo con invariante en todos los formatos; Deshacer en giro = cambio pendiente; cuentas por texto con «Reiniciar cuentas»; foco al control que giró; aviso dentro de la zona de la rueda. | §6.1, RF-05, §6.14, §7 | v1.7 |
