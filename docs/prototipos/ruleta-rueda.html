@@ -179,14 +179,17 @@ button, input, textarea { font: inherit; color: inherit; touch-action: manipulat
 
 /* ---------- Resultado, acción y entradas ---------- */
 .ruleta-result {
-  margin: 8px 0 0; min-height: 48px; text-align: center;
+  margin: 8px 0 0; height: 48px; overflow: hidden; text-align: center;
   display: flex; flex-direction: column; justify-content: center;
 }
 .ruleta-result-main {
   font: 600 1.6rem/1.15 var(--font-display); letter-spacing: -0.01em;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.ruleta-result-side { font-size: 0.8rem; color: var(--text-tertiary); line-height: 1.2; }
+.ruleta-result-side {
+  font-size: 0.8rem; color: var(--text-tertiary); line-height: 1.2;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; /* una pregunta de 60 caracteres no debe mover el botón */
+}
 /* Texto largo (patrón .is-largo de los dados): cuerpo menor y hasta dos líneas en el mismo alto; luego, elipsis */
 .ruleta-result-main.is-largo {
   font-size: 1rem; line-height: 1; white-space: normal; overflow-wrap: anywhere;
@@ -609,7 +612,7 @@ function pararReposo() { reposoAnim?.cancel(); reposoAnim = null; }
 
 function reposo() {
   pararReposo();
-  if (reducido() || estado.girando || document.hidden || estado.n === 0) return;
+  if (reducido() || estado.girando || entradaViva || document.hidden || estado.n === 0) return;
   const t = estado.theta, e = 'ease-in-out', amp = amplitudReposo(estado.n);
   reposoAnim = rotor.animate([
     { transform: `rotate(${t}deg)`, easing: e },
@@ -799,7 +802,12 @@ document.querySelectorAll('[data-paleta].proto-opt').forEach((b) => b.addEventLi
   estado.paleta = b.dataset.paleta;
   rueda.dataset.paleta = estado.paleta;
   document.querySelectorAll('.proto-opt[data-paleta]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
-  repintar(); // misma lista: conserva resultado y marca
+  // Solo la paleta: la lista pendiente (si la hay) espera a la siguiente acción (RF-05)
+  const escrita = estado.opciones, pendiente = estado.pendiente;
+  estado.opciones = estado.opcionesRueda;
+  repintar();
+  estado.opciones = escrita;
+  estado.pendiente = pendiente;
 }));
 document.querySelectorAll('.proto-opt[data-n]').forEach((b) => b.addEventListener('click', () => {
   txtOpciones.value = EJEMPLOS[b.dataset.n].join('\n');
