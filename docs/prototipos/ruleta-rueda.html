@@ -128,11 +128,11 @@ button, input, textarea { font: inherit; color: inherit; touch-action: manipulat
 .wheel-slices { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .wheel-slice { stroke: var(--wheel-trazo); stroke-width: 0.8; transition: fill 0.15s; }
 .wheel-slice.tono-0 { fill: var(--wheel-t0); }
-.wheel-slice.tono-1 { fill: var(--wheel-t1); }
-.wheel-slice.tono-2 { fill: var(--wheel-t2); }
-.wheel-slice.tono-3 { fill: var(--wheel-t3); }
-.wheel-slice.tono-4 { fill: var(--wheel-t4); }
-.wheel-slice.tono-5 { fill: var(--wheel-t5); }
+.wheel-slice.tono-1 { fill: var(--wheel-t1, var(--wheel-t0)); }
+.wheel-slice.tono-2 { fill: var(--wheel-t2, var(--wheel-t0)); }
+.wheel-slice.tono-3 { fill: var(--wheel-t3, var(--wheel-t0)); }
+.wheel-slice.tono-4 { fill: var(--wheel-t4, var(--wheel-t0)); }
+.wheel-slice.tono-5 { fill: var(--wheel-t5, var(--wheel-t0)); }
 .wheel-slice.is-ganador { fill: var(--accent-warm); }
 
 .wheel-labels { position: absolute; inset: 0; pointer-events: none; }
@@ -637,6 +637,7 @@ const esperar = (a) => a.finished.catch(() => {});
 async function girar() {
   if (estado.girando || estado.n === 0) return;
   estado.girando = true;
+  estado.foco = document.activeElement === btnGirar; // antes de deshabilitar: si no, el foco ya se fue a body
   btnGirar.disabled = true;
   resultadoEl.replaceChildren();
   rueda.querySelectorAll('.is-ganador').forEach((el) => el.classList.remove('is-ganador'));
@@ -644,7 +645,7 @@ async function girar() {
 
   const n = estado.n;
   const opcionesGiro = estado.opciones.slice();  // lo que enseña la rueda ahora; lo escrito durante el giro no cuenta
-  estado.foco = document.activeElement === btnGirar;
+  const preguntaGiro = inpPregunta.value.trim();
   const ganador = indiceAlAzar(n);               // se decide ANTES de animar
   const dur = estado.duracion === 'corta' ? 2000 : 3500 + 1000 * (u32() / U32);
 
@@ -655,8 +656,9 @@ async function girar() {
   if (reducido()) {
     const objetivo = -(ganador + 0.15 + 0.7 * (u32() / U32)) * (360 / n);
     escribirPose(objetivo);
+    voltear(false); // la rueda aparece ya con las etiquetas derechas
     await esperar(rotor.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200 }));
-    return terminar(ganador, opcionesGiro, n);
+    return terminar(ganador, opcionesGiro, n, preguntaGiro);
   }
 
   // El plan se calcula antes de la anticipación, para que no cueste un fotograma al arrancar.
@@ -689,7 +691,7 @@ async function girar() {
   await esperar(aterriza);
   escribirPose(fin);                                  // pose final a mano…
   [rotor, puntero].forEach((el) => el.getAnimations().forEach((a) => a.cancel())); // …y luego se cancela
-  terminar(ganador, opcionesGiro, n);
+  terminar(ganador, opcionesGiro, n, preguntaGiro);
 }
 
 function marcarGanador(i) {
@@ -697,7 +699,7 @@ function marcarGanador(i) {
   etiquetasEl.children[i]?.classList.add('is-ganador');
 }
 
-function terminar(ganador, opcionesGiro, nGiro) {
+function terminar(ganador, opcionesGiro, nGiro, pregunta) {
   estado.ganador = ganador;
   marcarGanador(ganador);
   const principal = document.createElement('span');
@@ -705,12 +707,17 @@ function terminar(ganador, opcionesGiro, nGiro) {
   principal.textContent = opcionesGiro[ganador];
   const lateral = document.createElement('span');
   lateral.className = 'ruleta-result-side';
-  lateral.textContent = inpPregunta.value.trim() || `1 de ${nGiro} opciones`;
+  lateral.textContent = pregunta || `1 de ${nGiro} opciones`;
   resultadoEl.replaceChildren(principal, lateral);
   voltear(true);
   navigator.vibrate?.(15);
   estado.girando = false;
-  if (estado.pendiente) { estado.pendiente = false; pintar(); } // lo escrito durante el giro se aplica ahora
+  if (estado.pendiente) { // lo escrito durante el giro se aplica ahora (RF-05)
+    estado.pendiente = false;
+    const igual = JSON.stringify(opcionesGiro) === JSON.stringify(estado.opciones);
+    pintar();
+    if (igual) { estado.ganador = ganador; marcarGanador(ganador); } // solo cambió la paleta: la marca se conserva
+  }
   btnGirar.disabled = estado.n === 0;
   if (estado.foco && !btnGirar.disabled) btnGirar.focus({ preventScroll: true }); // el foco se queda en el botón (SDD §7)
   reposo(); // vuelve tras cada resultado, con la amplitud acotada al gajo
@@ -774,18 +781,14 @@ $('compartir').addEventListener('click', async () => {
 });
 
 /* --- Controles del prototipo --- */
-function marcar(grupo, attr, valor) {
-  document.querySelectorAll(`[${attr}]`).forEach((b) => b.setAttribute('aria-pressed', String(b.getAttribute(attr) === String(valor))));
-}
 document.querySelectorAll('[data-paleta].proto-opt').forEach((b) => b.addEventListener('click', () => {
   estado.paleta = b.dataset.paleta;
   rueda.dataset.paleta = estado.paleta;
   document.querySelectorAll('.proto-opt[data-paleta]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
-  if (!estado.girando) {
-    const g = estado.ganador;
-    pintar();
-    if (g >= 0 && g < estado.n) { estado.ganador = g; marcarGanador(g); }
-  }
+  if (estado.girando) { estado.pendiente = true; return; } // se repinta al aterrizar
+  const g = estado.ganador;
+  pintar();
+  if (g >= 0 && g < estado.n) { estado.ganador = g; marcarGanador(g); }
 }));
 document.querySelectorAll('.proto-opt[data-n]').forEach((b) => b.addEventListener('click', () => {
   txtOpciones.value = EJEMPLOS[b.dataset.n].join('\n');
