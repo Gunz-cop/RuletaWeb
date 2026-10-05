@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Estado | v1.2 (auditado §14; bloqueantes resueltos §15) — pendiente de las decisiones del propietario de §12 |
+| Estado | v1.3 (auditado §14; bloqueantes resueltos §15) — pendiente de las decisiones del propietario de §12 |
 | Fecha | 2026-10-05 |
 | Alcance | `src/pages/ruleta.astro`, sus componentes y su JS, tests de estado de `/ruleta`, texto SEO de la página |
 | Normas que manda | `AGENTS.md` → `DESIGN.md` → skill `decidelo-herramienta` → skills de terceros |
@@ -137,7 +137,9 @@ fase de texto.
 
 - O1. Sorteo uniforme demostrable: cada opción activa sale con probabilidad
   1/N, verificado con un test estadístico en Node.
-- O2. Lo que enseña la rueda coincide siempre con el texto del resultado,
+- O2. Lo que enseña la rueda coincide siempre con el texto del resultado
+  mientras ese resultado esté a la vista (RF-05 y RF-06 garantizan que no
+  hay resultado visible sobre una rueda distinta),
   verificado leyendo la matriz real del rotor en un test de estado.
 - O3. Acción principal y rueda **enteras** en la primera pantalla de los tres
   móviles de referencia y de un portátil de 1280×720.
@@ -166,8 +168,8 @@ fase de texto.
 | RF-02 | Sin opciones activas, la rueda muestra un estado vacío con texto («Escribe al menos una opción») y el botón principal queda desactivado. Con una sola opción, la rueda es un círculo completo y el giro funciona (gana esa). |
 | RF-03 | Campo «¿Qué se decide?» (opcional, máx. 60 caracteres). Si tiene texto, el resultado lo repite encima del ganador. |
 | RF-04 | «Girar ruleta» elige un ganador uniforme entre las opciones **activas**, anima la rueda hasta que el puntero señala ese gajo y escribe el resultado al resolver `.finished`. |
-| RF-05 | Durante el giro el botón queda desactivado y la lista no cambia la rueda: lo escrito se guarda y se aplica al terminar (comportamiento actual de `pendingResync`). |
-| RF-06 | El resultado aparece bajo la rueda: el texto de la opción grande en Outfit; debajo, en terciario, «¿Qué se decide?» o «1 de N opciones». Se anuncia por `aria-live="polite"`. |
+| RF-05 | Durante el giro el botón queda desactivado y la lista no cambia la rueda: lo escrito se guarda (`localStorage`) pero **no se aplica al aterrizar**. El resultado se muestra sobre la rueda que giró, con las opciones, N y la pregunta congeladas al empezar. Lo pendiente se aplica en la **siguiente acción** del visitante: al volver a escribir, al ocultar/activar una opción o al pulsar «Girar ruleta» (se repinta la rueda antes de planificar el giro). Así nunca hay un resultado sobre una rueda que no lo produjo (#14b). |
+| RF-06 | El resultado aparece bajo la rueda: el texto de la opción grande en Outfit; debajo, en terciario, «¿Qué se decide?» o «1 de N opciones». Se anuncia por `aria-live="polite"`. Un texto largo usa el patrón `.is-largo` de los dados: tamaño menor y hasta dos líneas dentro del mismo alto reservado; solo pasado eso, elipsis. **El resultado vigente se oculta en cuanto la rueda se repinta con otra lista** (queda en el historial), y con él la marca `is-ganador`. |
 | RF-07 | Tras un resultado, botón de texto «Quitar «X» y seguir»: oculta esa opción (no la borra) para eliminatorias; deshacible con el aviso existente, que deja de ser solo de «Vaciar»: guarda una foto genérica `{tipo, texto, ocultas}` y su mensaje dice qué se deshace. |
 | RF-08 | Lista «Ocultas»: ver todas las opciones con casilla para ocultar/activar sin borrar, y «Activar todas». Mantiene la identidad por índice y el emparejamiento por texto actuales (`updateFromTextarea`). |
 | RF-09 | «Mezclar» reordena las líneas (Fisher-Yates con `crypto`). «Vaciar» vacía y ofrece «Deshacer» durante 7 s, como hoy (incluido el WCAG 2.2.1 del foco). |
@@ -244,7 +246,9 @@ MÓVIL (base, < 640px)                 ESCRITORIO (≥ 1024px)
   sin los botones Foco y Sonido, ver §6.8): hero ≈ 52 px + rueda +
   resultado reservado 48 px + botón 48 px + huecos ≈ 36 px + holgura 16 px
   ⇒ la rueda puede medir hasta ≈ 296 px (hoy 318 px, pero cortada). Se fija
-  con CSS: `--wheel-d: min(100%, calc(100svh - 264px), 32rem)` (el valor exacto
+  con CSS: `--wheel-d: min(100%, calc(100svh - 324px), 32rem)` con la entradilla visible y
+  `calc(100svh - 272px)` cuando se oculta (medido en el prototipo #7: holgura
+  de 17,4–17,6 px en los tres móviles y 34 px en 1280×720; el valor exacto
   se ajusta con el invariante, nunca bajando el umbral). `svh` y no `dvh`:
   el tamaño de la rueda no debe saltar cuando aparece o se va la barra de
   Safari.
@@ -285,7 +289,7 @@ desaparece). Estructura:
   `innerHTML`.
 - **Etiquetas**: radiales, del borde hacia el centro, ancho fijo por CSS
   (radio − cubo − margen) con elipsis. Tamaño de letra por escalones de N
-  (como hoy: 16/13/11/9 px) mediante `data-densidad` en el rotor. Con
+  (como hoy: 16 px; 13 px con N > 10; 11 px con N > 18; 9 px con N > 25) mediante `data-densidad` en el rotor. Medidas internas en `cqw` del contenedor de la rueda (requiere iOS 16+, igual que `overflow-x: clip`). Con
   N > 40 no se pintan etiquetas (la rueda sigue y el resultado nombra al
   ganador); se avisa en texto terciario bajo el `<textarea>`.
 - **Ninguna etiqueta boca abajo en reposo** (hoy se resuelve en canvas):
@@ -572,3 +576,4 @@ resolvieron cambiando este documento. Cada fila enlaza el issue.
 | #14 | El SDD no decía si el reposo vuelve tras un resultado, y con N ≥ 37 un balanceo de ±1,5° supera el margen mínimo del desfase (0,15 × gajo) y saca al puntero del gajo ganador. | El reposo vuelve tras cada resultado (como la moneda) con amplitud `min(1,5°, 0,1 × gajo)`. Se descartó no reanudarlo (la rueda pierde vida entre giros) y estrechar el desfase (no basta con N = 100). | §6.3 (`amplitudReposo`), §6.5, RNF-03 |
 | #14 | La curva de frenado no estaba fijada. | Deceleración constante `θ_total · (1 − (1 − t/T)²)`. | §6.3 (`planGiro`) |
 | #14 | La plantilla `<template><path/></template>` no pinta: el `<path>` se parsea sin espacio de nombres SVG. | `<template><svg><path/></svg></template>` y se clona el hijo del `<svg>`. | §6.2 |
+| #7 (ciclo 2 de auditoría) | RF-05 («se aplica al terminar») chocaba con O2: al aterrizar, la rueda se repintaba con la lista escrita durante el giro y el resultado quedaba sobre otra rueda. | Lo escrito durante el giro se aplica en la siguiente acción del visitante, no al aterrizar; el resultado vigente se oculta cuando la rueda cambia de lista. Además: resultado largo con `.is-largo`, umbrales de densidad y alto de la rueda medidos en el prototipo. | O2, RF-05, RF-06, §6.1, §6.2 |
