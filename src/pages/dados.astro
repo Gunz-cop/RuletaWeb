@@ -6,9 +6,9 @@ import SeoArticle from '../components/SeoArticle.astro';
 import Dice from '../components/Dice.astro';
 import { getSocialImageUrl } from '../lib/heroImages';
 
-const title = 'Lanzar Dados Online — Tirar Dados Virtuales 3D Gratis | Decídelo.app';
-const description = 'Lanza de 1 a 6 dados virtuales en 3D gratis y ve la suma al instante, o crea un dado con tus propias opciones en las caras y compártelo. Sin registro.';
-const keywords = 'lanzar dados, tirar dados, dados virtuales, dados online, dados 3d, dado de 6 caras, tirar dos dados, dado de opciones, dado personalizado, dado de preguntas, tomar decisiones, azar';
+const title = 'Lanzar Dados Online: Dados Virtuales 3D y de Rol, Gratis';
+const description = '¿Te faltan dados para jugar? Lanza de 1 a 6 dados virtuales en 3D, dados de rol del d4 al d20 o un dado con tus propias opciones. Gratis y sin registro.';
+const keywords = 'lanzar dados, tirar dados, dados online, dados virtuales, lanzar dados online, tirar dados online, dados 3d, tirar dos dados, dado de 6 caras, dados de rol, d20 online, d4 d6 d8 d10 d12 d20, tirar con ventaja, dado personalizado, dado de opciones, dado de preguntas';
 
 // La imagen vive en src/assets y la optimiza Astro; el JSON-LD necesita
 // su URL absoluta ya generada, no la ruta pública que tenía antes.
@@ -19,6 +19,19 @@ const etiqueta = 'block mb-2 text-center text-xs font-semibold tracking-widest u
 const pastilla = 'py-2 bg-transparent border border-(--divider-line) rounded-full font-display font-semibold text-base text-ink-secondary tabular-nums cursor-pointer aria-pressed:text-ink-primary aria-pressed:border-warm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-warm hover:text-ink-primary hover:border-warm';
 const campo = 'w-full min-w-0 bg-transparent border-0 border-b border-(--divider-line) rounded-none px-0 py-2 font-sans text-base text-ink-primary placeholder:text-ink-tertiary focus:outline-none focus:border-warm';
 const textoBtn = 'bg-transparent border-0 border-b border-current rounded-none px-0 py-1 font-sans text-base text-ink-secondary cursor-pointer hover:text-warm focus-visible:text-warm focus-visible:outline-none';
+
+// Preguntas frecuentes: una sola lista para el JSON-LD y para el artículo,
+// así el texto visible y el de FAQPage no pueden divergir. Texto plano.
+const faq = [
+  ['¿Cómo lanzar dados online?', 'Elige «Normales», di cuántos dados quieres (de 1 a 6) y de qué tipo, y pulsa «Lanzar dados». Verás la suma en grande y, debajo, lo que sacó cada dado. Las últimas diez tiradas quedan en el historial de tu navegador.'],
+  ['¿Puedo tirar dos dados a la vez?', 'Sí. Dos dados de seis caras es la opción que viene marcada. Puedes lanzar hasta seis dados en la misma tirada y la herramienta los suma por ti.'],
+  ['¿Qué dados de rol hay?', 'D4, d6, d8, d10, d12 y d20. En el modo «Rol» escribes la tirada como en tu hoja de personaje (1d20+5, 2d6+3, 1d8+1d6) y tienes botones para tirar con ventaja, con desventaja y para crear un personaje.'],
+  ['¿Cómo funciona tirar con ventaja?', 'Se tiran dos d20 y vale el más alto; con desventaja, vale el más bajo. Es la regla de la quinta edición de Dungeons & Dragons. El botón «Ventaja» o «Desventaja» lo hace en una sola pulsación y te enseña los dos dados.'],
+  ['¿Puedo poner mis propias opciones en un dado?', 'Sí. En «Tus opciones» escribes de dos a seis opciones y cada una queda impresa en las caras del dado. Con cuatro o cinco opciones, las caras que sobran dicen «otra vez» y el dado vuelve a rodar, para que todas tengan la misma probabilidad.'],
+  ['¿Los dados virtuales son justos?', 'Sí. Cada valor sale del generador aleatorio criptográfico del navegador (crypto.getRandomValues) antes de la animación, así que todas las caras tienen la misma probabilidad y una tirada no depende de la anterior.'],
+  ['¿Puedo compartir un dado con otra persona?', 'Sí, el dado de opciones. Pulsa «Compartir este dado» y manda el enlace: quien lo abre ve el mismo dado con las mismas caras y lo lanza desde su móvil.'],
+  ['¿Se guardan mis tiradas?', 'Solo en tu navegador: el historial de las últimas diez tiradas, tus opciones y las tiradas de rol que guardes. No hace falta cuenta y nada se envía a ningún servidor.'],
+];
 
 const schemaLD = {
   "@context": "https://schema.org",
@@ -51,6 +64,15 @@ const schemaLD = {
           "url": "https://decidelo.app/favicon.svg"
         }
       }
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://decidelo.app/dados#faq",
+      "mainEntity": faq.map(([name, text]) => ({
+        "@type": "Question",
+        "name": name,
+        "acceptedAnswer": { "@type": "Answer", "text": text }
+      }))
     },
     {
       "@type": "BreadcrumbList",
@@ -200,35 +222,147 @@ const schemaLD = {
 
   <AdSlot position="top" />
 
-  {/* Texto provisional: solo se quitó lo que dejó de ser cierto (temas,
-      sonido). La reescritura orientada a CTR es la fase de textos, con la
-      skill decidelo-textos. */}
-  <SeoArticle title="¿Cómo funciona el lanzamiento de dados virtual y por qué usarlo?">
-    <p>Lanzar dados es una de las formas más antiguas de jugar y de decidir al azar. No siempre hay un par de dados a mano: esta herramienta para <strong>lanzar dados online</strong> te deja tirar de uno a seis dados de seis caras desde el móvil o el ordenador, gratis y sin registro.</p>
+  <SeoArticle title="Lanzar dados online: los dados que siempre faltan en la mesa">
+    <p><strong>¿Sacaste el juego de mesa y los dados no aparecen?</strong> Pasa en todas las casas: el parqués está completo, las fichas también, y el dado se perdió en algún cajón. Con estos <strong>dados online</strong> tiras de uno a seis dados virtuales en 3D desde el móvil o el ordenador, ves la suma al instante y sigues jugando. Gratis, sin instalar nada y sin registro.</p>
+
+    <p>No son solo dados de seis caras. Hay tres formas de usarlos: <strong>dados normales</strong> para juegos de mesa, <strong>dados de rol</strong> del d4 al d20 con tiradas como 1d20+5, y un <strong>dado con tus propias opciones</strong> escritas en las caras para decidir en grupo. <a href="#dice-stage">Pruébalos ahora: están justo arriba</a>.</p>
 
     <h2>Cómo tirar los dados</h2>
     <ol>
-      <li><strong>Elige qué lanzar</strong> junto al título: «Normales», «Tus opciones» o «Rol». En «Normales», debajo del botón eliges cuántos dados (de 1 a 6) y de qué tipo. La herramienta lo recuerda para la próxima vez.</li>
+      <li><strong>Elige qué lanzar</strong> junto al título: &laquo;Normales&raquo;, &laquo;Tus opciones&raquo; o &laquo;Rol&raquo;.</li>
+      <li><strong>Ajusta la tirada</strong> debajo del botón. En &laquo;Normales&raquo;, cuántos dados (de 1 a 6) y de qué tipo (D4, D6, D8, D10, D12 o D20). La herramienta lo recuerda para la próxima vez.</li>
       <li><strong>Pulsa &laquo;Lanzar dados&raquo;</strong>. Los dados vuelan, rebotan y ruedan sobre la mesa hasta quedarse quietos.</li>
       <li><strong>Lee el resultado</strong>: la suma en grande y, debajo, lo que sacó cada dado, en el mismo orden en que los ves.</li>
     </ol>
     <p>Las últimas diez tiradas quedan en el historial, guardado solo en tu navegador. Lo borras con &laquo;Borrar&raquo;.</p>
 
-    <h2>Agitar el móvil para lanzar</h2>
+    <h2>Ideas para usar los dados hoy</h2>
+    <p>Estas son las situaciones en las que más se echan de menos unos dados. Elige el modo y <a href="#dice-stage">lánzalos</a>.</p>
+    <table>
+      <thead>
+        <tr><th>Situación</th><th>Qué tirar</th><th>Modo</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Parqués, ludo o la oca</td><td>1 o 2 dados de 6 caras</td><td>Normales</td></tr>
+        <tr><td>Generala<sup><a href="#fuente-6">[6]</a></sup></td><td>5 dados de 6 caras</td><td>Normales</td></tr>
+        <tr><td>Partida de rol</td><td>1d20+5, 2d6+3…</td><td>Rol</td></tr>
+        <tr><td>Crear un personaje</td><td>4d6 sin el menor, seis veces</td><td>Rol</td></tr>
+        <tr><td>¿Qué cenamos?</td><td>Tus seis platos</td><td>Tus opciones</td></tr>
+        <tr><td>Verdad o reto con amigos</td><td>Verdad / Reto</td><td>Tus opciones</td></tr>
+        <tr><td>Preguntas para una clase</td><td>Hasta seis temas</td><td>Tus opciones</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Los tres modos</h2>
+
+    <h3>Normales: dados para juegos de mesa</h3>
+    <p>Es el modo de siempre. Viene con <strong>dos dados de seis caras</strong>, que es lo que pide la mayoría de juegos de mesa, y puedes subir hasta seis dados en la misma tirada. Si el juego usa otro dado, cámbialo en &laquo;Tipo de dado&raquo;: D4, D6, D8, D10, D12 o D20. La suma sale sola, así que nadie tiene que contar puntitos.</p>
+
+    <h3>Rol: tiradas como en tu hoja de personaje</h3>
+    <p>En &laquo;Rol&raquo; escribes la tirada con la notación de siempre: el número de dados, una <em>d</em>, las caras y el modificador. Por ejemplo, <code>1d20+5</code>, <code>2d6+3</code>, <code>3d8-1</code> o <code>1d8+1d6</code>. Caben hasta seis dados por tirada y el resultado enseña el desglose, para que el máster vea de dónde sale cada número.</p>
+    <p>Debajo hay tres botones para las tiradas que más se repiten en la quinta edición de Dungeons &amp; Dragons:</p>
+    <ul>
+      <li><strong>Ventaja</strong>: tira dos d20 y vale el más alto.</li>
+      <li><strong>Desventaja</strong>: tira dos d20 y vale el más bajo<sup><a href="#fuente-1">[1]</a></sup>.</li>
+      <li><strong>Personaje</strong>: tira 4d6, quita el dado más bajo y suma los otros tres, seis veces seguidas. Es el método de generación aleatoria de características<sup><a href="#fuente-1">[1]</a></sup>.</li>
+    </ul>
+    <p>Las tiradas que repites (&laquo;Ataque espada: 1d20+5&raquo;) se guardan con un nombre en &laquo;Guardar tirada&raquo; y luego se lanzan con un toque.</p>
+
+    <h3>Tus opciones: un dado con tus propias caras</h3>
+    <p>Un dado también sirve para salir de una duda en grupo, sin acordarte de qué número era cada cosa. Escribe de dos a seis opciones, o toca un ejemplo (&laquo;Comida&raquo;, &laquo;Verdad o reto&raquo;, &laquo;Planes&raquo;), y cada una queda impresa en las caras del dado. Si quieres, escribe también qué estás decidiendo, como &laquo;¿Qué cenamos?&raquo;: sale junto al resultado y en el historial.</p>
+    <p>Un dado tiene seis caras, así que el reparto depende de cuántas opciones escribas:</p>
+    <ul>
+      <li><strong>2, 3 o 6 opciones</strong>: todas las caras llevan una y cada opción ocupa las mismas caras.</li>
+      <li><strong>4 o 5 opciones</strong>: las caras que sobran dicen &laquo;otra vez&raquo;. Si cae una de ellas, el dado vuelve a rodar solo. Así ninguna opción tiene más caras que otra.</li>
+    </ul>
+    <p>Con &laquo;Compartir este dado&raquo; mandas un enlace con tus opciones: quien lo abre ve el mismo dado y lo lanza desde su móvil. Las opciones viajan dentro del propio enlace y no pasan por ningún servidor.</p>
+
+    <h3>Agitar el móvil para lanzar</h3>
     <p>En móviles con sensor de movimiento aparece el botón &laquo;Agitar el móvil para lanzar&raquo;. Actívalo y sacude el teléfono como si fuera un cubilete. Un golpe suelto, como dejar el móvil en la mesa, no cuenta: hace falta una sacudida clara.</p>
 
     <h2>¿Los dados virtuales son justos?</h2>
-    <p>Sí. Cada valor sale del generador de números aleatorios criptográfico del navegador (<code>crypto.getRandomValues</code>), y las seis caras tienen exactamente la misma probabilidad. El resultado se decide antes de la animación: el giro y los botes solo lo enseñan. Cada tirada es independiente de la anterior.</p>
+    <p>Sí. Cada valor sale del generador de valores aleatorios criptográficamente fuertes del navegador (<code>crypto.getRandomValues</code>)<sup><a href="#fuente-2">[2]</a></sup>, con la <strong>misma probabilidad para cada cara</strong>. El resultado se decide antes de la animación: el giro y los botes solo lo enseñan. Cada tirada es independiente de la anterior, así que un dado no &laquo;debe&raquo; un seis por llevar rato sin sacarlo.</p>
+    <p>Con un solo dado, todas las caras salen igual de a menudo. Al sumar dos dados la cosa cambia: el 7 sale más que el 2 o el 12<sup><a href="#fuente-3">[3]</a></sup>, porque hay muchas más combinaciones que suman 7.</p>
+    <table>
+      <thead>
+        <tr><th>Suma de 2d6</th><th>Combinaciones</th><th>De 36</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>2 o 12</td><td>1+1 / 6+6</td><td>1 cada una</td></tr>
+        <tr><td>3 o 11</td><td>1+2, 2+1 / 5+6, 6+5</td><td>2 cada una</td></tr>
+        <tr><td>4 o 10</td><td>1+3, 2+2, 3+1…</td><td>3 cada una</td></tr>
+        <tr><td>5 o 9</td><td>1+4, 2+3, 3+2, 4+1…</td><td>4 cada una</td></tr>
+        <tr><td>6 u 8</td><td>1+5, 2+4, 3+3…</td><td>5 cada una</td></tr>
+        <tr><td>7</td><td>1+6, 2+5, 3+4, 4+3, 5+2, 6+1</td><td>6</td></tr>
+      </tbody>
+    </table>
+    <p>Por eso, en los juegos que suman dos dados, los números del medio salen mucho más que los de los extremos: un 7 es seis veces más probable que un 2.</p>
 
-    <h2>Dado de opciones: escribe tus propias caras</h2>
-    <p>Un dado también sirve para salir de una duda con varias opciones, sin tener que acordarte de qué número era cada una. Elige <strong>«Tus opciones»</strong> arriba, junto al título, y escribe de dos a seis opciones (o toca un ejemplo) y cada una queda impresa en una cara del dado. Lo lanzas y la opción que queda arriba es la elegida. Si quieres, escribe también qué estás decidiendo («¿Qué cenamos?»): sale junto al resultado y en el historial.</p>
-    <p>Un dado tiene seis caras, así que el reparto depende de cuántas opciones escribas:</p>
+    <h2>Trucos para jugar mejor con dados online</h2>
+    <h3>1. Pon el móvil en el centro de la mesa</h3>
+    <p>Que todos vean la tirada a la vez. Con el historial a la vista, nadie puede decir que sacó un número que no sacó.</p>
+    <h3>2. Ajusta el número de dados antes de empezar</h3>
+    <p>La herramienta recuerda cuántos dados y de qué tipo usaste la última vez. Déjalo listo antes de la partida y solo tendrás que pulsar el botón.</p>
+    <h3>3. En rol, guarda tus tiradas fijas</h3>
+    <p>Ataque, daño, iniciativa: guárdalas con nombre y te ahorras escribirlas cada turno.</p>
+    <h3>4. Para decidir en grupo, comparte el dado</h3>
+    <p>Si el grupo está repartido por WhatsApp, manda el dado de opciones con &laquo;Compartir este dado&raquo;. Todos ven las mismas caras.</p>
+    <h3>5. Si hay más de seis opciones, cambia de herramienta</h3>
+    <p>Un dado tiene seis caras. Para más opciones o nombres, gira la <a href="/ruleta">ruleta</a>, que admite tantas como quieras.</p>
+
+    <h2>¿Dados, ruleta, moneda o número? Elige la herramienta correcta</h2>
+    <p>Decídelo.app tiene una herramienta para cada tipo de duda. Todas son gratis, funcionan en el móvil y no piden registro.</p>
+    <table>
+      <thead>
+        <tr><th>Si necesitas…</th><th>Usa</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Tirar dados para un juego de mesa o de rol</td><td>Estos dados online</td></tr>
+        <tr><td>Elegir entre dos opciones</td><td><a href="/moneda">Cara o sello</a></td></tr>
+        <tr><td>Elegir entre tres o más opciones o nombres</td><td><a href="/ruleta">Ruleta aleatoria</a></td></tr>
+        <tr><td>Una respuesta rápida a una pregunta</td><td><a href="/si-o-no">Sí o no</a></td></tr>
+        <tr><td>Un número al azar en un rango</td><td><a href="/numeros">Número aleatorio</a></td></tr>
+        <tr><td>Armar equipos parejos</td><td><a href="/equipos">Generador de equipos</a></td></tr>
+        <tr><td>Resolver un empate jugando</td><td><a href="/piedra-papel-tijera">Piedra, papel o tijera</a></td></tr>
+        <tr><td>Organizar el intercambio de regalos</td><td><a href="/amigo-secreto">Amigo secreto online</a></td></tr>
+        <tr><td>Medir tiempo por turnos</td><td><a href="/temporizador">Temporizador</a></td></tr>
+      </tbody>
+    </table>
+
+    <h2>Un juego de hace casi 5.000 años</h2>
+    <p>Los dados están entre los objetos de juego más antiguos que se conocen. Unos de los más viejos aparecieron con un juego de tablero en la Ciudad Quemada (Shahr-e Sukhteh), en el sureste de Irán, y se datan entre el 2800 y el 2500 a. C.<sup><a href="#fuente-4">[4]</a></sup>. En Mohenjo-daro, en el valle del Indo, se encontraron dados de terracota de 2500 a 1900 a. C.<sup><a href="#fuente-4">[4]</a></sup>.</p>
+    <p>El dado de seis caras que tienes en casa sigue una regla fija: <strong>las caras opuestas suman 7</strong> (el 1 frente al 6, el 2 frente al 5 y el 3 frente al 4)<sup><a href="#fuente-4">[4]</a></sup>. Los dados del modo rol siguen la misma idea de que todas las caras sean iguales: el d4, el d6, el d8, el d12 y el d20 tienen la forma de los sólidos platónicos<sup><a href="#fuente-4">[4]</a></sup>, cuyas caras son polígonos regulares idénticos<sup><a href="#fuente-5">[5]</a></sup>.</p>
+
+    <h2>Que ruede el dado: lanza ahora</h2>
+    <p>La partida está esperando. Sube a los <a href="#dice-stage">dados online</a>, elige cuántos y de qué tipo y pulsa &laquo;Lanzar dados&raquo;. Si en vez de jugar necesitas decidir entre dos cosas, lanza la <a href="/moneda">moneda</a>; si son muchos nombres, gira la <a href="/ruleta">ruleta</a>.</p>
+
+    <h2>Preguntas frecuentes</h2>
+    {faq.map(([pregunta, respuesta]) => (
+      <Fragment>
+        <h3>{pregunta}</h3>
+        <p>{respuesta}</p>
+      </Fragment>
+    ))}
+
+    <h2>Guías relacionadas</h2>
     <ul>
-      <li><strong>2, 3 o 6 opciones</strong>: todas las caras llevan una y cada opción ocupa las mismas caras (con dos, tres caras cada una; con tres, dos caras opuestas cada una).</li>
-      <li><strong>4 o 5 opciones</strong>: las caras que sobran dicen «otra vez». Si cae una de ellas, el dado vuelve a rodar solo, como harías en una mesa. Así ninguna opción tiene más caras que otra y todas tienen la misma probabilidad.</li>
+      <li><a href="/blog/dados/dados-dnd">Guía de dados de rol: del d4 al d100</a></li>
+      <li><a href="/blog/dados/dados-virtuales-sistemas-rol">Sistemas de rol y dados virtuales 3D</a></li>
+      <li><a href="/blog/dados/juego-generala">Cómo jugar a la Generala y al Mentiroso</a></li>
+      <li><a href="/blog/dados/juegos-de-mesa-dados-virtuales">Juegos de mesa con dados virtuales</a></li>
+      <li><a href="/blog/dados/juegos-de-mesa-clasicos-era-digital">Juegos de mesa en la era digital</a></li>
+      <li><a href="/blog/dados/juegos-de-beber-con-dados">Juegos con dados para fiestas y reuniones</a></li>
     </ul>
-    <p>Con <strong>«Compartir este dado»</strong> mandas un enlace con tus opciones: quien lo abre ve el mismo dado en su mesa y lo lanza desde su móvil. Las opciones viajan dentro del propio enlace, no pasan por ningún servidor, y en tu navegador quedan guardadas para la próxima vez.</p>
-    <p>Algunas ideas: qué comer o qué plan hacer hoy, verdad o reto en una reunión, un dado de preguntas o de emociones para una clase, o quién friega los platos. Si tienes más de seis opciones, la <a href="/ruleta">ruleta de decisiones</a> admite muchas más; para dos, también puedes lanzar una <a href="/moneda">moneda</a>.</p>
+
+    <h2>Fuentes</h2>
+    <ol>
+      <li id="fuente-1">Wizards of the Coast (2025). <em>Documento de referencia del sistema 5.2.1</em> (SRD de Dungeons &amp; Dragons, en español): «Ventaja y desventaja» y «Generación aleatoria» de características. <a href="https://media.dndbeyond.com/compendium-images/srd/5.2/SP_SRD_CC_v5.2.1.pdf" rel="noopener" target="_blank">media.dndbeyond.com</a></li>
+      <li id="fuente-2">MDN Web Docs. «Crypto.getRandomValues()». <a href="https://developer.mozilla.org/es/docs/Web/API/Crypto/getRandomValues" rel="noopener" target="_blank">developer.mozilla.org</a></li>
+      <li id="fuente-3">Wikipedia. «Dice» (sección de probabilidad). <a href="https://en.wikipedia.org/wiki/Dice" rel="noopener" target="_blank">en.wikipedia.org</a></li>
+      <li id="fuente-4">Wikipedia. «Dado» (historia y características). <a href="https://es.wikipedia.org/wiki/Dado" rel="noopener" target="_blank">es.wikipedia.org</a></li>
+      <li id="fuente-5">Wikipedia. «Sólido platónico». <a href="https://es.wikipedia.org/wiki/S%C3%B3lido_plat%C3%B3nico" rel="noopener" target="_blank">es.wikipedia.org</a></li>
+      <li id="fuente-6">Wikipedia. «Generala». <a href="https://es.wikipedia.org/wiki/Generala" rel="noopener" target="_blank">es.wikipedia.org</a></li>
+    </ol>
   </SeoArticle>
 
   <AdSlot position="bottom" />
