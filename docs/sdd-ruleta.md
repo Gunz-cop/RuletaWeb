@@ -6,6 +6,7 @@
 | Fecha | 2026-10-05 |
 | Alcance | `src/pages/ruleta.astro`, sus componentes y su JS, tests de estado de `/ruleta`, texto SEO de la página |
 | Normas que manda | `AGENTS.md` → `DESIGN.md` → skill `decidelo-herramienta` → skills de terceros |
+| Issues | Épica #4 · fase 0a #5 · 0b #6 · 1 #7 · 2 #8 · 3 #9 · 4 #10 · 5 #11 |
 | Referencia de implementación | La moneda (`moneda.astro` + `Coin.astro` + `moneda.js`) y, para el objeto simulado, los dados (`dados-fisica.js`) |
 
 Este documento describe **qué** se va a construir y **por qué**; el **cómo
