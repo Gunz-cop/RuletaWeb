@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Estado | Borrador v1.1 (auditado, ver §14) — pendiente de las decisiones del propietario de §12 |
+| Estado | v1.2 (auditado §14; bloqueantes resueltos §15) — pendiente de las decisiones del propietario de §12 |
 | Fecha | 2026-10-05 |
 | Alcance | `src/pages/ruleta.astro`, sus componentes y su JS, tests de estado de `/ruleta`, texto SEO de la página |
 | Normas que manda | `AGENTS.md` → `DESIGN.md` → skill `decidelo-herramienta` → skills de terceros |
@@ -184,7 +184,7 @@ fase de texto.
 |---|---|---|
 | RNF-01 | Uniformidad: χ² de 60 000 sorteos con N ∈ {2, 3, 6, 7, 13, 50} no rechaza uniformidad a α = 0,001. Sin sesgo de módulo (muestreo por rechazo). | `scripts/ruleta-check.mjs` en `npm test` |
 | RNF-02 | Coherencia objeto–texto: el gajo bajo el puntero tras el aterrizaje es el del resultado, también con N = 1, N = 2 y N = 40. | Estado `ganador-coincide-con-la-rueda` en `test:estado`: 3 giros animados de verdad y 30 con `reducedMotion: 'reduce'` (cada giro animado dura ~4 s; 30 alargarían CI dos minutos) |
-| RNF-03 | El rebote del aterrizaje nunca cruza a otro gajo (desfase de destino en [0,15; 0,85] del gajo y rebote ≤ 0,1 del gajo). | `ruleta-check.mjs` |
+| RNF-03 | Ni el rebote del aterrizaje ni el balanceo de reposo cruzan a otro gajo (desfase de destino en [0,15; 0,85] del gajo; rebote y balanceo ≤ 0,1 del gajo). | `ruleta-check.mjs` |
 | RNF-04 | Acción principal visible con ≥ 16 px de holgura en 360×560, 375×548 y 393×659, y en los formatos de `estadosResponsive`; sin scroll horizontal a 344 px. | `estadosAccionVisible` + `estadosResponsive` |
 | RNF-05 | La rueda entera (no solo el botón) dentro de la primera pantalla en los tres móviles de referencia y en 1280×720. | Invariante nuevo `rueda-entera-visible` (§9) |
 | RNF-06 | Peso: JS ≤ 5 KB gzip; `Layout.*.css` crece ≤ 0,3 KB gzip; el HTML de `/ruleta` no crece más de 1 KB gzip sin el artículo. | Medición en cada PR, anotada en el commit |
@@ -268,7 +268,9 @@ desaparece). Estructura:
     svg.wheel-slices    viewBox 0 0 200 200, un <path> por gajo
     .wheel-labels       una <span class="wheel-label"> por gajo
   .wheel-hub            círculo central decorativo (no es botón)
-<template id="wheel-slice-tpl"> <path class="wheel-slice"/> </template>
+<template id="wheel-slice-tpl"><svg><path class="wheel-slice"/></svg></template>
+  (se clona el <path> hijo del <svg>: un <path> suelto en un <template>
+   HTML se parsea sin espacio de nombres SVG y no se pinta; #14)
 <template id="wheel-label-tpl"> <span class="wheel-label"></span> </template>
 ```
 
@@ -310,9 +312,10 @@ patrón que `dados-fisica.js`/`dados-check.mjs`). Funciones:
 | `indiceAlAzar(n, rnd)` | Entero uniforme en `[0, n)` con muestreo por rechazo sobre `Uint32`. `rnd` inyectable para los tests. |
 | `geometria(n)` | Para cada gajo: ángulo inicial, final y medio; `d` del `<path>` (con N = 1, círculo completo). |
 | `tonoDe(i, n)` | Índice de tono con vecinos distintos, incluido el cierre del círculo (N impar). |
-| `planGiro({ anguloActual, ganador, n, rnd })` | Ángulo final = vueltas enteras (5–7) + el que deja el puntero en `ganador`, con desfase en [0,15; 0,85] del gajo. Devuelve los fotogramas del rotor (muestreados a 60 Hz sobre una curva de frenado, `easing: linear` entre muestras), los del puntero (un golpe en cada cruce de frontera, calculado con la misma curva; si dos cruces caen a menos de 50 ms, el puntero se queda levantado en vez de golpear: con 100 opciones y 6 vueltas hay 600 cruces en 4 s, más que fotogramas), la duración y el ángulo final normalizado a `[0, 360)`. |
+| `planGiro({ anguloActual, ganador, n, rnd })` | Ángulo final = vueltas enteras (5–7) + el que deja el puntero en `ganador`, con desfase en [0,15; 0,85] del gajo. Devuelve los fotogramas del rotor (muestreados a 60 Hz sobre una curva de **deceleración constante**, `θ(t) = θ_total · (1 − (1 − t/T)²)`, con `easing: linear` entre muestras; la velocidad inicial es el doble de la media. No se usa una cúbica: arrancaría al triple de la media y con ~13 opciones la rueda parecería girar hacia atrás por efecto rueda de carro; #14), los del puntero (un golpe en cada cruce de frontera, calculado con la misma curva; si dos cruces caen a menos de 50 ms, el puntero se queda levantado en vez de golpear: con 100 opciones y 6 vueltas hay 600 cruces en 4 s, más que fotogramas), la duración y el ángulo final normalizado a `[0, 360)`. |
 | `gajoBajoPuntero(angulo, n)` | Inverso de lo anterior; lo usan el test de Node y el test de estado. |
 | `aterrizaje(n)` | Rebote máximo = `min(2°, 0,1 × gajo)`. |
+| `amplitudReposo(n)` | Amplitud del balanceo de reposo = `min(1,5°, 0,1 × gajo)`. Menor que el margen mínimo del desfase (0,15 × gajo), así que el puntero nunca sale del gajo ganador mientras la rueda respira (#14). |
 | `migrarGuardado(leer)` | Lee claves nuevas o, si faltan, las viejas (§6.9). Devuelve el estado normalizado. |
 | `enlace(base, {para, opciones})` / `leerEnlace(hash)` | Formato de §6.10. Reutiliza `limpiar` de `dados-opciones.js`, pero **no** su `validar` ni su `leerEnlace`, que limitan a 6 opciones (las caras de un dado); los límites de la ruleta son los de §6.10. |
 | `reasignarOcultas(antes, despues, ocultas)` | El emparejamiento por índice/texto de `updateFromTextarea`, sacado tal cual para poder probarlo. |
@@ -339,7 +342,7 @@ Todas las fases con `element.animate()`, solo `transform` y `opacity`.
 | Fase | Qué hace | Duración |
 |---|---|---|
 | Entrada | La rueda rueda desde la izquierda (`translateX` + `rotate`), se pasa un poco y vuelve; dentro de `.wheel-stage` con `overflow-x: clip` | 1,0 s |
-| Reposo | Balanceo de ±1,5° del rotor en bucle (≤ 6 px en el borde); el puntero quieto | ciclo de 3 s |
+| Reposo | Balanceo de ±`amplitudReposo(n)` del rotor en bucle (como mucho ±1,5°, ≤ 6 px en el borde); el puntero quieto. Arranca tras la entrada **y vuelve tras cada resultado**, como en la moneda; por eso su amplitud está acotada al gajo (#14) | ciclo de 3 s |
 | Anticipación | El rotor retrocede 8° y el puntero se levanta | 0,2 s |
 | Acción | El giro planificado: 5–7 vueltas con frenado; el puntero golpea en cada frontera | 3,5–4,5 s (§12, D4) |
 | Aterrizaje | Rebote de `aterrizaje(n)` y asiento; el ganador se marca con el acento y se escribe el resultado | 0,35 s |
@@ -558,3 +561,14 @@ oculta la entradilla en móvil no aplica por el alcance del `<slot>`
 formato `#para=…&opcion=…` coincide con el del dado de opciones; las firmas
 `estadosAccionVisible(ruta, selector)` y `estadosResponsive(ruta, selector,
 extras)` son las que usa §9.
+
+## 15. Bloqueantes resueltos
+
+Discrepancias que una sesión de implementación encontró y que se
+resolvieron cambiando este documento. Cada fila enlaza el issue.
+
+| Issue | Laguna | Decisión | Secciones |
+|---|---|---|---|
+| #14 | El SDD no decía si el reposo vuelve tras un resultado, y con N ≥ 37 un balanceo de ±1,5° supera el margen mínimo del desfase (0,15 × gajo) y saca al puntero del gajo ganador. | El reposo vuelve tras cada resultado (como la moneda) con amplitud `min(1,5°, 0,1 × gajo)`. Se descartó no reanudarlo (la rueda pierde vida entre giros) y estrechar el desfase (no basta con N = 100). | §6.3 (`amplitudReposo`), §6.5, RNF-03 |
+| #14 | La curva de frenado no estaba fijada. | Deceleración constante `θ_total · (1 − (1 − t/T)²)`. | §6.3 (`planGiro`) |
+| #14 | La plantilla `<template><path/></template>` no pinta: el `<path>` se parsea sin espacio de nombres SVG. | `<template><svg><path/></svg></template>` y se clona el hijo del `<svg>`. | §6.2 |
