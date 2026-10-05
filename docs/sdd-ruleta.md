@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Estado | v1.5 (decisiones del propietario §12; auditado §14; bloqueantes §15) — pendiente de las decisiones del propietario de §12 |
+| Estado | v1.6 (decisiones del propietario §12; auditado §14; bloqueantes §15) — pendiente de las decisiones del propietario de §12 |
 | Fecha | 2026-10-05 |
 | Alcance | `src/pages/ruleta.astro`, sus componentes y su JS, tests de estado de `/ruleta`, texto SEO de la página |
 | Normas que manda | `AGENTS.md` → `DESIGN.md` → skill `decidelo-herramienta` → skills de terceros |
@@ -247,9 +247,11 @@ MÓVIL (base, < 640px)                 ESCRITORIO (≥ 1024px)
 - **Presupuesto vertical en 360×560** (con la cabecera de 64 px que queda
   sin los botones Foco y Sonido, ver §6.8): hero ≈ 52 px + rueda +
   resultado reservado 48 px + botón 48 px + huecos ≈ 36 px + holgura 16 px
-  ⇒ la rueda puede medir hasta ≈ 296 px (hoy 318 px, pero cortada). Se fija
-  con CSS: `--wheel-d: min(100%, calc(100svh - 324px), 32rem)` con la entradilla visible y
-  `calc(100svh - 272px)` cuando se oculta (medido en el prototipo #7: holgura
+  ⇒ la rueda podría medir ≈ 296 px. **Medido en el prototipo v2** (con el
+  selector de modo arriba): 235 px a 360×560, 223 px a 375×548 y 281 px a
+  393×659, con holgura de 17 px. Se fija
+  con CSS: `--wheel-d` con las constantes medidas en el prototipo v2: `100svh − 378px`,
+  `− 325px` y `− 267px` según el caso (v1: `− 324px` / `− 272px`) (medido en el prototipo #7: holgura
   de 17,4–17,6 px en los tres móviles y 34 px en 1280×720; el valor exacto
   se ajusta con el invariante, nunca bajando el umbral). `svh` y no `dvh`:
   el tamaño de la rueda no debe saltar cuando aparece o se va la barra de
@@ -354,7 +356,7 @@ Todas las fases con `element.animate()`, solo `transform` y `opacity`.
 | Fase | Qué hace | Duración |
 |---|---|---|
 | Entrada | La rueda llega rodando desde la izquierda (`translateX` + `rotate`) con un fundido de opacidad en el primer 30 % y se asienta con **un solo** rebote suave, sin frenazo (curva de muelle con `linear()` y respaldo `cubic-bezier(0.22, 1, 0.36, 1)`); el cubo la acompaña. Dentro de `.wheel-stage` con `overflow-x: clip` (D6) | 1,2–1,4 s |
-| Reposo | Balanceo de ±`amplitudReposo(margen)` del rotor en bucle (como mucho ±1,5°, ≤ 6 px en el borde); el puntero quieto. Arranca tras la entrada **y vuelve tras cada resultado**, como en la moneda; por eso su amplitud está acotada al gajo (#14) | ciclo de 3 s |
+| Reposo | Balanceo de ±`amplitudReposo(margen)` del rotor en bucle (como mucho ±1,5° y nunca más de 6 px en el borde: en ruedas de más de ≈ 458 px se limita por píxeles, `amp ≤ (6 / radio) · 180/π`); el puntero quieto. Arranca tras la entrada **y vuelve tras cada resultado**, como en la moneda; por eso su amplitud está acotada al gajo (#14) | ciclo de 3 s |
 | Anticipación | El rotor retrocede 8° y el puntero se levanta | 0,2 s |
 | Acción | El giro planificado: 5–7 vueltas, arranque rápido y **cola lenta con suspenso** (§6.13); el puntero golpea en cada frontera (y suena el tic si está activado) | 5–7 s (D4) |
 | Aterrizaje | Depende del tipo de final (§6.13): asiento corto o vuelta atrás empujada por el puntero. El ganador se marca (§6.12) y se escribe el resultado | 0,35–0,8 s |
@@ -487,10 +489,13 @@ termina la animación. Así el suspenso no cambia ninguna probabilidad.
 
 | Final | Qué se ve | Pose final dentro del gajo ganador | Peso |
 |---|---|---|---|
-| Normal | Frena y se queda | desfase en [0,12; 0,88] | 65 % |
-| Casi se pasa | Se arrastra hacia el gajo siguiente y se para justo antes | [0,90; 0,97] | 15 % |
-| Por los pelos | Parece que se queda en el gajo anterior, el puntero se apoya en la frontera y al final cae en el ganador | [0,03; 0,10] | 15 % |
-| Vuelta atrás | Se pasa al gajo siguiente y el puntero la empuja de vuelta al ganador | [0,85; 0,95], tras pasarse hasta 0,15 gajo | 5 % |
+| Normal | Frena y se queda | desfase en [0,12; 0,88] | 65 % (≈ 74 % efectivo) |
+| Casi se pasa | Se arrastra hacia el gajo siguiente y se para justo antes | [0,90; 0,97] | 15 % (≈ 11 %) |
+| Por los pelos | Parece que se queda en el gajo anterior, el puntero se apoya en la frontera y al final cae en el ganador | [0,03; 0,10] | 15 % (≈ 11 %) |
+| Vuelta atrás | Se pasa al gajo siguiente y el puntero la empuja de vuelta al ganador | [0,85; 0,95], tras pasarse hasta 0,15 gajo | 5 % (≈ 4 %) |
+
+El peso es el del sorteo; entre paréntesis, la frecuencia efectiva tras la
+anti-repetición, medida en el prototipo v2.
 
 - **Sin abusar**: nunca dos finales distintos de «Normal» seguidos; si toca,
   se cambia por «Normal». En la práctica, uno de cada cuatro o cinco giros.
@@ -707,9 +712,10 @@ resolvieron cambiando este documento. Cada fila enlaza el issue.
 
 | Issue | Laguna | Decisión | Secciones |
 |---|---|---|---|
-| #14 | El SDD no decía si el reposo vuelve tras un resultado, y con N ≥ 37 un balanceo de ±1,5° supera el margen mínimo del desfase (0,15 × gajo) y saca al puntero del gajo ganador. | El reposo vuelve tras cada resultado (como la moneda) con amplitud `min(1,5°, 0,1 × gajo)`. Se descartó no reanudarlo (la rueda pierde vida entre giros) y estrechar el desfase (no basta con N = 100). | §6.3 (`amplitudReposo`), §6.5, RNF-03 |
+| #14 (amplitud sustituida en la v1.4 por `0,4 × margen`, §6.3) | El SDD no decía si el reposo vuelve tras un resultado, y con N ≥ 37 un balanceo de ±1,5° supera el margen mínimo del desfase (0,15 × gajo) y saca al puntero del gajo ganador. | El reposo vuelve tras cada resultado (como la moneda) con amplitud `min(1,5°, 0,1 × gajo)`. Se descartó no reanudarlo (la rueda pierde vida entre giros) y estrechar el desfase (no basta con N = 100). | §6.3 (`amplitudReposo`), §6.5, RNF-03 |
 | #14 | La curva de frenado no estaba fijada. | Deceleración constante `θ_total · (1 − (1 − t/T)²)`. | §6.3 (`planGiro`) |
 | #14 | La plantilla `<template><path/></template>` no pinta: el `<path>` se parsea sin espacio de nombres SVG. | `<template><svg><path/></svg></template>` y se clona el hijo del `<svg>`. | §6.2 |
 | #7 (ciclo 2 de auditoría) | RF-05 («se aplica al terminar») chocaba con O2: al aterrizar, la rueda se repintaba con la lista escrita durante el giro y el resultado quedaba sobre otra rueda. | Lo escrito durante el giro se aplica en la siguiente acción del visitante, no al aterrizar; el resultado vigente se oculta cuando la rueda cambia de lista. Además: resultado largo con `.is-largo`, umbrales de densidad y alto de la rueda medidos en el prototipo. | O2, RF-05, RF-06, §6.1, §6.2 |
 | Propietario (prototipo v1) | D1–D8 (§12): paleta pastel, tic opcional, final con suspenso, entrada más suave, controles rediseñados, escritorio. | §6.1, §6.5, §6.12–§6.14, §6.9, O6, RNF-03, RNF-06, §7. Revisión propia de la v1.4: intervalos de los finales recortados al margen mínimo; RNF-06 decía 5 KB mientras O6 decía 6,3 (residuo de A10). | v1.4 |
 | #15 | (1) La «cola lenta» de §6.13 era imposible con la curva única de §6.3 (el último 30 % del tiempo recorría el 9 % del total, 162–227°). (2) La atenuación al 55 % de §6.12 dejaba las etiquetas en 2,6–4,0:1, por debajo de RNF-07. Menores: alto de la rueda en escritorio, sentido de los intervalos, ocultado en modo Eliminar. | (1) Curva por tramos con cola cúbica y empalme de velocidad. (2) Atenuación al 30 % con contorno de 3 px y etiqueta 700. Menores confirmados como los leyó la sesión. | §6.3, §6.12, §6.13, §6.14, §6.1 |
+| Auditoría v2, ciclo 1 (#7) | Cuatro descuadres del SDD con lo medido: alto de la rueda en móvil, amplitud de §15 desfasada, reposo «≤ 6 px» falso en ruedas grandes, frecuencias de finales sin la anti-repetición. | Corregidos con las cifras del prototipo; el reposo se limita también en píxeles. | §6.1, §6.5, §6.13, §15 | v1.6 |
