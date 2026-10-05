@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Estado | v1.3 (auditado §14; bloqueantes resueltos §15) — pendiente de las decisiones del propietario de §12 |
+| Estado | v1.4 (decisiones del propietario §12; auditado §14; bloqueantes §15) — pendiente de las decisiones del propietario de §12 |
 | Fecha | 2026-10-05 |
 | Alcance | `src/pages/ruleta.astro`, sus componentes y su JS, tests de estado de `/ruleta`, texto SEO de la página |
 | Normas que manda | `AGENTS.md` → `DESIGN.md` → skill `decidelo-herramienta` → skills de terceros |
@@ -147,8 +147,10 @@ fase de texto.
   movimiento de `DESIGN.md`, y la checklist de la skill.
 - O5. Nadie pierde su lista: las opciones, ocultas y título guardados con
   las claves viejas se leen tras el cambio.
-- O6. Sin crecer de peso aunque gane funciones: JS de la página ≤ 6,3 KB
-  gzip (lo de hoy; objetivo 5 KB) y la hoja compartida crece ≤ 0,3 KB gzip.
+- O6. Peso contenido aunque gane funciones: JS de la página ≤ 10 KB gzip
+  (hoy 6,3 KB; los dados pesan 13 KB; objetivo 8 KB) y la hoja compartida
+  crece ≤ 0,3 KB gzip. Subido en la v1.4 por el editor en lista, los modos,
+  el arrastre y la pantalla completa que pidió el propietario (D7).
 
 **No objetivos**
 
@@ -186,10 +188,10 @@ fase de texto.
 |---|---|---|
 | RNF-01 | Uniformidad: χ² de 60 000 sorteos con N ∈ {2, 3, 6, 7, 13, 50} no rechaza uniformidad a α = 0,001. Sin sesgo de módulo (muestreo por rechazo). | `scripts/ruleta-check.mjs` en `npm test` |
 | RNF-02 | Coherencia objeto–texto: el gajo bajo el puntero tras el aterrizaje es el del resultado, también con N = 1, N = 2 y N = 40. | Estado `ganador-coincide-con-la-rueda` en `test:estado`: 3 giros animados de verdad y 30 con `reducedMotion: 'reduce'` (cada giro animado dura ~4 s; 30 alargarían CI dos minutos) |
-| RNF-03 | Ni el rebote del aterrizaje ni el balanceo de reposo cruzan a otro gajo (desfase de destino en [0,15; 0,85] del gajo; rebote y balanceo ≤ 0,1 del gajo). | `ruleta-check.mjs` |
+| RNF-03 | La pose final siempre queda dentro del gajo ganador a ≥ `max(0,03 × gajo, 1,5°)` de la frontera, y el balanceo de reposo nunca la saca de él. Durante la animación sí puede cruzar (finales de §6.13); el resultado se escribe solo con la pose final. | `ruleta-check.mjs` |
 | RNF-04 | Acción principal visible con ≥ 16 px de holgura en 360×560, 375×548 y 393×659, y en los formatos de `estadosResponsive`; sin scroll horizontal a 344 px. | `estadosAccionVisible` + `estadosResponsive` |
 | RNF-05 | La rueda entera (no solo el botón) dentro de la primera pantalla en los tres móviles de referencia y en 1280×720. | Invariante nuevo `rueda-entera-visible` (§9) |
-| RNF-06 | Peso: JS ≤ 5 KB gzip; `Layout.*.css` crece ≤ 0,3 KB gzip; el HTML de `/ruleta` no crece más de 1 KB gzip sin el artículo. | Medición en cada PR, anotada en el commit |
+| RNF-06 | Peso: JS ≤ 10 KB gzip (objetivo 8; igual que O6); `Layout.*.css` crece ≤ 0,3 KB gzip; el HTML de `/ruleta` no crece más de 3 KB gzip sin el artículo (plantillas del editor). | Medición en cada PR, anotada en el commit |
 | RNF-07 | Contraste AA (≥ 4,5:1) de cada etiqueta sobre su gajo, para toda N. | `scripts/wheel-contrast.mjs`, reescrito para la paleta nueva |
 | RNF-08 | Accesibilidad: el resultado se anuncia una vez; todos los controles con nombre accesible y 44 px de toque; foco visible en `--accent-warm`; campos a 16 px; la rueda es `role="img"` con `aria-label` que lista las opciones activas (resumida si N > 12). | Revisión manual con VoiceOver/TalkBack + estados |
 | RNF-09 | Sin dependencias de npm en el navegador; sin `innerHTML` con marcado; `localStorage` en `try/catch`. | Revisión de PR |
@@ -253,8 +255,11 @@ MÓVIL (base, < 640px)                 ESCRITORIO (≥ 1024px)
   el tamaño de la rueda no debe saltar cuando aparece o se va la barra de
   Safari.
 - **Desde 640 px** (`sm:`): una columna, rueda mayor, márgenes de la escala.
-- **Desde 1024 px** (`lg:`): dos columnas; entradas a la izquierda, rueda,
-  resultado y botón a la derecha. La rueda se limita por alto
+- **Desde 1024 px** (`lg:`): dos columnas, **rueda a la izquierda y
+  más grande** (`3fr`), editor a la derecha (`2fr`), como Wheel of Names y
+  Picker Wheel: es la colocación que el visitante ya conoce (v1.4; cambia
+  respecto a la moneda y se documenta). La rueda crece con la pantalla
+  hasta `min(calc(100svh - 200px), 44rem)`. La rueda se limita por alto
   (`calc(100svh - 240px)`) para que quepa entera en 1280×720.
 - Debajo, sin cambios: `AdSlot`, `SeoArticle`, `HubGrid` (con el `AdSlot`
   superior después de la herramienta, como en la moneda).
@@ -319,7 +324,8 @@ patrón que `dados-fisica.js`/`dados-check.mjs`). Funciones:
 | `planGiro({ anguloActual, ganador, n, rnd })` | Ángulo final = vueltas enteras (5–7) + el que deja el puntero en `ganador`, con desfase en [0,15; 0,85] del gajo. Devuelve los fotogramas del rotor (muestreados a 60 Hz sobre una curva de **deceleración constante**, `θ(t) = θ_total · (1 − (1 − t/T)²)`, con `easing: linear` entre muestras; la velocidad inicial es el doble de la media. No se usa una cúbica: arrancaría al triple de la media y con ~13 opciones la rueda parecería girar hacia atrás por efecto rueda de carro; #14), los del puntero (un golpe en cada cruce de frontera, calculado con la misma curva; si dos cruces caen a menos de 50 ms, el puntero se queda levantado en vez de golpear: con 100 opciones y 6 vueltas hay 600 cruces en 4 s, más que fotogramas), la duración y el ángulo final normalizado a `[0, 360)`. |
 | `gajoBajoPuntero(angulo, n)` | Inverso de lo anterior; lo usan el test de Node y el test de estado. |
 | `aterrizaje(n)` | Rebote máximo = `min(2°, 0,1 × gajo)`. |
-| `amplitudReposo(n)` | Amplitud del balanceo de reposo = `min(1,5°, 0,1 × gajo)`. Menor que el margen mínimo del desfase (0,15 × gajo), así que el puntero nunca sale del gajo ganador mientras la rueda respira (#14). |
+| `amplitudReposo(margen)` | Amplitud del balanceo de reposo = `min(1,5°, 0,4 × margen)`, donde `margen` es la distancia real del puntero a la frontera más cercana en la pose de reposo. Con los finales de §6.13 el puntero puede quedar cerca del borde, así que la amplitud se calcula con la pose, no con N (#14, v1.4). |
+| `elegirFinal(historial, n, rnd)` | Tipo de final (§6.13), **independiente del ganador**. |
 | `migrarGuardado(leer)` | Lee claves nuevas o, si faltan, las viejas (§6.9). Devuelve el estado normalizado. |
 | `enlace(base, {para, opciones})` / `leerEnlace(hash)` | Formato de §6.10. Reutiliza `limpiar` de `dados-opciones.js`, pero **no** su `validar` ni su `leerEnlace`, que limitan a 6 opciones (las caras de un dado); los límites de la ruleta son los de §6.10. |
 | `reasignarOcultas(antes, despues, ocultas)` | El emparejamiento por índice/texto de `updateFromTextarea`, sacado tal cual para poder probarlo. |
@@ -345,11 +351,11 @@ Todas las fases con `element.animate()`, solo `transform` y `opacity`.
 
 | Fase | Qué hace | Duración |
 |---|---|---|
-| Entrada | La rueda rueda desde la izquierda (`translateX` + `rotate`), se pasa un poco y vuelve; dentro de `.wheel-stage` con `overflow-x: clip` | 1,0 s |
-| Reposo | Balanceo de ±`amplitudReposo(n)` del rotor en bucle (como mucho ±1,5°, ≤ 6 px en el borde); el puntero quieto. Arranca tras la entrada **y vuelve tras cada resultado**, como en la moneda; por eso su amplitud está acotada al gajo (#14) | ciclo de 3 s |
+| Entrada | La rueda llega rodando desde la izquierda (`translateX` + `rotate`) con un fundido de opacidad en el primer 30 % y se asienta con **un solo** rebote suave, sin frenazo (curva de muelle con `linear()` y respaldo `cubic-bezier(0.22, 1, 0.36, 1)`); el cubo la acompaña. Dentro de `.wheel-stage` con `overflow-x: clip` (D6) | 1,2–1,4 s |
+| Reposo | Balanceo de ±`amplitudReposo(margen)` del rotor en bucle (como mucho ±1,5°, ≤ 6 px en el borde); el puntero quieto. Arranca tras la entrada **y vuelve tras cada resultado**, como en la moneda; por eso su amplitud está acotada al gajo (#14) | ciclo de 3 s |
 | Anticipación | El rotor retrocede 8° y el puntero se levanta | 0,2 s |
-| Acción | El giro planificado: 5–7 vueltas con frenado; el puntero golpea en cada frontera | 3,5–4,5 s (§12, D4) |
-| Aterrizaje | Rebote de `aterrizaje(n)` y asiento; el ganador se marca con el acento y se escribe el resultado | 0,35 s |
+| Acción | El giro planificado: 5–7 vueltas, arranque rápido y **cola lenta con suspenso** (§6.13); el puntero golpea en cada frontera (y suena el tic si está activado) | 5–7 s (D4) |
+| Aterrizaje | Depende del tipo de final (§6.13): asiento corto o vuelta atrás empujada por el puntero. El ganador se marca (§6.12) y se escribe el resultado | 0,35–0,8 s |
 
 - **Interrumpible**: pulsar «Girar ruleta» cancela entrada y reposo
   (`getAnimations().forEach(a => a.cancel())`); el reposo no arranca si una
@@ -360,7 +366,11 @@ Todas las fases con `element.animate()`, solo `transform` y `opacity`.
 - **Reducido**: sin entrada, reposo ni anticipación; la rueda aparece en la
   pose final con un fundido de 200 ms y el resultado.
 - **Interrumpir un giro en curso** no está previsto (el botón está
-  desactivado); el giro es corto.
+  desactivado).
+- **Desenfoque de movimiento sin `filter`**: mientras la rueda avanza más
+  de medio gajo por fotograma, las etiquetas bajan a opacidad 0,35 (se
+  anima en la misma línea de tiempo). Evita el efecto rueda de carro que
+  midió la auditoría del prototipo v1 con 13 opciones.
 
 ### 6.6 Resultado e historial
 
@@ -377,6 +387,11 @@ Todas las fases con `element.animate()`, solo `transform` y `opacity`.
   plantilla `<template>` para la fila.
 
 ### 6.7 Entradas
+
+> **v1.4**: el editor se rediseña en §6.14 (lista con filas, «Añadir
+> opción», «Pegar lista», modos). Lo que sigue vale para el cuadro de texto
+> de «Pegar lista» y para lo que §6.14 no cambia; las pestañas «Opciones ·
+> Ocultas» se sustituyen por el interruptor de visibilidad de cada fila.
 
 - «¿Qué se decide?»: `<input>` subrayado, 16 px, `maxlength=60`.
 - Opciones: `<textarea>` subrayado o con borde `--divider-line`, 16 px
@@ -409,6 +424,8 @@ Todas las fases con `element.animate()`, solo `transform` y `opacity`.
 | `ruleta_titulo` | `decidelo_ruleta_pregunta` | texto | «Ruleta de Opciones» (el valor por defecto viejo) se convierte en vacío |
 | `ruleta_focus` | `decidelo_ruleta_foco` | `"true"/"false"` | Se copia |
 | `ruleta_sound` | — | — | Se deja de leer (si D1 conserva el tic: `decidelo_ruleta_sonido`) |
+| — | `decidelo_ruleta_modo` | `"normal" / "eliminar" / "contar"` | Nuevo (§6.14) |
+| — | `decidelo_ruleta_conteo` | `{v:1, cuentas: {<texto>: n}}` | Nuevo, modo Contar (§6.14) |
 | — | `decidelo_ruleta_historial` | `[{opcion, para, t}]`, máx. 20 | Nuevo |
 
 Las claves viejas no se borran: si hubiera que revertir el despliegue, el
@@ -438,9 +455,106 @@ Siguiendo «Cómo decidir entre CSS propio y utilidad de Tailwind»:
 | Botón principal y campos (`:focus`, `:disabled`, `::placeholder`) | CSS propio |
 | Media queries propias | Solo `@media (max-width: 639px)` y `(max-width: 639px) and (max-height: 620px)` |
 
+### 6.12 Paleta pastel viva (D2)
+
+- Variables locales `--wheel-p0…p7` en `Wheel.astro` (objeto ilustrado; no
+  son tokens globales). Ocho tonos pastel con saturación suficiente para
+  verse alegres sobre la tinta del sitio, por ejemplo coral `#ffb4a2`,
+  melocotón `#ffd6a5`, limón `#fdffb6`, menta `#caffbf`, agua `#9bf6ff`,
+  cielo `#a0c4ff`, lavanda `#bdb2ff`, rosa `#ffc6ff`. Los valores finales se
+  fijan en el prototipo v2 con aprobación del propietario.
+- Etiquetas en tinta oscura (`#1a1a24`), con contraste ≥ 4,5:1 en cada tono
+  (lo comprueba `wheel-contrast.mjs`).
+- `tonoDe(i, n, 8)`: dos vecinos nunca comparten tono, tampoco el último y el
+  primero.
+- **Ganador**: el gajo ganador conserva su color y el resto se atenúa
+  (capa oscura al 55 %), con un contorno claro de 2 px en el ganador. Con
+  una paleta de ocho colores, pintarlo de `--accent-warm` se confundiría con
+  un gajo más.
+- El botón principal y el foco siguen en `--accent-warm`: el pastel es solo
+  del objeto.
+
+### 6.13 Final con suspenso (D4)
+
+El ganador se decide antes con `crypto`, **igual que siempre**; lo que se
+sortea aparte, también con `crypto` e independiente del ganador, es **cómo**
+termina la animación. Así el suspenso no cambia ninguna probabilidad.
+
+| Final | Qué se ve | Pose final dentro del gajo ganador | Peso |
+|---|---|---|---|
+| Normal | Frena y se queda | desfase en [0,12; 0,88] | 65 % |
+| Casi se pasa | Se arrastra hacia el gajo siguiente y se para justo antes | [0,90; 0,97] | 15 % |
+| Por los pelos | Parece que se queda en el gajo anterior, el puntero se apoya en la frontera y al final cae en el ganador | [0,03; 0,10] | 15 % |
+| Vuelta atrás | Se pasa al gajo siguiente y el puntero la empuja de vuelta al ganador | [0,85; 0,95], tras pasarse hasta 0,15 gajo | 5 % |
+
+- **Sin abusar**: nunca dos finales distintos de «Normal» seguidos; si toca,
+  se cambia por «Normal». En la práctica, uno de cada cuatro o cinco giros.
+- **Solo con gajos legibles**: con N > 30 (gajo < 12°) todos los finales son
+  «Normal».
+- **Margen mínimo**: `max(0,03 × gajo, 1,5°)` a la frontera (RNF-03). Los
+  intervalos de la tabla se recortan para respetarlo: con N = 30 (gajo de
+  12°), «Por los pelos» queda en [0,125; 0,15] y «Casi se pasa» en
+  [0,85; 0,875].
+- **Cola lenta**: en el último 30 % del tiempo la rueda recorre como mucho
+  1,5 gajos y nunca más de 90°; en «Casi se pasa» y «Por los pelos», el
+  último gajo se cruza (o casi) por debajo de 30°/s.
+- El puntero y el tic acompañan: los golpes se espacian al frenar.
+- `ruleta-check.mjs` comprueba que la frecuencia de cada final y la de cada
+  ganador son independientes (χ² sobre la tabla de contingencia).
+
+### 6.14 Controles y configuración (D7)
+
+**Lo que hace la competencia** (revisado el 2026-10-05):
+[Wheel of Names](https://wheelofnames.com/faq) edita en un cuadro de texto y
+mete la configuración en un diálogo «Customize» con pestañas (durante el
+giro, después del giro, sonido); el ganador sale en una ventana con «Quitar»
+o «Cerrar». [Picker Wheel](https://pickerwheel.com/) tiene lista con
+ocultar, duplicar y borrar por opción, tres modos (normal, eliminación,
+acumulación) y un panel lateral de ajustes con velocidad 1–10 y duración
+1–30 s. Varias apps permiten girar arrastrando la rueda con el dedo, y
+Ctrl+Enter para girar. Fallos comunes: ajustes enterrados en diálogos,
+perillas que nadie entiende (velocidad y duración por separado), ventanas
+que tapan el resultado, cuentas y anuncios, y pesos que contradicen la
+promesa de azar justo.
+
+**Lo que haremos** (principio: cero configuración para empezar y cada
+control donde se usa):
+
+1. **Girar de cuatro formas**: el botón «Girar ruleta», tocar la rueda,
+   **arrastrarla con el dedo o el ratón** (la fuerza del gesto solo elige
+   cuántas vueltas da, nunca el ganador) y teclado (Espacio o Intro con la
+   rueda enfocada, Ctrl/Cmd+Intro desde cualquier sitio).
+2. **Controles del objeto sobre el objeto**: en una esquina de la rueda,
+   dos iconos de 44 px: sonido (altavoz tachado / activo) y pantalla
+   completa (Fullscreen API; en iPhone, donde no existe, activa el modo
+   foco). Sin diálogo de ajustes: no hay perillas de velocidad ni duración,
+   el suspenso lo diseñamos nosotros.
+3. **Modo, arriba y en una pieza** (patrón «Selector de modo» de DESIGN.md):
+   **Normal · Eliminar · Contar**. Normal: el ganador sigue en la rueda.
+   Eliminar: tras cada giro el ganador se oculta solo (con «Deshacer»);
+   cuando queda una opción, «Ganó X» y «Volver a empezar». Contar: cada
+   opción acumula sus victorias en la lista y en el historial.
+4. **Acciones tras el resultado, bajo el resultado** (nunca en una ventana):
+   «Girar otra vez» y, en Normal, «Quitar «X»». El resultado no se tapa.
+5. **Editor de opciones en lista, no solo cuadro de texto**: filas de 44 px
+   con el color de su gajo, el texto editable en el sitio, un interruptor de
+   visibilidad (ocultar sin borrar) y borrar con «Deshacer». Al final, un
+   campo «Añadir opción» que con Intro añade y **deja el teclado abierto**
+   para la siguiente: escribir diez nombres en el móvil sin cerrar el
+   teclado. «Pegar lista» abre el cuadro de texto para pegar de golpe; los
+   dos modos editan la misma lista.
+6. **Ejemplos para empezar**: fichas «Comida», «Verdad o reto», «Nombres»
+   que llenan la lista (como los ejemplos del dado de opciones).
+7. **Herramientas de la lista** en una fila de texto: Mezclar · Ordenar ·
+   Vaciar · Compartir. Nada pide confirmación: todo se deshace.
+8. **Sin pesos ni probabilidades distintas**: la página promete que todas
+   las opciones tienen la misma probabilidad.
+
 ## 7. Accesibilidad
 
-- La rueda: `role="img"`, `aria-label="Ruleta con 6 opciones: Pizza,
+- La rueda (v1.4): es también un control de giro, así que el contenedor
+  enfocable es un `<button>` con `aria-label="Girar la ruleta"` y la
+  descripción de opciones va en `aria-describedby`. Antes: `role="img"`, `aria-label="Ruleta con 6 opciones: Pizza,
   Tacos, …"` (con N > 12, «Ruleta con 30 opciones»).
 - El botón principal es el único control que gira; el cubo central es
   decorativo (`aria-hidden`). Hoy el único «botón» es el cubo, sin texto
@@ -520,13 +634,21 @@ un solo PR revisado con `test:visual`.
 
 ## 12. Decisiones del propietario
 
-| Id | Pregunta | Recomendación |
+Tomadas por el propietario el 2026-10-05 tras probar el prototipo v1 en su
+iPhone. Mandan sobre DESIGN.md donde lo contradicen (precedencia de
+AGENTS.md: lo que pide el propietario va primero); cada excepción se
+documenta en DESIGN.md en la fase 3.
+
+| Id | Pregunta | Decisión |
 |---|---|---|
-| D1 | ¿Se quita el sonido (tic por gajo y arpegio)? | Quitarlo todo, como manda la regla 6. Si se quiere conservar el tic, sería una excepción documentada como la del temporizador: desactivado por defecto, sin arpegio. |
-| D2 | Paleta de la rueda | Prototipar dos: **A** (recomendada) tonos de tinta alternos (2–3 tonos de superficie y uno cálido apagado) con el ganador en `--accent-warm`; **B** seis tonos apagados variados como paleta local. Se elige en el iPhone. |
-| D3 | ¿Se quita la hoja inferior de móvil? | Sí: las entradas van debajo de la acción como en el resto de herramientas. Coste: para editar con la rueda a la vista hay que subir; a cambio, la rueda deja de quedar tapada y desaparecen ~250 líneas de CSS y JS de casos límite. |
-| D4 | Duración de la acción | 3,5–4,5 s. El estándar dice 1–2 s, pero una ruleta que para en 2 s no se lee; el temporizador ya tiene su excepción. Se documenta en DESIGN.md. |
-| D5 | Compartir: ¿botón de WhatsApp además de `navigator.share`? | Solo `navigator.share` + copiar: en móvil el menú del sistema ya ofrece WhatsApp. |
+| D1 | Sonido | **Se conserva el tic** al cruzar cada gajo, **desactivado por defecto** y recordado en `decidelo_ruleta_sonido`. Sin arpegio de ganador. Excepción a la regla 6, como el temporizador. |
+| D2 | Paleta de la rueda | **Ni A ni B**: los tonos de tinta «lo hacen ver aburrido». Paleta **pastel viva** (§6.12): una actividad de grupo tiene que disfrutarse. Excepción al «un solo acento» limitada al objeto ilustrado. |
+| D3 | Hoja inferior de móvil | Se quita (sin objeción en la prueba). La edición se rediseña en §6.14. |
+| D4 | Duración y final | Giro más largo y **final con suspenso** (§6.13): frena despacio, a veces parece que cae en otro gajo y no (o sí), y no siempre para en el centro del gajo, sin abusar del efecto. Se descarta el giro de 2 s. |
+| D5 | Compartir | `navigator.share` y, si no existe, copiar el enlace. |
+| D6 | Entrada | Se mantiene, pero **más suave y con gracia** (§6.5). |
+| D7 | Controles y configuración | «Mucho UX e intuitivo»: investigar a la competencia e implementar la mejor forma aunque nadie lo haga así (§6.14). |
+| D8 | Escritorio | Responsive de verdad; el propietario revisa capturas de escritorio en cada iteración. |
 
 ## 13. Métricas de éxito
 
@@ -577,3 +699,4 @@ resolvieron cambiando este documento. Cada fila enlaza el issue.
 | #14 | La curva de frenado no estaba fijada. | Deceleración constante `θ_total · (1 − (1 − t/T)²)`. | §6.3 (`planGiro`) |
 | #14 | La plantilla `<template><path/></template>` no pinta: el `<path>` se parsea sin espacio de nombres SVG. | `<template><svg><path/></svg></template>` y se clona el hijo del `<svg>`. | §6.2 |
 | #7 (ciclo 2 de auditoría) | RF-05 («se aplica al terminar») chocaba con O2: al aterrizar, la rueda se repintaba con la lista escrita durante el giro y el resultado quedaba sobre otra rueda. | Lo escrito durante el giro se aplica en la siguiente acción del visitante, no al aterrizar; el resultado vigente se oculta cuando la rueda cambia de lista. Además: resultado largo con `.is-largo`, umbrales de densidad y alto de la rueda medidos en el prototipo. | O2, RF-05, RF-06, §6.1, §6.2 |
+| Propietario (prototipo v1) | D1–D8 (§12): paleta pastel, tic opcional, final con suspenso, entrada más suave, controles rediseñados, escritorio. | §6.1, §6.5, §6.12–§6.14, §6.9, O6, RNF-03, RNF-06, §7. Revisión propia de la v1.4: intervalos de los finales recortados al margen mínimo; RNF-06 decía 5 KB mientras O6 decía 6,3 (residuo de A10). | v1.4 |
