@@ -151,6 +151,13 @@ async function medir() {
     }
     salida[`${est.ruta} [${est.nombre}]`] = JSON.parse(medida);
 
+    // `invariante`: relación de geometría que se comprueba además del
+    // snapshot de estilos (a diferencia de verificarRelacion, que lo sustituye).
+    if (est.invariante) {
+      const resultado = await est.invariante(pagina);
+      if (!resultado.ok) fallosInvariantes.push(`${est.ruta} [${est.nombre}]: ${resultado.mensaje}`);
+    }
+
     await pagina.close();
     await ctx.close();
   }

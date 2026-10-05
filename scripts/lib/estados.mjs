@@ -130,6 +130,31 @@ import { crearReto, nuevoId } from '../../src/scripts/ppt-reto.js';
 import { forma } from '../../src/scripts/dados-poliedros.js';
 import { NORMAL } from '../../src/scripts/dados-fisica.js';
 
+// El aviso "Deshacer" es position:fixed. Si un ancestro tiene `transform`
+// (.reveal.revealed), ese ancestro pasa a ser su bloque contenedor y el aviso
+// se ancla al fondo de la sección en vez de al de la ventana: a 1280×720
+// salía en top=762px, fuera de la pantalla. El aviso dura 7 s, así que se
+// mide el mismo aviso en los dos tamaños sin volver a abrirlo.
+async function avisoDentroDeLaVentana(pagina) {
+  const fallos = [];
+  for (const vp of [{ width: 1280, height: 720 }, { width: 360, height: 560 }]) {
+    await pagina.setViewportSize(vp);
+    await pagina.waitForTimeout(100);
+    const r = await medirRect(pagina, '#undo-toast');
+    if (!r) { fallos.push(`${vp.width}×${vp.height}: #undo-toast no existe en el DOM`); continue; }
+    const dentro = r.top >= -TOLERANCIA_PX && r.left >= -TOLERANCIA_PX &&
+      r.bottom <= vp.height + TOLERANCIA_PX && r.right <= vp.width + TOLERANCIA_PX;
+    if (!dentro) {
+      fallos.push(`${vp.width}×${vp.height}: #undo-toast cae en top=${r.top.toFixed(0)} bottom=${r.bottom.toFixed(0)} ` +
+        `left=${r.left.toFixed(0)} right=${r.right.toFixed(0)}, fuera de la ventana`);
+    }
+  }
+  return {
+    ok: !fallos.length,
+    mensaje: fallos.join('; ') + ' -- algún ancestro con `transform` (.reveal) lo ancla a la sección en vez de a la ventana.',
+  };
+}
+
 export const VIEWPORTS_MOVIL = {
   'android-360x560': { width: 360, height: 560 },
   'iphone-se-375x548': { width: 375, height: 548 },
@@ -318,6 +343,7 @@ export const ESTADOS = [
     // que #clear-btn siempre tiene algo que vaciar en este estado.
     ruta: '/ruleta',
     nombre: 'deshacer-limpiar',
+    viewport: { width: 1280, height: 720 },
     clics: ['#clear-btn'],
     esperarSelector: '#undo-toast:not([hidden])',
     espera: 250,
@@ -325,6 +351,9 @@ export const ESTADOS = [
       { sel: '#undo-toast', props: ['display', 'position', 'zIndex'] },
       { sel: '#undo-toast-btn', props: ['display', 'cursor', 'minHeight'] },
     ],
+    // RNF-11: el aviso tiene que caer dentro de la ventana en escritorio
+    // (1280×720) y en el móvil de referencia (360×560).
+    invariante: avisoDentroDeLaVentana,
   },
   {
     // Antes llamado 'reposo' de la home, con tres aserciones de más

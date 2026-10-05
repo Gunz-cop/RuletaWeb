@@ -176,16 +176,21 @@ const Heading = headingLevel;
        otro control de la página, sin necesidad de moverles el foco a la
        fuerza. "Cerrar" es el único recurso en táctil para descartar el
        aviso antes de los 7s -- ahí no hay Escape. */}
-  <div id="undo-toast" class="undo-toast" hidden>
-    <p id="undo-toast-message" class="undo-toast-message"></p>
-    <div class="undo-toast-actions">
-      <button id="undo-toast-btn" type="button" class="undo-toast-btn">Deshacer</button>
-      <button id="undo-toast-close" type="button" class="undo-toast-close" aria-label="Cerrar aviso">
-        <span aria-hidden="true">✕</span>
-      </button>
-    </div>
-  </div>
 </section>
+{/* El aviso cuelga fuera de .roulette-section a propósito (RNF-11): la
+     sección lleva .reveal, y su `transform` convierte a la sección en el
+     bloque contenedor de todo descendiente position:fixed. Dentro, el aviso
+     se anclaba al fondo de la sección y a 1280×720 salía en top=762px,
+     fuera de la pantalla. El JS lo busca por id, así que no le afecta. */}
+<div id="undo-toast" class="undo-toast" hidden>
+  <p id="undo-toast-message" class="undo-toast-message"></p>
+  <div class="undo-toast-actions">
+    <button id="undo-toast-btn" type="button" class="undo-toast-btn">Deshacer</button>
+    <button id="undo-toast-close" type="button" class="undo-toast-close" aria-label="Cerrar aviso">
+      <span aria-hidden="true">✕</span>
+    </button>
+  </div>
+</div>
 <style>
   /* Ruleta Section */
   .roulette-section {
