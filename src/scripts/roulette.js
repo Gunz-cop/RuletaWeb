@@ -11,7 +11,8 @@ import { ConfettiManager } from './roulette/confetti.js';
 import { RouletteAudio } from './roulette/audio.js';
 import { WheelRenderer } from './roulette/wheel-canvas.js';
 import { readStorage, writeStorage } from './roulette/storage.js';
-import { randomFloat, shuffleInPlace } from './roulette/random.js';
+import { shuffleInPlace } from './roulette/random.js';
+import { planificarGiro, pasoDeGiro, indiceEnPuntero } from './roulette/plan-giro.js';
 
 // Con View Transitions, Astro navega sin recargar el documento y dispara
 // `astro:page-load` en cada llegada. Si initRoulette solo añadiera
@@ -89,6 +90,7 @@ function initRoulette() {
   let currentAngle = 0; // Ángulo actual en radianes
   let spinVelocity = 0; // Velocidad angular por frame
   let isSpinning = false;
+  let plannedWinnerIndex = -1; // Ganador elegido al planificar el giro
   let lastTickSegmentIndex = -1;
   let pointerTilt = 0; // Inclinación física del puntero
   let spinRafId = null;
@@ -502,21 +504,16 @@ function initRoulette() {
   // tick) y en announceWinner (para el resultado); ahora es la única
   // fuente de verdad para ambos.
   function getSegmentIndexAtPointer(angle) {
-    const arc = (2 * Math.PI) / options.length;
-    const pointerAngle = 1.5 * Math.PI;
-
-    const normalizedAngle = ((angle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
-    const wheelAngleAtPointer = (pointerAngle - normalizedAngle + 4 * Math.PI) % (2 * Math.PI);
-    return Math.floor(wheelAngleAtPointer / arc);
+    return indiceEnPuntero(angle, options.length);
   }
 
   // Bucle de física de fricción para giro suave (60fps)
   function updateSpin() {
     if (!isSpinning) return;
 
-    const friction = 0.984;
-    currentAngle += spinVelocity;
-    spinVelocity *= friction;
+    const paso = pasoDeGiro(currentAngle, spinVelocity);
+    currentAngle = paso.angulo;
+    spinVelocity = paso.velocidad;
 
     // Detectar cambio de segmento para tick
     if (options.length > 0) {
@@ -536,7 +533,7 @@ function initRoulette() {
     drawRoulette();
 
     // Detenerse cuando la velocidad es insignificante
-    if (spinVelocity < 0.0012) {
+    if (paso.parado) {
       isSpinning = false;
       spinButton.disabled = false;
       spinButton.textContent = 'GIRAR';
@@ -574,7 +571,9 @@ function initRoulette() {
 
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReducedMotion) {
-      currentAngle = randomFloat() * 2 * Math.PI;
+      const plan = planificarGiro(options.length, currentAngle);
+      plannedWinnerIndex = plan.ganador;
+      currentAngle = plan.anguloFinal;
       drawRoulette();
       announceWinner();
       return;
@@ -584,7 +583,9 @@ function initRoulette() {
     spinButton.disabled = true;
     spinButton.textContent = 'GIRANDO';
 
-    spinVelocity = 0.35 + randomFloat() * 0.25;
+    const plan = planificarGiro(options.length, currentAngle);
+    plannedWinnerIndex = plan.ganador;
+    spinVelocity = plan.velocidadInicial;
     lastTickSegmentIndex = -1;
 
     spinRafId = requestAnimationFrame(updateSpin);
@@ -594,7 +595,13 @@ function initRoulette() {
   function announceWinner() {
     if (options.length === 0) return;
 
-    const winnerIndex = getSegmentIndexAtPointer(currentAngle);
+    // El ganador es el que se eligió al planificar el giro; el gajo bajo el
+    // puntero solo se comprueba, para avisar en desarrollo si la animación
+    // y el plan dejaran de coincidir.
+    const winnerIndex = plannedWinnerIndex;
+    if (import.meta.env?.DEV && winnerIndex !== getSegmentIndexAtPointer(currentAngle)) {
+      console.warn('Ruleta: el gajo bajo el puntero no es el ganador elegido', winnerIndex, getSegmentIndexAtPointer(currentAngle));
+    }
     const winner = options[winnerIndex];
 
     // Vuelve a "assertive" por si el aviso de "Deshacer" de Limpiar lo dejó
