@@ -11,11 +11,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;600;700&family=Newsreader:ital,wght@1,400;1,500&display=swap" rel="stylesheet">
 <!--
-  Prototipo del issue #7 (SDD §6.1, §6.2, §6.5 y §12). Un solo archivo, sin
-  librerías ni scripts externos. NO es una página del sitio: vive en docs/ y se
-  publica aparte, porque todo lo que está en src/ o public/ llega a producción.
-  La lógica pura (sorteo, plan de giro, fotogramas del puntero) es la de
-  SDD §6.3; el módulo definitivo es el issue #8.
+  Prototipo del issue #7, iteración 2 (SDD v1.5: §6.1, §6.2, §6.5, §6.12–§6.14
+  y §12). Un solo archivo, sin librerías ni scripts externos. NO es una página
+  del sitio: vive en docs/ y se publica aparte, porque todo lo que está en src/
+  o public/ llega a producción. La lógica pura (sorteo, plan de giro, finales,
+  fotogramas del puntero) es la de SDD §6.3 y §6.13; el módulo definitivo es el
+  issue #8. Sin localStorage: la persistencia (§6.9) es del módulo definitivo.
 -->
 <style>
 /* Tokens del sitio (DESIGN.md, «Color: qué usar para qué» y radios), copiados
@@ -28,6 +29,8 @@
   --text-secondary: #8b8b9e;
   --text-tertiary: #5a5a6e;
   --accent-warm: #e2905a;
+  --accent-danger: #ef4444;
+  --accent-success: #39ff14;
   --divider-line: rgba(240, 240, 245, 0.12);
   --radius-sm: 6px;
   --radius-md: 12px;
@@ -48,9 +51,11 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 button, input, textarea { font: inherit; color: inherit; touch-action: manipulation; }
+button { cursor: pointer; }
 :focus-visible { outline: 2px solid var(--accent-warm); outline-offset: 3px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-.wrap { max-width: 1100px; margin: 0 auto; padding-inline: 16px; }
+.wrap { max-width: 1360px; margin: 0 auto; padding-inline: 16px; }
 
 /* ---------- Maqueta: cabecera del sitio (64 px, sin Foco ni Sonido) ---------- */
 .site-head { height: 64px; border-bottom: 1px solid var(--divider-line); }
@@ -62,12 +67,13 @@ button, input, textarea { font: inherit; color: inherit; touch-action: manipulat
 .tool {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  grid-template-areas: "hero" "wheel" "inputs";
+  grid-template-areas: "hero" "wheel" "inputs" "hist";
   padding-bottom: 32px;
 }
 .tool-hero { grid-area: hero; padding-top: 8px; }
 .tool-wheel { grid-area: wheel; }
-.tool-inputs { grid-area: inputs; padding-top: 24px; }
+.tool-inputs { grid-area: inputs; padding-top: 24px; display: flex; flex-direction: column; min-height: 0; }
+.tool-hist { grid-area: hist; padding-top: 24px; }
 
 .tool-hero h1 {
   margin: 0;
@@ -79,37 +85,58 @@ button, input, textarea { font: inherit; color: inherit; touch-action: manipulat
 /* La entradilla se oculta si el alto es corto (SDD §6.1) */
 @media (max-width: 639px) and (max-height: 620px) { .lede { display: none; } }
 
+/* Selector de modo (DESIGN.md): una sola pieza, borde divider, píldora; el modo
+   elegido se rellena de --bg-surface-alt, no del acento. */
+.modes {
+  display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 8px;
+  border: 1px solid var(--divider-line); border-radius: 999px; overflow: hidden;
+}
+.mode-opt {
+  min-height: 44px; border: 0; background: transparent; color: var(--text-secondary);
+  font-size: 0.9rem; font-weight: 500;
+}
+.mode-opt + .mode-opt { border-left: 1px solid var(--divider-line); }
+.mode-opt[aria-pressed="true"] { background: var(--bg-surface-alt); color: var(--text-primary); font-weight: 600; }
+
 /* ---------- La rueda (SDD §6.2) ---------- */
 .wheel-stage {
+  position: relative;
   /* La entrada llega desde la izquierda: se recorta en horizontal, no en vertical. */
   overflow-x: clip;
   padding-top: 14px; /* espacio para el puntero, que asoma por encima del borde */
 }
-.wheel-box, .btn-spin { --ink-on-warm: #1a0e06; } /* texto sobre --accent-warm (DESIGN.md) */
 .wheel-box {
-  --wheel-d: min(100%, calc(100svh - 324px), 32rem); /* con entradilla (alto > 620 px) */
-  position: relative;
-  width: var(--wheel-d);
-  aspect-ratio: 1;
-  margin-inline: auto;
+  /* Es un <button>: girar tocando, arrastrando o con teclado (SDD §6.14 y §7) */
+  --wheel-d: min(100%, calc(100svh - 378px), 32rem); /* con entradilla (alto > 620 px) */
+  display: block; position: relative; padding: 0; border: 0; background: none;
+  width: var(--wheel-d); aspect-ratio: 1; margin-inline: auto;
+  border-radius: 50%;
   /* Las etiquetas miden en cqw: así no hace falta ResizeObserver */
   container-type: inline-size;
+  touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
 }
+.wheel-box:disabled { cursor: default; }
+.wheel-box:focus-visible { outline: 2px solid var(--accent-warm); outline-offset: 5px; }
+.wheel-box, .btn-spin { --ink-on-warm: #1a0e06; } /* texto sobre --accent-warm (DESIGN.md) */
 /* Sin entradilla (SDD §6.1) la rueda gana 48 px; el valor se ajustó con la medida, no a ojo */
-@media (max-width: 639px) and (max-height: 620px) { .wheel-box { --wheel-d: min(100%, calc(100svh - 272px), 32rem); } }
-@media (min-width: 640px) { .wheel-box { --wheel-d: min(100%, calc(100svh - 264px), 36rem); } }
-@media (min-width: 1024px) { .wheel-box { --wheel-d: min(100%, calc(100svh - 240px), 36rem); } }
+@media (max-width: 639px) and (max-height: 620px) { .wheel-box { --wheel-d: min(100%, calc(100svh - 325px), 32rem); } }
+@media (min-width: 640px) { .wheel-box { --wheel-d: min(100%, calc(100svh - 377px), 36rem); } }
+@media (min-width: 1024px) { .wheel-box { --wheel-d: min(100%, calc(100svh - 267px), 44rem); } }
 
-/* Paletas de la rueda (D2). Variables locales del objeto ilustrado: nunca tokens globales. */
-.wheel-box { --wheel-aro: rgba(240, 240, 245, 0.2); --wheel-trazo: rgba(240, 240, 245, 0.14); }
-.wheel-box[data-paleta="A"] {
-  /* Tintas alternas y un cálido apagado; el ganador usa --accent-warm. */
-  --wheel-t0: #1c1c27; --wheel-t1: #2a2a3c; --wheel-t2: #4b3527;
+/* Paleta pastel viva (SDD §6.12): variables locales del objeto ilustrado, nunca
+   tokens globales. «Pastel» son los valores del SDD; «Pastel vivo», algo más saturados. */
+.wheel-box {
+  --wheel-aro: rgba(240, 240, 245, 0.22);
+  --wheel-trazo: rgba(26, 26, 36, 0.28);
+  --wheel-tinta: #1a1a24; /* etiquetas */
 }
-.wheel-box[data-paleta="B"] {
-  /* Seis tonos apagados variados. */
-  --wheel-t0: #34506b; --wheel-t1: #4f5f3a; --wheel-t2: #703f4c;
-  --wheel-t3: #3b6159; --wheel-t4: #5d4b78; --wheel-t5: #77592f;
+.tool { /* en .tool y no en la rueda: los puntos de colores del editor usan los mismos tonos */
+  --wheel-p0: #ffb4a2; --wheel-p1: #ffd6a5; --wheel-p2: #fdffb6; --wheel-p3: #caffbf;
+  --wheel-p4: #9bf6ff; --wheel-p5: #a0c4ff; --wheel-p6: #bdb2ff; --wheel-p7: #ffc6ff;
+}
+.tool[data-paleta="vivo"] {
+  --wheel-p0: #ffa08d; --wheel-p1: #ffc15e; --wheel-p2: #f3f06a; --wheel-p3: #7de8a8;
+  --wheel-p4: #62dff0; --wheel-p5: #99b8ff; --wheel-p6: #bcadff; --wheel-p7: #ff9fef;
 }
 
 .wheel-pointer {
@@ -120,36 +147,42 @@ button, input, textarea { font: inherit; color: inherit; touch-action: manipulat
   pointer-events: none;
 }
 .wheel-rotor {
-  position: absolute; inset: 0;
+  display: block; position: absolute; inset: 0;
   border-radius: 50%;
+  background: var(--bg-surface); /* bajo los gajos: la capa oscura de la atenuación */
   box-shadow: 0 0 0 2px var(--wheel-aro);
   will-change: transform;
 }
-.wheel-slices { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-.wheel-slice { stroke: var(--wheel-trazo); stroke-width: 0.8; transition: fill 0.15s; }
-.wheel-slice.tono-0 { fill: var(--wheel-t0); }
-.wheel-slice.tono-1 { fill: var(--wheel-t1, var(--wheel-t0)); }
-.wheel-slice.tono-2 { fill: var(--wheel-t2, var(--wheel-t0)); }
-.wheel-slice.tono-3 { fill: var(--wheel-t3, var(--wheel-t0)); }
-.wheel-slice.tono-4 { fill: var(--wheel-t4, var(--wheel-t0)); }
-.wheel-slice.tono-5 { fill: var(--wheel-t5, var(--wheel-t0)); }
-.wheel-slice.is-ganador { fill: var(--accent-warm); }
+.wheel-slices { position: absolute; inset: 0; width: 100%; height: 100%; display: block; overflow: visible; }
+.wheel-slice { stroke: var(--wheel-trazo); stroke-width: 0.8; transition: opacity 0.2s; }
+.wheel-slice.tono-0 { fill: var(--wheel-p0); }
+.wheel-slice.tono-1 { fill: var(--wheel-p1); }
+.wheel-slice.tono-2 { fill: var(--wheel-p2); }
+.wheel-slice.tono-3 { fill: var(--wheel-p3); }
+.wheel-slice.tono-4 { fill: var(--wheel-p4); }
+.wheel-slice.tono-5 { fill: var(--wheel-p5); }
+.wheel-slice.tono-6 { fill: var(--wheel-p6); }
+.wheel-slice.tono-7 { fill: var(--wheel-p7); }
+/* Ganador: conserva su color; el resto, capa oscura al 30 % (opacidad 0,7 sobre
+   el fondo del rotor), y contorno claro de 3 px (no escala con el viewBox). */
+.has-ganador .wheel-slice:not(.is-ganador) { opacity: 0.7; }
+.wheel-slice.is-ganador { stroke: var(--text-primary); stroke-width: 3px; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
 
-.wheel-labels { position: absolute; inset: 0; pointer-events: none; }
-/* Tamaño de letra por escalones de N (16/13/11/9 px, como hoy) y el radio donde
-   empieza el texto, para que dos etiquetas vecinas no se pisen cerca del cubo. */
+.wheel-labels { display: block; position: absolute; inset: 0; pointer-events: none; }
+/* Tamaño de letra por escalones de N (16/13/11/9 px) y el radio donde empieza
+   el texto, para que dos etiquetas vecinas no se pisen cerca del cubo. */
 .wheel-rotor[data-densidad="1"] { --fs: 16px; --inner: 12cqw; --lw: 35cqw; }
 .wheel-rotor[data-densidad="2"] { --fs: 13px; --inner: 16cqw; --lw: 31cqw; }
 .wheel-rotor[data-densidad="3"] { --fs: 11px; --inner: 19cqw; --lw: 28cqw; }
 .wheel-rotor[data-densidad="4"] { --fs: 9px;  --inner: 24cqw; --lw: 23cqw; }
 .wheel-label {
   --lh: calc(var(--fs) * 1.25);
-  position: absolute; left: 50%; top: 50%;
+  display: block; position: absolute; left: 50%; top: 50%;
   width: var(--lw); height: var(--lh); margin-top: calc(var(--lh) / -2);
   transform-origin: 0 50%;
   transform: rotate(calc(var(--a) - 90deg)) translateX(var(--inner));
   font: 600 var(--fs)/var(--lh) var(--font-display);
-  color: var(--text-primary);
+  color: var(--wheel-tinta);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   text-align: right; /* pegado al borde */
 }
@@ -158,17 +191,15 @@ button, input, textarea { font: inherit; color: inherit; touch-action: manipulat
   transform: rotate(calc(var(--a) - 90deg)) translateX(calc(var(--inner) + var(--lw))) rotate(180deg);
   text-align: left;
 }
-.wheel-label.is-ganador { color: var(--ink-on-warm); }
+.wheel-label.is-ganador { font-weight: 700; }
 
 .wheel-hub {
-  position: absolute; z-index: 1; pointer-events: none;
+  display: block; position: absolute; z-index: 1; pointer-events: none;
   left: calc(50% - 8cqw); top: calc(50% - 8cqw);
   width: 16cqw; height: 16cqw; border-radius: 50%;
   background: var(--bg-body); border: 2px solid var(--wheel-aro);
 }
-.wheel-hub::after {
-  content: ''; position: absolute; inset: 36%; border-radius: 50%; background: var(--accent-warm);
-}
+.wheel-hub::after { content: ''; position: absolute; inset: 36%; border-radius: 50%; background: var(--accent-warm); }
 .wheel-empty {
   position: absolute; inset: 0; display: none; align-items: center; justify-content: center;
   padding: 18cqw; text-align: center; color: var(--text-secondary); font-size: 0.95rem;
@@ -177,7 +208,20 @@ button, input, textarea { font: inherit; color: inherit; touch-action: manipulat
 .wheel-box[data-vacia] .wheel-empty { display: flex; }
 .wheel-box[data-vacia] .wheel-rotor, .wheel-box[data-vacia] .wheel-hub { display: none; }
 
-/* ---------- Resultado, acción y entradas ---------- */
+/* Controles del objeto sobre el objeto: sonido y pantalla completa, 44 px */
+.wheel-tools { position: absolute; z-index: 3; left: 0; right: 0; top: 14px; display: flex; justify-content: space-between; pointer-events: none; }
+.wheel-tool {
+  pointer-events: auto; width: 44px; height: 44px; display: grid; place-items: center; padding: 0;
+  border-radius: 50%; border: 1px solid var(--divider-line);
+  background: rgba(15, 15, 21, 0.78); color: var(--text-secondary);
+}
+.wheel-tool[aria-pressed="true"] { color: var(--text-primary); border-color: var(--text-secondary); }
+.wheel-tool svg { width: 20px; height: 20px; }
+.wheel-tool .t-on { display: none; }
+.wheel-tool[aria-pressed="true"] .t-on { display: block; }
+.wheel-tool[aria-pressed="true"] .t-off { display: none; }
+
+/* ---------- Resultado y acciones ---------- */
 .ruleta-result {
   margin: 8px 0 0; height: 48px; overflow: hidden; text-align: center;
   display: flex; flex-direction: column; justify-content: center;
@@ -186,26 +230,36 @@ button, input, textarea { font: inherit; color: inherit; touch-action: manipulat
   font: 600 1.6rem/1.15 var(--font-display); letter-spacing: -0.01em;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.ruleta-result-side {
-  font-size: 0.8rem; color: var(--text-tertiary); line-height: 1.2;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; /* una pregunta de 60 caracteres no debe mover el botón */
-}
 /* Texto largo (patrón .is-largo de los dados): cuerpo menor y hasta dos líneas en el mismo alto; luego, elipsis */
 .ruleta-result-main.is-largo {
   font-size: 1rem; line-height: 1; white-space: normal; overflow-wrap: anywhere;
   display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
 }
+.ruleta-result-side {
+  font-size: 0.8rem; color: var(--text-tertiary); line-height: 1.2;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; /* una pregunta de 60 caracteres no debe mover el botón */
+}
 .ruleta-result:empty { visibility: hidden; }
 
 .btn-spin-wrap { display: flex; justify-content: center; margin-top: 8px; }
 .btn-spin {
-  min-width: 200px; height: 48px; padding: 0 32px; border: 0; cursor: pointer;
+  min-width: 200px; height: 48px; padding: 0 32px; border: 0;
   border-radius: var(--radius-xl);
   background: var(--accent-warm); color: var(--ink-on-warm);
   font: 700 1rem var(--font-display);
 }
 .btn-spin:disabled { background: var(--bg-surface-alt); color: var(--text-tertiary); cursor: default; }
+.result-actions { display: flex; justify-content: center; gap: 4px 20px; flex-wrap: wrap; }
+.result-actions[hidden] { display: none; }
 
+.text-btn {
+  min-height: 44px; padding: 0; background: none; border: 0;
+  color: var(--text-primary); font-size: 0.95rem; font-weight: 600;
+  text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1px;
+}
+.text-btn.is-quiet { color: var(--text-secondary); font-weight: 500; }
+
+/* ---------- Editor en lista (SDD §6.14.5) ---------- */
 .field-label {
   display: block; margin: 0 0 4px;
   font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-tertiary);
@@ -215,19 +269,76 @@ button, input, textarea { font: inherit; color: inherit; touch-action: manipulat
   border: 0; border-bottom: 1px solid var(--divider-line); border-radius: 0;
   padding: 10px 0; min-height: 44px;
 }
-.field-box { border: 1px solid var(--divider-line); border-radius: var(--radius-md); padding: 12px; resize: vertical; min-height: 11rem; line-height: 1.5; }
+.field-box { border: 1px solid var(--divider-line); border-radius: var(--radius-md); padding: 12px; resize: vertical; min-height: 9rem; line-height: 1.5; }
 .field-line:focus, .field-box:focus { outline: none; border-color: var(--accent-warm); }
 .field-line::placeholder, .field-box::placeholder { color: var(--text-tertiary); }
 .field + .field { margin-top: 20px; }
-.field-hint { margin: 6px 0 0; font-size: 0.8rem; color: var(--text-tertiary); }
 
-.text-actions { display: flex; flex-wrap: wrap; gap: 4px 20px; margin-top: 8px; }
-.text-btn {
-  min-height: 44px; padding: 0; background: none; border: 0; cursor: pointer;
-  color: var(--text-primary); font-size: 0.95rem; font-weight: 600;
-  text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1px;
+.editor-head { display: flex; align-items: flex-end; justify-content: space-between; margin-top: 20px; }
+.editor-head .field-label { margin: 0; padding-bottom: 12px; }
+.opt-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--divider-line); flex: 1 1 auto; min-height: 0; overflow-y: auto; max-height: 22rem; }
+@media (min-width: 1024px) { .opt-list { max-height: none; min-height: 8rem; } }
+.opt-row { display: flex; align-items: center; gap: 4px; min-height: 44px; border-bottom: 1px solid var(--divider-line); }
+.opt-dot { flex: none; width: 14px; height: 14px; border-radius: 50%; margin-right: 8px; background: var(--text-tertiary); }
+.opt-dot.tono-0 { background: var(--wheel-p0); } .opt-dot.tono-1 { background: var(--wheel-p1); }
+.opt-dot.tono-2 { background: var(--wheel-p2); } .opt-dot.tono-3 { background: var(--wheel-p3); }
+.opt-dot.tono-4 { background: var(--wheel-p4); } .opt-dot.tono-5 { background: var(--wheel-p5); }
+.opt-dot.tono-6 { background: var(--wheel-p6); } .opt-dot.tono-7 { background: var(--wheel-p7); }
+.opt-row.is-oculta .opt-dot { background: transparent; border: 1px solid var(--text-tertiary); }
+.opt-text {
+  flex: 1 1 auto; min-width: 0; height: 44px; background: transparent; border: 0; padding: 0; font-size: 16px;
+  text-overflow: ellipsis;
 }
-.share-status { align-self: center; font-size: 0.8rem; color: var(--text-secondary); }
+.opt-text:focus { outline: none; box-shadow: inset 0 -1px 0 var(--accent-warm); }
+.opt-row.is-oculta .opt-text { color: var(--text-tertiary); text-decoration: line-through; }
+.opt-count { flex: none; font-size: 0.85rem; color: var(--text-secondary); font-variant-numeric: tabular-nums; padding-inline: 4px; }
+.opt-btn { flex: none; width: 44px; height: 44px; display: grid; place-items: center; padding: 0; border: 0; background: none; color: var(--text-secondary); }
+.opt-btn svg { width: 20px; height: 20px; }
+/* Interruptor de visibilidad (ocultar sin borrar) */
+.opt-vis .v-off { display: none; }
+.opt-vis[aria-checked="false"] .v-on { display: none; }
+.opt-vis[aria-checked="false"] .v-off { display: block; }
+.opt-vis[aria-checked="true"] { color: var(--text-primary); }
+.add-row { margin: 0; }
+.add-row .field-line { border-bottom-color: var(--divider-line); }
+.paste-panel { margin-top: 12px; }
+.paste-panel[hidden] { display: none; }
+.field-hint { margin: 6px 0 0; font-size: 0.8rem; color: var(--text-tertiary); }
+.field-hint[hidden] { display: none; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; align-items: center; }
+.chips .field-label { margin: 0 4px 0 0; }
+.chip {
+  min-height: 44px; padding: 0 16px; border-radius: 999px; background: transparent;
+  border: 1px solid var(--divider-line); color: var(--text-primary); font-size: 0.9rem;
+}
+.text-actions { display: flex; flex-wrap: wrap; gap: 0 20px; margin-top: 8px; align-items: center; }
+.share-status { font-size: 0.8rem; color: var(--text-secondary); }
+
+/* ---------- Historial ---------- */
+.hist-head { display: flex; align-items: center; justify-content: space-between; }
+.hist-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--divider-line); counter-reset: h; }
+.hist-list li { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--divider-line); counter-increment: h; font-size: 0.95rem; }
+.hist-list li::before { content: counter(h, decimal-leading-zero); color: var(--text-tertiary); font-variant-numeric: tabular-nums; }
+.hist-list li span { color: var(--text-tertiary); font-size: 0.85rem; margin-left: auto; }
+
+/* ---------- Aviso con «Deshacer» ---------- */
+.aviso {
+  /* Arriba y no abajo: en un móvil de 560 px de alto abajo taparía «Girar ruleta» */
+  position: fixed; z-index: 10; top: 72px; left: 16px; right: 16px; margin-inline: auto;
+  display: flex; align-items: center; gap: 4px; width: fit-content; max-width: calc(100vw - 32px);
+  padding: 4px 4px 4px 16px; border-radius: 999px;
+  background: var(--bg-surface-alt); border: 1px solid var(--divider-line); font-size: 0.9rem;
+}
+.aviso[hidden] { display: none; }
+.aviso .text-btn { padding: 0 12px; }
+
+/* ---------- Modo foco / pantalla completa ---------- */
+body.is-foco .site-head, body.is-foco .tool-hero, body.is-foco .tool-inputs, body.is-foco .tool-hist,
+body.is-foco .result-actions { display: none; }
+body.is-foco .tool { grid-template-columns: minmax(0, 1fr); grid-template-areas: "wheel"; }
+body.is-foco .wheel-box, .tool-wheel:fullscreen .wheel-box { --wheel-d: min(100%, calc(100svh - 200px), 44rem); }
+.tool-wheel:fullscreen { background: var(--bg-body); display: flex; flex-direction: column; justify-content: center; padding: 16px; overflow: auto; }
 
 @media (min-width: 640px) {
   .tool-hero { padding-top: 24px; }
@@ -235,24 +346,29 @@ button, input, textarea { font: inherit; color: inherit; touch-action: manipulat
 }
 @media (min-width: 1024px) {
   .tool {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    grid-template-rows: auto 1fr;
-    grid-template-areas: "hero wheel" "inputs wheel";
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-areas: "wheel hero" "wheel inputs" "hist hist";
     column-gap: 48px;
   }
-  .tool-hero { padding-top: 32px; }
+  .tool-hero { padding-top: 16px; }
+  .tool-hero h1 { font-size: clamp(1.8rem, 2.4vw, 2.4rem); }
   .tool-wheel { padding-top: 16px; }
-  .tool-inputs { padding-top: 16px; }
+  /* contain: size: el editor no empuja la altura de la fila; la fija la rueda, y la lista se estira o desplaza */
+  .tool-inputs { padding-top: 8px; contain: size; min-height: 26rem; }
+  /* En escritorio el alto de «Quitar…» está reservado: aparecer no mueve nada ni lo saca de la ventana */
+  .result-actions[hidden] { display: flex; visibility: hidden; }
+  .result-actions { min-height: 44px; }
 }
 
 /* ---------- Controles del prototipo: NO son parte del diseño que se aprueba ---------- */
 .proto-bar {
-  position: relative; margin: 24px 16px 32px; max-width: 1068px;
+  position: relative; margin: 24px 16px 32px; max-width: 1328px;
   padding: 28px 16px 16px;
   border: 2px dashed var(--text-secondary); border-radius: var(--radius-lg);
   background: var(--bg-surface);
 }
-@media (min-width: 1100px) { .proto-bar { margin-inline: auto; } }
+@media (min-width: 1360px) { .proto-bar { margin-inline: auto; } }
 .proto-chip {
   position: absolute; top: -13px; left: 14px; margin: 0; padding: 3px 12px;
   background: var(--text-primary); color: var(--bg-body); border-radius: 999px;
@@ -262,7 +378,7 @@ button, input, textarea { font: inherit; color: inherit; touch-action: manipulat
 .proto-grupo { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 14px; }
 .proto-grupo > .proto-etq { flex: 1 0 100%; font-size: 0.8rem; font-weight: 600; color: var(--text-primary); }
 .proto-opt {
-  min-width: 44px; min-height: 44px; padding: 0 16px; cursor: pointer;
+  min-width: 44px; min-height: 44px; padding: 0 16px;
   border: 1px solid var(--divider-line); border-radius: 999px; background: transparent;
   font-size: 0.9rem; color: var(--text-secondary);
 }
@@ -275,7 +391,6 @@ button, input, textarea { font: inherit; color: inherit; touch-action: manipulat
   position: fixed; z-index: 5; right: 16px; bottom: 16px; width: 44px; height: 44px;
   display: grid; place-items: center; border-radius: 50%;
   background: var(--bg-surface); color: var(--text-secondary); border: 2px dashed var(--text-secondary);
-  transition: opacity 0.2s;
 }
 .proto-fab[hidden] { display: none; }
 .proto-fab svg { width: 20px; height: 20px; }
@@ -293,44 +408,92 @@ button, input, textarea { font: inherit; color: inherit; touch-action: manipulat
   </div>
 </header>
 
-<main class="wrap tool">
+<main class="wrap tool" id="herramienta" data-paleta="pastel">
   <section class="tool-hero">
     <h1>Ruleta aleatoria, que <em>decida el azar</em></h1>
     <p class="lede">Escribe tus opciones y deja que el azar elija: todas tienen la misma probabilidad.</p>
+    <div class="modes" role="group" aria-label="Modo">
+      <button class="mode-opt" type="button" data-modo="normal" aria-pressed="true">Normal</button>
+      <button class="mode-opt" type="button" data-modo="eliminar" aria-pressed="false">Eliminar</button>
+      <button class="mode-opt" type="button" data-modo="contar" aria-pressed="false">Contar</button>
+    </div>
   </section>
 
   <section class="tool-wheel" aria-label="Ruleta">
     <div class="wheel-stage">
-      <div class="wheel-box" id="rueda" data-paleta="A">
+      <button class="wheel-box" id="rueda" type="button" aria-label="Girar la ruleta" aria-describedby="rueda-desc">
         <svg class="wheel-pointer" id="puntero" viewBox="0 0 24 30" aria-hidden="true"><path d="M12 30 2 7Q12-2 22 7Z"/></svg>
-        <div class="wheel-rotor" id="rotor" role="img" data-densidad="1">
+        <span class="wheel-rotor" id="rotor" data-densidad="1">
           <svg class="wheel-slices" id="gajos" viewBox="0 0 200 200" aria-hidden="true"></svg>
-          <div class="wheel-labels" id="etiquetas" aria-hidden="true"></div>
-        </div>
-        <div class="wheel-hub" id="cubo" aria-hidden="true"></div>
-        <div class="wheel-empty">Escribe al menos una opción</div>
+          <span class="wheel-labels" id="etiquetas" aria-hidden="true"></span>
+        </span>
+        <span class="wheel-hub" id="cubo" aria-hidden="true"></span>
+        <span class="wheel-empty">Escribe al menos una opción</span>
+      </button>
+      <span class="sr-only" id="rueda-desc"></span>
+      <div class="wheel-tools">
+        <button class="wheel-tool" id="sonido" type="button" aria-pressed="false" aria-label="Sonido del tic al cruzar cada gajo" title="Sonido">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5z"/><g class="t-off"><path d="m16.5 9.5 5 5M21.5 9.5l-5 5"/></g><g class="t-on"><path d="M16 9a4.2 4.2 0 0 1 0 6M18.6 6.6a7.6 7.6 0 0 1 0 10.8"/></g></svg>
+        </button>
+        <button class="wheel-tool" id="pantalla" type="button" aria-pressed="false" aria-label="Pantalla completa" title="Pantalla completa">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+        </button>
       </div>
     </div>
     <p class="ruleta-result" id="resultado" aria-live="polite"></p>
     <div class="btn-spin-wrap"><button class="btn-spin" id="girar" type="button">Girar ruleta</button></div>
+    <div class="result-actions" id="acciones-resultado" hidden>
+      <button class="text-btn is-quiet" id="quitar" type="button" hidden></button>
+    </div>
   </section>
 
-  <section class="tool-inputs" aria-label="Entradas">
+  <section class="tool-inputs" aria-label="Opciones">
     <div class="field">
       <label class="field-label" for="pregunta">¿Qué se decide?</label>
       <input class="field-line" id="pregunta" type="text" maxlength="60" placeholder="¿Qué comemos hoy?" autocomplete="off">
     </div>
-    <div class="field">
-      <label class="field-label" for="opciones">Opciones · una por línea</label>
-      <textarea class="field-box" id="opciones" spellcheck="false" autocomplete="off"></textarea>
-      <p class="field-hint" id="aviso-n" hidden>Con más de 40 opciones la rueda no pinta etiquetas; el resultado dice cuál salió.</p>
+    <div class="editor-head">
+      <span class="field-label" id="etq-opciones">Opciones</span>
+      <button class="text-btn" id="pegar-toggle" type="button" aria-expanded="false" aria-controls="pegar-panel">Pegar lista</button>
+    </div>
+    <ul class="opt-list" id="lista" aria-labelledby="etq-opciones"></ul>
+    <form class="add-row" id="alta" autocomplete="off">
+      <label class="sr-only" for="nueva">Añadir opción</label>
+      <input class="field-line" id="nueva" type="text" placeholder="Añadir opción" enterkeyhint="enter" autocomplete="off" autocapitalize="sentences">
+    </form>
+    <div class="paste-panel" id="pegar-panel" hidden>
+      <label class="sr-only" for="opciones">Opciones, una por línea</label>
+      <textarea class="field-box" id="opciones" spellcheck="false" autocomplete="off" placeholder="Una opción por línea"></textarea>
+    </div>
+    <p class="field-hint" id="aviso-n" hidden>Con más de 40 opciones la rueda no pinta etiquetas; el resultado dice cuál salió.</p>
+    <div class="chips" role="group" aria-label="Ejemplos para empezar">
+      <span class="field-label">Ejemplos</span>
+      <button class="chip" type="button" data-ejemplo="comida">Comida</button>
+      <button class="chip" type="button" data-ejemplo="verdad">Verdad o reto</button>
+      <button class="chip" type="button" data-ejemplo="nombres">Nombres</button>
     </div>
     <div class="text-actions">
+      <button class="text-btn" id="mezclar" type="button">Mezclar</button>
+      <button class="text-btn" id="ordenar" type="button">Ordenar</button>
+      <button class="text-btn" id="vaciar" type="button">Vaciar</button>
       <button class="text-btn" id="compartir" type="button">Compartir</button>
       <span class="share-status" id="compartir-estado" role="status"></span>
     </div>
   </section>
+
+  <section class="tool-hist" aria-label="Historial">
+    <div class="hist-head">
+      <span class="field-label" id="etq-hist">Últimos resultados</span>
+      <button class="text-btn" id="borrar-hist" type="button" hidden>Borrar</button>
+    </div>
+    <ol class="hist-list" id="historial" aria-labelledby="etq-hist"></ol>
+  </section>
 </main>
+
+<div class="aviso" id="aviso" role="status" hidden>
+  <span id="aviso-texto"></span>
+  <button class="text-btn" id="aviso-deshacer" type="button">Deshacer</button>
+</div>
 
 <!-- ===== Controles del prototipo ===== -->
 <aside class="proto-bar" id="controles" aria-labelledby="proto-chip">
@@ -338,9 +501,9 @@ button, input, textarea { font: inherit; color: inherit; touch-action: manipulat
   <p class="proto-nota">Esta barra no forma parte del diseño que se aprueba: solo sirve para comparar. Lo que se aprueba es todo lo que hay encima.</p>
 
   <div class="proto-grupo" role="group" aria-labelledby="etq-paleta">
-    <span class="proto-etq" id="etq-paleta">Paleta de la rueda (D2)</span>
-    <button class="proto-opt" type="button" data-paleta="A" aria-pressed="true">A · tintas y un cálido</button>
-    <button class="proto-opt" type="button" data-paleta="B" aria-pressed="false">B · seis tonos</button>
+    <span class="proto-etq" id="etq-paleta">Variante de la paleta pastel (D2)</span>
+    <button class="proto-opt" type="button" data-paleta="pastel" aria-pressed="true">Pastel</button>
+    <button class="proto-opt" type="button" data-paleta="vivo" aria-pressed="false">Pastel vivo</button>
   </div>
   <div class="proto-grupo" role="group" aria-labelledby="etq-n">
     <span class="proto-etq" id="etq-n">Número de opciones</span>
@@ -349,23 +512,25 @@ button, input, textarea { font: inherit; color: inherit; touch-action: manipulat
     <button class="proto-opt" type="button" data-n="13" aria-pressed="false">13</button>
     <button class="proto-opt" type="button" data-n="40" aria-pressed="false">40</button>
   </div>
-  <div class="proto-grupo" role="group" aria-labelledby="etq-dur">
-    <span class="proto-etq" id="etq-dur">Duración del giro (D4)</span>
-    <button class="proto-opt" type="button" data-dur="larga" aria-pressed="true">3,5–4,5 s</button>
-    <button class="proto-opt" type="button" data-dur="corta" aria-pressed="false">2 s</button>
+  <div class="proto-grupo" role="group" aria-labelledby="etq-final">
+    <span class="proto-etq" id="etq-final">Final del giro (D4)</span>
+    <button class="proto-opt" type="button" data-final="aleatorio" aria-pressed="true">Aleatorio</button>
+    <button class="proto-opt" type="button" data-final="normal" aria-pressed="false">Normal</button>
+    <button class="proto-opt" type="button" data-final="casi" aria-pressed="false">Casi se pasa</button>
+    <button class="proto-opt" type="button" data-final="pelos" aria-pressed="false">Por los pelos</button>
+    <button class="proto-opt" type="button" data-final="atras" aria-pressed="false">Vuelta atrás</button>
   </div>
-  <div class="proto-grupo" role="group" aria-labelledby="etq-tic">
-    <span class="proto-etq" id="etq-tic">Tic al cruzar cada gajo (D1)</span>
-    <button class="proto-opt" type="button" id="tic" aria-pressed="false">Desactivado</button>
-  </div>
+  <p class="proto-info" id="info-final">Con «Aleatorio» salen los pesos del SDD (65 / 15 / 15 / 5 %) y nunca dos finales distintos de «Normal» seguidos; con 31 o más opciones, o con una sola, el final es siempre Normal.</p>
+  <p class="proto-info" id="ultimo-final" aria-live="off"></p>
   <p class="proto-info" id="info-compartir"></p>
 
   <ol class="proto-decisiones">
-    <li><strong>D1</strong> · sin sonido por defecto; activa el tic y decide si se queda como excepción.</li>
-    <li><strong>D2</strong> · compara las paletas A y B con 6, 13 y 40 opciones.</li>
-    <li><strong>D3</strong> · sin hoja inferior: escribe en el cuadro de abajo, sube y gira.</li>
-    <li><strong>D4</strong> · compara el giro largo con el de 2 s.</li>
-    <li><strong>D5</strong> · «Compartir» abre el menú del sistema.</li>
+    <li><strong>D1</strong> · el icono del altavoz sobre la rueda activa el tic (desactivado por defecto).</li>
+    <li><strong>D2</strong> · compara «Pastel» y «Pastel vivo» con 6, 13 y 40 opciones.</li>
+    <li><strong>D4</strong> · gira varias veces y mira cada final.</li>
+    <li><strong>D6</strong> · recarga la página para ver la entrada.</li>
+    <li><strong>D7</strong> · gira tocando la rueda, arrastrándola, con el botón o con Ctrl/Cmd+Intro; prueba los modos, el editor y «Añadir opción».</li>
+    <li><strong>D8</strong> · abre el prototipo también en un ordenador o una tableta.</li>
   </ol>
 </aside>
 
@@ -375,12 +540,25 @@ button, input, textarea { font: inherit; color: inherit; touch-action: manipulat
 
 <template id="wheel-slice-tpl"><svg><path class="wheel-slice"/></svg></template>
 <template id="wheel-label-tpl"><span class="wheel-label"></span></template>
+<template id="fila-tpl">
+  <li class="opt-row">
+    <span class="opt-dot" aria-hidden="true"></span>
+    <input class="opt-text" type="text" aria-label="Opción" autocomplete="off" maxlength="60" enterkeyhint="done">
+    <span class="opt-count" hidden></span>
+    <button class="opt-btn opt-vis" type="button" role="switch" aria-checked="true" aria-label="Mostrar en la rueda">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><g class="v-on"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/></g><g class="v-off"><path d="M3 3l18 18M10.6 5.7A9.6 9.6 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a16 16 0 0 1-2.6 3.3M6.6 7.2A16 16 0 0 0 2.5 12S6 18.5 12 18.5a9.5 9.5 0 0 0 3.4-.6"/></g></svg>
+    </button>
+    <button class="opt-btn opt-del" type="button" aria-label="Borrar opción">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+    </button>
+  </li>
+</template>
 
 <script>
 (() => {
 'use strict';
 
-/* ===== Lógica pura (SDD §6.3) =====================================
+/* ===== Lógica pura (SDD §6.3 y §6.13) ==============================
    Sin DOM. El módulo definitivo será src/scripts/ruleta-logica.js (#8). */
 //LOGICA-INICIO
 const U32 = 4294967296;
@@ -388,6 +566,7 @@ const u32 = () => {
   try { return crypto.getRandomValues(new Uint32Array(1))[0]; }
   catch { return Math.floor(Math.random() * U32); } // respaldo, como manda AGENTS.md
 };
+const unidad = (rnd = u32) => rnd() / U32;
 const mod = (a, m) => ((a % m) + m) % m;
 
 function leerOpciones(texto) {
@@ -440,60 +619,128 @@ function gajoBajoPuntero(angulo, n) {
   return Math.min(n - 1, Math.floor(mod(-angulo, 360) / (360 / n)));
 }
 
-// Rebote máximo del aterrizaje: nunca cruza a otro gajo (RNF-03).
+// Rebote máximo del aterrizaje normal.
 function aterrizaje(n) { return Math.min(2, 0.1 * (360 / n)); }
 
-// Amplitud del balanceo de reposo: menor que el margen mínimo del desfase
-// (0,15 × gajo), así que el puntero no sale del gajo ganador mientras respira.
-function amplitudReposo(n) { return Math.min(1.5, 0.1 * (360 / n)); }
+// Distancia (en grados) del puntero a la frontera más cercana con el rotor en `angulo`.
+function margenReposo(angulo, n) {
+  const s = 360 / n, dentro = mod(-angulo, 360) % s;
+  return Math.min(dentro, s - dentro);
+}
+// Amplitud del balanceo de reposo, calculada con la pose (SDD §6.3, v1.4).
+function amplitudReposo(margen) { return Math.min(1.5, 0.4 * margen); }
+
+/* --- Final con suspenso (SDD §6.13) --- */
+// Intervalo de la pose final dentro del gajo ganador, medido en el sentido del
+// giro: 0 = frontera por la que entra el puntero, 1 = la de salida.
+const FINALES = { normal: [0.12, 0.88], casi: [0.90, 0.97], pelos: [0.03, 0.10], atras: [0.85, 0.95] };
+const PESOS_FINAL = [['normal', 65], ['casi', 80], ['pelos', 95], ['atras', 100]]; // acumulados
+const ANCHO_MIN = 0.025;                      // anchura mínima tras recortar (el ejemplo N = 30 del SDD)
+const margenMin = (n) => Math.max(0.03 * (360 / n), 1.5); // grados a la frontera (RNF-03)
+
+function intervaloFinal(tipo, n) {
+  const mf = margenMin(n) / (360 / n);
+  let [lo, hi] = FINALES[tipo];
+  lo = Math.max(lo, mf); hi = Math.min(hi, 1 - mf);
+  if (hi - lo < ANCHO_MIN - 1e-9) {
+    if (tipo === 'casi' || tipo === 'atras') lo = Math.max(mf, hi - ANCHO_MIN);
+    else hi = Math.min(1 - mf, lo + ANCHO_MIN);
+  }
+  return [lo, hi];
+}
+
+// Tipo de final, sorteado aparte e independiente del ganador. Con N > 30 (o
+// N < 2, sin gajo vecino) siempre «normal»; nunca dos distintos de «normal» seguidos.
+function elegirFinal(historial, n, rnd = u32) {
+  if (n < 2 || n > 30) return 'normal';
+  const r = indiceAlAzar(100, rnd);
+  const tipo = PESOS_FINAL.find(([, acum]) => r < acum)[0];
+  const ultimo = historial[historial.length - 1];
+  return tipo !== 'normal' && ultimo && ultimo !== 'normal' ? 'normal' : tipo;
+}
 
 const FPS_MUESTRA = 60;
-const PUNTERO_MAX = -18;      // grados del puntero levantado
+const PUNTERO_MAX = -18;      // grados del puntero levantado o golpeado
+const PUNTERO_EMPUJE = 16;    // grados del puntero empujando de vuelta (vuelta atrás)
 const FUSION_MS = 50;         // cruces más juntos que esto: el puntero se queda levantado
-// Curva de frenado: deceleración constante (1 − (1 − t)²). Su velocidad
-// inicial es 2× la media; con una cúbica sería 3× y a 60 Hz la rueda parecería
-// girar hacia atrás con N ≈ 13.
-const freno = (t) => 1 - (1 - t) * (1 - t);
-const frenoInverso = (p) => 1 - Math.sqrt(1 - p);
+const CONTACTO = 0.8;         // grados de rotor que el puntero tarda en soltarse de un perno
+const BLUR_OPACIDAD = 0.35;   // etiquetas con la rueda a más de medio gajo por fotograma
+
+/* Curva por tramos (SDD §6.3, #15): fase rápida en el primer 70 % del tiempo
+   con deceleración constante de v₀ a v₁, y cola cúbica en el 30 % final que
+   recorre θ_c = min(90°, 1,5 gajos) (90° con N > 30); empalme sin salto de
+   velocidad con v₁ = 3·θ_c / T_c. */
+function curva(total, T, n) {
+  const s = 360 / n, Tc = 0.3 * T, T1 = 0.7 * T;
+  const thC = Math.min(total, n <= 30 ? Math.min(90, 1.5 * s) : 90);
+  const v1 = (3 * thC) / Tc, D1 = total - thC;
+  const v0 = (2 * D1) / T1 - v1;
+  return (t) => {            // t en segundos desde el inicio de la acción
+    if (t <= 0) return 0;
+    if (t >= T) return total;
+    if (t <= T1) return v0 * t - ((v0 - v1) * t * t) / (2 * T1);
+    const tau = (t - T1) / Tc;
+    return D1 + thC * (1 - (1 - tau) ** 3);
+  };
+}
+
+// Pose final: ángulo del rotor (no normalizado) que deja el puntero a la
+// fracción `fT` (en el sentido del giro) del gajo ganador.
+function poseFinal({ ganador, n, final, rnd = u32 }) {
+  const [lo, hi] = intervaloFinal(final, n);
+  const fT = lo + (hi - lo) * unidad(rnd);
+  return { fT, objetivo: -(ganador + (1 - fT)) * (360 / n) };
+}
 
 /* Plan del giro. `anguloActual` es el ángulo del rotor al empezar la acción.
-   Devuelve fotogramas de rotor (60 Hz, lineales entre muestras), fotogramas del
-   puntero (un golpe por cruce de frontera; los cruces a < 50 ms lo dejan
-   levantado), la duración y el ángulo final. */
-function planGiro({ anguloActual, ganador, n, duracion, rnd = u32 }) {
+   Devuelve el rotor (60 Hz, lineal entre muestras), el puntero (un golpe por
+   cruce; los cruces a < 50 ms lo dejan levantado), la opacidad de las
+   etiquetas (desenfoque de movimiento sin `filter`), los instantes de golpe
+   para el tic, el aterrizaje y la pose final. */
+function planGiro({ anguloActual, ganador, n, duracion, vueltas, final = 'normal', rnd = u32 }) {
   const s = 360 / n;
-  const vueltas = 5 + indiceAlAzar(3, rnd);
-  const desfase = 0.15 + 0.7 * (rnd() / U32);
-  const rebote = aterrizaje(n);
-  const objetivo = -(ganador + desfase) * s;
-  const recorrido = mod(objetivo - anguloActual, 360) + 360 * vueltas; // hasta el reposo
-  const total = recorrido + rebote;                                    // la acción se pasa un poco
-  const K = Math.max(2, Math.round((duracion / 1000) * FPS_MUESTRA));
+  if (n < 2 || n > 30) final = 'normal';
+  const { fT, objetivo } = poseFinal({ ganador, n, final, rnd });
+  const fL = 1 - fT;
+  let rebote = 0, extra = 0;
+  if (final === 'normal') { rebote = aterrizaje(n); extra = rebote; }
+  else if (final === 'atras') { extra = (fL + 0.10 + 0.05 * unidad(rnd)) * s; } // se pasa 0,10–0,15 gajo
+  const recorrido = mod(objetivo - anguloActual, 360) + 360 * vueltas;
+  const total = recorrido + extra;
+  const T = duracion / 1000;
+  const th = curva(total, T, n);
 
-  const rotor = [];
+  const K = Math.max(2, Math.round(T * FPS_MUESTRA));
+  const rotor = [], angulos = [];
   for (let k = 0; k <= K; k++) {
-    const t = k / K;
-    rotor.push({ offset: t, transform: `rotate(${(anguloActual + total * freno(t)).toFixed(3)}deg)` });
+    const a = anguloActual + th((k / K) * T);
+    angulos.push(a);
+    rotor.push({ offset: k / K, transform: `rotate(${a.toFixed(3)}deg)` });
   }
 
-  // Cruces: la frontera j está en el ángulo j·s del rotor.
+  // Cruces de frontera: la frontera j está en el ángulo j·s del rotor.
+  const tiempoDe = (x) => {
+    let a = 0, b = T;
+    for (let i = 0; i < 40; i++) { const m = (a + b) / 2; if (th(m) < x) a = m; else b = m; }
+    return (a + b) / 2;
+  };
   const cruces = [];
   for (let j = Math.floor(anguloActual / s) + 1; j * s <= anguloActual + total; j++) {
-    const p = (j * s - anguloActual) / total;
-    cruces.push(frenoInverso(p) * duracion);
+    const t = tiempoDe(j * s - anguloActual);
+    const v = Math.max(1, (th(Math.min(T, t + 0.001)) - th(Math.max(0, t - 0.001))) / 0.002); // °/s
+    cruces.push({ ini: t * 1000, fin: t * 1000 + Math.min(300, (CONTACTO / v) * 1000), v });
   }
   const grupos = [];
-  for (const ms of cruces) {
+  for (const c of cruces) {
     const g = grupos[grupos.length - 1];
-    if (g && ms - g.fin < FUSION_MS) g.fin = ms; else grupos.push({ ini: ms, fin: ms });
+    if (g && c.ini - g.fin < FUSION_MS) g.fin = Math.max(g.fin, c.fin); else grupos.push({ ini: c.ini, fin: c.fin });
   }
   const puntero = [];
   const poner = (ms, grados) => {
     const t = Math.min(1, Math.max(puntero.length ? puntero[puntero.length - 1].offset : 0, ms / duracion));
     puntero.push({ offset: t, transform: `rotate(${grados}deg)` });
   };
-  // Sale levantado (anticipación) y baja antes del primer golpe, si le da tiempo.
-  poner(0, PUNTERO_MAX);
+  poner(0, PUNTERO_MAX); // sale levantado (anticipación) y baja antes del primer golpe, si le da tiempo
   if (grupos.length && grupos[0].ini >= 60) poner(Math.min(50, grupos[0].ini), 0);
   grupos.forEach((g, i) => {
     const siguiente = i + 1 < grupos.length ? grupos[i + 1].ini : duracion;
@@ -505,11 +752,45 @@ function planGiro({ anguloActual, ganador, n, duracion, rnd = u32 }) {
   });
   poner(duracion, 0);
 
+  // Desenfoque: etiquetas a 0,35 mientras la rueda avanza > medio gajo por fotograma.
+  const borrosa = (k) => Math.abs(angulos[Math.min(K, k + 1)] - angulos[k]) > 0.5 * s;
+  const etiquetas = [{ offset: 0, opacity: borrosa(0) ? BLUR_OPACIDAD : 1 }];
+  const rampa = 50 / duracion;
+  for (let k = 1; k < K; k++) {
+    if (borrosa(k) === borrosa(k - 1)) continue;
+    const t = k / K, previo = borrosa(k - 1) ? BLUR_OPACIDAD : 1, nuevo = borrosa(k) ? BLUR_OPACIDAD : 1;
+    const ultimo = etiquetas[etiquetas.length - 1].offset;
+    etiquetas.push({ offset: Math.max(ultimo, t - rampa), opacity: previo }, { offset: Math.min(1, t + rampa), opacity: nuevo });
+  }
+  etiquetas.push({ offset: 1, opacity: etiquetas[etiquetas.length - 1].opacity });
+
+  const fin = anguloActual + recorrido;          // pose final (sin normalizar)
+  let aterriza;
+  if (final === 'atras') {
+    aterriza = {
+      dur: 800, easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
+      rotor: [{ transform: `rotate(${fin + extra}deg)` }, { transform: `rotate(${fin}deg)` }],
+      puntero: [{ offset: 0, transform: 'rotate(0deg)' }, { offset: 0.08, transform: `rotate(${PUNTERO_EMPUJE}deg)` },
+        { offset: 0.85, transform: `rotate(${PUNTERO_EMPUJE}deg)` }, { offset: 1, transform: 'rotate(0deg)' }],
+    };
+  } else if (final === 'normal') {
+    aterriza = {
+      dur: 350, easing: 'ease-in-out', puntero: null,
+      rotor: [{ transform: `rotate(${fin + rebote}deg)` }, { transform: `rotate(${fin - 0.3 * rebote}deg)`, offset: 0.45 }, { transform: `rotate(${fin}deg)` }],
+    };
+  } else {
+    aterriza = {
+      dur: 350, easing: 'ease-in-out', puntero: null,
+      rotor: [{ transform: `rotate(${fin}deg)` }, { transform: `rotate(${fin + 0.25}deg)`, offset: 0.4 }, { transform: `rotate(${fin - 0.1}deg)`, offset: 0.7 }, { transform: `rotate(${fin}deg)` }],
+    };
+  }
+
   return {
-    rotor, puntero, duracion,
+    rotor, puntero, etiquetas, aterriza, duracion, final, fT, rebote,
     golpes: grupos.map((g) => g.ini),
-    rebote,
-    anguloFinal: anguloActual + recorrido,
+    anguloFinal: fin,
+    anguloAccion: anguloActual + total,
+    cruces: cruces.length,
   };
 }
 //LOGICA-FIN
@@ -519,15 +800,20 @@ const $ = (id) => document.getElementById(id);
 const rueda = $('rueda'), rotor = $('rotor'), cubo = $('cubo'), puntero = $('puntero');
 const gajosEl = $('gajos'), etiquetasEl = $('etiquetas');
 const btnGirar = $('girar'), resultadoEl = $('resultado');
-const txtOpciones = $('opciones'), inpPregunta = $('pregunta');
-const tplGajo = $('wheel-slice-tpl'), tplEtq = $('wheel-label-tpl');
+const listaEl = $('lista'), txtOpciones = $('opciones'), inpPregunta = $('pregunta'), inpNueva = $('nueva');
+const tplGajo = $('wheel-slice-tpl'), tplEtq = $('wheel-label-tpl'), tplFila = $('fila-tpl');
+const toolWheel = document.querySelector('.tool-wheel');
 const reducido = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-const PALETAS = { A: 3, B: 6 };           // nº de tonos
-const ENTRADA_MS = 1000, REPOSO_MS = 3000, ANTICIPACION_MS = 200, ATERRIZAJE_MS = 350;
+const TONOS = 8;                                   // paleta pastel (SDD §6.12)
+const ENTRADA_MS = 1300, REPOSO_MS = 3000, ANTICIPACION_MS = 200;
 const ANTICIPACION_GRADOS = 8;
+const DESHACER_MS = 7000;
 
 const EJEMPLOS = {
+  comida: ['Pizza', 'Tacos', 'Sushi', 'Hamburguesa', 'Ensalada', 'Pasta'],
+  verdad: ['Verdad suave', 'Reto suave', 'Verdad picante', 'Reto loco'],
+  nombres: ['Ana', 'Luis', 'Marta', 'Pablo', 'Sofía', 'Diego', 'Lucía', 'Andrés'],
   2: ['Pizza', 'Tacos'],
   6: ['Pizza', 'Tacos', 'Sushi', 'Hamburguesa', 'Ensalada', 'Pasta'],
   13: ['Pizza', 'Tacos', 'Sushi', 'Hamburguesa', 'Ensalada', 'Pasta', 'Arepas', 'Empanadas',
@@ -539,39 +825,50 @@ const EJEMPLOS = {
        'Pescado frito', 'Arroz chino', 'Wrap de pollo', 'Hot dog', 'Pancakes', 'Tamales',
        'Chilaquiles', 'Mondongo', 'Salmón al horno'],
 };
+const NOMBRE_FINAL = { normal: 'Normal', casi: 'Casi se pasa', pelos: 'Por los pelos', atras: 'Vuelta atrás' };
 
 const estado = {
-  n: 0, opciones: [], opcionesRueda: [], theta: 0, girando: false, pendiente: false,
-  paleta: 'A', duracion: 'larga', tic: false, ganador: -1,
+  items: [],            // [{ t, oculta }]: la lista del editor (todas las opciones)
+  opcionesRueda: [], refsRueda: [], n: 0,   // lo que enseña la rueda ahora
+  theta: 0, girando: false, ganador: -1, campeon: null,
+  modo: 'normal', cuentas: {}, historial: [],
+  sonido: false, finalSel: 'aleatorio', hFinales: [], foco: null,
 };
 
-/* --- Pintado: clona plantillas, pone d, texto y --a. Nada de innerHTML. --- */
+const activas = () => estado.items.filter((i) => !i.oculta && i.t.trim() !== '');
+const textosActivos = () => activas().map((i) => i.t.trim());
+const hayCambios = () => JSON.stringify(textosActivos()) !== JSON.stringify(estado.opcionesRueda);
+
+/* --- Pintado de la rueda: clona plantillas, pone d, texto y --a. Nada de innerHTML. --- */
 function densidad(n) { return n > 25 ? 4 : n > 18 ? 3 : n > 10 ? 2 : 1; }
 
 function pintar() {
-  estado.opcionesRueda = estado.opciones.slice();
-  const n = estado.n = estado.opciones.length;
+  estado.refsRueda = activas();
+  estado.opcionesRueda = textosActivos();
+  const n = estado.n = estado.opcionesRueda.length;
   gajosEl.replaceChildren();
   etiquetasEl.replaceChildren();
   estado.ganador = -1;
+  rueda.classList.remove('has-ganador');
   rueda.toggleAttribute('data-vacia', n === 0);
-  btnGirar.disabled = n === 0 || estado.girando;
+  actualizarBoton();
   $('aviso-n').hidden = n <= 40;
-  rotor.setAttribute('aria-label', n === 0 ? 'Ruleta sin opciones'
+  $('rueda-desc').textContent = n === 0 ? 'Ruleta sin opciones'
     : n > 12 ? `Ruleta con ${n} opciones`
-    : `Ruleta con ${n} opciones: ${estado.opciones.join(', ')}`);
+    : `Ruleta con ${n} opciones: ${estado.opcionesRueda.join(', ')}`;
   if (n === 0) return;
-  const tonos = PALETAS[estado.paleta];
   const geo = geometria(n);
   rotor.dataset.densidad = densidad(n);
   geo.forEach((g, i) => {
     const path = tplGajo.content.firstElementChild.firstElementChild.cloneNode(true);
     path.setAttribute('d', g.d);
-    path.classList.add(`tono-${tonoDe(i, n, tonos)}`);
+    path.dataset.i = i;
+    path.classList.add(`tono-${tonoDe(i, n, TONOS)}`);
     gajosEl.append(path);
     if (n > 40) return; // sin etiquetas con N > 40 (SDD §6.2)
     const etq = tplEtq.content.firstElementChild.cloneNode(true);
-    etq.textContent = estado.opciones[i];
+    etq.dataset.i = i;
+    etq.textContent = estado.opcionesRueda[i];
     etq.style.setProperty('--a', `${g.med}deg`);
     etiquetasEl.append(etq);
   });
@@ -581,10 +878,9 @@ function pintar() {
 // Etiquetas que en reposo quedarían boca abajo (mitad izquierda): se voltean.
 // `conFundido` hace el cambio con un fundido de 150 ms, solo en las que cambian.
 function voltear(conFundido) {
-  const etqs = [...etiquetasEl.children];
   const cambian = [];
-  etqs.forEach((el, i) => {
-    const w = (i + 0.5) * (360 / estado.n) + estado.theta;
+  [...etiquetasEl.children].forEach((el) => {
+    const w = (Number(el.dataset.i) + 0.5) * (360 / estado.n) + estado.theta;
     const volteada = Math.sin((w * Math.PI) / 180) < -1e-9;
     if (el.classList.contains('is-volteada') !== volteada) cambian.push([el, volteada]);
   });
@@ -597,23 +893,34 @@ function voltear(conFundido) {
   }).catch(() => {});
 }
 
+function marcarGanador(i) {
+  const path = gajosEl.querySelector(`[data-i="${i}"]`);
+  if (!path) return;
+  gajosEl.append(path); // el último del SVG se pinta encima: su contorno no lo tapan los vecinos
+  path.classList.add('is-ganador');
+  etiquetasEl.querySelector(`[data-i="${i}"]`)?.classList.add('is-ganador');
+  rueda.classList.add('has-ganador');
+}
+
 function escribirPose(grados) {
   estado.theta = mod(grados, 360);
   rotor.style.transform = `rotate(${estado.theta}deg)`;
 }
 
 /* --- Ciclo de movimiento (SDD §6.5): todo con element.animate() --- */
-let reposoAnim = null;
-const cancelarTodo = () => {
-  [rotor, cubo, puntero].forEach((el) => el.getAnimations().forEach((a) => a.cancel()));
-  reposoAnim = null;
-};
+let reposoAnim = null, entradaViva = false;
+const animados = () => [rotor, cubo, puntero, etiquetasEl];
+const cancelarTodo = () => { animados().forEach((el) => el.getAnimations().forEach((a) => a.cancel())); reposoAnim = null; };
 function pararReposo() { reposoAnim?.cancel(); reposoAnim = null; }
+const esperar = (a) => a.finished.catch(() => {});
 
 function reposo() {
   pararReposo();
   if (reducido() || estado.girando || entradaViva || document.hidden || estado.n === 0) return;
-  const t = estado.theta, e = 'ease-in-out', amp = amplitudReposo(estado.n);
+  // La amplitud sale de la pose, no de N: tras un final con suspenso el puntero
+  // puede quedar cerca de una frontera (SDD §6.3).
+  const amp = amplitudReposo(margenReposo(estado.theta, estado.n));
+  const t = estado.theta, e = 'ease-in-out';
   reposoAnim = rotor.animate([
     { transform: `rotate(${t}deg)`, easing: e },
     { transform: `rotate(${t + amp}deg)`, offset: 0.25, easing: e },
@@ -623,58 +930,85 @@ function reposo() {
   ], { duration: REPOSO_MS, iterations: Infinity });
 }
 
-let entradaViva = false;
+// Curva de muelle con un solo rebote suave, para `linear()` (D6, SDD §6.5).
+function muelle(zeta = 0.7, omega = 8, pasos = 48) {
+  const wd = omega * Math.sqrt(1 - zeta * zeta), pts = [];
+  for (let i = 0; i <= pasos; i++) {
+    const t = i / pasos;
+    pts.push(i === pasos ? 1 : 1 - Math.exp(-zeta * omega * t) * (Math.cos(wd * t) + ((zeta * omega) / wd) * Math.sin(wd * t)));
+  }
+  return `linear(${pts.map((p) => p.toFixed(4)).join(', ')})`;
+}
+const soportaLinear = () => { try { return CSS.supports('animation-timing-function', 'linear(0, 1)'); } catch { return false; } };
+
 async function entrar() {
   if (reducido()) return;
   entradaViva = true;
-  const k = [
-    { transform: 'translateX(-125%) rotate(-143deg)' },
-    { transform: 'translateX(6%) rotate(8deg)', offset: 0.7 },
-    { transform: 'translateX(0) rotate(0deg)' },
-  ];
-  const op = { duration: ENTRADA_MS, easing: 'cubic-bezier(0.25, 0.8, 0.3, 1)' };
-  const a = rotor.animate(k, op);
-  // El cubo recorre lo mismo que el rotor (en cqw: el 100 % de su propio ancho sería otro).
-  cubo.animate([{ transform: 'translateX(-125cqw)' }, { transform: 'translateX(6cqw)', offset: 0.7 }, { transform: 'translateX(0)' }], op);
+  const easing = soportaLinear() ? muelle() : 'cubic-bezier(0.22, 1, 0.36, 1)'; // respaldo del SDD
+  const t = estado.theta;
+  const op = { duration: ENTRADA_MS, easing };
+  const fundido = { duration: ENTRADA_MS, easing: 'ease-out' };
+  // Rueda rodando desde la izquierda: se asienta con un solo rebote, sin frenazo.
+  const a = rotor.animate([
+    { transform: `translateX(-125cqw) rotate(${t - 143}deg)` },
+    { transform: `translateX(0) rotate(${t}deg)` },
+  ], op);
+  cubo.animate([{ transform: 'translateX(-125cqw)' }, { transform: 'translateX(0)' }], op);
+  // Fundido de opacidad en el primer 30 %
+  const f = [{ opacity: 0 }, { opacity: 1, offset: 0.3 }, { opacity: 1 }];
+  rotor.animate(f, fundido);
+  cubo.animate(f, fundido);
   try { await a.finished; } catch { entradaViva = false; return; } // la interrumpió un giro
   entradaViva = false;
   if (!estado.girando) reposo();
 }
 
-const esperar = (a) => a.finished.catch(() => {});
+/* --- Girar --- */
+const eligeFinal = (n) => {
+  const f = estado.finalSel === 'aleatorio' ? elegirFinal(estado.hFinales, n)
+    : (n < 2 || n > 30 ? 'normal' : estado.finalSel);
+  estado.hFinales.push(f);
+  if (estado.hFinales.length > 5) estado.hFinales.shift();
+  return f;
+};
 
-async function girar() {
+async function girar(opts = {}) {
   if (estado.girando) return;
-  if (estado.pendiente) repintar(); // RF-05: lo escrito durante el giro se aplica en la siguiente acción
+  if (estado.campeon) { volverAEmpezar(); return; }
+  if (hayCambios()) repintar();             // RF-05: lo pendiente se aplica antes de planificar
   if (estado.n === 0) return;
   estado.girando = true;
-  estado.foco = document.activeElement === btnGirar; // antes de deshabilitar: si no, el foco ya se fue a body
+  estado.foco = [btnGirar, rueda].find((el) => el === document.activeElement) || null; // antes de deshabilitar
   btnGirar.disabled = true;
-  resultadoEl.replaceChildren();
+  rueda.disabled = true;
+  ocultarResultado();
+  rueda.classList.remove('has-ganador');
   rueda.querySelectorAll('.is-ganador').forEach((el) => el.classList.remove('is-ganador'));
-  if (estado.tic) { const c = audio(); c?.resume?.(); }
+  if (estado.sonido) audio()?.resume?.();
 
   const n = estado.n;
   const opcionesGiro = estado.opcionesRueda.slice(); // lo que enseña la rueda: el resultado se escribe sobre ella
+  const refs = estado.refsRueda.slice();
   const preguntaGiro = inpPregunta.value.trim();
-  const ganador = indiceAlAzar(n);               // se decide ANTES de animar
-  const dur = estado.duracion === 'corta' ? 2000 : 3500 + 1000 * (u32() / U32);
+  const ganador = indiceAlAzar(n);                   // se decide ANTES de animar
+  const final = eligeFinal(n);                       // se sortea aparte, independiente del ganador
+  const vueltas = opts.vueltas || 5 + indiceAlAzar(3);
+  const dur = Math.min(7000, Math.max(5000, vueltas * 1000 + (unidad() - 0.5) * 600)); // 5–7 s (D4)
+  $('ultimo-final').textContent = `Último final: ${NOMBRE_FINAL[final]}${n < 2 || n > 30 ? ' (con 1 o más de 30 opciones es siempre Normal)' : ''}.`;
 
-  // Interrumpe entrada y reposo; el reposo no vuelve a arrancar encima.
   cancelarTodo();
   entradaViva = false;
 
   if (reducido()) {
-    const objetivo = -(ganador + 0.15 + 0.7 * (u32() / U32)) * (360 / n);
-    escribirPose(objetivo);
+    escribirPose(poseFinal({ ganador, n, final: 'normal' }).objetivo);
     voltear(false); // la rueda aparece ya con las etiquetas derechas
     await esperar(rotor.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200 }));
-    return terminar(ganador, opcionesGiro, n, preguntaGiro);
+    return terminar(ganador, opcionesGiro, n, preguntaGiro, refs);
   }
 
   // El plan se calcula antes de la anticipación, para que no cueste un fotograma al arrancar.
   const t0 = estado.theta;
-  const plan = planGiro({ anguloActual: t0 - ANTICIPACION_GRADOS, ganador, n, duracion: dur });
+  const plan = planGiro({ anguloActual: t0 - ANTICIPACION_GRADOS, ganador, n, duracion: dur, vueltas, final });
 
   // Anticipación: el rotor retrocede 8° y el puntero se levanta.
   const ant = rotor.animate(
@@ -685,51 +1019,293 @@ async function girar() {
     { duration: ANTICIPACION_MS, easing: 'ease-out', fill: 'forwards' });
   await esperar(ant);
 
-  // Acción: giro planificado. Las animaciones nuevas tapan a la anticipación.
+  // Acción: las animaciones nuevas tapan a la anticipación.
   const accion = rotor.animate(plan.rotor, { duration: plan.duracion, easing: 'linear', fill: 'forwards' });
   const accionP = puntero.animate(plan.puntero, { duration: plan.duracion, easing: 'linear', fill: 'forwards' });
+  const accionE = etiquetasEl.animate(plan.etiquetas, { duration: plan.duracion, easing: 'linear', fill: 'forwards' });
   ant.cancel(); antP.cancel();
   programarTics(plan.golpes);
-  await Promise.all([esperar(accion), esperar(accionP)]);
+  await Promise.all([esperar(accion), esperar(accionP), esperar(accionE)]);
 
-  // Aterrizaje: la acción se pasó `rebote` grados; vuelve y se asienta.
-  const fin = plan.anguloFinal, b = plan.rebote;
-  const aterriza = rotor.animate([
-    { transform: `rotate(${fin + b}deg)` },
-    { transform: `rotate(${fin - 0.3 * b}deg)`, offset: 0.45 },
-    { transform: `rotate(${fin}deg)` },
-  ], { duration: ATERRIZAJE_MS, easing: 'ease-in-out', fill: 'forwards' });
-  await esperar(aterriza);
-  escribirPose(fin);                                  // pose final a mano…
-  [rotor, puntero].forEach((el) => el.getAnimations().forEach((a) => a.cancel())); // …y luego se cancela
-  terminar(ganador, opcionesGiro, n, preguntaGiro);
+  // Aterrizaje: depende del final (asiento corto o vuelta atrás empujada por el puntero).
+  const at = plan.aterriza;
+  const aterriza = rotor.animate(at.rotor, { duration: at.dur, easing: at.easing, fill: 'forwards' });
+  const aterrizaP = at.puntero ? puntero.animate(at.puntero, { duration: at.dur, easing: 'linear', fill: 'forwards' }) : null;
+  etiquetasEl.getAnimations().forEach((a) => a.cancel());
+  await Promise.all([esperar(aterriza), aterrizaP ? esperar(aterrizaP) : null]);
+  escribirPose(plan.anguloFinal);                     // pose final a mano…
+  animados().forEach((el) => el.getAnimations().forEach((a) => a.cancel())); // …y luego se cancela
+  terminar(ganador, opcionesGiro, n, preguntaGiro, refs);
 }
 
-function marcarGanador(i) {
-  gajosEl.children[i]?.classList.add('is-ganador');
-  etiquetasEl.children[i]?.classList.add('is-ganador');
-}
-
-function terminar(ganador, opcionesGiro, nGiro, pregunta) {
+function terminar(ganador, opcionesGiro, nGiro, pregunta, refs) {
   estado.ganador = ganador;
   marcarGanador(ganador);
-  const principal = document.createElement('span');
-  principal.className = 'ruleta-result-main';
-  principal.textContent = opcionesGiro[ganador];
-  resultadoEl.replaceChildren(principal); // medir con el cuerpo normal
-  principal.classList.toggle('is-largo', principal.scrollWidth > principal.clientWidth);
-  const lateral = document.createElement('span');
-  lateral.className = 'ruleta-result-side';
-  lateral.textContent = pregunta || `1 de ${nGiro} opciones`;
-  resultadoEl.replaceChildren(principal, lateral);
+  let principal = opcionesGiro[ganador], lado = pregunta || `1 de ${nGiro} opciones`;
+  const salio = principal;
+  estado.historial.unshift({ opcion: salio, para: pregunta });
+  estado.historial.length = Math.min(estado.historial.length, 20);
+  if (estado.modo === 'contar') {
+    estado.cuentas[salio] = (estado.cuentas[salio] || 0) + 1;
+    renderLista();
+  } else if (estado.modo === 'eliminar' && nGiro >= 2) {
+    // El ganador se oculta solo, como cambio pendiente (RF-05): el resultado sigue a la vista.
+    const foto = fotoLista();
+    if (refs[ganador]) refs[ganador].oculta = true;
+    renderLista();
+    const quedan = activas();
+    if (quedan.length === 1) {
+      estado.campeon = quedan[0];
+      principal = `Ganó ${quedan[0].t.trim()}`;
+      lado = `${salio} salió y se eliminó`;
+    } else {
+      lado = pregunta || `Se eliminó «${salio}» · quedan ${quedan.length}`;
+    }
+    avisar(`«${salio}» eliminada`, () => restaurar(foto));
+  }
+  renderHistorial();
+  mostrarResultado(principal, lado, salio);
   voltear(true);
   navigator.vibrate?.(15);
   estado.girando = false;
-  // Lo escrito durante el giro sigue pendiente: se aplica en la siguiente acción (RF-05).
-  btnGirar.disabled = estado.n === 0;
-  if (estado.foco && !btnGirar.disabled) btnGirar.focus({ preventScroll: true }); // el foco se queda en el botón (SDD §7)
-  reposo(); // vuelve tras cada resultado, con la amplitud acotada al gajo
+  rueda.disabled = estado.n === 0;
+  actualizarBoton();
+  if (estado.foco && !estado.foco.disabled) estado.foco.focus({ preventScroll: true }); // SDD §7
+  reposo(); // vuelve tras cada resultado, con la amplitud calculada con la pose
 }
+
+/* --- Resultado y acciones --- */
+function mostrarResultado(principal, lado, salio) {
+  const p = document.createElement('span');
+  p.className = 'ruleta-result-main';
+  p.textContent = principal;
+  const l = document.createElement('span');
+  l.className = 'ruleta-result-side';
+  l.textContent = lado;
+  resultadoEl.replaceChildren(p);
+  p.classList.toggle('is-largo', p.scrollWidth > p.clientWidth); // medir con el cuerpo normal
+  resultadoEl.append(l);
+  estado.resultadoVisible = true;
+  const quitar = $('quitar');
+  const puede = estado.modo === 'normal' && activas().length >= 2;
+  quitar.hidden = !puede;
+  if (puede) quitar.textContent = `Quitar «${salio.length > 18 ? `${salio.slice(0, 17)}…` : salio}»`;
+  $('acciones-resultado').hidden = quitar.hidden;
+  actualizarBoton();
+}
+function ocultarResultado() {
+  resultadoEl.replaceChildren();
+  estado.resultadoVisible = false;
+  $('acciones-resultado').hidden = true;
+  $('quitar').hidden = true;
+  actualizarBoton();
+}
+function actualizarBoton() {
+  btnGirar.textContent = estado.campeon ? 'Volver a empezar' : estado.resultadoVisible ? 'Girar otra vez' : 'Girar ruleta';
+  btnGirar.disabled = estado.girando || (estado.n === 0 && !estado.campeon);
+  rueda.disabled = estado.girando || estado.n === 0;
+}
+
+// Repinta la rueda con la lista actual. Si la lista cambió, el resultado vigente
+// se oculta y con él la marca del ganador (RF-06); si no, se conservan.
+function repintar() {
+  const igual = !hayCambios();
+  const g = estado.ganador;
+  pararReposo();
+  pintar();
+  if (igual && g >= 0) { estado.ganador = g; marcarGanador(g); } else ocultarResultado();
+  reposo();
+}
+// Cualquier edición del visitante: se aplica ya, salvo durante el giro (RF-05).
+function editado() {
+  estado.campeon = null;
+  actualizarBoton();
+  if (!estado.girando) repintar();
+}
+function volverAEmpezar() {
+  estado.items.forEach((i) => { i.oculta = false; });
+  estado.campeon = null;
+  ocultarResultado();
+  renderLista();
+  editado();
+}
+
+/* --- Editor en lista (SDD §6.14.5) --- */
+function fotoLista() { return estado.items.map((i) => ({ ...i })); }
+function restaurar(foto) { estado.items = foto.map((i) => ({ ...i })); renderLista(); editado(); }
+
+function pintarPuntos() {
+  let k = 0;
+  const n = activas().length;
+  [...listaEl.children].forEach((fila) => {
+    const it = fila._item, dot = fila.querySelector('.opt-dot');
+    dot.className = 'opt-dot';
+    if (!it.oculta && it.t.trim() !== '') dot.classList.add(`tono-${tonoDe(k++, n, TONOS)}`);
+    const c = fila.querySelector('.opt-count'), cuenta = estado.cuentas[it.t.trim()] || 0;
+    c.hidden = estado.modo !== 'contar';
+    c.textContent = `×${cuenta}`;
+  });
+}
+function renderLista() {
+  listaEl.replaceChildren();
+  estado.items.forEach((it) => {
+    const fila = tplFila.content.firstElementChild.cloneNode(true);
+    fila._item = it;
+    fila.classList.toggle('is-oculta', it.oculta);
+    const inp = fila.querySelector('.opt-text');
+    inp.value = it.t;
+    const vis = fila.querySelector('.opt-vis');
+    vis.setAttribute('aria-checked', String(!it.oculta));
+    listaEl.append(fila);
+  });
+  pintarPuntos();
+  renderPegar();
+  $('etq-opciones').textContent = `Opciones · ${activas().length}${estado.items.length > activas().length ? ` de ${estado.items.length}` : ''}`;
+}
+function renderPegar() {
+  if (document.activeElement !== txtOpciones) txtOpciones.value = estado.items.map((i) => i.t).join('\n');
+}
+
+listaEl.addEventListener('input', (ev) => {
+  const fila = ev.target.closest('.opt-row');
+  if (!fila || !ev.target.matches('.opt-text')) return;
+  fila._item.t = ev.target.value;
+  pintarPuntos();
+  renderPegar();
+  editado();
+});
+listaEl.addEventListener('click', (ev) => {
+  const fila = ev.target.closest('.opt-row');
+  if (!fila) return;
+  const it = fila._item;
+  if (ev.target.closest('.opt-vis')) {
+    it.oculta = !it.oculta;
+    fila.classList.toggle('is-oculta', it.oculta);
+    fila.querySelector('.opt-vis').setAttribute('aria-checked', String(!it.oculta));
+    pintarPuntos(); renderPegar();
+    $('etq-opciones').textContent = `Opciones · ${activas().length}${estado.items.length > activas().length ? ` de ${estado.items.length}` : ''}`;
+    editado();
+  } else if (ev.target.closest('.opt-del')) {
+    const foto = fotoLista();
+    estado.items.splice(estado.items.indexOf(it), 1);
+    renderLista();
+    avisar(`«${it.t.trim() || 'Opción'}» borrada`, () => restaurar(foto));
+    editado();
+  }
+});
+listaEl.addEventListener('focusout', (ev) => { // una fila vacía al salir se quita sin avisar
+  const fila = ev.target.closest('.opt-row');
+  if (fila && ev.target.matches('.opt-text') && ev.target.value.trim() === '' && estado.items.includes(fila._item)) {
+    estado.items.splice(estado.items.indexOf(fila._item), 1);
+    fila.remove();
+    pintarPuntos();
+    editado();
+  }
+});
+listaEl.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' && ev.target.matches('.opt-text')) { ev.preventDefault(); inpNueva.focus(); } });
+
+// «Añadir opción»: Intro añade y deja el teclado abierto para la siguiente.
+$('alta').addEventListener('submit', (ev) => {
+  ev.preventDefault();
+  const t = inpNueva.value.trim();
+  if (!t) return;
+  estado.items.push({ t, oculta: false });
+  inpNueva.value = '';
+  renderLista();
+  editado();
+  inpNueva.focus();
+  listaEl.lastElementChild?.scrollIntoView({ block: 'nearest' });
+});
+
+// «Pegar lista»: el cuadro de texto edita la misma lista (se conserva lo oculto por posición o texto).
+$('pegar-toggle').addEventListener('click', (ev) => {
+  const abierto = $('pegar-panel').hidden;
+  $('pegar-panel').hidden = !abierto;
+  ev.currentTarget.setAttribute('aria-expanded', String(abierto));
+  ev.currentTarget.textContent = abierto ? 'Cerrar' : 'Pegar lista';
+  if (abierto) { renderPegar(); txtOpciones.focus(); }
+});
+txtOpciones.addEventListener('input', () => {
+  const lineas = leerOpciones(txtOpciones.value), previos = estado.items.slice(), usados = new Set();
+  estado.items = lineas.map((t, i) => {
+    let p = previos[i] && previos[i].t.trim() === t && !usados.has(previos[i]) ? previos[i]
+      : previos.find((x) => x.t.trim() === t && !usados.has(x));
+    if (p) usados.add(p);
+    return p || { t, oculta: false };
+  });
+  renderLista();
+  editado();
+});
+
+/* --- Ejemplos, herramientas de la lista (todo se deshace) --- */
+function cargar(lista) {
+  const foto = fotoLista();
+  estado.items = lista.map((t) => ({ t, oculta: false }));
+  renderLista();
+  editado();
+  if (foto.length) avisar('Se cambió la lista', () => restaurar(foto));
+}
+document.querySelectorAll('[data-ejemplo]').forEach((b) => b.addEventListener('click', () => cargar(EJEMPLOS[b.dataset.ejemplo])));
+$('mezclar').addEventListener('click', () => {
+  const foto = fotoLista(), a = estado.items;
+  for (let i = a.length - 1; i > 0; i--) { const j = indiceAlAzar(i + 1); [a[i], a[j]] = [a[j], a[i]]; } // Fisher-Yates con crypto
+  renderLista(); editado(); avisar('Lista mezclada', () => restaurar(foto));
+});
+$('ordenar').addEventListener('click', () => {
+  const foto = fotoLista();
+  estado.items.sort((a, b) => a.t.localeCompare(b.t, 'es', { sensitivity: 'base' }));
+  renderLista(); editado(); avisar('Lista ordenada', () => restaurar(foto));
+});
+$('vaciar').addEventListener('click', () => {
+  const foto = fotoLista();
+  estado.items = [];
+  renderLista(); editado(); avisar('Lista vaciada', () => restaurar(foto));
+});
+$('quitar').addEventListener('click', () => {
+  const it = estado.refsRueda[estado.ganador];
+  if (!it) return;
+  const foto = fotoLista();
+  it.oculta = true;
+  renderLista(); editado();
+  avisar(`«${it.t.trim()}» quitada`, () => restaurar(foto));
+});
+
+/* --- Aviso con «Deshacer» (7 s; se detiene con el ratón o el foco encima, WCAG 2.2.1) --- */
+let avisoTimer = null, avisoUndo = null;
+function avisar(texto, deshacer) {
+  clearTimeout(avisoTimer);
+  avisoUndo = deshacer;
+  $('aviso-texto').textContent = texto;
+  $('aviso').hidden = false;
+  avisoTimer = setTimeout(cerrarAviso, DESHACER_MS);
+}
+function cerrarAviso() { $('aviso').hidden = true; avisoUndo = null; clearTimeout(avisoTimer); }
+$('aviso-deshacer').addEventListener('click', () => { const f = avisoUndo; cerrarAviso(); f?.(); });
+$('aviso').addEventListener('pointerenter', () => clearTimeout(avisoTimer));
+$('aviso').addEventListener('pointerleave', () => { if (!$('aviso').hidden) avisoTimer = setTimeout(cerrarAviso, DESHACER_MS); });
+$('aviso').addEventListener('focusin', () => clearTimeout(avisoTimer));
+
+/* --- Historial --- */
+function renderHistorial() {
+  $('historial').replaceChildren(...estado.historial.map((h) => {
+    const li = document.createElement('li');
+    li.append(document.createTextNode(h.opcion));
+    if (h.para) { const s = document.createElement('span'); s.textContent = h.para; li.append(s); }
+    return li;
+  }));
+  $('borrar-hist').hidden = estado.historial.length === 0;
+}
+$('borrar-hist').addEventListener('click', () => { estado.historial = []; renderHistorial(); });
+
+/* --- Modos --- */
+document.querySelectorAll('.mode-opt').forEach((b) => b.addEventListener('click', () => {
+  estado.modo = b.dataset.modo;
+  document.querySelectorAll('.mode-opt').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+  if (estado.modo !== 'eliminar') { estado.campeon = null; actualizarBoton(); }
+  pintarPuntos();
+  const q = $('quitar'); // «Quitar» solo en Normal
+  if (estado.modo !== 'normal') { q.hidden = true; $('acciones-resultado').hidden = true; }
+}));
 
 /* --- Tic opcional (D1): Web Audio, desactivado por defecto --- */
 let ctxAudio = null;
@@ -738,7 +1314,7 @@ function audio() {
   return ctxAudio;
 }
 function programarTics(golpes) {
-  if (!estado.tic) return;
+  if (!estado.sonido) return;
   const c = audio();
   if (!c) return;
   const t0 = c.currentTime + 0.02;
@@ -754,31 +1330,85 @@ function programarTics(golpes) {
     o.stop(t + 0.04);
   });
 }
+$('sonido').addEventListener('click', (ev) => {
+  estado.sonido = !estado.sonido;
+  ev.currentTarget.setAttribute('aria-pressed', String(estado.sonido));
+  if (estado.sonido) audio()?.resume?.(); // iOS solo lo desbloquea desde un toque
+});
 
-/* --- Entradas --- */
-// Repinta la rueda con la lista actual. Si la lista cambió, el resultado vigente
-// se oculta y con él la marca del ganador (RF-06); si no, se conservan.
-function repintar() {
-  const igual = JSON.stringify(estado.opciones) === JSON.stringify(estado.opcionesRueda);
-  const g = estado.ganador;
-  estado.pendiente = false;
-  pararReposo();
-  pintar();
-  if (igual && g >= 0) { estado.ganador = g; marcarGanador(g); } else resultadoEl.replaceChildren();
-  reposo();
-}
-function leerTextarea() {
-  estado.opciones = leerOpciones(txtOpciones.value);
-  if (estado.girando) { estado.pendiente = true; return; } // RF-05: se guarda, se aplica en la siguiente acción
-  repintar();
-}
-txtOpciones.addEventListener('input', leerTextarea);
-btnGirar.addEventListener('click', girar);
+/* --- Pantalla completa (en iPhone, donde no existe, el modo foco) --- */
+const pantallaBtn = $('pantalla');
+const sinFullscreen = () => !(document.fullscreenEnabled && toolWheel.requestFullscreen);
+pantallaBtn.addEventListener('click', () => {
+  if (sinFullscreen()) {
+    const on = document.body.classList.toggle('is-foco');
+    pantallaBtn.setAttribute('aria-pressed', String(on));
+  } else if (document.fullscreenElement) {
+    document.exitFullscreen();
+  } else {
+    toolWheel.requestFullscreen().catch(() => {});
+  }
+});
+document.addEventListener('fullscreenchange', () => pantallaBtn.setAttribute('aria-pressed', String(!!document.fullscreenElement)));
+
+/* --- Girar de cuatro formas (SDD §6.14.1) --- */
+btnGirar.addEventListener('click', () => girar());
+let suprimirClick = false;
+rueda.addEventListener('click', () => {            // tocar la rueda; Espacio e Intro con la rueda enfocada
+  if (suprimirClick) { suprimirClick = false; return; }
+  girar();
+});
+document.addEventListener('keydown', (ev) => {    // Ctrl/Cmd+Intro desde cualquier sitio
+  if (ev.key === 'Enter' && (ev.ctrlKey || ev.metaKey)) { ev.preventDefault(); girar(); }
+});
+
+// Arrastrar la rueda con el dedo o el ratón: la fuerza solo elige las vueltas (5–7), nunca el ganador.
+let arrastre = null;
+const anguloPuntero = (ev) => {
+  const r = rueda.getBoundingClientRect();
+  return (Math.atan2(ev.clientX - (r.left + r.width / 2), -(ev.clientY - (r.top + r.height / 2))) * 180) / Math.PI;
+};
+const envuelve = (d) => mod(d + 180, 360) - 180;
+rueda.addEventListener('pointerdown', (ev) => {
+  if (estado.girando || estado.n === 0 || (ev.pointerType === 'mouse' && ev.button !== 0)) return;
+  const a = anguloPuntero(ev);
+  arrastre = { id: ev.pointerId, ultimo: a, total: 0, base: estado.theta, mov: false, muestras: [{ t: performance.now(), total: 0 }] };
+});
+rueda.addEventListener('pointermove', (ev) => {
+  if (!arrastre || ev.pointerId !== arrastre.id) return;
+  const a = anguloPuntero(ev);
+  arrastre.total += envuelve(a - arrastre.ultimo);
+  arrastre.ultimo = a;
+  if (!arrastre.mov && Math.abs(arrastre.total) > 8) {  // pasa de toque a arrastre
+    arrastre.mov = true;
+    rueda.setPointerCapture(ev.pointerId);
+    cancelarTodo(); entradaViva = false;
+  }
+  if (arrastre.mov) {
+    escribirPose(arrastre.base + arrastre.total);
+    arrastre.muestras.push({ t: performance.now(), total: arrastre.total });
+    if (arrastre.muestras.length > 8) arrastre.muestras.shift();
+  }
+});
+const soltar = (ev, cancelado) => {
+  if (!arrastre || ev.pointerId !== arrastre.id) return;
+  const d = arrastre;
+  arrastre = null;
+  if (!d.mov) return;                                   // un toque: lo gestiona «click»
+  suprimirClick = true;
+  setTimeout(() => { suprimirClick = false; }, 80);
+  if (cancelado) { reposo(); return; }
+  const m = d.muestras, a = m[0], b = m[m.length - 1];
+  const w = Math.abs(b.total - a.total) / Math.max(0.016, (b.t - a.t) / 1000); // °/s
+  girar({ vueltas: w < 450 ? 5 : w < 900 ? 6 : 7 });
+};
+rueda.addEventListener('pointerup', (ev) => soltar(ev, false));
+rueda.addEventListener('pointercancel', (ev) => soltar(ev, true));
 
 /* --- Compartir (D5, SDD §6.10) --- */
 const estadoCompartir = $('compartir-estado');
 $('compartir').addEventListener('click', async () => {
-  const opciones = leerOpciones(txtOpciones.value);
+  const opciones = textosActivos();
   const aviso = (t) => { estadoCompartir.textContent = t; };
   if (!opciones.length) return aviso('Escribe al menos una opción.');
   if (opciones.length > 100 || opciones.some((o) => o.length > 60)) return aviso('Máximo 100 opciones de 60 caracteres.');
@@ -797,37 +1427,22 @@ $('compartir').addEventListener('click', async () => {
 });
 
 /* --- Controles del prototipo --- */
-document.querySelectorAll('[data-paleta].proto-opt').forEach((b) => b.addEventListener('click', () => {
-  if (estado.girando) return; // la paleta se cambia entre giros
-  estado.paleta = b.dataset.paleta;
-  rueda.dataset.paleta = estado.paleta;
+document.querySelectorAll('.proto-opt[data-paleta]').forEach((b) => b.addEventListener('click', () => {
+  $('herramienta').dataset.paleta = b.dataset.paleta;
   document.querySelectorAll('.proto-opt[data-paleta]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
-  // Solo la paleta: la lista pendiente (si la hay) espera a la siguiente acción (RF-05)
-  const escrita = estado.opciones, pendiente = estado.pendiente;
-  estado.opciones = estado.opcionesRueda;
-  repintar();
-  estado.opciones = escrita;
-  estado.pendiente = pendiente;
 }));
 document.querySelectorAll('.proto-opt[data-n]').forEach((b) => b.addEventListener('click', () => {
-  txtOpciones.value = EJEMPLOS[b.dataset.n].join('\n');
   document.querySelectorAll('.proto-opt[data-n]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
-  leerTextarea();
+  cargar(EJEMPLOS[b.dataset.n]);
 }));
-document.querySelectorAll('.proto-opt[data-dur]').forEach((b) => b.addEventListener('click', () => {
-  estado.duracion = b.dataset.dur;
-  document.querySelectorAll('.proto-opt[data-dur]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+document.querySelectorAll('.proto-opt[data-final]').forEach((b) => b.addEventListener('click', () => {
+  estado.finalSel = b.dataset.final;
+  document.querySelectorAll('.proto-opt[data-final]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
 }));
-$('tic').addEventListener('click', (ev) => {
-  estado.tic = !estado.tic;
-  ev.currentTarget.setAttribute('aria-pressed', String(estado.tic));
-  ev.currentTarget.textContent = estado.tic ? 'Activado' : 'Desactivado';
-  if (estado.tic) audio()?.resume?.(); // iOS solo lo desbloquea desde un toque
-});
-$('info-compartir').textContent = navigator.share
+$('info-compartir').textContent = (navigator.share
   ? 'Este navegador tiene navigator.share: «Compartir» abre el menú del sistema.'
-  : 'Este navegador no tiene navigator.share: «Compartir» copia el enlace. Ábrelo en el iPhone para valorar D5.';
-$('info-compartir').textContent += ' El enlace es el de SDD §6.10; la /ruleta de hoy aún no lo lee (fase 4): aquí solo se valora el menú. En el iPhone, el tic no suena con el interruptor de timbre en silencio.';
+  : 'Este navegador no tiene navigator.share: «Compartir» copia el enlace. Ábrelo en el iPhone para valorar D5.')
+  + ' El enlace es el de SDD §6.10; la /ruleta de hoy aún no lo lee (fase 4): aquí solo se valora el menú. En el iPhone, el tic no suena con el interruptor de timbre en silencio.';
 
 const fab = $('ir-controles');
 if ('IntersectionObserver' in window) {
@@ -839,8 +1454,8 @@ document.addEventListener('visibilitychange', () => {
 });
 
 /* --- Arranque --- */
-txtOpciones.value = EJEMPLOS[6].join('\n');
-estado.opciones = leerOpciones(txtOpciones.value);
+estado.items = EJEMPLOS[6].map((t) => ({ t, oculta: false }));
+renderLista();
 pintar();
 entrar();
 })();
