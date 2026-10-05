@@ -13,8 +13,16 @@ import { planificarGiro, pasoDeGiro, indiceEnPuntero, enteroUniforme } from '../
 const fallos = [];
 const check = (ok, msg) => { if (!ok) fallos.push(msg); };
 
+// mulberry32: un congruencial lineal tiene el bit bajo alternando, y con N = 2
+// el reparto saldría exacto sin probar nada.
 let semilla = 20261005;
-const u32Semilla = () => (semilla = (Math.imul(semilla, 1664525) + 1013904223) >>> 0);
+const u32Semilla = () => {
+  semilla = (semilla + 0x6d2b79f5) >>> 0;
+  let t = semilla;
+  t = Math.imul(t ^ (t >>> 15), t | 1);
+  t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+  return (t ^ (t >>> 14)) >>> 0;
+};
 
 // Valores críticos de χ² a α = 0,001 por grados de libertad (N - 1).
 const CRITICO = { 1: 10.828, 2: 13.816, 5: 20.515, 6: 22.458, 12: 32.909 };
