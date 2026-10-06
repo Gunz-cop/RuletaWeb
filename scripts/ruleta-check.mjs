@@ -199,9 +199,37 @@ const RADIOS = [100, 160, 230, 350, 600]; // px: de un móvil a pantalla complet
   resumen.push(`planGiro: ${PLANES - malos}/${PLANES} paran en el ganador (N 1–100); N=100: ${denso.cruces} cruces → ${denso.golpes.length} golpes`);
 }
 
+/* --- §6.3 (v1.9, #17): arranque ≤ 21°/fotograma con el reparto real de vueltas y duración --- */
+// Lo que hará la página: vueltas y duración las sortea planGiro (5–7 vueltas,
+// vueltas·1000 ± 300 ms acotado a 5–7 s), el tramo hasta el ganador va de 0 a
+// 360° y «Vuelta atrás» se pasa un poco más. Arranque = lo que avanza la
+// rueda en el primer fotograma de 60 Hz.
+{
+  const GIROS = 20000;
+  const arranques = [];
+  const vueltasVistas = new Set();
+  for (let i = 0; i < GIROS; i++) {
+    const n = 2 + (i % 99);
+    const final = FINALES[i % 4];
+    const anguloActual = unidad() * 360 - 8;
+    const plan = planGiro({ anguloActual, ganador: indiceAlAzar(n, u32Semilla), n, final, rnd: u32Semilla });
+    vueltasVistas.add(plan.vueltas);
+    arranques.push(curva(plan.anguloAccion - anguloActual, plan.duracion / 1000, n)(1 / 60));
+  }
+  arranques.sort((a, b) => a - b);
+  const q = (p) => arranques[Math.floor(p * (arranques.length - 1))];
+  check(q(1) <= 21, `arranque máximo ${q(1).toFixed(2)}°/fotograma > 21° en ${GIROS} giros`);
+  check(vueltasVistas.size === 3, `vueltas sorteadas: solo ${[...vueltasVistas].join(', ')}`);
+  resumen.push(`arranque (${GIROS} giros, N 2–100, 4 finales): mediana ${q(0.5).toFixed(1)}°, p90 ${q(0.9).toFixed(1)}°, máx ${q(1).toFixed(2)}°/fotograma (≤ 21)`);
+  // Peor caso determinista de #17: N = 30, 6 vueltas, 5,7 s, «Vuelta atrás», desde 0°.
+  const peor = planGiro({ anguloActual: 0, ganador: 0, n: 30, vueltas: 6, duracion: 5700, final: 'atras', rnd: () => 2 ** 31 });
+  const a = curva(peor.anguloAccion, 5.7, 30)(1 / 60);
+  check(a <= 21, `peor caso de #17: ${a.toFixed(2)}°/fotograma > 21°`);
+}
+
 /* --- §6.3: curva por tramos --- */
 {
-  let peorSalto = 0, peorArranque = 0;
+  let peorSalto = 0;
   for (const n of [1, 2, 6, 13, 30, 31, 40, 100]) {
     const s = 360 / n;
     const thC = n <= 30 ? Math.min(90, 1.5 * s) : 90;
@@ -227,13 +255,9 @@ const RADIOS = [100, 160, 230, 350, 600]; // px: de un móvil a pantalla complet
           previo = a;
         }
       }
-      // Arranque en los casos de referencia del SDD: v vueltas en v segundos.
-      const arranque = curva(360 * v, v, n)(1 / 60);
-      peorArranque = Math.max(peorArranque, arranque);
-      check(arranque <= 17, `curva N=${n}: arranque de ${arranque.toFixed(2)}°/fotograma con ${v} vueltas en ${v} s`);
     }
   }
-  resumen.push(`curva: cola = min(90°, 1,5 gajos), salto en el empalme ≤ ${(peorSalto * 100).toFixed(4)} %, arranque ≤ ${peorArranque.toFixed(2)}°/fotograma (v vueltas en v s)`);
+  resumen.push(`curva: cola = min(90°, 1,5 gajos), salto en el empalme ≤ ${(peorSalto * 100).toFixed(4)} %`);
 }
 
 /* --- tonoDe: vecinos distintos, también el último con el primero --- */
