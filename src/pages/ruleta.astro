@@ -86,6 +86,14 @@ const schemaLD = {
             "@type": "Answer",
             "text": "No. Todo corre en tu navegador: tus opciones, el modo, el historial y tus preferencias se guardan localmente y no se envían a ningún servidor."
           }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Puedo compartir mi ruleta?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Sí. Pulsa «Compartir» bajo la lista: en el móvil se abre el menú de compartir y en el ordenador se copia un enlace. Quien lo abra verá tus opciones y tu pregunta, y podrá recuperar su propia lista con «Deshacer». Las opciones ocultas, el modo y las cuentas no viajan. Los datos van en el fragmento del enlace (lo que sigue a #), que el navegador nunca envía a ningún servidor."
+          }
         }
       ]
     },
@@ -189,6 +197,7 @@ const schemaLD = {
         <button class="ruleta-text-btn" id="ruleta-mezclar" type="button">Mezclar</button>
         <button class="ruleta-text-btn" id="ruleta-ordenar" type="button">Ordenar</button>
         <button class="ruleta-text-btn is-danger" id="ruleta-vaciar" type="button">Vaciar</button>
+        <button class="ruleta-text-btn" id="ruleta-compartir" type="button">Compartir</button>
         <button class="ruleta-text-btn" id="ruleta-foco" type="button" aria-pressed="false">Modo foco</button>
         <button class="ruleta-text-btn" id="ruleta-reiniciar" type="button" hidden>Reiniciar cuentas</button>
       </div>
@@ -281,6 +290,11 @@ const schemaLD = {
       <li><strong>Diseño cuidado:</strong> Cada detalle está pensado: desde las micro-animaciones hasta la paleta de colores.</li>
       <li><strong>Accesibilidad:</strong> Compatible con lectores de pantalla, navegación por teclado y preferencias de movimiento reducido.</li>
     </ul>
+
+    <h2>Preguntas frecuentes</h2>
+    <h3>¿Puedo compartir mi ruleta?</h3>
+    <p>Sí. Pulsa «Compartir» bajo la lista: en el móvil se abre el menú de compartir y en el ordenador se copia un enlace. Quien lo abra verá tus opciones y tu pregunta, y podrá recuperar su propia lista con «Deshacer». Las opciones ocultas, el modo y las cuentas no viajan, y caben hasta 100 opciones.</p>
+    <p><strong>Privacidad:</strong> los datos van en el fragmento del enlace (lo que sigue a #), que el navegador nunca envía a ningún servidor. Eso sí, cualquiera que reciba el enlace verá las opciones, así que ten cuidado si son nombres de personas.</p>
   </SeoArticle>
 
   <AdSlot position="bottom" />

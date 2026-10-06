@@ -111,7 +111,7 @@ async function ruedaEntera(pagina) {
 import { crearReto, nuevoId } from '../../src/scripts/ppt-reto.js';
 import { forma } from '../../src/scripts/dados-poliedros.js';
 import { NORMAL } from '../../src/scripts/dados-fisica.js';
-import { gajoBajoPuntero } from '../../src/scripts/ruleta-logica.js';
+import { gajoBajoPuntero, leerEnlace } from '../../src/scripts/ruleta-logica.js';
 
 // El aviso "Deshacer" es position:fixed. Si un ancestro tiene `transform`
 // (.reveal.revealed), ese ancestro pasa a ser su bloque contenedor y el aviso
@@ -646,6 +646,59 @@ export const ESTADOS = [
         && r.pregunta === '¿Quién friega?' && r.etiqueta === 'Opciones · 2 de 3' && r.gajos === 2
         && r.vieja === 'Ana\nLuis\nMarta';
       return { ok, mensaje: `claves viejas: lista «${r.textos.join(', ')}», ocultas ${r.ocultas.join()}, pregunta «${r.pregunta}», etiqueta «${r.etiqueta}», ${r.gajos} gajos, clave vieja intacta=${r.vieja !== null}` };
+    },
+  },
+  {
+    // Compartir sin `navigator.share` (escritorio): copia un enlace que
+    // `leerEnlace` lee igual (solo las activas y la pregunta) y avisa. Se
+    // oculta una opción antes para comprobar que las ocultas no viajan.
+    ruta: '/ruleta',
+    nombre: 'compartir-copia',
+    contexto: { permissions: ['clipboard-read', 'clipboard-write'] },
+    init: () => { Object.defineProperty(navigator, 'share', { value: undefined, configurable: true }); },
+    verificarRelacion: async (pagina) => {
+      await pagina.fill('#ruleta-pregunta', '¿Quién friega?');
+      await pagina.click('.ruleta-opt-row:nth-child(2) .ruleta-opt-vis');
+      await pagina.click('#ruleta-compartir');
+      await pagina.waitForSelector('#ruleta-aviso:not([hidden])', { timeout: 5000 });
+      const r = await pagina.evaluate(async () => ({
+        url: await navigator.clipboard.readText(),
+        aviso: document.getElementById('ruleta-aviso-texto').textContent,
+        deshacer: !document.getElementById('ruleta-aviso-deshacer').hidden,
+        activas: [...document.querySelectorAll('.ruleta-opt-row:not(.is-oculta) .ruleta-opt-text')].map((i) => i.value),
+      }));
+      let leido = null;
+      try { leido = leerEnlace(new URL(r.url).hash); } catch { /* url rota: leido queda en null */ }
+      const ok = !!leido && leido.opciones.join('|') === r.activas.join('|') && r.activas.length > 0
+        && leido.para === '¿Quién friega?' && r.aviso === 'Enlace copiado' && !r.deshacer;
+      return { ok, mensaje: `enlace copiado «${r.url.replace(/^https?:\/\/[^/]+/, "")}», leído ${JSON.stringify(leido)}, activas ${JSON.stringify(r.activas)}, aviso «${r.aviso}» (con Deshacer: ${r.deshacer})` };
+    },
+  },
+  {
+    // Quien abre una ruleta compartida: opciones y pregunta cargadas, aviso
+    // con «Deshacer», fragmento limpio, y «Deshacer» devuelve su lista propia.
+    ruta: '/ruleta#para=%C2%BFQui%C3%A9n+friega%3F&opcion=Ana&opcion=Luis&opcion=Sof%C3%ADa',
+    nombre: 'compartida-por-enlace',
+    init: () => {
+      // Su lista propia: solo en la primera carga (el init corre en cada navegación del contexto)
+      if (!localStorage.getItem('decidelo_ruleta_pregunta')) localStorage.setItem('ruleta_opciones', 'Uno\nDos');
+    },
+    verificarRelacion: async (pagina) => {
+      const leer = () => pagina.evaluate(() => ({
+        opciones: [...document.querySelectorAll('.ruleta-opt-text')].map((i) => i.value),
+        pregunta: document.getElementById('ruleta-pregunta').value,
+        gajos: document.querySelectorAll('#wheel-slices path').length,
+        aviso: document.getElementById('ruleta-aviso').hidden ? null : document.getElementById('ruleta-aviso-texto').textContent,
+        hash: location.hash,
+      }));
+      await pagina.waitForSelector('#ruleta-aviso:not([hidden])', { timeout: 5000 });
+      const a = await leer();
+      await pagina.click('#ruleta-aviso-deshacer');
+      const b = await leer();
+      const ok = a.opciones.join('|') === 'Ana|Luis|Sofía' && a.pregunta === '¿Quién friega?' && a.gajos === 3
+        && a.aviso === 'Se cargó la ruleta compartida' && a.hash === ''
+        && b.opciones.join('|') === 'Uno|Dos' && b.pregunta === '' && b.gajos === 2 && b.aviso === null;
+      return { ok, mensaje: `al abrir: ${JSON.stringify(a)}; tras Deshacer: ${JSON.stringify(b)}` };
     },
   },
   // La rueda entera (no solo el botón) en la primera pantalla de los tres
