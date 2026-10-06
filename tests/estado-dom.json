@@ -167,6 +167,18 @@
       "mensaje": "tras quitar al ganador: 1 oculta(s) de 6 filas, 5 gajos, resultado visible=false, aviso=true, botón «Girar ruleta»"
     }
   },
+  "/ruleta [activar-todas]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "foco tras activar «ruleta-pegar-toggle»; ocultas antes «1,4,5» (botón true), tras activar «» (botón false, 6 gajos), tras deshacer «1,4,5» (botón true, 3 gajos)"
+    }
+  },
+  "/ruleta [activar-todas-limite]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "antes 30 ocultas/100 gajos; tras pulsar 30 ocultas/100 gajos, aviso de máximo=true, «Deshacer»=false"
+    }
+  },
   "/ruleta [modo-eliminar]": {
     ".ruleta-mode[aria-pressed=\"true\"]": {
       "backgroundColor": "rgb(20, 20, 29)",
