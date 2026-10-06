@@ -6,14 +6,53 @@ import SeoArticle from '../components/SeoArticle.astro';
 import Wheel from '../components/Wheel.astro';
 import { getSocialImageUrl } from '../lib/heroImages';
 
-// El título y el arranque de la descripción vienen del experimento SEO que
-// antes vivía en la raíz (ver el historial de index.astro). Solo se corrigió
-// lo que dejó de ser verdad con el rediseño (modo foco y sonido ya no son
-// botones de la cabecera); el texto nuevo, con datos de Search Console, es
-// la fase 5 del SDD de la ruleta.
-const title = 'Ruleta Aleatoria Online Gratis — Decídelo.app';
-const description = 'Ruleta aleatoria online para sortear nombres, elegir al azar y resolver empates. Gratis, sin registro y 100% en tu navegador, con modos para eliminar y contar, pantalla completa y tic opcional.';
-const keywords = 'ruleta aleatoria, ruleta de nombres, ruleta online, sortear nombres, ruleta de decisiones, ruleta para sorteos, girar la ruleta, ruleta gratis, ruleta random';
+// Texto de la fase 5 del SDD (decidelo-textos, issue #11). Search Console no
+// tiene ni una impresión de /ruleta en tres meses, así que no hay CTR que
+// optimizar: el texto va a por las primeras impresiones en el territorio de la
+// ruleta (tres o más opciones o nombres) y se guía por lo que Google muestra hoy
+// para «ruleta aleatoria», «ruleta de nombres», «girar ruleta» y «ruleta para
+// sortear nombres»: herramientas gratuitas con «online» y «gratis» en el título.
+// «Ruleta aleatoria» abre el título y el h1.
+const title = 'Ruleta Aleatoria: Gira y Sortea Nombres u Opciones Gratis';
+const description = '¿Quién va primero? Escribe tus nombres u opciones y gira la ruleta aleatoria: sortea turnos, elige o reparte retos. Gratis, sin registro y en tu navegador.';
+const keywords = 'ruleta aleatoria, ruleta de nombres, ruleta online, girar ruleta, sortear nombres, ruleta para sortear nombres, ruleta de decisiones, ruleta de premios, ruleta de retos, ruleta gratis';
+
+// Una sola lista para el JSON-LD y para la sección visible: así las preguntas
+// y las respuestas no pueden diverger. Texto plano (sin enlaces ni <code>).
+const faq = [
+  {
+    q: '¿Cómo funciona la ruleta aleatoria online?',
+    a: 'Escribe tus opciones en la lista (o pega varias a la vez con «Pegar lista»), pulsa «Girar ruleta», toca la rueda o arrástrala, y se detiene sola en un resultado elegido al azar. Puedes escribir qué se decide, mezclar el orden u ocultar opciones sin borrarlas.',
+  },
+  {
+    q: '¿Puedo usar la ruleta para sortear nombres?',
+    a: 'Sí. Pulsa «Pegar lista», pega los nombres (uno por línea) y gira: sirve para elegir turnos, participaciones o quién hace cada tarea. Admite hasta 100 opciones activas.',
+  },
+  {
+    q: '¿La ruleta es justa? ¿Cómo se elige el ganador?',
+    a: 'Sí. El ganador se elige antes de que la rueda se mueva, con el generador aleatorio criptográfico del navegador (crypto.getRandomValues), y todas las opciones activas tienen la misma probabilidad. La animación solo lo enseña: la fuerza con la que arrastras la rueda cambia las vueltas, nunca quién sale.',
+  },
+  {
+    q: '¿Qué diferencia hay entre los modos Normal, Eliminar y Contar?',
+    a: 'En Normal, el ganador sigue en la rueda. En Eliminar, tras cada giro el ganador se oculta, hasta que queda una sola opción. En Contar, cada opción acumula sus victorias en la lista y en el historial.',
+  },
+  {
+    q: '¿Cuántas opciones admite la ruleta?',
+    a: 'Hasta 100 opciones activas. Con más de 40 la rueda no pinta las etiquetas y el resultado dice cuál salió; las opciones que sobran de 100 quedan ocultas, no se pierden.',
+  },
+  {
+    q: '¿Cómo pongo la ruleta en pantalla completa?',
+    a: 'Pulsa el icono de pantalla completa que hay sobre la rueda: deja solo la ruleta, el resultado y el botón, útil para proyectarla o para reducir distracciones. En el iPhone, que no tiene pantalla completa para páginas web, se activa el modo foco, que oculta el resto de la página.',
+  },
+  {
+    q: '¿La ruleta guarda mis datos en un servidor?',
+    a: 'No. Todo corre en tu navegador: tus opciones, el modo, el historial y tus preferencias se guardan localmente y no se envían a ningún servidor.',
+  },
+  {
+    q: '¿Puedo compartir mi ruleta?',
+    a: 'Sí. Pulsa «Compartir» bajo la lista: en el móvil se abre el menú de compartir y en el ordenador se copia un enlace. Quien lo abra verá tus opciones y tu pregunta, y podrá recuperar su propia lista con «Deshacer». Las opciones ocultas, el modo y las cuentas no viajan, y caben hasta 100 opciones. Privacidad: los datos van en el fragmento del enlace (lo que sigue a #), que el navegador nunca envía a ningún servidor. Eso sí, cualquiera que reciba el enlace verá las opciones, así que ten cuidado si son nombres de personas.',
+  },
+];
 
 // La imagen vive en src/assets y la optimiza Astro; el JSON-LD necesita
 // su URL absoluta ya generada, no la ruta pública que tenía antes.
@@ -26,7 +65,7 @@ const schemaLD = {
       "@type": "WebApplication",
       "@id": "https://decidelo.app/ruleta#webapp",
       "name": "Ruleta Aleatoria Online — Decídelo.app",
-      "description": "Ruleta aleatoria online para sortear nombres, elegir al azar y resolver empates. Gratis, sin registro, con modos para eliminar y contar y pantalla completa.",
+      "description": "Ruleta aleatoria online para sortear nombres u opciones: turnos, tareas y retos. Modos Normal, Eliminar y Contar, hasta 100 opciones, pantalla completa y enlace para compartir. Gratis y sin registro.",
       "url": "https://decidelo.app/ruleta",
       "applicationCategory": "UtilityApplication",
       "operatingSystem": "All",
@@ -54,48 +93,11 @@ const schemaLD = {
     {
       "@type": "FAQPage",
       "@id": "https://decidelo.app/ruleta#faq",
-      "mainEntity": [
-        {
-          "@type": "Question",
-          "name": "¿Cómo funciona la ruleta aleatoria online?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Escribe tus opciones en la lista (o pega varias a la vez), pulsa «Girar ruleta», toca la rueda o arrástrala, y se detiene sola en un resultado elegido al azar. Puedes escribir qué se decide, mezclar el orden u ocultar opciones sin borrarlas."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "¿Puedo usar la ruleta para sortear nombres?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Sí. Pulsa «Pegar lista», pega los nombres (uno por línea) y gira: es el uso más habitual, tanto para sorteos como para elegir turnos o participaciones al azar. Hasta 100 opciones."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "¿Cómo pongo la ruleta en pantalla completa?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Pulsa el icono de pantalla completa que hay sobre la rueda: deja solo la ruleta, el resultado y el botón, útil para proyectarla o para reducir distracciones. En el iPhone, que no tiene pantalla completa para páginas web, se activa el modo foco, que oculta el resto de la página."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "¿La ruleta guarda mis datos en un servidor?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "No. Todo corre en tu navegador: tus opciones, el modo, el historial y tus preferencias se guardan localmente y no se envían a ningún servidor."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "¿Puedo compartir mi ruleta?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Sí. Pulsa «Compartir» bajo la lista: en el móvil se abre el menú de compartir y en el ordenador se copia un enlace. Quien lo abra verá tus opciones y tu pregunta, y podrá recuperar su propia lista con «Deshacer». Las opciones ocultas, el modo y las cuentas no viajan, y caben hasta 100 opciones. Privacidad: los datos van en el fragmento del enlace (lo que sigue a #), que el navegador nunca envía a ningún servidor. Eso sí, cualquiera que reciba el enlace verá las opciones, así que ten cuidado si son nombres de personas."
-          }
-        }
-      ]
+      "mainEntity": faq.map(({ q, a }) => ({
+        "@type": "Question",
+        "name": q,
+        "acceptedAnswer": { "@type": "Answer", "text": a }
+      }))
     },
     {
       "@type": "BreadcrumbList",
@@ -139,7 +141,7 @@ const schemaLD = {
 
     <section class="ruleta-hero pt-2 sm:pt-6 lg:pt-4">
       <h1>Ruleta aleatoria, que <em>decida el azar</em></h1>
-      <p class="ruleta-lede">Escribe tus opciones y deja que el azar elija: todas tienen la misma probabilidad.</p>
+      <p class="ruleta-lede">Escribe tus nombres u opciones y gira: todas tienen la misma probabilidad de salir.</p>
       <div class="ruleta-modes" role="group" aria-label="Modo">
         <button class="ruleta-mode" type="button" data-modo="normal" aria-pressed="true">Normal</button>
         <button class="ruleta-mode" type="button" data-modo="eliminar" aria-pressed="false">Eliminar</button>
@@ -243,58 +245,120 @@ const schemaLD = {
     <HubGrid activeToolId="ruleta" />
   </section>
 
-  {/* El artículo SEO se mudó entero desde index.astro. Aquí solo se corrigió
-       lo que dejó de ser verdad con el rediseño; el texto nuevo es la fase 5
-       del SDD de la ruleta (decidelo-textos, con datos de Search Console). */}
-  <SeoArticle title="¿Cómo funciona la Ruleta Aleatoria Online y por qué usarla?">
-    <p>La <strong>Ruleta Aleatoria Online</strong> de Decídelo.app dibuja la rueda con gráficos vectoriales (SVG) y la anima con las propias herramientas de animación del navegador, así que se ve nítida en cualquier pantalla y no necesita descargar nada pesado. Cada giro se siente orgánico y con suspenso -- y todo corre en tu navegador, sin registro ni servidores de por medio.</p>
+  {/* Texto de la fase 5 del SDD (decidelo-textos, issue #11). Cada función que
+       nombra existe en ruleta.js; las cifras (100 opciones, 40 etiquetas, 20
+       resultados, 5–7 s) salen del código. La sección «Preguntas frecuentes»
+       se pinta desde `faq`, la misma lista del JSON-LD. */}
+  <SeoArticle title="Ruleta aleatoria online: gira, sortea nombres y que decida la rueda">
+    <p><strong>¿Quién empieza, quién lava los platos, a quién le toca hablar?</strong> Cuando hay tres o más opciones y nadie quiere decidir, lo más rápido es dejar que lo haga una <strong>ruleta aleatoria</strong>. Escribe tus nombres u opciones, gira y la rueda elige una. Funciona en el móvil y en el ordenador, sin instalar nada y sin registro.</p>
 
-    <h2>¿Cómo funciona la Ruleta?</h2>
-    <ul>
-      <li><strong>Escribe tus opciones</strong> en la lista (o pega varias a la vez con «Pegar lista»). La ruleta se actualiza en tiempo real y admite hasta 100.</li>
-      <li><strong>Escribe qué se decide</strong> en el campo «¿Qué se decide?». Ideal para sorteos con nombre: "¿Quién lava los platos?". El resultado lo repite.</li>
-      <li><strong>Gira de cuatro formas:</strong> con el botón «Girar ruleta», tocando la rueda, arrastrándola con el dedo o el ratón, o con el teclado (Espacio, Intro o Ctrl/Cmd+Intro). La fuerza del gesto solo cambia cuántas vueltas da, nunca quién gana.</li>
-      <li><strong>El resultado aparece bajo la rueda</strong>, sin ventanas que lo tapen, y queda en el historial de tus últimos 20 giros. Si quieres seguir, «Girar otra vez».</li>
-      <li><strong>Oculta opciones</strong> sin borrarlas, o pulsa «Quitar» tras un resultado. Perfecto para torneos por eliminación o para ir descartando candidatos ronda a ronda.</li>
-    </ul>
+    <p>Úsala para lo cotidiano (y <a href="#ruleta-stage">pruébala ahora, está justo arriba</a>): turnos, tareas, retos para un juego, el plan del fin de semana o el orden de las exposiciones. Para dos opciones basta la <a href="/moneda">moneda</a>. Para decisiones médicas, legales o de dinero, mejor habla con alguien que sepa del tema.</p>
 
-    <h2>Tres modos: normal, eliminar y contar</h2>
-    <ul>
-      <li><strong>Normal:</strong> el ganador sigue en la rueda.</li>
-      <li><strong>Eliminar:</strong> tras cada giro, el ganador se oculta solo; hasta que queda una opción. Se puede deshacer.</li>
-      <li><strong>Contar:</strong> cada opción acumula sus victorias en la lista y en el historial. Útil para comprobar a la larga que el reparto es parejo.</li>
-    </ul>
+    <h2>Cómo usar la ruleta de nombres paso a paso</h2>
+    <ol>
+      <li><strong>Escribe tus opciones</strong> en la lista, o pega varias a la vez con «Pegar lista» (una por línea). La rueda se actualiza al momento. Si solo quieres probar, los ejemplos «Comida», «Verdad o reto» y «Nombres» cargan una lista hecha.</li>
+      <li><strong>Escribe qué se decide</strong> en «¿Qué se decide?» (por ejemplo, «¿Quién lava los platos?»). El resultado lo repite encima del ganador.</li>
+      <li><strong>Gira de cuatro formas:</strong> con el botón «Girar ruleta», tocando la rueda, arrastrándola con el dedo o el ratón, o con el teclado (Espacio, Intro o Ctrl/Cmd+Intro).</li>
+      <li><strong>Mira el resultado</strong> bajo la rueda. Queda en el historial de tus últimos 20 giros y puedes «Girar otra vez».</li>
+      <li><strong>Ajusta la lista</strong> sin perderla: oculta opciones sin borrarlas, «Mezclar», «Ordenar» o «Vaciar» (todo se puede deshacer con el aviso).</li>
+    </ol>
 
-    <h2>Casos de uso populares</h2>
+    <h2>Ideas para la ruleta: situación, opciones y modo</h2>
+    <p>Estas son las dudas que más se resuelven girando. Copia las opciones en la <a href="#ruleta-stage">ruleta de arriba</a> y elige el modo que te indico.</p>
+    <table>
+      <thead>
+        <tr><th>Situación</th><th>Opciones</th><th>Modo</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>¿Qué comemos hoy?</td><td>Pizza, tacos, sushi, pasta</td><td>Normal</td></tr>
+        <tr><td>¿Quién lava los platos?</td><td>Los nombres de la casa</td><td>Normal</td></tr>
+        <tr><td>Turnos para participar en clase</td><td>La lista del curso</td><td>Eliminar</td></tr>
+        <tr><td>Orden de las exposiciones</td><td>Los nombres del grupo</td><td>Eliminar</td></tr>
+        <tr><td>Verdad o reto en una reunión</td><td>Retos suaves, verdades, mímica</td><td>Normal</td></tr>
+        <tr><td>Premios de una actividad de grupo</td><td>Cada premio, una opción</td><td>Eliminar</td></tr>
+        <tr><td>Comprobar que reparte parejo</td><td>Cualquier lista corta</td><td>Contar</td></tr>
+      </tbody>
+    </table>
 
-    <h3>Sorteos de nombres y ganadores</h3>
-    <p>Ya sea para dinamizar tus sorteos en redes sociales (Instagram, TikTok, Facebook), seleccionar ganadores en concursos, o elegir el orden de exposición de estudiantes en clase, la <em>ruleta de nombres</em> da a todos la misma probabilidad: el ganador se elige antes del giro con el generador aleatorio del navegador y la rueda gira hasta él. El público confía en un resultado visualmente aleatorio más que en un simple número generado por computadora.</p>
+    <h2>Tres modos: Normal, Eliminar y Contar</h2>
+    <p>El selector de arriba cambia lo que pasa después de cada giro.</p>
+    <h3>Normal</h3>
+    <p>El ganador sigue en la rueda y puedes girar otra vez. Tras un resultado aparece «Quitar», que oculta esa opción sin borrarla: útil si quieres sacar a alguien de la lista solo esta vez.</p>
+    <h3>Eliminar</h3>
+    <p>Tras cada giro, el ganador se oculta solo, hasta que queda una opción. Es el modo para ordenar turnos, descartar candidatos ronda a ronda o repartir premios sin repetir. Se puede deshacer.</p>
+    <h3>Contar</h3>
+    <p>Cada opción acumula sus victorias en la lista y en el historial. Sirve para ver a la larga que el reparto es parejo, para clases de probabilidad o para un marcador de grupo. «Reiniciar cuentas» las pone a cero.</p>
 
-    <h3>Decidir qué comer</h3>
-    <p>El clásico dilema de parejas y amigos. Introduce opciones como "Pizza", "Tacos", "Sushi" o "Hamburguesas" y deja que el destino elija el menú del día. Elimina discusiones innecesarias de forma divertida y democrática.</p>
+    <h2>¿Es justa la ruleta? Cómo se elige el ganador</h2>
+    <p>En esta ruleta el ganador <strong>se elige antes de que la rueda se mueva</strong>, no por la física del giro. Se sortea con el generador de valores aleatorios criptográficamente fuertes del navegador (<code>crypto.getRandomValues</code>)<sup><a href="#fuente-1">[1]</a></sup>. Para que ninguna opción salga más que otra, se descartan los valores que darían ventaja a las primeras de la lista, la manera sencilla de evitar el llamado sesgo de módulo<sup><a href="#fuente-2">[2]</a></sup>. El resultado: <strong>todas las opciones activas tienen la misma probabilidad</strong>. «Mezclar» usa el mismo generador con el algoritmo Fisher-Yates<sup><a href="#fuente-2">[2]</a></sup>.</p>
+    <p>La animación solo enseña ese resultado. Se hace con la Web Animations API del navegador<sup><a href="#fuente-3">[3]</a></sup>, dura entre 5 y 7 segundos y a veces parece pasarse o quedarse corta antes de asentarse: es el final con suspenso, que se sortea aparte y no cambia quién sale. La fuerza con la que arrastras la rueda solo cambia cuántas vueltas da. Con movimiento reducido en tu dispositivo, el giro se sustituye por un fundido corto.</p>
 
-    <h3>Dinámicas de clase y gamificación</h3>
-    <p>Los profesores y facilitadores utilizan esta herramienta para hacer preguntas aleatorias, asignar tareas, seleccionar equipos o elegir temas de debate. La ruleta mantiene a los participantes alerta, atentos y comprometidos porque cualquiera puede ser el próximo.</p>
+    <h2>Trucos para sacarle partido a la ruleta</h2>
+    <h3>1. Pon solo opciones que aceptarías</h3>
+    <p>La ruleta no arregla una opción mala: si una te daría rabia, no la pongas. Cada gajo debería ser un resultado con el que puedas vivir.</p>
+    <h3>2. Pega la lista en vez de escribirla</h3>
+    <p>Con «Pegar lista» metes un grupo entero de una vez. Si copias los nombres de una hoja de cálculo o de un chat, la rueda queda lista en segundos.</p>
+    <h3>3. Escribe qué se decide</h3>
+    <p>Con la pregunta escrita, el resultado dice «¿Quién lava los platos?» y el nombre ganador. Así nadie discute qué se estaba sorteando.</p>
+    <h3>4. Usa la pantalla completa para proyectarla</h3>
+    <p>El icono de la rueda deja solo la ruleta, el resultado y el botón. En el iPhone, que no tiene pantalla completa para páginas web, el «Modo foco» hace lo mismo. Con el tic activado (viene apagado), la rueda marca cada gajo que cruza.</p>
+    <h3>5. Comparte la misma ruleta con otras personas</h3>
+    <p>«Compartir» abre el menú de compartir del móvil<sup><a href="#fuente-6">[6]</a></sup> o, en el ordenador, copia un enlace. Quien lo abre ve tus opciones y tu pregunta; los datos van en la parte del enlace que sigue a «#», que el navegador no envía a ningún servidor<sup><a href="#fuente-5">[5]</a></sup>. Ojo: cualquiera con el enlace verá las opciones, así que ten cuidado si son nombres de personas.</p>
+    <h3>6. Para tres o más opciones, esta; para dos, la moneda</h3>
+    <p>Si solo tienes dos opciones, <a href="/moneda">lanza la moneda</a>: es más rápido. Con tres o más, <a href="#ruleta-stage">gira la ruleta</a>.</p>
 
-    <h3>Juegos y entretenimiento</h3>
-    <p>Úsala como una ruleta de la fortuna, verdad o reto, penitencias para fiestas o para determinar premios en eventos. Personalízala con retos, castigos, recompensas o cualquier contenido creativo que se te ocurra.</p>
+    <h2>¿Ruleta, moneda, dados o sí o no? Elige la herramienta correcta</h2>
+    <p>Decídelo.app tiene una herramienta para cada tipo de duda. Todas son gratis, funcionan en el móvil y no piden registro.</p>
+    <table>
+      <thead>
+        <tr><th>Si necesitas…</th><th>Usa</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Elegir entre tres o más opciones o nombres</td><td>Esta ruleta aleatoria</td></tr>
+        <tr><td>Elegir entre dos opciones</td><td><a href="/moneda">Moneda: cara o sello</a></td></tr>
+        <tr><td>Una respuesta rápida a una pregunta</td><td><a href="/si-o-no">Sí o no</a></td></tr>
+        <tr><td>Tirar dados para un juego de mesa</td><td><a href="/dados">Dados online</a></td></tr>
+        <tr><td>Un número al azar en un rango</td><td><a href="/numeros">Número aleatorio</a></td></tr>
+        <tr><td>Dividir un grupo en equipos</td><td><a href="/equipos">Generador de equipos</a></td></tr>
+        <tr><td>Resolver un empate jugando</td><td><a href="/piedra-papel-tijera">Piedra, papel o tijera</a></td></tr>
+        <tr><td>Organizar el intercambio de regalos</td><td><a href="/amigo-secreto">Amigo secreto online</a></td></tr>
+        <tr><td>Medir tiempo por turnos</td><td><a href="/temporizador">Temporizador</a></td></tr>
+      </tbody>
+    </table>
 
-    <h2>Diseño accesible y enfoque en la concentración</h2>
-    <p>Hemos diseñado esta ruleta con especial atención a la accesibilidad y experiencia de usuario. El icono de <strong>pantalla completa</strong> de la rueda (y el <strong>Modo foco</strong>, que lo sustituye donde el navegador no tiene pantalla completa, como el iPhone) elimina todas las distracciones de la pantalla (texto informativo, herramientas secundarias, anuncios) y te permite centrarte exclusivamente en la ruleta. Es especialmente útil para proyectarla o para personas con TDAH que prefieren una interfaz limpia.</p>
-    <p>El modo oscuro predeterminado reduce la fatiga ocular durante sesiones prolongadas. Si quieres, el altavoz de la rueda activa un «tic» suave al pasar por cada gajo; viene apagado y no suena nada más, ni celebraciones al ganar.</p>
+    <h2>Elegir al azar es un invento antiguo</h2>
+    <p>Decidir quién hace algo echándolo a suertes es mucho más viejo que cualquier ruleta. En la Atenas democrática, los ciudadanos que iban a formar parte de un jurado se elegían con el cleroterio (<em>kleroterion</em>), una losa de piedra con ranuras donde se colocaban las fichas de cada ciudadano y un tubo por el que salían bolas blancas y negras para decidir qué filas eran elegidas; se usó desde alrededor del año 370 a. C.<sup><a href="#fuente-4">[4]</a></sup>. La idea no ha cambiado: dar a todos la misma oportunidad. Lo único nuevo es que ahora cabe en el móvil.</p>
 
-    <h2>¿Por qué esta ruleta es diferente?</h2>
-    <ul>
-      <li><strong>Privacidad real:</strong> Sin servidores, sin cookies, sin registro. Todo funciona localmente en tu navegador.</li>
-      <li><strong>Velocidad:</strong> Carga instantánea. No hay dependencias pesadas ni frameworks innecesarios.</li>
-      <li><strong>Diseño cuidado:</strong> Cada detalle está pensado: desde las micro-animaciones hasta la paleta de colores.</li>
-      <li><strong>Accesibilidad:</strong> Compatible con lectores de pantalla, navegación por teclado y preferencias de movimiento reducido.</li>
-    </ul>
+    <h2>Deja de dudar: gira la ruleta ahora</h2>
+    <p>Llevas leyendo un buen rato y la decisión sigue esperando. Sube a la <a href="#ruleta-stage">ruleta aleatoria</a>, escribe tus nombres u opciones y pulsa «Girar ruleta». Y si la duda tiene solo dos caminos, <a href="/moneda">lanza la moneda</a>.</p>
 
     <h2>Preguntas frecuentes</h2>
-    <h3>¿Puedo compartir mi ruleta?</h3>
-    <p>Sí. Pulsa «Compartir» bajo la lista: en el móvil se abre el menú de compartir y en el ordenador se copia un enlace. Quien lo abra verá tus opciones y tu pregunta, y podrá recuperar su propia lista con «Deshacer». Las opciones ocultas, el modo y las cuentas no viajan, y caben hasta 100 opciones.</p>
-    <p><strong>Privacidad:</strong> los datos van en el fragmento del enlace (lo que sigue a #), que el navegador nunca envía a ningún servidor. Eso sí, cualquiera que reciba el enlace verá las opciones, así que ten cuidado si son nombres de personas.</p>
+    {faq.map(({ q, a }) => (
+      <>
+        <h3>{q}</h3>
+        <p>{a}</p>
+      </>
+    ))}
+
+    <h2>Guías relacionadas</h2>
+    <ul>
+      <li><a href="/blog/ruleta/ruleta-aleatoria-guia-definitiva">La guía definitiva de la ruleta aleatoria</a></li>
+      <li><a href="/blog/ruleta/ruleta-de-nombres-para-profesores">Ruleta de nombres para profesores: guía completa</a></li>
+      <li><a href="/blog/ruleta/sorteo-ruleta">Cómo hacer un sorteo con ruleta online</a></li>
+      <li><a href="/blog/ruleta/ruleta-retos">Ruleta de retos y preguntas para reuniones de amigos</a></li>
+      <li><a href="/blog/ruleta/juegos-reuniones-familiares-ruleta">7 juegos para reuniones familiares con ruleta de nombres</a></li>
+      <li><a href="/blog/ruleta/herramientas-digitales-gratuitas-estudiantes">Herramientas digitales gratuitas para estudiantes</a></li>
+    </ul>
+
+    <h2>Fuentes</h2>
+    <ol>
+      <li id="fuente-1">MDN Web Docs. «Crypto: método getRandomValues()». <a href="https://developer.mozilla.org/es/docs/Web/API/Crypto/getRandomValues" rel="noopener" target="_blank">developer.mozilla.org</a></li>
+      <li id="fuente-2">Wikipedia. «Fisher–Yates shuffle» (sesgo de módulo y descarte de valores; algoritmo de Fisher y Yates, 1938). <a href="https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle" rel="noopener" target="_blank">en.wikipedia.org</a></li>
+      <li id="fuente-3">MDN Web Docs. «Web Animations API». <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Animations_API" rel="noopener" target="_blank">developer.mozilla.org</a></li>
+      <li id="fuente-4">Wikipedia. «Kleroterion». <a href="https://en.wikipedia.org/wiki/Kleroterion" rel="noopener" target="_blank">en.wikipedia.org</a></li>
+      <li id="fuente-5">Berners-Lee, T., Fielding, R. y Masinter, L. (2005). «Uniform Resource Identifier (URI): Generic Syntax», RFC 3986, sección 3.5 (Fragment). IETF. <a href="https://datatracker.ietf.org/doc/html/rfc3986#section-3.5" rel="noopener" target="_blank">datatracker.ietf.org</a></li>
+      <li id="fuente-6">MDN Web Docs. «Navigator: método share()». <a href="https://developer.mozilla.org/en-US/docs/Web/API/Navigator/share" rel="noopener" target="_blank">developer.mozilla.org</a></li>
+    </ol>
   </SeoArticle>
 
   <AdSlot position="bottom" />
