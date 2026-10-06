@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Estado | v1.9 — diseño aprobado por el propietario (prototipo v2, §6.15); auditado §14; bloqueantes §15 — pendiente de las decisiones del propietario de §12 |
+| Estado | v1.10 — diseño aprobado por el propietario (prototipo v2, §6.15); auditado §14; bloqueantes §15 — pendiente de las decisiones del propietario de §12 |
 | Fecha | 2026-10-05 |
 | Alcance | `src/pages/ruleta.astro`, sus componentes y su JS, tests de estado de `/ruleta`, texto SEO de la página |
 | Normas que manda | `AGENTS.md` → `DESIGN.md` → skill `decidelo-herramienta` → skills de terceros |
@@ -166,7 +166,7 @@ fase de texto.
 
 | Id | Requisito |
 |---|---|
-| RF-01 | El visitante escribe opciones, una por línea, en un `<textarea>`; se ignoran líneas vacías y espacios sobrantes. La rueda se actualiza al escribir. |
+| RF-01 | El visitante escribe opciones (en lista o pegándolas, §6.14); se ignoran líneas vacías y espacios sobrantes. La rueda se actualiza al escribir. **Como mucho 100 opciones activas** (lo mismo que admite el enlace, §6.10; con más de 120 el margen de 1,5° ya no cabe en un gajo): al pasar de 100, la página lo dice bajo el editor y no añade más. |
 | RF-02 | Sin opciones activas, la rueda muestra un estado vacío con texto («Escribe al menos una opción») y el botón principal queda desactivado. Con una sola opción, la rueda es un círculo completo y el giro funciona (gana esa). |
 | RF-03 | Campo «¿Qué se decide?» (opcional, máx. 60 caracteres). Si tiene texto, el resultado lo repite encima del ganador. |
 | RF-04 | «Girar ruleta» elige un ganador uniforme entre las opciones **activas**, anima la rueda hasta que el puntero señala ese gajo y escribe el resultado al resolver `.finished`. |
@@ -333,7 +333,7 @@ patrón que `dados-fisica.js`/`dados-check.mjs`). Funciones:
 | `indiceAlAzar(n, rnd)` | Entero uniforme en `[0, n)` con muestreo por rechazo sobre `Uint32`. `rnd` inyectable para los tests. |
 | `geometria(n)` | Para cada gajo: ángulo inicial, final y medio; `d` del `<path>` (con N = 1, círculo completo). |
 | `tonoDe(i, n)` | Índice de tono con vecinos distintos, incluido el cierre del círculo (N impar). |
-| `planGiro({ anguloActual, ganador, n, rnd })` | Ángulo final = vueltas enteras (5–7) + el que deja el puntero en `ganador`, con desfase en [0,15; 0,85] del gajo. Devuelve los fotogramas del rotor (muestreados a 60 Hz, `easing: linear` entre muestras) sobre una **curva por tramos** (#15): (1) **fase rápida** en el primer 70 % del tiempo `T₁ = 0,7·T`, con deceleración constante de `v₀` a `v₁`; (2) **cola** en el 30 % final `T_c = 0,3·T`, `θ(τ) = θ_c · (1 − (1 − τ)³)` con `τ = t'/T_c`, que recorre `θ_c = min(90°, 1,5 × gajo)` si N ≤ 30 y `θ_c = 90°` si N > 30. Empalme sin salto de velocidad: `v₁ = 3·θ_c / T_c`, y `v₀ = 2·(θ_total − θ_c)/T₁ − v₁`. **Vueltas y duración** (las del prototipo aprobado): `vueltas = 5 + indiceAlAzar(3)` (al arrastrar, 5, 6 o 7 según la velocidad del gesto), y el recorrido es `vueltas · 360°` más el tramo hasta el ganador (de 0 a 360°) más el rebote o el pasarse de «Vuelta atrás»; `duración = clamp(5 000, 7 000, vueltas · 1 000 ± 300 ms al azar)`. **Arranque medido con ese reparto real** (20 000 giros, N ∈ [2, 100]): mediana 15,7°/fotograma, p90 17,6°, **máximo 20,0°** (peor caso determinista 20,3°: N = 30, 6 vueltas, 5,7 s, «Vuelta atrás»). El límite es **≤ 21°/fotograma** sobre ese reparto: por debajo de la cuártica descartada (22°), y lo cubre el desenfoque de etiquetas de §6.5 (#17; la cifra de 13–17° de la v1.5 medía giros de vueltas exactas) y muy por debajo de una cuártica (22°), los del puntero (un golpe en cada cruce de frontera, calculado con la misma curva; si dos cruces caen a menos de 50 ms, el puntero se queda levantado en vez de golpear: con 100 opciones y 6 vueltas hay 600 cruces en 4 s, más que fotogramas), la duración y el ángulo final normalizado a `[0, 360)`. |
+| `planGiro({ anguloActual, ganador, n, rnd })` | Ángulo final = vueltas enteras (5–7) + el que deja el puntero en `ganador`, con la pose final dentro del gajo según el tipo de final (§6.13; Normal en [0,12; 0,88]). Devuelve los fotogramas del rotor (muestreados a 60 Hz, `easing: linear` entre muestras) sobre una **curva por tramos** (#15): (1) **fase rápida** en el primer 70 % del tiempo `T₁ = 0,7·T`, con deceleración constante de `v₀` a `v₁`; (2) **cola** en el 30 % final `T_c = 0,3·T`, `θ(τ) = θ_c · (1 − (1 − τ)³)` con `τ = t'/T_c`, que recorre `θ_c = min(90°, 1,5 × gajo)` si N ≤ 30 y `θ_c = 90°` si N > 30. Empalme sin salto de velocidad: `v₁ = 3·θ_c / T_c`, y `v₀ = 2·(θ_total − θ_c)/T₁ − v₁`. **Vueltas y duración** (las del prototipo aprobado): `vueltas = 5 + indiceAlAzar(3)` (al arrastrar, 5, 6 o 7 según la velocidad del gesto), y el recorrido es `vueltas · 360°` más el tramo hasta el ganador (de 0 a 360°) más el rebote o el pasarse de «Vuelta atrás»; `duración = clamp(5 000, 7 000, vueltas · 1 000 ± 300 ms al azar)`. **Arranque medido con ese reparto real** (20 000 giros, N ∈ [2, 100]): mediana 15,7°/fotograma, p90 17,6°, **máximo 20,0°** (peor caso determinista 20,3°: N = 30, 6 vueltas, 5,7 s, «Vuelta atrás»). El límite es **≤ 21°/fotograma** sobre ese reparto: por debajo de la cuártica descartada (22°), y lo cubre el desenfoque de etiquetas de §6.5 (#17; la cifra de 13–17° de la v1.5 medía giros de vueltas exactas). Devuelve también los fotogramas del puntero (un golpe en cada cruce de frontera, calculado con la misma curva; si dos cruces caen a menos de 50 ms, el puntero se queda levantado en vez de golpear: con 100 opciones y 6 vueltas hay 600 cruces en 4 s, más que fotogramas), la duración y el ángulo final normalizado a `[0, 360)`. |
 | `gajoBajoPuntero(angulo, n)` | Inverso de lo anterior; lo usan el test de Node y el test de estado. |
 | `aterrizaje(n)` | Rebote máximo = `min(2°, 0,1 × gajo)`. |
 | `amplitudReposo(margen)` | Amplitud del balanceo de reposo = `min(1,5°, 0,4 × margen)`, donde `margen` es la distancia real del puntero a la frontera más cercana en la pose de reposo. Con los finales de §6.13 el puntero puede quedar cerca del borde, así que la amplitud se calcula con la pose, no con N (#14, v1.4). |
@@ -438,7 +438,7 @@ Todas las fases con `element.animate()`, solo `transform` y `opacity`.
 | `ruleta_sound` | — | — | Se deja de leer (si D1 conserva el tic: `decidelo_ruleta_sonido`) |
 | — | `decidelo_ruleta_modo` | `"normal" / "eliminar" / "contar"` | Nuevo (§6.14) |
 | — | `decidelo_ruleta_conteo` | `{v:1, cuentas: {<texto>: n}}` | Nuevo, modo Contar (§6.14) |
-| — | `decidelo_ruleta_historial` | `[{opcion, para, t}]`, máx. 20 | Nuevo |
+| — | `decidelo_ruleta_historial` | `[{opcion, para, t, cuenta?}]` (`cuenta` solo en modo Contar), máx. 20 | Nuevo |
 
 Las claves viejas no se borran: si hubiera que revertir el despliegue, el
 código anterior las sigue encontrando.
@@ -516,9 +516,10 @@ anti-repetición, medida en el prototipo v2.
   [0,85; 0,875].
 - **Cola lenta**: la cola de `planGiro` (§6.3) recorre en el último 30 % del
   tiempo `θ_c = min(90°, 1,5 gajos)` (90° con N > 30). En «Casi se pasa» y
-  «Por los pelos», la frontera decisiva se cruza (o casi) por debajo de
-  30°/s, cosa que la cola cúbica garantiza porque el puntero está a menos
-  de 0,15 gajo del final.
+  «Por los pelos», la frontera decisiva se cruza (o casi) despacio: por debajo
+  de 30°/s con gajos estrechos; con N pequeño la cola es de 90° y se cruza
+  algo más rápido (≈ 40–60°/s con N = 2, medido en #16). Es una descripción,
+  no un criterio de prueba.
 - **Sentido de los intervalos**: el desfase se mide en el sentido del giro;
   0 es la frontera por la que entra el puntero en el gajo ganador y 1 la de
   salida, hacia el «gajo siguiente».
@@ -769,3 +770,4 @@ resolvieron cambiando este documento. Cada fila enlaza el issue.
 | Auditoría v2, ciclo 2 (#7) | Alto de la rueda sin fórmula para todos los formatos; «Deshacer» durante el giro; reinicio de las cuentas de Contar; destino del foco; posición del aviso. | Adoptado lo que hace el prototipo, que es razonable: hero de alto fijo con invariante en todos los formatos; Deshacer en giro = cambio pendiente; cuentas por texto con «Reiniciar cuentas»; foco al control que giró; aviso dentro de la zona de la rueda. | §6.1, RF-05, §6.14, §7 | v1.7 |
 | Propietario (prototipo v2) y auditoría v2 ciclo 5 | Paleta elegida: «Pastel vivo». Abiertos del prototipo: posición del aviso, suelo de la rueda, rueda en escritorio con muchas opciones, normalización del ángulo, reposo al redimensionar, arrastre con cambios pendientes, lista durante la entrada, foco con el atajo. | Prototipo v2 como implementación de referencia (§6.15) y una decisión por cada abierto. | §6.12, §6.15, §7, §12 | v1.8 |
 | #17 | El «≤ 17°/fotograma» de §6.3 y de #8 medía giros de vueltas exactas; con el reparto real del prototipo aprobado (tramo hasta el ganador y ±300 ms) el arranque llega a 20°. | Opción 1: se corrige la cifra a ≤ 21°/fotograma medida sobre el reparto real; el comportamiento aprobado no cambia. La regla de vueltas y duración pasa al SDD. | §6.3 | v1.9 |
+| PR #16 (#8), diferencias anotadas | Frase empalmada y desfase viejo en `planGiro` (§6.3); historial con `cuenta`; «30°/s» de «Por los pelos» no se cumple con N pequeño; no había máximo de opciones fuera del enlace. | Corregido; máximo de 100 opciones activas (RF-01); «30°/s» pasa a descripción. Se acepta que `leerEnlace` quite caracteres de control y de dirección (defensivo, §8). | §6.3, §6.9, §6.13, RF-01 | v1.10 |
