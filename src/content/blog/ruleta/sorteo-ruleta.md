@@ -22,7 +22,7 @@ Hacer sorteos no es solo regalar algo; es generar interacción, crear comunidad 
 La ruleta online resuelve este problema de raíz gracias a tres pilares fundamentales:
 
 * **Transparencia absoluta:** Todo el mundo ve los nombres en la ruleta y cómo gira la aguja en tiempo real. No hay trampa ni cartón.
-* **Gamificación y emoción:** El sonido del giro y el suspense visual de ver dónde se detiene la aguja enganchan a la audiencia mucho más que un simple resultado estático.
+* **Gamificación y emoción:** El suspense visual de ver dónde se detiene la aguja (y un «tic» opcional, si activas el sonido) engancha a la audiencia mucho más que un simple resultado estático.
 * **Simplicidad:** No necesitas registrarte, ni pagar plataformas costosas, ni lidiar con complejos programas de sorteos. Pegas los nombres, giras y listo.
 
 ---

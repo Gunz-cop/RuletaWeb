@@ -75,7 +75,7 @@ Los retos deben ser visualmente divertidos y dinámicos para que el resto del gr
 
 Para que la experiencia sea aún más dinámica, aprovecha los ajustes visuales y sonoros que ofrece nuestra plataforma:
 
-* **Sube el volumen:** El sonido del giro y la alarma del ganador meten mucha presión y aumentan las risas.
+* **Activa el «tic»:** El altavoz que hay sobre la rueda enciende un «tic» al pasar por cada gajo (viene apagado). Con el volumen alto mete mucha presión y aumenta las risas.
 * **Usa la pantalla completa:** Oculta los paneles laterales para que solo se vea la ruleta gigante y brillante en la televisión o monitor.
 * **Carga plantillas rápidas:** Guarda tus listas de retos favoritas en un archivo de texto en tu móvil para cargarlas al instante cada vez que te reúnas con tus amigos.
 

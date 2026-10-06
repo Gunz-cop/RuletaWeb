@@ -93,9 +93,12 @@ Los selectores scopeados por Astro se guardan con `[S]` en lugar del hash
 `data-astro-cid-XXXX`, que cambia cada vez que se edita el archivo.
 
 `scripts/estado-dom.mjs` es el único que mira estados que hay que provocar:
-pulsa el botón de modo foco y la pestaña de gestionar, **gira la ruleta de
-verdad** para ver el modal del ganador, y compara los estilos computados con
-`tests/estado-dom.json`. No espera un tiempo fijo: repite la medición hasta
+pulsa el modo foco, oculta una opción de la ruleta, **gira la ruleta de
+verdad** para ver el resultado y el ganador marcado, y compara los estilos
+computados con `tests/estado-dom.json`. Un estado puede llevar `init`, un
+código que se ejecuta en la página antes de cargar nada: la ruleta lo usa para
+sembrar `localStorage` con el formato de antes del rediseño y para forzar el
+azar de un giro (`crypto.getRandomValues` con una cola). No espera un tiempo fijo: repite la medición hasta
 que los valores dejan de moverse y no queda ninguna transición CSS viva
 en lo que mide, porque una transición a medias da `opacity: 0.998` y el
 test parpadea (y una que aún no arrancó da dos lecturas iguales del valor
@@ -112,7 +115,12 @@ diferían en miles de píxeles. Los estilos computados sí son estables. Y cada
 estado necesita su propio contexto de navegador: el modo foco se recuerda, y
 compartir contexto lo filtraba al estado siguiente.
 
-Cubre amigo secreto —introduce participantes, hace el sorteo y comprueba
+Para la ruleta, `ganador-coincide-con-la-rueda` lee la matriz real del
+rotor, calcula con `gajoBajoPuntero` qué gajo queda bajo el puntero y compara
+su etiqueta con el texto del resultado (3 giros animados con los finales con
+suspenso y 30 con movimiento reducido, con N = 1, 2 y 40); `rueda-entera-visible-*`
+comprueba que la rueda se ve entera en los tres móviles de referencia y en
+1280×720. Cubre amigo secreto —introduce participantes, hace el sorteo y comprueba
 las filas de enlaces, en escritorio y a 390px— y también los dados: lanza
 tres y mide el resultado y el historial, y en el estado
 `suma-coincide-con-las-caras` lee la matriz 3D real de cada dado para
@@ -161,7 +169,7 @@ leerla convierte el test en decoración.
 src/
   pages/          Una ruta por herramienta (index.astro es el hub; la ruleta vive en ruleta.astro)
   scripts/        La lógica de cada herramienta, JS vanilla, un archivo por página
-  components/     Header, Footer, HubGrid, SeoArticle, AdSlot y los objetos de cada herramienta (Coin…)
+  components/     Header, Footer, HubGrid, SeoArticle, AdSlot y los objetos de cada herramienta (Coin, Wheel…)
   layouts/        Layout.astro (base) y BlogPost.astro
   content/blog/   52 posts en Markdown, organizados por categoría
   assets/blog/    Imágenes de cabecera, procesadas por Astro

@@ -123,8 +123,11 @@ oráculo sí o no (`si-o-no.astro` + `OracleBall.astro`), la primera
 herramienta con casi todo el marcado en utilidades de Tailwind, piedra,
 papel o tijera (`piedra-papel-tijera.astro` + `PptHands.astro`) y el
 temporizador (`temporizador.astro` + `TimerObject.astro`) y los dados
-(`dados.astro` + `Dice.astro`, con D4 a D20, modo rol y dado de opciones). El resto
-de herramientas (la ruleta, equipos...) sigue con los botones y tarjetas
+(`dados.astro` + `Dice.astro`, con D4 a D20, modo rol y dado de opciones) y la
+ruleta (`ruleta.astro` + `Wheel.astro` + `ruleta.js`, con la lógica pura en
+`ruleta-logica.js`; la página que da nombre al sitio, ver las excepciones del
+propietario en "Anatomía"). El resto
+de herramientas (equipos...) sigue con los botones y tarjetas
 en degradado de la estética anterior — migrarlas es una tarea aparte, una
 herramienta a la vez, porque toca UI interactiva con sus propios tests de
 estado (`npm run test:estado`). El procedimiento está en la skill del
@@ -136,6 +139,18 @@ es la representación de un objeto físico, no UI, y sin reflejos el metal se
 lee como un disco plano. La regla de "sin degradados" aplica a botones,
 tarjetas y texto; la paleta de latón vive como variables locales
 (`--metal-*`) dentro del componente, no como tokens globales.
+
+La rueda de la ruleta (`Wheel.astro`) es la tercera: lleva una **paleta
+pastel de ocho tonos** («Pastel vivo», elegida por el propietario tras probar
+el prototipo en su iPhone) como variables locales `--wheel-p0…p7`. Es la
+excepción al «un solo acento» y está limitada al objeto: el botón principal,
+el foco y el puntero siguen en `--accent-warm`. Las etiquetas van en tinta
+oscura `#1a1a24` (≥ 8,68:1 a todo color y ≥ 4,69:1 atenuado,
+`scripts/wheel-contrast.mjs` lo lee del componente y falla si un tono cambia
+sin repetir la cuenta); el ganador conserva su color, el resto baja a una capa
+del 30 % y el ganador lleva contorno claro de 3 px (nunca verde/rojo). Los
+puntos de color de las filas del editor usan los mismos tonos, por eso la
+paleta cuelga de la clase global `.wheel-palette` y no de la rueda.
 
 Las manos de piedra, papel o tijera (`HandShape.astro`) son la otra
 salida de la excepción: **cuando un objeto no sale bien dibujado a mano en
@@ -205,7 +220,7 @@ cada página suelen llevar una barra de 3-4px en `--accent-gradient` como
 `::before` absoluto — es un pseudo-elemento con fondo en degradado, así que
 vive en CSS, no como utilidad (ver más abajo).
 
-**Botones**: `.primary-btn`/`.btn-spin` (fondo en degradado, texto oscuro,
+**Botones**: `.primary-btn` (fondo en degradado, texto oscuro,
 para la acción principal de cada herramienta), `.secondary-btn` (fondo
 translúcido blanco al 5%), `.danger-btn` (rojo translúcido). Los CTA dentro
 de contenido (`.tool-cta`) reutilizan el mismo degradado que las barras de
@@ -561,6 +576,48 @@ guardadas con nombre; al tirar desde ahí la página sube hasta la mesa. El
 historial escribe el desglose con el modificador («17 = 12 + 5») y, al
 lado, la tirada o su nombre («Ataque espada»).
 
+**Rueda** (`/ruleta`): el objeto es SVG (los gajos) y HTML (las etiquetas,
+que se truncan con `text-overflow` y se miden en `cqw`), no un canvas: el JS
+clona `<template>`s y pone `d`, texto y `--a`, sin `innerHTML`. Pasa por las
+reglas de «Objeto con física simulada»: el ganador se decide antes con
+`crypto`, el plan del giro es lógica pura (`src/scripts/ruleta-logica.js`,
+probada en `scripts/ruleta-check.mjs`: χ², pose final dentro del gajo,
+`gajoBajoPuntero ∘ planGiro = ganador` en 10 000 planes) y el estado
+`ganador-coincide-con-la-rueda` lee la matriz del rotor y la compara con el
+texto. Excepciones pedidas por el propietario (SDD de la ruleta, §12):
+
+- **Paleta pastel en el objeto** (ver «Excepción: objetos ilustrados»).
+- **Tic opcional** al cruzar cada gajo (Web Audio), **desactivado por
+  defecto** y recordado en `decidelo_ruleta_sonido`: excepción a «sin
+  sonidos», como el cuenco del temporizador, y con la misma regla: nunca
+  celebra (sin arpegio ni confeti) y no es lo único que avisa. Su interruptor
+  es un icono sobre la rueda, no un botón de la cabecera.
+- **Giro de 5 a 7 s** (en vez de los 1–2 s de la acción estándar), con una
+  cola lenta y un **final con suspenso** que se sortea aparte del ganador y no
+  cambia ninguna probabilidad: normal, casi se pasa, por los pelos y vuelta
+  atrás, nunca dos seguidos distintos del normal. Con más de 30 opciones, o
+  con una sola, el final es siempre normal.
+- **Rueda a la izquierda desde 1024 px** (3fr) y editor a la derecha (2fr),
+  como las ruletas que el visitante ya conoce; la moneda pone el objeto a la
+  derecha. La columna de la rueda es `sticky`.
+- **Giro de cuatro formas**: botón, tocar la rueda, arrastrarla (la fuerza
+  solo elige 5, 6 o 7 vueltas) y teclado (Espacio/Intro con la rueda
+  enfocada, Ctrl/Cmd+Intro desde cualquier sitio). La rueda es un `<button>`.
+- **Controles del objeto sobre el objeto**: sonido y pantalla completa (la
+  Fullscreen API; en iPhone, que no la tiene, el modo foco) en las esquinas
+  de la rueda, a 44 px. «Modo foco» es el mismo interruptor en texto.
+- **Modo, arriba y en una pieza** (selector de modo): Normal · Eliminar ·
+  Contar. En Eliminar el ganador se oculta solo como cambio pendiente: el
+  resultado sigue sobre la rueda que giró y se repinta en la siguiente acción
+  del visitante. Nunca hay un resultado sobre una rueda que no lo produjo.
+- **Editor en lista**: filas de 44 px con el color del gajo, texto editable en
+  el sitio, interruptor de visibilidad y borrar; «Añadir opción» deja el
+  teclado abierto. Todo se deshace con el aviso «Deshacer» (arriba: abajo
+  taparía el botón en 360×560).
+- La rueda es lo más grande que cabe: `--wheel-d` resta del alto útil
+  (`svh`) todo lo demás y el hero tiene alto fijo. Lo vigila
+  `rueda-entera-visible-*` además de la acción visible.
+
 **Dado de opciones** (`/dados`): el objeto de la herramienta lleva las
 palabras del usuario. Se escriben de dos a seis opciones (y, si se quiere,
 qué se decide) y cada una queda impresa en una cara de un D6 más grande
@@ -614,6 +671,15 @@ migrada o nueva tiene **objeto vivo**, con estas fases, todas con
 | **Anticipación** | Gesto previo que anuncia la acción | 0,1–0,3 s | Se agacha antes de saltar | Se hunde el dado anterior | La mano se echa atrás en cada golpe |
 | **Acción** | La animación con sentido que produce el resultado | 1–2 s en total | Volteo | Agitado + dado que emerge | "Piedra… papel… tijera…" (3 golpes) |
 | **Aterrizaje** | Se asienta con un pequeño rebote o aplastamiento y aparece el resultado | 0,3–0,4 s | Asienta | El dado se asienta | Aplastamiento al abrir la mano |
+
+La ruleta encaja así: **entrada**, la rueda llega rodando desde la izquierda
+(1,3 s, con un solo rebote suave) dentro de `.wheel-stage` con
+`overflow-x: clip`; **reposo**, un balanceo de ±1,5° como mucho (y nunca más
+de 6 px en el borde) que vuelve tras cada resultado; **anticipación**, la
+rueda retrocede 8° y el puntero se levanta (0,2 s); **acción**, 5 a 7 s con
+cola lenta, el puntero golpea en cada gajo; **aterrizaje**, asiento corto o
+vuelta atrás empujada por el puntero. Es la excepción de duración (la acción
+dura 5–7 s, no 1–2 s): el propietario pidió suspenso y descartó el giro de 2 s.
 
 Los dados encajan en las mismas fases así: **entrada**, se lanzan solos al
 cargar, como una tirada; **reposo**, la cámara respira (menos de 2 px; los
