@@ -3,18 +3,16 @@ import Layout from '../layouts/Layout.astro';
 import AdSlot from '../components/AdSlot.astro';
 import HubGrid from '../components/HubGrid.astro';
 import SeoArticle from '../components/SeoArticle.astro';
-import RouletteMachine from '../components/RouletteMachine.astro';
-import WinnerModal from '../components/WinnerModal.astro';
+import Wheel from '../components/Wheel.astro';
 import { getSocialImageUrl } from '../lib/heroImages';
 
-// Título y descripción vienen del experimento SEO que antes vivía en la
-// raíz (ver el historial de index.astro): la ruleta ya se mudó a su propia
-// página, así que es aquí donde ese title/description tienen sentido de
-// verdad. Se retocó el final de la descripción para que hable de la
-// ruleta, no del hub -- "además: moneda, dados y equipos" prometía un
-// listado de herramientas que esta página ya no es.
+// El título y el arranque de la descripción vienen del experimento SEO que
+// antes vivía en la raíz (ver el historial de index.astro). Solo se corrigió
+// lo que dejó de ser verdad con el rediseño (modo foco y sonido ya no son
+// botones de la cabecera); el texto nuevo, con datos de Search Console, es
+// la fase 5 del SDD de la ruleta.
 const title = 'Ruleta Aleatoria Online Gratis — Decídelo.app';
-const description = 'Ruleta aleatoria online para sortear nombres, elegir al azar y resolver empates. Gratis, sin registro, 100% en tu navegador, con modo foco y sonido opcional.';
+const description = 'Ruleta aleatoria online para sortear nombres, elegir al azar y resolver empates. Gratis, sin registro y 100% en tu navegador, con modos para eliminar y contar, pantalla completa y tic opcional.';
 const keywords = 'ruleta aleatoria, ruleta de nombres, ruleta online, sortear nombres, ruleta de decisiones, ruleta para sorteos, girar la ruleta, ruleta gratis, ruleta random';
 
 // La imagen vive en src/assets y la optimiza Astro; el JSON-LD necesita
@@ -28,11 +26,11 @@ const schemaLD = {
       "@type": "WebApplication",
       "@id": "https://decidelo.app/ruleta#webapp",
       "name": "Ruleta Aleatoria Online — Decídelo.app",
-      "description": "Ruleta aleatoria online para sortear nombres, elegir al azar y resolver empates. Gratis, sin registro y con modo foco.",
+      "description": "Ruleta aleatoria online para sortear nombres, elegir al azar y resolver empates. Gratis, sin registro, con modos para eliminar y contar y pantalla completa.",
       "url": "https://decidelo.app/ruleta",
       "applicationCategory": "UtilityApplication",
       "operatingSystem": "All",
-      "browserRequirements": "Requires JavaScript and HTML5 Canvas",
+      "browserRequirements": "Requires JavaScript and SVG",
       "softwareVersion": "2.0.0",
       "inLanguage": "es",
       "offers": {
@@ -62,7 +60,7 @@ const schemaLD = {
           "name": "¿Cómo funciona la ruleta aleatoria online?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Escribe tus opciones, una por línea, pulsa Girar y la rueda se detiene sola en un resultado elegido al azar. Puedes editar el título, mezclar el orden u ocultar opciones sin borrarlas."
+            "text": "Escribe tus opciones en la lista (o pega varias a la vez), pulsa «Girar ruleta», toca la rueda o arrástrala, y se detiene sola en un resultado elegido al azar. Puedes escribir qué se decide, mezclar el orden u ocultar opciones sin borrarlas."
           }
         },
         {
@@ -70,15 +68,15 @@ const schemaLD = {
           "name": "¿Puedo usar la ruleta para sortear nombres?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Sí. Pega la lista de nombres en el panel de opciones y gira: es el uso más habitual, tanto para sorteos como para elegir turnos o participaciones al azar."
+            "text": "Sí. Pulsa «Pegar lista», pega los nombres (uno por línea) y gira: es el uso más habitual, tanto para sorteos como para elegir turnos o participaciones al azar. Hasta 100 opciones."
           }
         },
         {
           "@type": "Question",
-          "name": "¿Qué es el Modo Foco de la ruleta?",
+          "name": "¿Cómo pongo la ruleta en pantalla completa?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Oculta el resto de la página (cabecera, herramientas, artículo, publicidad) y deja solo la ruleta en pantalla, útil para proyectarla o para reducir distracciones."
+            "text": "Pulsa el icono de pantalla completa que hay sobre la rueda: deja solo la ruleta, el resultado y el botón, útil para proyectarla o para reducir distracciones. En el iPhone, que no tiene pantalla completa para páginas web, se activa el modo foco, que oculta el resto de la página."
           }
         },
         {
@@ -86,7 +84,7 @@ const schemaLD = {
           "name": "¿La ruleta guarda mis datos en un servidor?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "No. Todo corre en tu navegador: las opciones y preferencias de sonido/foco se guardan localmente y no se envían a ningún servidor."
+            "text": "No. Todo corre en tu navegador: tus opciones, el modo, el historial y tus preferencias se guardan localmente y no se envían a ningún servidor."
           }
         }
       ]
@@ -114,42 +112,119 @@ const schemaLD = {
 ---
 
 {/*
-  showHomeHeader=false: /ruleta lee como sus ocho hermanas (moneda, dados,
-  etc.), no como la home -- migrarla al header/hero del sistema editorial
-  es la tarea de migración aparte que ya está en marcha para el resto de
-  herramientas, no algo que decidir de rebote acá.
+  showHomeHeader=false: /ruleta lee como sus hermanas (moneda, dados, etc.),
+  no como la home. La página sigue la anatomía de DESIGN.md: hero corto con
+  el selector de modo, la rueda con su resultado y su botón, el editor, el
+  historial, y debajo AdSlot, artículo e índice de herramientas.
 
-  Sin hero propio: el <h1> de la página vive dentro de RouletteMachine (ver
-  ese componente y AGENTS.md, el hallazgo del h1 oculto en móvil) porque
-  esa línea ya se pinta ahí sin costo extra de alto, mientras que un hero
-  aparte -- aun compacto -- volvía a tapar el botón GIRAR a 360×640. Por
-  eso esta página no monta `main .hero` de global.css, a diferencia de
-  moneda.astro y dados.astro, que sí lo heredan tal cual.
-
-  showRouletteControls=true: es la única página sin showHomeHeader que
-  necesita Foco y Sonido (ver Header.astro) -- roulette.js los busca por id
-  sin comprobar que existan.
+  El contenedor de la herramienta no lleva `.reveal`: su `transform` haría de
+  bloque contenedor del aviso «Deshacer» (posición fija) y lo sacaría de la
+  ventana en escritorio (SDD de la ruleta, RNF-11).
 */}
-<Layout title={title} description={description} keywords={keywords} schemaLD={schemaLD} showHomeHeader={false} showRouletteControls={true}>
+<Layout title={title} description={description} keywords={keywords} schemaLD={schemaLD} showHomeHeader={false}>
   <Fragment slot="head">
-    {/* Newsreader itálica: la usa el "Online" en cursiva del h1 de esta
-         página (RouletteMachine.astro, .roulette-heading em). Antes de la
-         mudanza la cargaba index.astro porque la ruleta vivía ahí; el
-         comentario de RouletteMachine.astro que decía "ya está cargada
-         por index.astro" quedó desactualizado y nadie lo notó porque el
-         navegador cae a una tipografía de reemplazo sin avisar. */}
+    {/* Newsreader itálica: la usa el énfasis en cursiva del h1 (ver DESIGN.md) */}
     <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@1,400&display=swap" rel="stylesheet">
   </Fragment>
 
-  {/* Canvas transparente para el efecto de confeti del modal de ganador.
-       Viaja desde index.astro: el confeti es del modal, no de la home. */}
-  <canvas id="confetti-canvas" aria-hidden="true"></canvas>
+  <main class="ruleta-tool wheel-palette wrap pb-8" id="ruleta-tool">
+
+    <section class="ruleta-hero pt-2 sm:pt-6 lg:pt-4">
+      <h1>Ruleta aleatoria, que <em>decida el azar</em></h1>
+      <p class="ruleta-lede">Escribe tus opciones y deja que el azar elija: todas tienen la misma probabilidad.</p>
+      <div class="ruleta-modes" role="group" aria-label="Modo">
+        <button class="ruleta-mode" type="button" data-modo="normal" aria-pressed="true">Normal</button>
+        <button class="ruleta-mode" type="button" data-modo="eliminar" aria-pressed="false">Eliminar</button>
+        <button class="ruleta-mode" type="button" data-modo="contar" aria-pressed="false">Contar</button>
+      </div>
+    </section>
+
+    <section class="ruleta-stage" id="ruleta-stage" aria-label="Ruleta">
+      <Wheel />
+      <p class="ruleta-result" id="ruleta-result" aria-live="polite">
+        <span class="ruleta-result-main" id="ruleta-result-main"></span>
+        <span class="ruleta-result-side" id="ruleta-result-side"></span>
+      </p>
+      <div class="flex justify-center mt-2"><button class="ruleta-spin" id="ruleta-girar" type="button">Girar ruleta</button></div>
+      <div class="ruleta-actions" id="ruleta-acciones-resultado" hidden>
+        <button class="ruleta-text-btn is-quiet" id="ruleta-quitar" type="button" hidden></button>
+      </div>
+      {/* Aviso con «Deshacer». Dentro de la zona de la rueda: así se ve
+          también en pantalla completa (SDD §6.14.7). */}
+      <div class="ruleta-aviso" id="ruleta-aviso" hidden>
+        <span id="ruleta-aviso-texto"></span>
+        <button class="ruleta-text-btn" id="ruleta-aviso-deshacer" type="button">Deshacer</button>
+      </div>
+    </section>
+
+    <section class="ruleta-inputs" aria-label="Opciones">
+      <div class="ruleta-field">
+        <label class="ruleta-label" for="ruleta-pregunta">¿Qué se decide?</label>
+        <input class="ruleta-line" id="ruleta-pregunta" type="text" maxlength="60" placeholder="¿Qué comemos hoy?" autocomplete="off">
+      </div>
+      <div class="ruleta-editor-head flex items-end justify-between mt-5">
+        <span class="ruleta-label" id="ruleta-etq-opciones">Opciones</span>
+        <button class="ruleta-text-btn" id="ruleta-pegar-toggle" type="button" aria-expanded="false" aria-controls="ruleta-pegar-panel">Pegar lista</button>
+      </div>
+      <div class="ruleta-opt-wrap">
+        <ul class="ruleta-opt-list" id="ruleta-lista" aria-labelledby="ruleta-etq-opciones"></ul>
+        <form class="ruleta-add-row" id="ruleta-alta" autocomplete="off">
+          <label class="sr-only" for="ruleta-nueva">Añadir opción</label>
+          <input class="ruleta-line" id="ruleta-nueva" type="text" placeholder="Añadir opción" enterkeyhint="enter" autocomplete="off" autocapitalize="sentences">
+        </form>
+      </div>
+      <div class="mt-3" id="ruleta-pegar-panel" hidden>
+        <label class="sr-only" for="ruleta-opciones">Opciones, una por línea</label>
+        <textarea class="ruleta-box" id="ruleta-opciones" spellcheck="false" autocomplete="off" placeholder="Una opción por línea"></textarea>
+      </div>
+      <p class="ruleta-hint mt-1.5 text-ink-tertiary" id="ruleta-aviso-n" hidden>Con más de 40 opciones la rueda no pinta etiquetas; el resultado dice cuál salió.</p>
+      <p class="ruleta-hint mt-1.5 text-ink-tertiary" id="ruleta-aviso-max" hidden>Caben 100 opciones activas; las demás quedan ocultas.</p>
+      <div class="ruleta-chips flex flex-wrap items-center gap-2 mt-4" role="group" aria-label="Ejemplos para empezar">
+        <span class="ruleta-label">Ejemplos</span>
+        <button class="ruleta-chip" type="button" data-ejemplo="comida">Comida</button>
+        <button class="ruleta-chip" type="button" data-ejemplo="verdad">Verdad o reto</button>
+        <button class="ruleta-chip" type="button" data-ejemplo="nombres">Nombres</button>
+      </div>
+      <div class="flex flex-wrap items-center gap-x-5 mt-2">
+        <button class="ruleta-text-btn" id="ruleta-mezclar" type="button">Mezclar</button>
+        <button class="ruleta-text-btn" id="ruleta-ordenar" type="button">Ordenar</button>
+        <button class="ruleta-text-btn is-danger" id="ruleta-vaciar" type="button">Vaciar</button>
+        <button class="ruleta-text-btn" id="ruleta-foco" type="button" aria-pressed="false">Modo foco</button>
+        <button class="ruleta-text-btn" id="ruleta-reiniciar" type="button" hidden>Reiniciar cuentas</button>
+      </div>
+    </section>
+
+    <section class="ruleta-hist" aria-label="Historial">
+      <div class="ruleta-hist-head flex items-center gap-3">
+        <span class="ruleta-label" id="ruleta-etq-hist">Últimos resultados</span>
+        <span class="ruleta-hist-count flex-1 text-sm text-ink-tertiary tabular-nums" id="ruleta-hist-count"></span>
+        <button class="ruleta-text-btn" id="ruleta-borrar-hist" type="button" hidden>Borrar</button>
+      </div>
+      <ol class="ruleta-hist-list" id="ruleta-historial" aria-labelledby="ruleta-etq-hist">
+        <li class="ruleta-hist-vacio">Sin giros aún</li>
+      </ol>
+    </section>
+  </main>
+
+  {/* Plantillas de lo que repite el JS: las filas del editor y del historial. */}
+  <template id="ruleta-fila-tpl">
+    <li class="ruleta-opt-row">
+      <span class="ruleta-opt-dot" aria-hidden="true"></span>
+      <input class="ruleta-opt-text" type="text" aria-label="Opción" autocomplete="off" maxlength="60" enterkeyhint="done">
+      <span class="ruleta-opt-count" hidden></span>
+      <button class="ruleta-opt-btn ruleta-opt-vis" type="button" role="switch" aria-checked="true" aria-label="Mostrar en la rueda">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><g class="ruleta-vis-on"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"></path><circle cx="12" cy="12" r="2.8"></circle></g><g class="ruleta-vis-off"><path d="M3 3l18 18M10.6 5.7A9.6 9.6 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a16 16 0 0 1-2.6 3.3M6.6 7.2A16 16 0 0 0 2.5 12S6 18.5 12 18.5a9.5 9.5 0 0 0 3.4-.6"></path></g></svg>
+      </button>
+      <button class="ruleta-opt-btn ruleta-opt-del" type="button" aria-label="Borrar opción">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg>
+      </button>
+    </li>
+  </template>
+  <template id="ruleta-hist-tpl">
+    <li><span class="ruleta-hist-op"></span><span class="ruleta-hist-para"></span></li>
+  </template>
 
   <AdSlot position="top" />
-
-  <RouletteMachine headingLevel="h1">
-    <p slot="description">Crea tu propia ruleta con las opciones que quieras, gírala y deja que el azar decida. Gratis, sin registro y 100% en tu navegador.</p>
-  </RouletteMachine>
 
   <section class="hub-section wrap">
     <div class="section-header reveal">
@@ -159,30 +234,35 @@ const schemaLD = {
     <HubGrid activeToolId="ruleta" />
   </section>
 
-  {/* Sección de Artículo SEO: el artículo de la ruleta se mudó entero
-       desde index.astro. Se retocó el arranque para hablar de la ruleta
-       en vez de "qué es decídelo.app" -- esa introducción de hub se queda
-       en la home. El resto (cómo funciona, casos de uso, modo foco, por
-       qué es diferente) viaja tal cual. */}
+  {/* El artículo SEO se mudó entero desde index.astro. Aquí solo se corrigió
+       lo que dejó de ser verdad con el rediseño; el texto nuevo es la fase 5
+       del SDD de la ruleta (decidelo-textos, con datos de Search Console). */}
   <SeoArticle title="¿Cómo funciona la Ruleta Aleatoria Online y por qué usarla?">
-    <p>La <strong>Ruleta Aleatoria Online</strong> de Decídelo.app está construida con tecnología <strong>HTML5 Canvas</strong> de última generación, y ofrece una experiencia visual fluida a 60 fotogramas por segundo con un algoritmo de desaceleración basado en física de fricción real. Cada giro se siente orgánico, impredecible y emocionante -- y todo corre en tu navegador, sin registro ni servidores de por medio.</p>
+    <p>La <strong>Ruleta Aleatoria Online</strong> de Decídelo.app dibuja la rueda con gráficos vectoriales (SVG) y la anima con las propias herramientas de animación del navegador, así que se ve nítida en cualquier pantalla y no necesita descargar nada pesado. Cada giro se siente orgánico y con suspenso -- y todo corre en tu navegador, sin registro ni servidores de por medio.</p>
 
     <h2>¿Cómo funciona la Ruleta?</h2>
     <ul>
-      <li><strong>Escribe tus opciones</strong> en el panel lateral (una por línea). La ruleta se actualiza en tiempo real.</li>
-      <li><strong>Personaliza el título</strong> haciendo clic sobre él. Ideal para sorteos con nombre: "¿Quién lava los platos?".</li>
-      <li><strong>Presiona GIRAR</strong> y observa cómo la rueda cobra vida con efectos de sonido sintetizados y un puntero que se sacude al pasar por cada segmento.</li>
-      <li><strong>¡Resultado con confeti!</strong> Al detenerse, un modal elegante revela al ganador con una celebración visual de confeti animado.</li>
-      <li><strong>Oculta opciones</strong> sin borrarlas. Perfecto para torneos por eliminación o para ir descartando candidatos ronda a ronda.</li>
+      <li><strong>Escribe tus opciones</strong> en la lista (o pega varias a la vez con «Pegar lista»). La ruleta se actualiza en tiempo real y admite hasta 100.</li>
+      <li><strong>Escribe qué se decide</strong> en el campo «¿Qué se decide?». Ideal para sorteos con nombre: "¿Quién lava los platos?". El resultado lo repite.</li>
+      <li><strong>Gira de cuatro formas:</strong> con el botón «Girar ruleta», tocando la rueda, arrastrándola con el dedo o el ratón, o con el teclado (Espacio, Intro o Ctrl/Cmd+Intro). La fuerza del gesto solo cambia cuántas vueltas da, nunca quién gana.</li>
+      <li><strong>El resultado aparece bajo la rueda</strong>, sin ventanas que lo tapen, y queda en el historial de tus últimos 20 giros. Si quieres seguir, «Girar otra vez».</li>
+      <li><strong>Oculta opciones</strong> sin borrarlas, o pulsa «Quitar» tras un resultado. Perfecto para torneos por eliminación o para ir descartando candidatos ronda a ronda.</li>
+    </ul>
+
+    <h2>Tres modos: normal, eliminar y contar</h2>
+    <ul>
+      <li><strong>Normal:</strong> el ganador sigue en la rueda.</li>
+      <li><strong>Eliminar:</strong> tras cada giro, el ganador se oculta solo; hasta que queda una opción. Se puede deshacer.</li>
+      <li><strong>Contar:</strong> cada opción acumula sus victorias en la lista y en el historial. Útil para comprobar a la larga que el reparto es parejo.</li>
     </ul>
 
     <h2>Casos de uso populares</h2>
 
     <h3>Sorteos de nombres y ganadores</h3>
-    <p>Ya sea para dinamizar tus sorteos en redes sociales (Instagram, TikTok, Facebook), seleccionar ganadores en concursos, o elegir el orden de exposición de estudiantes en clase, la <em>ruleta de nombres</em> garantiza imparcialidad absoluta. El público confía en un resultado visualmente aleatorio más que en un simple número generado por computadora.</p>
+    <p>Ya sea para dinamizar tus sorteos en redes sociales (Instagram, TikTok, Facebook), seleccionar ganadores en concursos, o elegir el orden de exposición de estudiantes en clase, la <em>ruleta de nombres</em> da a todos la misma probabilidad: el ganador se elige antes del giro con el generador aleatorio del navegador y la rueda gira hasta él. El público confía en un resultado visualmente aleatorio más que en un simple número generado por computadora.</p>
 
     <h3>Decidir qué comer</h3>
-    <p>El clásico dilema de parejas y amigos. Introduce opciones como "Pizza 🍕", "Tacos 🌮", "Sushi 🍣" o "Hamburguesas 🍔" y deja que el destino elija el menú del día. Elimina discusiones innecesarias de forma divertida y democrática.</p>
+    <p>El clásico dilema de parejas y amigos. Introduce opciones como "Pizza", "Tacos", "Sushi" o "Hamburguesas" y deja que el destino elija el menú del día. Elimina discusiones innecesarias de forma divertida y democrática.</p>
 
     <h3>Dinámicas de clase y gamificación</h3>
     <p>Los profesores y facilitadores utilizan esta herramienta para hacer preguntas aleatorias, asignar tareas, seleccionar equipos o elegir temas de debate. La ruleta mantiene a los participantes alerta, atentos y comprometidos porque cualquiera puede ser el próximo.</p>
@@ -191,103 +271,271 @@ const schemaLD = {
     <p>Úsala como una ruleta de la fortuna, verdad o reto, penitencias para fiestas o para determinar premios en eventos. Personalízala con retos, castigos, recompensas o cualquier contenido creativo que se te ocurra.</p>
 
     <h2>Diseño accesible y enfoque en la concentración</h2>
-    <p>Hemos diseñado esta ruleta con especial atención a la accesibilidad y experiencia de usuario. Nuestro <strong>Modo Foco</strong> elimina todas las distracciones de la pantalla (texto informativo, herramientas secundarias, anuncios) y te permite centrarte exclusivamente en la ruleta y tus opciones. Este modo es especialmente útil para personas con TDAH o que simplemente prefieren una interfaz limpia.</p>
-    <p>El elegante modo oscuro predeterminado con una paleta cuidadosamente seleccionada reduce la fatiga ocular durante sesiones prolongadas. Los sonidos físicos sintéticos (totalmente opcionales) proporcionan retroalimentación sensorial sin ser intrusivos.</p>
+    <p>Hemos diseñado esta ruleta con especial atención a la accesibilidad y experiencia de usuario. El icono de <strong>pantalla completa</strong> de la rueda (y el <strong>Modo foco</strong>, que lo sustituye donde el navegador no tiene pantalla completa, como el iPhone) elimina todas las distracciones de la pantalla (texto informativo, herramientas secundarias, anuncios) y te permite centrarte exclusivamente en la ruleta. Es especialmente útil para proyectarla o para personas con TDAH que prefieren una interfaz limpia.</p>
+    <p>El modo oscuro predeterminado reduce la fatiga ocular durante sesiones prolongadas. Si quieres, el altavoz de la rueda activa un «tic» suave al pasar por cada gajo; viene apagado y no suena nada más, ni celebraciones al ganar.</p>
 
     <h2>¿Por qué esta ruleta es diferente?</h2>
     <ul>
       <li><strong>Privacidad real:</strong> Sin servidores, sin cookies, sin registro. Todo funciona localmente en tu navegador.</li>
       <li><strong>Velocidad:</strong> Carga instantánea. No hay dependencias pesadas ni frameworks innecesarios.</li>
-      <li><strong>Diseño premium:</strong> Cada detalle está cuidado: desde las micro-animaciones hasta la paleta de colores.</li>
+      <li><strong>Diseño cuidado:</strong> Cada detalle está pensado: desde las micro-animaciones hasta la paleta de colores.</li>
       <li><strong>Accesibilidad:</strong> Compatible con lectores de pantalla, navegación por teclado y preferencias de movimiento reducido.</li>
     </ul>
   </SeoArticle>
 
   <AdSlot position="bottom" />
 
-  <WinnerModal />
-
-  {/* Carga del JavaScript específico de la Ruleta */}
-  <script src="../scripts/roulette.js"></script>
+  <script src="../scripts/ruleta.js"></script>
 </Layout>
 
 <style>
-  #confetti-canvas {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100vw; height: 100vh;
-    pointer-events: none;
-    z-index: 99;
-  }
-
   .hub-section {
     padding: 3rem 0;
   }
 
   /* ====================================================================
-     MODO FOCO
+     ANATOMÍA (SDD §6.1)
      ====================================================================
-     Reescrito desde cero para /ruleta: la versión que vivía en index.astro
-     apuntaba a selectores de la home (.how-it-works, .seo-section junto a
-     nav-link/logo-link del header de home...) que en esta página no
-     existen -- copiarla tal cual habría dejado media regla apuntando a
-     nada sin que ningún test lo notara (el CSS se sigue emitiendo igual).
-     Lo que hay que ocultar aquí es lo que de verdad hay en esta página:
-     el índice de herramientas, el artículo SEO y el footer -- ya no hay
-     un hero propio que ocultar, porque esta página no monta ninguno (su
-     h1 vive dentro de la propia sección de la ruleta, ver
-     RouletteMachine.astro). Los AdSlot no hace falta tocarlos -- ya nacen
-     con el atributo `hidden` (AdSense sigue pausado, ver AdSlot.astro),
-     así que nunca compiten por espacio en modo foco. */
-  body.focus-mode-active {
-    background-color: #060608;
+     El orden del HTML es el de móvil; en escritorio solo cambian las áreas
+     de la rejilla, como en la moneda. Medidas del prototipo aprobado
+     (docs/prototipos/ruleta-rueda.html, SDD §6.15): el alto del hero es fijo
+     (h1 y entradilla reservan siempre dos líneas) para que la rueda pueda
+     calcular su tamaño restando todo lo demás. Lo que manda no es la
+     constante sino el invariante de scripts/lib/estados.mjs: holgura ≥ 16 px
+     bajo el botón en todos los formatos. */
+  .ruleta-tool {
+    --h1: clamp(1.5rem, 5.5vw, 2.6rem);            /* cuerpo del h1: el alto del hero sale de él (2 líneas) */
+    --hero-extra: calc(2.2 * var(--h1) - 52.8px);  /* lo que el hero mide de más respecto a 360 px */
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "hero" "wheel" "inputs" "hist";
+    align-items: stretch;   /* `main` de global.css centra: aquí cada área ocupa su celda */
+    max-width: 1360px;
+    padding-top: 0;
+    padding-bottom: 32px;
+  }
+  .ruleta-hero { grid-area: hero; }
+  .ruleta-stage { grid-area: wheel; }
+  .ruleta-inputs { grid-area: inputs; padding-top: 24px; display: flex; flex-direction: column; min-height: 0; }
+  .ruleta-hist { grid-area: hist; padding-top: 24px; }
+
+  .ruleta-hero h1 {
+    margin: 0;
+    font: 600 var(--h1)/1.1 'Outfit', sans-serif;
+    letter-spacing: -0.02em;
+    height: 2.2em; /* dos líneas siempre, alto fijo (con min-height la línea del <em> lo hacía crecer 2 px a ciertos anchos) */
+  }
+  .ruleta-hero h1 em { font: italic 400 1.08em/1 'Newsreader', Georgia, serif; color: var(--accent-warm); letter-spacing: 0; }
+  .ruleta-lede {
+    margin: 6px 0 0; color: var(--text-secondary); font-size: 1.05rem; line-height: 1.4;
+    min-height: 2.8em; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; /* 2 líneas reservadas */
+  }
+  /* La entradilla se oculta si el alto es corto (DESIGN.md, «Pantallas bajas») */
+  @media (max-width: 639px) and (max-height: 620px) { .ruleta-lede { display: none; } }
+
+  /* Selector de modo (DESIGN.md): una sola pieza, borde divider, píldora; el
+     modo elegido se rellena de --bg-surface-alt, no del acento. */
+  .ruleta-modes {
+    display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 8px;
+    border: 1px solid var(--divider-line); border-radius: 999px; overflow: hidden;
+  }
+  .ruleta-mode {
+    min-height: 44px; border: 0; background: transparent; color: var(--text-secondary);
+    font: 500 0.9rem 'Inter', sans-serif; cursor: pointer;
+  }
+  .ruleta-mode + .ruleta-mode { border-left: 1px solid var(--divider-line); }
+  .ruleta-mode[aria-pressed="true"] { background: var(--bg-surface-alt); color: var(--text-primary); font-weight: 600; }
+  .ruleta-mode:focus-visible { outline: 2px solid var(--accent-warm); outline-offset: -2px; border-radius: 999px; }
+
+  /* Tamaño de la rueda: resta del alto útil todo lo demás (SDD §6.1). `svh` y
+     no `dvh`: no debe saltar cuando aparece o se va la barra de Safari. El
+     mínimo de 12rem evita un ancho negativo en móvil horizontal, donde se
+     acepta scroll vertical. */
+  .ruleta-stage {
+    --wheel-d: min(100%, max(12rem, calc(100svh - 394px - var(--hero-extra))), 36rem); /* desde 640 px */
+    --ink-on-warm: #1a0e06; /* texto sobre --accent-warm (DESIGN.md) */
+  }
+  @media (max-width: 639px) {
+    .ruleta-stage { --wheel-d: min(100%, max(12rem, calc(100svh - 371px - var(--hero-extra))), 32rem); } /* con entradilla (alto > 620 px) */
+    .ruleta-lede { font-size: 0.95rem; }
+  }
+  /* Sin entradilla la rueda gana 48 px; el valor se ajustó con la medida, no a ojo */
+  @media (max-width: 639px) and (max-height: 620px) {
+    .ruleta-stage { --wheel-d: min(100%, max(12rem, calc(100svh - 322px - var(--hero-extra))), 32rem); }
+  }
+  @media (min-width: 1024px) {
+    .ruleta-stage { --wheel-d: min(100%, max(12rem, calc(100svh - 267px)), 44rem); }
   }
 
-  body.focus-mode-active :global(header) {
-    background: transparent;
-    border-bottom: none;
+  /* ---------- Resultado y acciones ---------- */
+  .ruleta-result {
+    margin: 8px 0 0; height: 48px; overflow: hidden; text-align: center;
+    display: flex; flex-direction: column; justify-content: center;
+    /* opacidad y no visibility: el texto cambia dentro de una región aria-live y
+       tiene que seguir en el árbol de accesibilidad para anunciarse */
+    opacity: 0; transform: translateY(6px);
+    transition: opacity 0.25s ease-out, transform 0.25s ease-out;
+  }
+  .ruleta-result.is-shown { opacity: 1; transform: none; }
+  .ruleta-result-main {
+    display: block;
+    font: 600 1.6rem/1.15 'Outfit', sans-serif; letter-spacing: -0.01em;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  /* Texto largo (patrón .is-largo de los dados): cuerpo menor y hasta dos líneas en el mismo alto; luego, elipsis */
+  .ruleta-result-main.is-largo {
+    font-size: 1rem; line-height: 1; white-space: normal; overflow-wrap: anywhere;
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+  }
+  .ruleta-result-side {
+    display: block;
+    font-size: 0.8rem; color: var(--text-tertiary); line-height: 1.2;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; /* una pregunta de 60 caracteres no debe mover el botón */
   }
 
-  body.focus-mode-active :global(.hub-section),
-  body.focus-mode-active :global(.seo-section),
-  body.focus-mode-active :global(footer) {
-    display: none !important;
+  /* Botón principal: acento liso, sin degradado ni glow */
+  .ruleta-spin {
+    min-width: 200px; height: 48px; padding: 0 32px; border: 0;
+    border-radius: var(--radius-xl);
+    background: var(--accent-warm); color: var(--ink-on-warm);
+    font: 700 1rem 'Outfit', sans-serif; cursor: pointer;
   }
+  .ruleta-spin:disabled { background: var(--bg-surface-alt); color: var(--text-tertiary); cursor: default; }
+  .ruleta-spin:focus-visible { outline: 2px solid var(--accent-warm); outline-offset: 3px; }
+  .ruleta-actions { display: flex; justify-content: center; gap: 4px 20px; flex-wrap: wrap; }
+  .ruleta-actions[hidden] { display: none; }
 
-  /* Sin `justify-content: flex-end` aquí: esa regla venía de index.astro,
-     donde funcionaba porque el modo foco de la home también ocultaba
-     `.logo-link` -- con el logo fuera de flujo, empujar el resto a la
-     derecha no chocaba con nada. El header de herramienta (el que usa
-     /ruleta) no oculta su logo (la clase ahí es `.logo`, no `.logo-link`),
-     así que forzar flex-end lo empujaba contra los botones y el texto
-     quedaba solapado (visto en captura real). El `justify-content`
-     original de `.header-inner` (space-between, ver Header.astro) ya deja
-     el logo a la izquierda y las acciones a la derecha sin superponerse,
-     así que no hace falta ninguna regla propia de modo foco aquí. */
-
-  body.focus-mode-active :global(.roulette-section) {
-    min-height: calc(100vh - 80px);
-    display: flex;
-    align-items: center;
-    padding: 0;
+  .ruleta-text-btn {
+    min-height: 44px; padding: 0; background: none; border: 0;
+    color: var(--text-primary); font: 600 0.95rem 'Inter', sans-serif; cursor: pointer;
+    text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1px;
   }
+  .ruleta-text-btn[hidden] { display: none; }
+  .ruleta-text-btn.is-quiet { color: var(--text-secondary); font-weight: 500; }
+  .ruleta-text-btn:focus-visible { outline: 2px solid var(--accent-warm); outline-offset: 3px; }
+  .ruleta-text-btn[aria-pressed="true"] { color: var(--accent-warm); }
+  /* «Vaciar»: color semántico, no decorativo (SDD §6.7) */
+  .ruleta-text-btn.is-danger { color: var(--accent-danger); }
 
-  body.focus-mode-active :global(.roulette-section > .wrap) {
-    width: 100%;
+  /* ---------- Editor en lista (SDD §6.14.5) ---------- */
+  .ruleta-label {
+    display: block; margin: 0 0 4px;
+    font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-tertiary);
   }
+  .ruleta-line, .ruleta-box {
+    display: block; width: 100%; background: transparent; color: var(--text-primary);
+    font: 400 16px/1.5 'Inter', sans-serif; /* 16 px: Safari no hace zoom al enfocar */
+    border: 0; border-bottom: 1px solid var(--divider-line); border-radius: 0;
+    padding: 10px 0; min-height: 44px;
+  }
+  .ruleta-box { border: 1px solid var(--divider-line); border-radius: var(--radius-md); padding: 12px; resize: vertical; min-height: 9rem; }
+  .ruleta-line:focus, .ruleta-box:focus { outline: none; border-color: var(--accent-warm); }
+  .ruleta-line::placeholder, .ruleta-box::placeholder { color: var(--text-tertiary); }
 
-  body.focus-mode-active :global(.roulette-section .section-header) {
+  .ruleta-editor-head .ruleta-label { margin: 0; padding-bottom: 12px; }
+  .ruleta-opt-wrap { display: flex; flex-direction: column; flex: none; min-height: 0; }
+  .ruleta-opt-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--divider-line); flex: 0 1 auto; min-height: 0; overflow-y: auto; max-height: 22rem; }
+  .ruleta-opt-row { display: flex; align-items: center; gap: 4px; min-height: 44px; border-bottom: 1px solid var(--divider-line); }
+  .ruleta-opt-dot { flex: none; width: 14px; height: 14px; border-radius: 50%; margin-right: 8px; background: var(--text-tertiary); }
+  .ruleta-opt-dot.wheel-tono-0 { background: var(--wheel-p0); } .ruleta-opt-dot.wheel-tono-1 { background: var(--wheel-p1); }
+  .ruleta-opt-dot.wheel-tono-2 { background: var(--wheel-p2); } .ruleta-opt-dot.wheel-tono-3 { background: var(--wheel-p3); }
+  .ruleta-opt-dot.wheel-tono-4 { background: var(--wheel-p4); } .ruleta-opt-dot.wheel-tono-5 { background: var(--wheel-p5); }
+  .ruleta-opt-dot.wheel-tono-6 { background: var(--wheel-p6); } .ruleta-opt-dot.wheel-tono-7 { background: var(--wheel-p7); }
+  .ruleta-opt-row.is-oculta .ruleta-opt-dot { background: transparent; border: 1px solid var(--text-tertiary); }
+  .ruleta-opt-text {
+    flex: 1 1 auto; min-width: 0; height: 44px; background: transparent; border: 0; padding: 0;
+    font: 400 16px 'Inter', sans-serif; color: var(--text-primary); text-overflow: ellipsis;
+  }
+  .ruleta-opt-text:focus { outline: none; box-shadow: inset 0 -1px 0 var(--accent-warm); }
+  .ruleta-opt-row.is-oculta .ruleta-opt-text { color: var(--text-tertiary); text-decoration: line-through; }
+  .ruleta-opt-count { flex: none; font-size: 0.85rem; color: var(--text-secondary); font-variant-numeric: tabular-nums; padding-inline: 4px; }
+  .ruleta-opt-count[hidden] { display: none; }
+  .ruleta-opt-btn { flex: none; width: 44px; height: 44px; display: grid; place-items: center; padding: 0; border: 0; background: none; color: var(--text-secondary); cursor: pointer; }
+  .ruleta-opt-btn:focus-visible { outline: 2px solid var(--accent-warm); outline-offset: -2px; }
+  .ruleta-opt-btn svg { width: 20px; height: 20px; }
+  /* Interruptor de visibilidad (ocultar sin borrar) */
+  .ruleta-opt-vis .ruleta-vis-off { display: none; }
+  .ruleta-opt-vis[aria-checked="false"] .ruleta-vis-on { display: none; }
+  .ruleta-opt-vis[aria-checked="false"] .ruleta-vis-off { display: block; }
+  .ruleta-opt-vis[aria-checked="true"] { color: var(--text-primary); }
+  .ruleta-add-row { margin: 0; }
+  .ruleta-hint { font-size: 0.8rem; }
+  .ruleta-hint[hidden] { display: none; }
+
+  .ruleta-chips .ruleta-label { margin: 0 4px 0 0; }
+  .ruleta-chip {
+    min-height: 44px; padding: 0 16px; border-radius: 999px; background: transparent;
+    border: 1px solid var(--divider-line); color: var(--text-primary); font: 400 0.9rem 'Inter', sans-serif; cursor: pointer;
+  }
+  .ruleta-chip:focus-visible { outline: 2px solid var(--accent-warm); outline-offset: 3px; }
+
+  /* ---------- Historial (patrón de la moneda: lista dividida y numerada) ---------- */
+  .ruleta-hist-head .ruleta-label { margin: 0; }
+  .ruleta-hist-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--divider-line); counter-reset: h; }
+  .ruleta-hist-list li {
+    display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--divider-line);
+    counter-increment: h; font-size: 0.95rem; overflow-wrap: anywhere; min-width: 0;
+  }
+  .ruleta-hist-list li::before { content: counter(h, decimal-leading-zero); color: var(--text-tertiary); font-variant-numeric: tabular-nums; }
+  .ruleta-hist-list .ruleta-hist-vacio { counter-increment: none; color: var(--text-tertiary); }
+  .ruleta-hist-list .ruleta-hist-vacio::before { content: none; }
+  .ruleta-hist-list .ruleta-hist-para { color: var(--text-tertiary); font-size: 0.85rem; margin-left: auto; min-width: 0; overflow-wrap: anywhere; text-align: right; }
+
+  /* ---------- Aviso con «Deshacer» ---------- */
+  /* Arriba y no abajo: en un móvil de 560 px de alto abajo taparía «Girar
+     ruleta» durante 7 s (SDD §6.15). Ningún ancestro lleva `transform`
+     (RNF-11), así que se ancla a la ventana. */
+  .ruleta-aviso {
+    position:fixed; z-index: 10; top: 72px; left: 16px; right: 16px; margin-inline: auto;
+    display: flex; align-items: center; gap: 4px; width: fit-content; max-width: calc(100vw - 32px);
+    padding: 4px 4px 4px 16px; border-radius: 999px;
+    background: var(--bg-surface-alt); border: 1px solid var(--divider-line); font-size: 0.9rem;
+  }
+  .ruleta-aviso[hidden] { display: none; }
+  .ruleta-aviso .ruleta-text-btn { padding: 0 12px; }
+
+  /* ---------- Modo foco y pantalla completa ---------- */
+  :global(body.is-foco) :global(header), :global(body.is-foco) :global(footer),
+  :global(body.is-foco) .ruleta-hero, :global(body.is-foco) .ruleta-inputs, :global(body.is-foco) .ruleta-hist,
+  :global(body.is-foco) .ruleta-actions, :global(body.is-foco) :global(.hub-section), :global(body.is-foco) :global(.seo-section) {
     display: none;
   }
+  :global(body.is-foco) .ruleta-tool { grid-template-columns: minmax(0, 1fr); grid-template-areas: "wheel"; }
+  :global(body.is-foco) .ruleta-stage { --wheel-d: min(100%, calc(100svh - 200px), 44rem); }
+  .ruleta-stage:fullscreen { --wheel-d: min(100%, calc(100svh - 200px), 44rem); }
+  /* aparte: un selector que un navegador no entiende invalida toda la lista */
+  .ruleta-stage:-webkit-full-screen { --wheel-d: min(100%, calc(100svh - 200px), 44rem); }
+  .ruleta-stage:fullscreen { background: var(--bg-body); display: flex; flex-direction: column; justify-content: center; padding: 16px; overflow: auto; }
 
-  body.focus-mode-active :global(.app-grid) {
-    align-items: center;
+  /* Escritorio y tablet horizontal: dos columnas, rueda a la izquierda y más
+     grande (3fr), editor a la derecha (2fr): es la colocación que el visitante
+     ya conoce de otras ruletas (SDD §6.1). */
+  @media (min-width: 1024px) {
+    .ruleta-opt-list { max-height: none; }
+    .ruleta-opt-row { min-height: 52px; }
+    .ruleta-opt-text, .ruleta-opt-btn { height: 52px; }
+    .ruleta-tool {
+      grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      grid-template-areas: "wheel hero" "wheel inputs" "hist hist";
+      column-gap: 48px;
+    }
+    .ruleta-hero h1 { font-size: clamp(1.8rem, 2.4vw, 2.4rem); }
+    /* La rueda sigue a la vista mientras se recorre una lista larga (SDD §6.15) */
+    .ruleta-stage { padding-top: 16px; position: sticky; top: 16px; align-self: start; }
+    .ruleta-inputs { padding-top: 8px; }
+    /* La lista + «Añadir opción» crece desde base 0 (mínimo 8rem): llena el alto
+       que deja la rueda y, si no cabe, la fila crece en vez de montarse sobre el
+       historial. */
+    .ruleta-opt-wrap { flex: 1 1 0; min-height: 8rem; }
+    /* En escritorio el alto de «Quitar…» está reservado: aparecer no mueve nada ni lo saca de la ventana */
+    .ruleta-actions[hidden] { display: flex; visibility: hidden; }
+    .ruleta-actions { min-height: 44px; }
+    /* El aviso a la derecha: no tapa los iconos de la rueda */
+    .ruleta-aviso { left: auto; right: 16px; margin-inline: 0; }
   }
 
-  @media (min-width: 860px) {
-    body.focus-mode-active :global(.app-grid) {
-      max-width: 950px;
-      margin: 0 auto;
-    }
+  @media (prefers-reduced-motion: reduce) {
+    .ruleta-result { transition: none; transform: none; }
   }
 </style>

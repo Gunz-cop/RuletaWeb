@@ -45,8 +45,8 @@
    porque no hay colisión de nombre, solo CSS generado de más. Antes de
    esta línea, `.block` (de `style.display = 'block'` en
    amigo-secreto.js), `.inline-flex` (dados.js), `.inline` y `.ring`
-   (palabras sueltas en comentarios de roulette.js/temporizador.js) y
-   `.blur` (el evento `'blur'` de roulette.js) viajaban así, sin que nada
+   (palabras sueltas en comentarios de los scripts de la ruleta y el temporizador) y
+   `.blur` (el evento `'blur'` de un script) viajaban así, sin que nada
    los usara.
 
    Consecuencia a futuro, para quien toque un script después: un
@@ -57,9 +57,10 @@
    una utilidad de Tailwind por JS, esa clase tiene que aparecer también en
    el marcado de algún `.astro` dentro de `src/` (que sigue rastreado) para
    que Tailwind la genere; las clases que ya vive así -- por ejemplo
-   `hidden` en `class="tab-content-pane hidden"` de RouletteMachine.astro,
-   o `visible`, que además tiene su propia regla en global.css -- no se
-   ven afectadas porque ya cumplen esa condición. */
+   `visible`, que además tiene su propia regla en global.css -- no se
+   ven afectadas porque ya cumplen esa condición. Por eso la ruleta (la
+   migración más reciente) pone todos sus estados con clases propias:
+   `is-shown`, `is-ganador`, `is-oculta`... */
 @source not "../../src/scripts";
 
 /* ==================================================================

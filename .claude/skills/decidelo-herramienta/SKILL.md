@@ -78,7 +78,9 @@ Checklist de JS (regla 6 de AGENTS.md):
 - [ ] Ciclo de movimiento completo de DESIGN.md: entrada, reposo,
       anticipación, acción y aterrizaje; interrumpible; entrada lateral
       dentro de `overflow-x: clip`.
-- [ ] Sin sonidos ni celebraciones; resultado en las palabras del usuario.
+- [ ] Sin sonidos ni celebraciones (excepciones del propietario: el cuenco del
+      temporizador y el tic opcional, apagado, de la ruleta); resultado en las
+      palabras del usuario.
 - [ ] El JS no añade clases de Tailwind: usa clases de estado propias
       (`is-shown`).
 

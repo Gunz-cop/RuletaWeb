@@ -1,0 +1,172 @@
+---
+/**
+ * La rueda de la ruleta: SVG para los gajos y HTML para las etiquetas.
+ *
+ * Es solo el objeto. El JS (src/scripts/ruleta.js) clona las plantillas del
+ * final, pone el `d` de cada <path>, el texto de cada etiqueta y `--a`; no
+ * dibuja con innerHTML ni con canvas (AGENTS.md, regla 6).
+ *
+ * El tamaño lo manda la página con `--wheel-d` (en ruleta.astro): depende de
+ * lo que haya encima y debajo de la rueda, no de la rueda.
+ */
+---
+
+<div class="wheel-stage">
+  <button class="wheel-box" id="wheel-box" type="button" aria-label="Girar la ruleta" aria-describedby="wheel-desc">
+    <span class="wheel-frame">
+      <svg class="wheel-pointer" id="wheel-pointer" viewBox="0 0 24 30" aria-hidden="true"><path d="M12 30 2 7Q12-2 22 7Z"></path></svg>
+      <span class="wheel-rotor" id="wheel-rotor" data-densidad="1">
+        <svg class="wheel-slices" id="wheel-slices" viewBox="0 0 200 200" aria-hidden="true"></svg>
+        <span class="wheel-labels" id="wheel-labels" aria-hidden="true"></span>
+      </span>
+      <span class="wheel-hub" id="wheel-hub" aria-hidden="true"></span>
+      <span class="wheel-empty">Escribe al menos una opción</span>
+    </span>
+  </button>
+  <span class="sr-only" id="wheel-desc"></span>
+
+  <div class="wheel-tools">
+    <button class="wheel-tool" id="wheel-sound" type="button" aria-pressed="false" aria-label="Sonido del tic al cruzar cada gajo" title="Sonido">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5z"></path><g class="wheel-tool-off"><path d="m16.5 9.5 5 5M21.5 9.5l-5 5"></path></g><g class="wheel-tool-on"><path d="M16 9a4.2 4.2 0 0 1 0 6M18.6 6.6a7.6 7.6 0 0 1 0 10.8"></path></g></svg>
+    </button>
+    <button class="wheel-tool" id="wheel-fullscreen" type="button" aria-pressed="false" aria-label="Pantalla completa" title="Pantalla completa">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><g class="wheel-tool-off"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"></path></g><g class="wheel-tool-on"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"></path></g></svg>
+    </button>
+  </div>
+</div>
+
+{/* Un <path> suelto en un <template> HTML se parsea sin espacio de nombres
+    SVG y no se pinta: va dentro de un <svg> y el JS clona el hijo. */}
+<template id="wheel-slice-tpl"><svg><path class="wheel-slice"></path></svg></template>
+<template id="wheel-label-tpl"><span class="wheel-label"></span></template>
+
+<style is:global>
+  /* Paleta «Pastel vivo» (SDD §6.12, aprobada por el propietario). Variables
+     locales del objeto ilustrado, nunca tokens globales. Van en una clase
+     (y no en .wheel-stage) porque los puntos de color de las filas del
+     editor, que están fuera de este componente, usan los mismos tonos. */
+  .wheel-palette {
+    --wheel-p0: #ffa08d; --wheel-p1: #ffc15e; --wheel-p2: #f3f06a; --wheel-p3: #7de8a8;
+    --wheel-p4: #62dff0; --wheel-p5: #99b8ff; --wheel-p6: #bcadff; --wheel-p7: #ff9fef;
+  }
+</style>
+
+<style>
+  .wheel-stage {
+    position: relative;
+    /* La entrada llega desde la izquierda: se recorta en horizontal, no en vertical. */
+    overflow-x: clip;
+    padding-top: 14px; /* espacio para el puntero, que asoma por encima del borde */
+  }
+
+  /* Es un <button>: girar tocando, arrastrando o con teclado (SDD §6.14 y §7) */
+  .wheel-box {
+    --wheel-aro: rgba(240, 240, 245, 0.22);
+    --wheel-trazo: rgba(26, 26, 36, 0.28);
+    --wheel-tinta: #1a1a24; /* etiquetas: contraste ≥ 4,5:1 en todos los tonos (wheel-contrast.mjs) */
+    display: block; position: relative; padding: 0; border: 0; background: none;
+    width: var(--wheel-d, min(100%, 32rem)); aspect-ratio: 1; margin-inline: auto;
+    border-radius: 50%;
+    cursor: pointer;
+    touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+  }
+  .wheel-box:disabled { cursor: default; }
+  .wheel-box:focus-visible { outline: 2px solid var(--accent-warm); outline-offset: 5px; }
+
+  /* Las etiquetas miden en cqw: así no hace falta ResizeObserver. El
+     contenedor es este <span> y no el <button>: en algunos WebKit un botón no
+     es contenedor. */
+  .wheel-frame { display: block; position: absolute; inset: 0; border-radius: 50%; container-type: inline-size; }
+
+  .wheel-pointer {
+    position: absolute; z-index: 2; left: 50%; top: -14px;
+    width: 24px; height: 30px; margin-left: -12px;
+    transform-origin: 50% 20%;
+    fill: var(--accent-warm);
+    pointer-events: none;
+  }
+  .wheel-rotor {
+    display: block; position: absolute; inset: 0;
+    border-radius: 50%;
+    background: var(--bg-surface); /* bajo los gajos: la capa oscura de la atenuación */
+    box-shadow: 0 0 0 2px var(--wheel-aro);
+    will-change: transform;
+  }
+  .wheel-slices { position: absolute; inset: 0; width: 100%; height: 100%; display: block; overflow: visible; }
+  /* El rotor es un cuadrado girado: sin esto las esquinas del <svg>, fuera del
+     círculo, se quedan con los toques de los controles vecinos. */
+  .wheel-slices, .wheel-labels { pointer-events: none; }
+  .wheel-slice { stroke: var(--wheel-trazo); stroke-width: 0.8; transition: opacity 0.2s; }
+  .wheel-slice.wheel-tono-0 { fill: var(--wheel-p0); }
+  .wheel-slice.wheel-tono-1 { fill: var(--wheel-p1); }
+  .wheel-slice.wheel-tono-2 { fill: var(--wheel-p2); }
+  .wheel-slice.wheel-tono-3 { fill: var(--wheel-p3); }
+  .wheel-slice.wheel-tono-4 { fill: var(--wheel-p4); }
+  .wheel-slice.wheel-tono-5 { fill: var(--wheel-p5); }
+  .wheel-slice.wheel-tono-6 { fill: var(--wheel-p6); }
+  .wheel-slice.wheel-tono-7 { fill: var(--wheel-p7); }
+  /* Ganador: conserva su color; el resto, capa oscura al 30 % (opacidad 0,7
+     sobre el fondo del rotor), y contorno claro de 3 px (no escala con el
+     viewBox). Nunca verde/rojo (SDD §6.12). */
+  .wheel-box.has-ganador .wheel-slice:not(.is-ganador) { opacity: 0.7; }
+  .wheel-slice.is-ganador { stroke: var(--text-primary); stroke-width: 3px; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
+
+  .wheel-labels { display: block; position: absolute; inset: 0; }
+  /* Tamaño de letra por escalones de N (16/13/11/9 px) y el radio donde
+     empieza el texto, para que dos etiquetas vecinas no se pisen cerca del
+     cubo. */
+  .wheel-rotor[data-densidad="1"] { --fs: 16px; --inner: 12cqw; --lw: 35cqw; }
+  .wheel-rotor[data-densidad="2"] { --fs: 13px; --inner: 16cqw; --lw: 31cqw; }
+  .wheel-rotor[data-densidad="3"] { --fs: 11px; --inner: 19cqw; --lw: 28cqw; }
+  .wheel-rotor[data-densidad="4"] { --fs: 9px;  --inner: 24cqw; --lw: 23cqw; }
+  .wheel-label {
+    --lh: calc(var(--fs) * 1.25);
+    display: block; position: absolute; left: 50%; top: 50%;
+    width: var(--lw); height: var(--lh); margin-top: calc(var(--lh) / -2);
+    transform-origin: 0 50%;
+    transform: rotate(calc(var(--a) - 90deg)) translateX(var(--inner));
+    font: 600 var(--fs)/var(--lh) 'Outfit', 'Inter', system-ui, sans-serif;
+    color: var(--wheel-tinta);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    text-align: right; /* pegado al borde */
+  }
+  /* Mitad izquierda en reposo: gira 180° sobre su caja y cambia la alineación */
+  .wheel-label.is-volteada {
+    transform: rotate(calc(var(--a) - 90deg)) translateX(calc(var(--inner) + var(--lw))) rotate(180deg);
+    text-align: left;
+  }
+  .wheel-label.is-ganador { font-weight: 700; }
+
+  .wheel-hub {
+    display: block; position: absolute; z-index: 1; pointer-events: none;
+    left: calc(50% - 8cqw); top: calc(50% - 8cqw);
+    width: 16cqw; height: 16cqw; border-radius: 50%;
+    background: var(--bg-body); border: 2px solid var(--wheel-aro);
+  }
+  .wheel-hub::after { content: ''; position: absolute; inset: 36%; border-radius: 50%; background: var(--accent-warm); }
+
+  .wheel-empty {
+    position: absolute; inset: 0; display: none; align-items: center; justify-content: center;
+    padding: 18cqw; text-align: center; color: var(--text-secondary); font-size: 0.95rem;
+    border-radius: 50%; box-shadow: 0 0 0 2px var(--wheel-aro);
+  }
+  .wheel-box[data-vacia] .wheel-empty { display: flex; }
+  .wheel-box[data-vacia] .wheel-rotor, .wheel-box[data-vacia] .wheel-hub { display: none; }
+
+  /* Controles del objeto sobre el objeto: sonido y pantalla completa, 44 px */
+  .wheel-tools { position: absolute; z-index: 3; left: 0; right: 0; top: 14px; display: flex; justify-content: space-between; pointer-events: none; }
+  .wheel-tool {
+    pointer-events: auto; width: 44px; height: 44px; display: grid; place-items: center; padding: 0;
+    border-radius: 50%; border: 1px solid var(--divider-line);
+    background: rgba(15, 15, 21, 0.78); color: var(--text-secondary);
+    cursor: pointer;
+  }
+  .wheel-tool:focus-visible { outline: 2px solid var(--accent-warm); outline-offset: 3px; }
+  .wheel-tool[aria-pressed="true"] { color: var(--text-primary); border-color: var(--text-secondary); }
+  .wheel-tool svg { width: 20px; height: 20px; }
+  .wheel-tool .wheel-tool-on { display: none; }
+  .wheel-tool[aria-pressed="true"] .wheel-tool-on { display: block; }
+  .wheel-tool[aria-pressed="true"] .wheel-tool-off { display: none; }
+
+  @media (prefers-reduced-motion: reduce) { .wheel-slice { transition: none; } }
+</style>

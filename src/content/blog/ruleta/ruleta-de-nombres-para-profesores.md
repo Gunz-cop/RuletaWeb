@@ -17,7 +17,7 @@ Aquí te mostramos por qué deberías incorporarla a tus clases y cómo sacarle 
 
 ## ¿Qué es una ruleta de nombres digital?
 
-Es una versión interactiva de las tradicionales tómbolas de papelitos o palitos con nombres escritos. In lugar de extraer un papel físico, el docente proyecta en la pizarra digital o pantalla compartida una ruleta virtual multicolor. Al hacer clic en ella, gira rápidamente con sonidos animados y selecciona un nombre al azar.
+Es una versión interactiva de las tradicionales tómbolas de papelitos o palitos con nombres escritos. In lugar de extraer un papel físico, el docente proyecta en la pizarra digital o pantalla compartida una ruleta virtual multicolor. Al hacer clic en ella, gira con un final lleno de suspenso y selecciona un nombre al azar.
 
 En nuestra web, puedes utilizar directamente la [Ruleta de Decisión](https://decidelo.app/ruleta) de forma gratuita en tu ordenador, tableta o proyector.
 
@@ -45,7 +45,7 @@ Configura la ruleta con preguntas conceptuales cortas. Al girar y salir una preg
 Para que esta dinámica funcione a la perfección, ten en cuenta los siguientes consejos:
 
 - **Proyecta la pantalla:** Es clave que toda la clase vea la ruleta girando. El componente visual de los colores y la aguja crea un suspense divertido (efecto gamificación).
-- **Controla el sonido:** Nuestras herramientas emiten un sonido de "clic-clic" al girar que imita una ruleta de casino física. Si tu clase se alborota demasiado, puedes desactivar el sonido rápidamente desde el botón 🔊 en el encabezado de la web.
+- **Controla el sonido:** La ruleta puede emitir un sonido de "clic-clic" al girar que imita una ruleta de casino física, pero viene apagado. Si quieres activarlo (o apagarlo de nuevo si tu clase se alborota demasiado), usa el icono del altavoz que hay sobre la rueda.
 - **Usa el historial:** Si un alumno ya ha participado, puedes borrar su nombre de la lista temporal en el panel de opciones de la ruleta para que no vuelva a salir repetido en la misma sesión de clase.
 
 > [!NOTE]

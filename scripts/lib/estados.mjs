@@ -13,16 +13,12 @@
  * Astro— la regla se sigue emitiendo en el CSS, así que ningún test de CSS lo
  * nota, pero el elemento deja de recibirla. Eso sí se ve aquí.
  */
-// --- Invariantes de geometría del panel móvil -----------------------------
+// --- Medidas de geometría -------------------------------------------------
 // getComputedStyle no puede expresar "un elemento no tapa a otro" ni "este
-// elemento no se mueve al scrollear" -- son relaciones entre rects, no
-// propiedades de uno solo. Estas dos funciones reciben la página de
-// Playwright directamente (ver verificarRelacion en estado-dom.mjs) y las
-// usan los estados de más abajo. Se agregaron después de que una auditoría
-// externa encontrara dos fallas reales que ningún test anterior detectaba:
-// el panel de opciones no era position:fixed al viewport de verdad (un
-// ancestro con `transform` lo convertía en su bloque contenedor), y el
-// botón GIRAR quedaba tapado por completo con el panel abierto.
+// elemento cae dentro de la ventana": son relaciones entre rects, no
+// propiedades de uno solo. Los estados con `verificarRelacion` o `invariante`
+// reciben la página de Playwright directamente (ver estado-dom.mjs) y usan
+// estas medidas.
 async function medirRect(pagina, selector) {
   return pagina.evaluate((sel) => {
     const el = document.querySelector(sel);
@@ -34,79 +30,67 @@ async function medirRect(pagina, selector) {
 
 const TOLERANCIA_PX = 2;
 
-// El panel (cerrado, mostrando solo su manija) tiene que quedar en el mismo
-// sitio de la ventana sin importar cuánto se haya scrolleado la página. Si
-// algún ancestro le pone un `transform` (p. ej. .reveal antes de que el
-// observer marque .revealed), position:fixed deja de anclarse al viewport
-// y se ancla a ese ancestro en su lugar -- el panel "flota" en medio de la
-// página en vez de quedarse pegado abajo.
-async function verificarPanelFijoTrasScroll(pagina) {
-  const antes = await medirRect(pagina, '#mobile-options-panel');
-  await pagina.evaluate(() => window.scrollTo(0, 900));
-  await pagina.waitForTimeout(150);
-  const despues = await medirRect(pagina, '#mobile-options-panel');
-  if (!antes || !despues) {
-    return { ok: false, mensaje: '#mobile-options-panel no existe en el DOM' };
-  }
-  const delta = Math.abs(antes.bottom - despues.bottom);
-  return {
-    ok: delta <= TOLERANCIA_PX,
-    mensaje:
-      `bottom antes de scrollear=${antes.bottom.toFixed(1)}px, después de scrollear a 900px=${despues.bottom.toFixed(1)}px ` +
-      `(delta ${delta.toFixed(1)}px, tolerancia ${TOLERANCIA_PX}px). Un delta grande significa que el panel no está ` +
-      `fixed al viewport de verdad -- algún ancestro le puso un transform.`,
+// Holgura mínima bajo la acción principal: un ancho de dedo, no 0. Con >= 0
+// el invariante solo avisaría cuando el botón YA está cortado; una auditoría
+// externa midió una holgura que venía bajando sin cruzar nunca el cero.
+// Si algún formato queda en rojo con este umbral, la holgura real es
+// demasiado chica para un dedo: no se baja el umbral, se agranda la holgura.
+const HOLGURA_MINIMA_PX = 16;
+
+// --- Ruleta: ayudas de los estados ----------------------------------------
+// Fuerza el azar que decide ganador y final: crypto.getRandomValues saca antes
+// los valores que el estado deje en `window.__azar` (se ejecuta en la página,
+// antes de cargar nada).
+function forzarAzar() {
+  const real = crypto.getRandomValues.bind(crypto);
+  window.__azar = [];
+  crypto.getRandomValues = (a) => {
+    if (window.__azar.length && a instanceof Uint32Array) { a[0] = window.__azar.shift(); return a; }
+    return real(a);
   };
 }
 
-// Con el panel abierto, el botón GIRAR (el único disparador del giro) tiene
-// que seguir por encima del borde superior del panel. "Se ve la mitad de
-// arriba de la rueda" no alcanza si esa mitad no incluye el botón.
-//
-// Umbral en 16px (un ancho de dedo), no en 0: con >= 0 el invariante solo
-// avisa cuando el botón YA está tapado. Una auditoría externa midió que la
-// holgura real venía bajando (43.2→30.8px a 375px, 36.6→24.3px a
-// 360×640) y el invariante seguía en verde todo el tiempo, porque nunca
-// llegó a cruzar 0 -- avisaba tarde por diseño. Si algún viewport queda en
-// rojo con este umbral, la holgura real es demasiado chica para un dedo: no
-// hay que bajar el umbral para que vuelva a pasar, hay que agrandar la
-// holgura.
-//
-// Nota para quien depure esto en el futuro (costó caro la primera vez y
-// nunca quedó escrito): el error de Playwright "intercepts pointer events"
-// no distingue "tapado por otro elemento" de "excluido por `inert`" --
-// los dos dan el mismo mensaje, así que no sirve para diagnosticar cuál de
-// las dos cosas pasó. Hay que mirar los rects a mano.
-const HOLGURA_MINIMA_PX = 16;
+// Deja la rueda con N opciones («Opción 1»…) escribiéndolas en «Pegar lista».
+async function ponerLista(pagina, n) {
+  const cerrado = await pagina.evaluate(() => document.getElementById('ruleta-pegar-panel').hidden);
+  if (cerrado) await pagina.click('#ruleta-pegar-toggle');
+  await pagina.fill('#ruleta-opciones', Array.from({ length: n }, (_, i) => `Opción ${i + 1}`).join('\n'));
+}
 
-async function verificarBotonGirarSobrePanel(pagina) {
-  await pagina.click('#options-panel-toggle');
-  await pagina.waitForTimeout(400);
-  const spin = await medirRect(pagina, '#spin-button');
-  const panel = await medirRect(pagina, '#mobile-options-panel');
-  if (!spin || !panel) {
-    return { ok: false, mensaje: '#spin-button o #mobile-options-panel no existen en el DOM' };
-  }
-  // Punto ciego que tapaba el invariante entero: si #spin-button tuviera
-  // alto o ancho cero (por ejemplo porque una regla rota lo colapsó), el
-  // rect sigue siendo un objeto válido con top/bottom/left/right iguales,
-  // la resta de más abajo da una "holgura" que puede salir positiva igual,
-  // y el invariante pasaría aunque el botón no exista visualmente. Exigir
-  // un rectángulo real es barato y cierra ese hueco.
-  const altoSpin = spin.bottom - spin.top;
-  const anchoSpin = spin.right - spin.left;
-  if (altoSpin <= 0 || anchoSpin <= 0) {
+// Qué gajo señala el puntero según la matriz REAL del rotor y si su etiqueta
+// es el texto del resultado. Con el reposo en marcha la matriz incluye el
+// balanceo: RNF-03 garantiza que no saca al puntero del gajo.
+async function coherenciaRueda(pagina) {
+  const r = await pagina.evaluate(() => {
+    const m = new DOMMatrix(getComputedStyle(document.getElementById('wheel-rotor')).transform);
     return {
-      ok: false,
-      mensaje: `#spin-button tiene un rect degenerado (alto=${altoSpin.toFixed(1)}px, ancho=${anchoSpin.toFixed(1)}px) -- no es un botón visible real.`,
+      grados: (Math.atan2(m.b, m.a) * 180) / Math.PI,
+      n: document.querySelectorAll('#wheel-slices path').length,
+      texto: document.getElementById('ruleta-result-main').textContent,
     };
+  });
+  const gajo = gajoBajoPuntero(r.grados, r.n);
+  const etiqueta = await pagina.evaluate((i) => document.querySelector(`#wheel-labels [data-i="${i}"]`)?.textContent ?? null, gajo);
+  if (etiqueta !== r.texto) {
+    return { gajo, error: `el puntero señala el gajo ${gajo} («${etiqueta}») con la rueda a ${r.grados.toFixed(2)}° y N=${r.n}, pero el resultado dice «${r.texto}»` };
   }
-  const holgura = panel.top - spin.bottom;
+  return { gajo };
+}
+
+// RNF-05: la rueda entera (puntero incluido) dentro de la ventana y sin que el
+// botón principal la tape.
+async function ruedaEntera(pagina) {
+  const rueda = await medirRect(pagina, '#wheel-box');
+  const puntero = await medirRect(pagina, '#wheel-pointer');
+  const boton = await medirRect(pagina, '#ruleta-girar');
+  if (!rueda || !puntero || !boton) return { ok: false, mensaje: '#wheel-box, #wheel-pointer o #ruleta-girar no existen en el DOM' };
+  const { ancho, alto } = await pagina.evaluate(() => ({ ancho: window.innerWidth, alto: window.innerHeight }));
+  const dentro = puntero.top >= -TOLERANCIA_PX && rueda.left >= -TOLERANCIA_PX && rueda.right <= ancho + TOLERANCIA_PX
+    && rueda.bottom <= alto + TOLERANCIA_PX && rueda.bottom <= boton.top + TOLERANCIA_PX;
   return {
-    ok: holgura >= HOLGURA_MINIMA_PX,
-    mensaje:
-      `spin-button.bottom=${spin.bottom.toFixed(1)}px, panel.top=${panel.top.toFixed(1)}px ` +
-      `(holgura ${holgura.toFixed(1)}px, mínimo ${HOLGURA_MINIMA_PX}px). Holgura por debajo del mínimo significa ` +
-      `que el panel abierto tapa (o casi tapa) el botón GIRAR.`,
+    ok: dentro,
+    mensaje: `rueda top=${puntero.top.toFixed(1)} (con el puntero) bottom=${rueda.bottom.toFixed(1)} left=${rueda.left.toFixed(1)} right=${rueda.right.toFixed(1)} ` +
+      `en una ventana de ${ancho}×${alto}, botón top=${boton.top.toFixed(1)}: la rueda tiene que verse entera y sin tapar por el botón`,
   };
 }
 
@@ -124,11 +108,10 @@ async function verificarBotonGirarSobrePanel(pagina) {
 // Nació de un caso real: el botón Lanzar de la moneda terminaba en 807px y
 // había que hacer scroll para usar la herramienta.
 //
-// Misma holgura de un dedo que el invariante de la ruleta, por la misma
-// razón: con >= 0 solo avisaría cuando el botón ya está cortado.
 import { crearReto, nuevoId } from '../../src/scripts/ppt-reto.js';
 import { forma } from '../../src/scripts/dados-poliedros.js';
 import { NORMAL } from '../../src/scripts/dados-fisica.js';
+import { gajoBajoPuntero } from '../../src/scripts/ruleta-logica.js';
 
 // El aviso "Deshacer" es position:fixed. Si un ancestro tiene `transform`
 // (.reveal.revealed), ese ancestro pasa a ser su bloque contenedor y el aviso
@@ -140,18 +123,18 @@ async function avisoDentroDeLaVentana(pagina) {
   for (const vp of [{ width: 1280, height: 720 }, { width: 360, height: 560 }]) {
     await pagina.setViewportSize(vp);
     await pagina.waitForTimeout(100);
-    const r = await medirRect(pagina, '#undo-toast');
-    if (!r) { fallos.push(`${vp.width}×${vp.height}: #undo-toast no existe en el DOM`); continue; }
+    const r = await medirRect(pagina, '#ruleta-aviso');
+    if (!r) { fallos.push(`${vp.width}×${vp.height}: #ruleta-aviso no existe en el DOM`); continue; }
     const dentro = r.top >= -TOLERANCIA_PX && r.left >= -TOLERANCIA_PX &&
       r.bottom <= vp.height + TOLERANCIA_PX && r.right <= vp.width + TOLERANCIA_PX;
     // Un aviso ya oculto (display:none) mide todo 0 y "cae dentro": sin esto
     // el test pasaría sin haber medido nada si el aviso expirara antes.
     if (r.bottom === 0 && r.right === 0) {
-      fallos.push(`${vp.width}×${vp.height}: #undo-toast ya estaba oculto al medir`);
+      fallos.push(`${vp.width}×${vp.height}: #ruleta-aviso ya estaba oculto al medir`);
       continue;
     }
     if (!dentro) {
-      fallos.push(`${vp.width}×${vp.height}: #undo-toast cae en top=${r.top.toFixed(0)} bottom=${r.bottom.toFixed(0)} ` +
+      fallos.push(`${vp.width}×${vp.height}: #ruleta-aviso cae en top=${r.top.toFixed(0)} bottom=${r.bottom.toFixed(0)} ` +
         `left=${r.left.toFixed(0)} right=${r.right.toFixed(0)}, fuera de la ventana`);
     }
   }
@@ -253,114 +236,431 @@ export function estadosResponsive(ruta, selector, extras = []) {
 }
 
 export const ESTADOS = [
+  // --- Ruleta ------------------------------------------------------------
+  // Migrada al sistema editorial: la rueda es SVG + etiquetas HTML (Wheel.astro)
+  // y ruleta.js solo la gira, escribe el resultado y crea las filas del editor
+  // y del historial. Los estados que giran leen la matriz REAL del rotor y la
+  // comparan con el texto del resultado (SDD de la ruleta, O2 y RNF-02).
   {
-    // La ruleta se mudó a /ruleta (ver AGENTS.md): el modo foco es un
-    // control suyo (roulette.js, #focus-toggle-btn), así que su estado
-    // viaja con ella. Los selectores también se reescribieron -- la
-    // versión vieja comprobaba .nav-link/.logo-link, que solo existen con
-    // el header de home (showHomeHeader=true); /ruleta usa el header de
-    // herramienta (showHomeHeader=false + showRouletteControls=true, ver
-    // Header.astro), donde esos elementos no existen. Comprobarlos aquí
-    // habría dado un falso "no se oculta" permanente, no una detección real.
+    // Modo foco (RF-12): oculta todo lo que no es la rueda, el resultado y el
+    // botón. El interruptor vive en la herramienta, no en la cabecera.
     ruta: '/ruleta',
     nombre: 'modo-foco',
-    clics: ['#focus-toggle-btn'],
+    clics: ['#ruleta-foco'],
     espera: 400,
     comprobar: [
-      // El modo foco esconde todo lo que no es la ruleta.
+      { sel: 'header', props: ['display'] },
       { sel: '.hub-section', props: ['display'] },
       { sel: '.seo-section', props: ['display'] },
       { sel: 'footer', props: ['display'] },
-      // .main.wrap: la página ya no monta ningún <main> (se retiró junto
-      // con el hero propio al mover el h1 dentro de la ruleta, ver
-      // AGENTS.md), así que ya no hay un contenedor de sobra que pueda
-      // volver a reservar ~96px muertos e introducir scroll en modo foco
-      // -- pero si alguna vez reaparece un <main> en esta página, esta
-      // comprobación tiene que existir para cazarlo oculto de verdad.
-      { sel: 'main.wrap', props: ['display'] },
-      { sel: '.roulette-section', props: ['display', 'alignItems', 'padding', 'minHeight'] },
-      // .section-header (kicker "Herramienta principal" + "Gira y decide.")
-      // es nuevo: antes de la migración editorial esta sección no tenía
-      // ningún elemento con esa clase, así que la regla de modo foco que la
-      // oculta llevaba órfana desde el refactor a componentes. Ahora que sí
-      // hay un .section-header dentro de .roulette-section, la regla vuelve
-      // a tener efecto — esto es lo que hubiera avisado si alguien la
-      // rompía de nuevo.
-      { sel: '.roulette-section .section-header', props: ['display'] },
-      { sel: '.app-grid', props: ['gridTemplateColumns'] },
-      { sel: 'body', props: ['backgroundColor'] },
+      { sel: '.ruleta-hero', props: ['display'] },
+      { sel: '.ruleta-inputs', props: ['display'] },
+      { sel: '.ruleta-hist', props: ['display'] },
+      { sel: '.ruleta-tool', props: ['display', 'gridTemplateColumns'] },
+      { sel: '#ruleta-foco', props: ['color'] },
+      { sel: '#ruleta-girar', props: ['display', 'backgroundColor'] },
     ],
+    // RF-12: Esc sale del modo foco, y el icono de la rueda lo dice
+    invariante: async (pagina) => {
+      const etiqueta = await pagina.getAttribute('#wheel-fullscreen', 'aria-label');
+      await pagina.keyboard.press('Escape');
+      const sigue = await pagina.evaluate(() => document.body.classList.contains('is-foco'));
+      return { ok: !sigue && etiqueta === 'Salir del modo foco', mensaje: `modo foco: icono «${etiqueta}», tras Esc el foco sigue activo=${sigue} (se esperaba «Salir del modo foco» y que Esc lo quite)` };
+    },
   },
   {
+    // Ocultar una opción sin borrarla (RF-08): la fila se tacha y su punto se
+    // vacía, y la rueda pierde ese gajo.
     ruta: '/ruleta',
-    nombre: 'pestana-gestionar',
-    clics: ['#tab-manage'],
+    nombre: 'ocultar-opcion',
+    clics: ['.ruleta-opt-row:nth-child(2) .ruleta-opt-vis'],
     espera: 250,
     comprobar: [
-      { sel: '#tab-manage-content', props: ['display'] },
-      { sel: '#tab-edit-content', props: ['display'] },
-      { sel: '#tab-manage', props: ['color', 'backgroundColor'] },
+      { sel: '.ruleta-opt-row:nth-child(2) .ruleta-opt-text', props: ['color', 'textDecorationLine'] },
+      { sel: '.ruleta-opt-row:nth-child(2) .ruleta-opt-dot', props: ['backgroundColor', 'borderTopWidth'] },
+      { sel: '.ruleta-opt-row:nth-child(3) .ruleta-opt-dot', props: ['backgroundColor'] },
+      { sel: '.ruleta-opt-row:nth-child(2) .ruleta-opt-vis', props: ['color'] },
     ],
+    invariante: async (pagina) => {
+      const r = await pagina.evaluate(() => ({
+        gajos: document.querySelectorAll('#wheel-slices path').length,
+        etiqueta: document.getElementById('ruleta-etq-opciones').textContent,
+        oculta: document.querySelectorAll('.ruleta-opt-row.is-oculta').length,
+      }));
+      const ok = r.gajos === 5 && r.oculta === 1 && r.etiqueta === 'Opciones · 5 de 6';
+      return { ok, mensaje: `tras ocultar una de 6 opciones: ${r.gajos} gajos, ${r.oculta} fila(s) oculta(s), etiqueta «${r.etiqueta}» (se esperaban 5, 1 y «Opciones · 5 de 6»)` };
+    },
   },
   {
-    ruta: '/ruleta',
-    nombre: 'modal-ganador',
-    clics: ['#spin-button'],
-    // El giro no dura un tiempo fijo: se frena por rozamiento, así que se
-    // espera al modal en vez de a un reloj.
-    esperarSelector: '#winner-modal.active',
-    espera: 300,
-    comprobar: [
-      { sel: '#winner-modal', props: ['display', 'opacity', 'visibility', 'position'] },
-      { sel: '.modal-card', props: ['transform', 'backgroundColor', 'borderRadius'] },
-      { sel: '.modal-title', props: ['fontFamily', 'color'] },
-      { sel: '.winner-name-text', props: ['fontSize', 'fontWeight'] },
-      { sel: '.celebration-emoji', props: ['display', 'fontSize'] },
-    ],
-  },
-  {
-    // Reemplaza al prompt() que abría editTitle(): el propio <h3> se vuelve
-    // editable in situ. cursor/userSelect son las dos propiedades que
-    // decide nuestro CSS (`#wheel-title-text.title-editing`); no se
-    // comprueba `outline` aquí a propósito: la regla que lo pone en
-    // "dashed" es `:focus-visible`, y si ese pseudo-estado termina
-    // aplicando tras un clic (el caso de esta prueba) depende de la
-    // heurística de "modalidad de entrada" de cada navegador, no de una
-    // regla nuestra -- comprobarlo haría que el test fallara si Chromium
-    // cambia esa heurística sin que nadie haya roto nada aquí.
-    //
-    // El selector es la clase .title-editing, no [contenteditable="true"]:
-    // el valor real del atributo varía entre navegadores (Chromium lo
-    // normaliza desde "plaintext-only" a "true", otros no), así que un
-    // selector de atributo con valor exacto es frágil por la misma razón
-    // que el CSS de RouletteMachine.astro dejó de usarlo.
-    ruta: '/ruleta',
-    nombre: 'titulo-edicion',
-    clics: ['#edit-title-btn'],
-    espera: 200,
-    comprobar: [
-      { sel: '#wheel-title-text.title-editing', props: ['cursor', 'userSelect'] },
-    ],
-  },
-  {
-    // Reemplaza al confirm() que bloqueaba clearOptions(): vacía al
-    // instante y este es el aviso de "Deshacer" que queda visible unos
-    // segundos. El textarea trae las opciones por defecto al cargar, así
-    // que #clear-btn siempre tiene algo que vaciar en este estado.
+    // Aviso «Deshacer» tras «Vaciar» (RF-09). El aviso es position: fixed: si
+    // un ancestro tiene `transform` (.reveal.revealed), ese ancestro pasa a
+    // ser su bloque contenedor y el aviso se ancla a la sección en vez de a la
+    // ventana (a 1280×720 salía en top=762px, fuera de la pantalla).
     ruta: '/ruleta',
     nombre: 'deshacer-limpiar',
     viewport: { width: 1280, height: 720 },
-    clics: ['#clear-btn'],
-    esperarSelector: '#undo-toast:not([hidden])',
+    clics: ['#ruleta-vaciar'],
+    esperarSelector: '#ruleta-aviso:not([hidden])',
     espera: 250,
     comprobar: [
-      { sel: '#undo-toast', props: ['display', 'position', 'zIndex'] },
-      { sel: '#undo-toast-btn', props: ['display', 'cursor', 'minHeight'] },
+      { sel: '#ruleta-aviso', props: ['display', 'position', 'zIndex'] },
+      { sel: '#ruleta-aviso-deshacer', props: ['display', 'cursor', 'minHeight'] },
     ],
     // RNF-11: el aviso tiene que caer dentro de la ventana en escritorio
     // (1280×720) y en el móvil de referencia (360×560).
     invariante: avisoDentroDeLaVentana,
   },
+  {
+    // Reposo de /ruleta: sin pulsar nada, el resultado y el historial están
+    // vacíos y los puntos de color de las filas heredan la paleta del objeto.
+    ruta: '/ruleta',
+    nombre: 'reposo',
+    clics: [],
+    comprobar: [
+      { sel: '#ruleta-result', props: ['opacity'] },
+      { sel: '.ruleta-hist-vacio', props: ['display', 'color'] },
+      { sel: '#ruleta-borrar-hist', props: ['display'] },
+      { sel: '#ruleta-girar', props: ['backgroundColor', 'color', 'borderRadius', 'height'] },
+      { sel: '.ruleta-mode[aria-pressed="true"]', props: ['backgroundColor', 'fontWeight'] },
+      { sel: '.ruleta-opt-row:nth-child(1) .ruleta-opt-dot', props: ['backgroundColor'] },
+      { sel: '.ruleta-opt-count', props: ['display'] },
+      { sel: '#ruleta-reiniciar', props: ['display'] },
+      { sel: '#wheel-sound', props: ['display', 'width', 'height'] },
+      { sel: '#wheel-slices path:nth-child(1)', props: ['fill', 'opacity'] },
+    ],
+    // El tic viene apagado (D1) y no se guarda nada hasta que el visitante toca algo.
+    invariante: async (pagina) => {
+      const r = await pagina.evaluate(() => ({
+        sonido: document.getElementById('wheel-sound').getAttribute('aria-pressed'),
+        guardado: localStorage.getItem('decidelo_ruleta_sonido'),
+        gajos: document.querySelectorAll('#wheel-slices path').length,
+      }));
+      const ok = r.sonido === 'false' && r.guardado === null && r.gajos === 6;
+      return { ok, mensaje: `reposo: sonido aria-pressed=${r.sonido}, guardado=${r.guardado}, ${r.gajos} gajos (se esperaba apagado, sin guardar y 6)` };
+    },
+  },
+  {
+    // El h1 tiene que seguir en pantalla a 390px: antes de la migración,
+    // `main.wrap { display: none }` bajo 859px lo sacaba del árbol de
+    // accesibilidad entero y ningún test lo vigilaba.
+    ruta: '/ruleta',
+    nombre: 'h1-visible-390x844',
+    viewport: { width: 390, height: 844 },
+    clics: [],
+    comprobar: [
+      { sel: 'h1', props: ['display'] },
+    ],
+  },
+  {
+    // Giro de verdad (animado): al resolver `.finished` aparece el resultado,
+    // el ganador se marca (contorno de 3 px, el resto atenuado, etiqueta 700)
+    // y la fila entra en el historial.
+    ruta: '/ruleta',
+    nombre: 'girada',
+    clics: ['#ruleta-girar'],
+    // El giro dura 5–7 s más la anticipación y el aterrizaje: se espera al
+    // resultado, no a un reloj.
+    esperarSelector: '#ruleta-result.is-shown',
+    espera: 300,
+    comprobar: [
+      { sel: '#ruleta-result', props: ['opacity', 'textAlign'] },
+      { sel: '#ruleta-result-main', props: ['fontFamily', 'fontWeight', 'color', 'fontSize'] },
+      { sel: '#ruleta-result-side', props: ['color', 'fontSize'] },
+      { sel: '#ruleta-girar', props: ['backgroundColor', 'color'] },
+      { sel: '#ruleta-historial li', props: ['display', 'borderBottomWidth'] },
+      { sel: '#ruleta-borrar-hist', props: ['display'] },
+      { sel: '#wheel-slices .is-ganador', props: ['strokeWidth', 'stroke'] },
+      { sel: '#wheel-slices path:not(.is-ganador)', props: ['opacity'] },
+      { sel: '#wheel-labels .is-ganador', props: ['fontWeight'] },
+    ],
+    invariante: async (pagina) => {
+      const r = await pagina.evaluate(() => ({
+        boton: document.getElementById('ruleta-girar').textContent,
+        filas: document.querySelectorAll('#ruleta-historial li:not(.ruleta-hist-vacio)').length,
+        cuenta: document.getElementById('ruleta-hist-count').textContent,
+        ganadores: document.querySelectorAll('#wheel-slices .is-ganador').length,
+        desactivado: document.getElementById('ruleta-girar').disabled,
+      }));
+      const ok = r.boton === 'Girar otra vez' && r.filas === 1 && r.cuenta === '1 resultado' && r.ganadores === 1 && !r.desactivado;
+      return { ok, mensaje: `tras girar: botón «${r.boton}», ${r.filas} fila(s) de historial, contador «${r.cuenta}», ${r.ganadores} gajo(s) ganador(es), desactivado=${r.desactivado}` };
+    },
+  },
+  {
+    // O2 / RNF-02: lo que enseña la rueda coincide con lo que dice el texto.
+    // Lee la matriz real del rotor (incluido el balanceo de reposo), calcula
+    // qué gajo queda bajo el puntero con la lógica pura y compara su etiqueta
+    // con el resultado. Giros animados de verdad con los cuatro finales, tres con
+    // suspenso y el normal: se fuerza el
+    // azar que decide el ganador y el final (crypto.getRandomValues con una
+    // cola), y se recarga entre giros porque «nunca dos finales distintos de
+    // normal seguidos» los convertiría en normal. Cada giro dura unos 6 s, así
+    // que son cuatro; los 30 de movimiento reducido van en el estado siguiente.
+    ruta: '/ruleta',
+    nombre: 'ganador-coincide-con-la-rueda',
+    init: forzarAzar,
+    verificarRelacion: async (pagina) => {
+      const errores = [];
+      const giros = [
+        { n: 13, ganador: 4, final: 'casi', roll: 70 },
+        { n: 2, ganador: 1, final: 'pelos', roll: 85 },
+        { n: 6, ganador: 3, final: 'atras', roll: 97 },
+        { n: 6, ganador: 2, final: 'normal', roll: 10 },
+      ];
+      for (const [k, g] of giros.entries()) {
+        if (k > 0) await pagina.reload({ waitUntil: 'load' });
+        await pagina.waitForTimeout(900); // que el calentamiento del plan no se coma el azar forzado
+        await ponerLista(pagina, g.n);
+        await pagina.evaluate(([ganador, roll]) => { window.__azar.push(ganador, roll); }, [g.ganador, g.roll]);
+        await pagina.click('#ruleta-girar');
+        await pagina.waitForSelector('#ruleta-result.is-shown', { timeout: 20000 });
+        const usado = await pagina.evaluate(() => document.getElementById('wheel-box').dataset.final);
+        const c = await coherenciaRueda(pagina);
+        if (usado !== g.final) errores.push(`giro ${k + 1} (N=${g.n}): se forzó el final ${g.final} y salió ${usado}`);
+        else if (c.error) errores.push(`giro ${k + 1} (N=${g.n}, final ${g.final}): ${c.error}`);
+        else if (c.gajo !== g.ganador) errores.push(`giro ${k + 1} (N=${g.n}, final ${g.final}): el azar forzado eligió el gajo ${g.ganador} y el puntero señala el ${c.gajo}`);
+      }
+      return errores.length
+        ? { ok: false, mensaje: errores.join('; ') }
+        : { ok: true, mensaje: 'en 4 giros animados (los cuatro finales: normal, casi, por los pelos y vuelta atrás) el puntero señala el gajo del resultado' };
+    },
+  },
+  {
+    // Lo mismo con movimiento reducido (RF-14): 30 giros rápidos, con N = 1, 2
+    // y 40 (el círculo entero, dos gajos de 180° y el máximo con etiquetas).
+    ruta: '/ruleta',
+    nombre: 'ganador-coincide-con-la-rueda-reducido',
+    contexto: { reducedMotion: 'reduce' },
+    verificarRelacion: async (pagina) => {
+      const errores = [];
+      let giros = 0;
+      for (const n of [1, 2, 40]) {
+        await ponerLista(pagina, n);
+        for (let k = 0; k < 10; k++) {
+          await pagina.click('#ruleta-girar');
+          await pagina.waitForFunction(() => !document.getElementById('ruleta-girar').disabled
+            && document.getElementById('ruleta-result').classList.contains('is-shown'), null, { timeout: 5000 });
+          giros++;
+          const c = await coherenciaRueda(pagina);
+          if (c.error) errores.push(`N=${n}, giro ${k + 1}: ${c.error}`);
+        }
+      }
+      return errores.length
+        ? { ok: false, mensaje: errores.slice(0, 5).join('; ') }
+        : { ok: true, mensaje: `${giros} giros con movimiento reducido (N = 1, 2 y 40): el puntero señala siempre el gajo del resultado` };
+    },
+  },
+  {
+    // «¿Qué se decide?» (RF-03): el resultado lo repite debajo del ganador y
+    // el historial lo guarda.
+    ruta: '/ruleta',
+    nombre: 'pregunta-en-resultado',
+    contexto: { reducedMotion: 'reduce' },
+    escribir: [{ sel: '#ruleta-pregunta', texto: '¿Quién friega?' }],
+    clics: ['#ruleta-girar'],
+    esperarSelector: '#ruleta-result.is-shown',
+    verificarRelacion: async (pagina) => {
+      const r = await pagina.evaluate(() => ({
+        lado: document.getElementById('ruleta-result-side').textContent,
+        historial: document.querySelector('#ruleta-historial .ruleta-hist-para')?.textContent,
+        guardada: localStorage.getItem('decidelo_ruleta_pregunta'),
+      }));
+      const ok = r.lado === '¿Quién friega?' && r.historial === '¿Quién friega?' && r.guardada === '¿Quién friega?';
+      return { ok, mensaje: `resultado «${r.lado}», historial «${r.historial}», guardada «${r.guardada}» (se esperaba «¿Quién friega?» en las tres)` };
+    },
+  },
+  {
+    // «Quitar «X»» tras un resultado (RF-07): oculta la opción sin borrarla,
+    // la rueda se repinta y el resultado vigente se oculta con ella (RF-06).
+    ruta: '/ruleta',
+    nombre: 'quitar-ganador',
+    contexto: { reducedMotion: 'reduce' },
+    clics: ['#ruleta-girar'],
+    esperarSelector: '#ruleta-result.is-shown',
+    verificarRelacion: async (pagina) => {
+      await pagina.click('#ruleta-quitar');
+      const r = await pagina.evaluate(() => ({
+        ocultas: document.querySelectorAll('.ruleta-opt-row.is-oculta').length,
+        filas: document.querySelectorAll('.ruleta-opt-row').length,
+        gajos: document.querySelectorAll('#wheel-slices path').length,
+        resultado: document.getElementById('ruleta-result').classList.contains('is-shown'),
+        aviso: !document.getElementById('ruleta-aviso').hidden,
+        boton: document.getElementById('ruleta-girar').textContent,
+      }));
+      const ok = r.ocultas === 1 && r.filas === 6 && r.gajos === 5 && !r.resultado && r.aviso && r.boton === 'Girar ruleta';
+      return { ok, mensaje: `tras quitar al ganador: ${r.ocultas} oculta(s) de ${r.filas} filas, ${r.gajos} gajos, resultado visible=${r.resultado}, aviso=${r.aviso}, botón «${r.boton}»` };
+    },
+  },
+  {
+    // Modo Eliminar (SDD §6.14.3): el ganador se oculta solo como cambio
+    // pendiente (RF-05): el resultado sigue sobre la rueda que giró (6 gajos)
+    // y se repinta en la siguiente acción.
+    ruta: '/ruleta',
+    nombre: 'modo-eliminar',
+    contexto: { reducedMotion: 'reduce' },
+    antes: ['.ruleta-mode[data-modo="eliminar"]'],
+    clics: ['#ruleta-girar'],
+    esperarSelector: '#ruleta-result.is-shown',
+    espera: 300,
+    comprobar: [
+      { sel: '.ruleta-mode[aria-pressed="true"]', props: ['backgroundColor', 'fontWeight'] },
+      { sel: '.ruleta-opt-row.is-oculta .ruleta-opt-text', props: ['textDecorationLine', 'color'] },
+      { sel: '#ruleta-aviso', props: ['display', 'position'] },
+      { sel: '#ruleta-acciones-resultado', props: ['display'] },
+    ],
+    invariante: async (pagina) => {
+      const r = await pagina.evaluate(() => ({
+        ocultas: document.querySelectorAll('.ruleta-opt-row.is-oculta').length,
+        gajos: document.querySelectorAll('#wheel-slices path').length,
+        boton: document.getElementById('ruleta-girar').textContent,
+        lado: document.getElementById('ruleta-result-side').textContent,
+        quitar: !document.getElementById('ruleta-quitar').hidden,
+      }));
+      const ok = r.ocultas === 1 && r.gajos === 6 && r.boton === 'Girar otra vez' && /^Se eliminó «.+» · quedan 5$/.test(r.lado) && !r.quitar;
+      return { ok, mensaje: `modo Eliminar: ${r.ocultas} oculta(s), ${r.gajos} gajos, botón «${r.boton}», lado «${r.lado}», «Quitar» visible=${r.quitar}` };
+    },
+  },
+  {
+    // Modo Contar (SDD §6.14.3): cada opción acumula sus victorias en la lista
+    // y en el historial.
+    ruta: '/ruleta',
+    nombre: 'modo-contar',
+    contexto: { reducedMotion: 'reduce' },
+    antes: ['.ruleta-mode[data-modo="contar"]'],
+    clics: ['#ruleta-girar'],
+    esperarSelector: '#ruleta-result.is-shown',
+    espera: 300,
+    comprobar: [
+      { sel: '.ruleta-opt-count', props: ['display', 'color', 'fontSize'] },
+      { sel: '#ruleta-reiniciar', props: ['display'] },
+      { sel: '#ruleta-acciones-resultado', props: ['display'] },
+    ],
+    invariante: async (pagina) => {
+      const r = await pagina.evaluate(() => ({
+        cuentas: [...document.querySelectorAll('.ruleta-opt-count')].map((c) => c.textContent),
+        historial: document.querySelector('#ruleta-historial .ruleta-hist-op')?.textContent,
+      }));
+      const unaVictoria = r.cuentas.filter((c) => c === '×1').length === 1 && r.cuentas.filter((c) => c === '×0').length === 5;
+      const ok = unaVictoria && /×1$/.test(r.historial ?? '');
+      return { ok, mensaje: `modo Contar: cuentas ${r.cuentas.join(' ')}, historial «${r.historial}» (se esperaba un ×1 y cinco ×0, y el historial terminando en ×1)` };
+    },
+  },
+  {
+    // «Añadir opción» (SDD §6.14.5): Intro añade y deja el teclado abierto, es
+    // decir, el foco se queda en el campo para escribir la siguiente.
+    ruta: '/ruleta',
+    nombre: 'anadir-opcion-teclado-abierto',
+    viewport: { width: 390, height: 844 },
+    verificarRelacion: async (pagina) => {
+      await pagina.fill('#ruleta-nueva', 'Ramen');
+      await pagina.press('#ruleta-nueva', 'Enter');
+      const r = await pagina.evaluate(() => ({
+        foco: document.activeElement?.id,
+        valor: document.getElementById('ruleta-nueva').value,
+        filas: document.querySelectorAll('.ruleta-opt-row').length,
+        ultima: document.querySelector('.ruleta-opt-row:last-child .ruleta-opt-text')?.value,
+        gajos: document.querySelectorAll('#wheel-slices path').length,
+      }));
+      const ok = r.foco === 'ruleta-nueva' && r.valor === '' && r.filas === 7 && r.ultima === 'Ramen' && r.gajos === 7;
+      return { ok, mensaje: `tras añadir «Ramen» con Intro: foco en #${r.foco}, campo «${r.valor}», ${r.filas} filas (última «${r.ultima}»), ${r.gajos} gajos (se esperaba el foco en #ruleta-nueva, campo vacío, 7 filas y 7 gajos)` };
+    },
+  },
+  {
+    // Girar arrastrando (SDD §6.14.1): pointerdown, un arco con el puntero y
+    // pointerup (Playwright los emite como eventos de puntero reales). Gira
+    // una sola vez (el `click` que sigue al soltar se suprime) y el resultado
+    // coincide con la rueda.
+    ruta: '/ruleta',
+    nombre: 'girar-arrastrando',
+    contexto: { reducedMotion: 'reduce' },
+    verificarRelacion: async (pagina) => {
+      const c = await pagina.evaluate(() => {
+        const r = document.getElementById('wheel-box').getBoundingClientRect();
+        return { x: r.left + r.width / 2, y: r.top + r.height / 2, r: r.width / 2 };
+      });
+      await pagina.mouse.move(c.x + c.r * 0.7, c.y);
+      await pagina.mouse.down();
+      for (let k = 1; k <= 8; k++) {
+        const a = (k * 12 * Math.PI) / 180;
+        await pagina.mouse.move(c.x + c.r * 0.7 * Math.cos(a), c.y + c.r * 0.7 * Math.sin(a));
+      }
+      await pagina.mouse.up();
+      await pagina.waitForSelector('#ruleta-result.is-shown', { timeout: 5000 });
+      await pagina.waitForTimeout(300); // por si un segundo giro (el click suprimido) llegara tarde
+      const filas = await pagina.evaluate(() => document.querySelectorAll('#ruleta-historial li:not(.ruleta-hist-vacio)').length);
+      const coh = await coherenciaRueda(pagina);
+      if (coh.error) return { ok: false, mensaje: `arrastrando: ${coh.error}` };
+      return filas === 1
+        ? { ok: true, mensaje: 'arrastrar la rueda gira una vez y el puntero señala el resultado' }
+        : { ok: false, mensaje: `arrastrar la rueda produjo ${filas} resultados en el historial (se esperaba 1: el click tras soltar debe suprimirse)` };
+    },
+  },
+  {
+    // RNF-10: ir y volver (View Transitions re-lanzan `astro:page-load`) no
+    // duplica listeners, y `astro:before-swap` suelta los de document.
+    ruta: '/ruleta',
+    nombre: 'ida-y-vuelta',
+    contexto: { reducedMotion: 'reduce' },
+    verificarRelacion: async (pagina) => {
+      await pagina.goto(pagina.url().replace('/ruleta', '/moneda'), { waitUntil: 'load' });
+      await pagina.goto(pagina.url().replace('/moneda', '/ruleta'), { waitUntil: 'load' });
+      await pagina.evaluate(() => {
+        document.dispatchEvent(new Event('astro:page-load'));
+        document.dispatchEvent(new Event('astro:page-load'));
+      });
+      await pagina.click('#ruleta-girar');
+      await pagina.waitForSelector('#ruleta-result.is-shown', { timeout: 5000 });
+      await pagina.waitForTimeout(300);
+      const filas = await pagina.evaluate(() => document.querySelectorAll('#ruleta-historial li:not(.ruleta-hist-vacio)').length);
+      // Tras `astro:before-swap` el atajo ya no debe girar
+      await pagina.evaluate(() => document.dispatchEvent(new Event('astro:before-swap')));
+      await pagina.keyboard.press('Control+Enter');
+      await pagina.waitForTimeout(500);
+      const despues = await pagina.evaluate(() => document.querySelectorAll('#ruleta-historial li:not(.ruleta-hist-vacio)').length);
+      const errores = [];
+      if (filas !== 1) errores.push(`un giro tras volver y relanzar astro:page-load dejó ${filas} filas (se esperaba 1: listeners duplicados)`);
+      if (despues !== 1) errores.push(`tras astro:before-swap, Ctrl+Intro todavía gira (${despues} filas)`);
+      return errores.length ? { ok: false, mensaje: errores.join('; ') } : { ok: true, mensaje: 'ida y vuelta sin listeners duplicados ni vivos' };
+    },
+  },
+  {
+    // O5: nadie pierde su lista. Siembra el formato de antes del rediseño
+    // (`ruleta_opciones`, `ruleta_ocultas` v1 con textos, `ruleta_titulo`)
+    // antes de cargar y comprueba lista, ocultas y pregunta.
+    ruta: '/ruleta',
+    nombre: 'claves-viejas-migradas',
+    init: () => {
+      localStorage.setItem('ruleta_opciones', 'Ana\nLuis\nMarta');
+      localStorage.setItem('ruleta_ocultas', JSON.stringify(['Luis']));
+      localStorage.setItem('ruleta_titulo', '¿Quién friega?');
+    },
+    verificarRelacion: async (pagina) => {
+      const r = await pagina.evaluate(() => ({
+        textos: [...document.querySelectorAll('.ruleta-opt-text')].map((i) => i.value),
+        ocultas: [...document.querySelectorAll('.ruleta-opt-row')].map((f) => f.classList.contains('is-oculta')),
+        pregunta: document.getElementById('ruleta-pregunta').value,
+        etiqueta: document.getElementById('ruleta-etq-opciones').textContent,
+        gajos: document.querySelectorAll('#wheel-slices path').length,
+        vieja: localStorage.getItem('ruleta_opciones'),
+      }));
+      const ok = r.textos.join('|') === 'Ana|Luis|Marta' && r.ocultas.join() === 'false,true,false'
+        && r.pregunta === '¿Quién friega?' && r.etiqueta === 'Opciones · 2 de 3' && r.gajos === 2
+        && r.vieja === 'Ana\nLuis\nMarta';
+      return { ok, mensaje: `claves viejas: lista «${r.textos.join(', ')}», ocultas ${r.ocultas.join()}, pregunta «${r.pregunta}», etiqueta «${r.etiqueta}», ${r.gajos} gajos, clave vieja intacta=${r.vieja !== null}` };
+    },
+  },
+  // La rueda entera (no solo el botón) en la primera pantalla de los tres
+  // móviles de referencia y de un portátil de 1280×720 (RNF-05).
+  ...[
+    ...Object.entries(VIEWPORTS_MOVIL),
+    ['portatil-1280x720', { width: 1280, height: 720 }],
+  ].map(([nombre, viewport]) => ({
+    ruta: '/ruleta',
+    nombre: `rueda-entera-visible-${nombre}`,
+    viewport,
+    verificarRelacion: ruedaEntera,
+  })),
+  ...estadosAccionVisible('/ruleta', '#ruleta-girar'),
+  ...estadosResponsive('/ruleta', '#ruleta-girar'),
   {
     // Antes llamado 'reposo' de la home, con tres aserciones de más
     // (.hero/.hub-section display, .header-inner justifyContent) que eran
@@ -384,104 +684,6 @@ export const ESTADOS = [
       { sel: '.hub-section .section-heading', props: ['fontSize'] },
       { sel: '.hub-section .section-tag', props: ['marginBottom'] },
       { sel: '.hub-section .section-header', props: ['marginBottom'] },
-    ],
-  },
-  {
-    // Reposo de /ruleta: contraste de los estados provocados de la ruleta
-    // (pestana-gestionar, modal-ganador) -- sin pulsar nada, nada de eso
-    // está activo. Antes de la mudanza esto vivía mezclado con el reposo
-    // de la home; se separa porque son páginas distintas ahora.
-    ruta: '/ruleta',
-    nombre: 'reposo',
-    clics: [],
-    comprobar: [
-      { sel: '#tab-manage-content', props: ['display'] },
-      { sel: '.roulette-section .section-header', props: ['display'] },
-      // Contraste con modal-ganador: sin girar, el modal está oculto.
-      { sel: '#winner-modal', props: ['display', 'opacity', 'visibility'] },
-    ],
-  },
-  {
-    // El h1 de la página (ver AGENTS.md: vive dentro de RouletteMachine
-    // desde que se corrigió el hallazgo del h1 oculto en móvil) tiene que
-    // seguir en pantalla a 390px -- antes de ese arreglo, `main.wrap {
-    // display: none }` bajo 859px lo sacaba del árbol de accesibilidad
-    // entero, y ningún test anterior lo vigilaba porque ninguno miraba el
-    // h1 en este viewport. Esta captura sirve de contraste: si la regla
-    // que ocultaba `<main>` vuelve a aparecer, el h1 deja de existir en el
-    // DOM visible y el valor grabado como línea base ('block' o similar)
-    // deja de coincidir -- el snapshot lo marca como diferencia, no como
-    // 'NO EXISTE EN EL DOM' silencioso, porque el h1 nunca se quita del
-    // DOM, solo se le pondría display:none por herencia de un ancestro
-    // oculto (lo que getComputedStyle sí refleja).
-    ruta: '/ruleta',
-    nombre: 'h1-visible-390x844',
-    viewport: { width: 390, height: 844 },
-    clics: [],
-    comprobar: [
-      { sel: 'h1', props: ['display'] },
-    ],
-  },
-  {
-    // Panel de opciones como hoja inferior en móvil (layout nuevo): no
-    // existe en reposo -- .panel-open lo pone roulette.js al pulsar la
-    // manija -- así que, igual que el modo edición del título o el aviso
-    // de deshacer, necesita su propio estado provocado en vez de una
-    // captura de píxeles (canvas + animaciones infinitas, ver cabecera).
-    ruta: '/ruleta',
-    nombre: 'panel-opciones-movil',
-    viewport: { width: 390, height: 844 },
-    clics: ['#options-panel-toggle'],
-    espera: 400,
-    comprobar: [
-      { sel: '#mobile-options-panel', props: ['position', 'zIndex', 'transform'] },
-      // `height`, no `minHeight`: la regla escrita es `height: 56px` en la
-      // manija, y `minHeight` da "auto" tanto si la regla aplica como si
-      // no -- no habría detectado que la regla dejó de encontrar el
-      // elemento, que es justo lo que existe para cazar.
-      { sel: '#options-panel-toggle', props: ['height', 'cursor'] },
-      { sel: '.roulette-section .section-tag', props: ['display'] },
-    ],
-  },
-  {
-    // Invariante, no snapshot -- ver el comentario junto a
-    // verificarPanelFijoTrasScroll más arriba.
-    ruta: '/ruleta',
-    nombre: 'panel-fijo-tras-scroll',
-    viewport: { width: 390, height: 844 },
-    verificarRelacion: verificarPanelFijoTrasScroll,
-  },
-  {
-    ruta: '/ruleta',
-    nombre: 'boton-girar-visible-con-panel-390x844',
-    viewport: { width: 390, height: 844 },
-    verificarRelacion: verificarBotonGirarSobrePanel,
-  },
-  {
-    ruta: '/ruleta',
-    nombre: 'boton-girar-visible-con-panel-375x667',
-    viewport: { width: 375, height: 667 },
-    verificarRelacion: verificarBotonGirarSobrePanel,
-  },
-  {
-    ruta: '/ruleta',
-    nombre: 'boton-girar-visible-con-panel-360x640',
-    viewport: { width: 360, height: 640 },
-    verificarRelacion: verificarBotonGirarSobrePanel,
-  },
-  {
-    // La pestaña "Gestionar" alcanzada desde dentro del panel móvil: cubre
-    // que abrir el panel no rompe el resto de la interacción que ya vigila
-    // el estado "pestana-gestionar" de arriba.
-    ruta: '/ruleta',
-    nombre: 'panel-opciones-movil-gestionar',
-    viewport: { width: 390, height: 844 },
-    clics: ['#options-panel-toggle', '#tab-manage'],
-    espera: 400,
-    comprobar: [
-      { sel: '#mobile-options-panel', props: ['transform'] },
-      { sel: '#tab-manage-content', props: ['display'] },
-      { sel: '#tab-edit-content', props: ['display'] },
     ],
   },
   // --- Dados -------------------------------------------------------------
