@@ -109,7 +109,7 @@ sigue emitiendo igual, así que los snapshots no notan nada, pero el elemento
 deja de recibir la regla. Corre en CI.
 
 **No uses capturas de píxeles para estados de la home.** Se intentó: la
-marquesina y el logo tienen animaciones infinitas y la ruleta es un canvas
+marquesina y el logo tienen animaciones infinitas y la ruleta gira con animaciones
 cuyo ángulo depende del momento, así que dos capturas del mismo commit
 diferían en miles de píxeles. Los estilos computados sí son estables. Y cada
 estado necesita su propio contexto de navegador: el modo foco se recuerda, y
@@ -117,8 +117,7 @@ compartir contexto lo filtraba al estado siguiente.
 
 Para la ruleta, `ganador-coincide-con-la-rueda` lee la matriz real del
 rotor, calcula con `gajoBajoPuntero` qué gajo queda bajo el puntero y compara
-su etiqueta con el texto del resultado (3 giros animados con los finales con
-suspenso y 30 con movimiento reducido, con N = 1, 2 y 40); `rueda-entera-visible-*`
+su etiqueta con el texto del resultado (4 giros animados, uno por final, y 30 con movimiento reducido, con N = 1, 2 y 40); `rueda-entera-visible-*`
 comprueba que la rueda se ve entera en los tres móviles de referencia y en
 1280×720. Cubre amigo secreto —introduce participantes, hace el sorteo y comprueba
 las filas de enlaces, en escritorio y a 390px— y también los dados: lanza

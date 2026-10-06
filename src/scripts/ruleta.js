@@ -18,8 +18,8 @@
 
 import {
   leerOpciones, indiceAlAzar, geometria, tonoDe, margenReposo, amplitudReposo,
-  elegirFinal, planGiro, poseFinal, reasignarOcultas, migrarGuardado, enlace,
-  CLAVES, TONOS, HISTORIAL_MAX, ENLACE_MAX_OPCIONES, ENLACE_OPCION_MAX, ENLACE_MAX_CARACTERES,
+  elegirFinal, planGiro, poseFinal, reasignarOcultas, migrarGuardado,
+  CLAVES, TONOS, HISTORIAL_MAX,
 } from './ruleta-logica.js';
 
 const mod = (a, m) => ((a % m) + m) % m;
@@ -253,7 +253,7 @@ function initRuleta() {
     // Foco al terminar (SDD §7): vuelve al control que lanzó el giro; arrastrando, al botón
     // principal; con el atajo desde un campo, se queda donde está. Se anota antes de deshabilitar.
     estado.foco = opts.origen === 'arrastre' ? btnGirar
-      : opts.origen === 'atajo' ? null
+      : opts.origen === 'atajo' ? (document.activeElement === document.body ? null : document.activeElement) // se queda donde estaba: un campo no se toca (restaurar solo actúa si el foco se perdió)
       : [btnGirar, rueda].find((el) => el === document.activeElement) || null;
     btnGirar.disabled = true;
     rueda.disabled = true;
@@ -463,7 +463,7 @@ function initRuleta() {
     pintarPuntos();
     etiquetaOpciones();
     // Mientras haya 100 activas el aviso sigue a la vista (también tras recargar): las demás están ocultas
-    $('ruleta-aviso-max').hidden = activas().length < MAX_ACTIVAS;
+    $('ruleta-aviso-max').hidden = !(activas().length >= MAX_ACTIVAS && estado.items.some((i) => i.oculta));
   }
   function pintarPuntos() {
     let k = 0;
@@ -691,7 +691,7 @@ function initRuleta() {
     const activa = estado.enFoco || !!document.fullscreenElement;
     btnPantalla.setAttribute('aria-pressed', String(activa));
     // Con el foco recordado la cabecera y «Modo foco» no se ven: este icono es la salida y tiene que decirlo
-    const texto = activa ? 'Salir de pantalla completa' : 'Pantalla completa';
+    const texto = estado.enFoco ? 'Salir del modo foco' : activa ? 'Salir de pantalla completa' : 'Pantalla completa';
     btnPantalla.setAttribute('aria-label', texto);
     btnPantalla.title = texto;
   }
@@ -722,6 +722,7 @@ function initRuleta() {
   }, { signal });
   document.addEventListener('keydown', (ev) => {    // Ctrl/Cmd+Intro desde cualquier sitio
     if (ev.key === 'Enter' && (ev.ctrlKey || ev.metaKey)) { ev.preventDefault(); girar({ origen: 'atajo' }); }
+    else if (ev.key === 'Escape' && estado.enFoco) ponerFoco(false); // RF-12: Esc también sale del modo foco
   }, { signal });
 
   // Arrastrar la rueda con el dedo o el ratón: la fuerza solo elige las vueltas (5–7), nunca el ganador.
@@ -767,26 +768,6 @@ function initRuleta() {
   };
   rueda.addEventListener('pointerup', (ev) => soltar(ev, false), { signal });
   rueda.addEventListener('pointercancel', (ev) => soltar(ev, true), { signal });
-
-  /* --- Compartir (D5, SDD §6.10): navigator.share y, si no existe, copiar el enlace --- */
-  const estadoCompartir = $('ruleta-compartir-estado');
-  $('ruleta-compartir').addEventListener('click', async () => {
-    const opciones = textosActivos();
-    const aviso = (t) => { estadoCompartir.textContent = t; };
-    if (!opciones.length) return aviso('Escribe al menos una opción.');
-    if (opciones.length > ENLACE_MAX_OPCIONES || opciones.some((o) => o.length > ENLACE_OPCION_MAX)) {
-      return aviso(`Máximo ${ENLACE_MAX_OPCIONES} opciones de ${ENLACE_OPCION_MAX} caracteres.`);
-    }
-    const pregunta = inpPregunta.value.trim();
-    const url = enlace(`${location.origin}/ruleta`, { para: pregunta, opciones });
-    if (url.length > ENLACE_MAX_CARACTERES) return aviso('Son demasiadas opciones para un enlace; quita algunas.');
-    try {
-      if (navigator.share) { await navigator.share({ title: 'Ruleta de Decídelo', text: pregunta || 'Mi ruleta', url }); aviso(''); }
-      else { await navigator.clipboard.writeText(url); aviso('Enlace copiado.'); }
-    } catch (e) {
-      aviso(e && e.name === 'AbortError' ? '' : 'No se pudo compartir.');
-    }
-  }, { signal });
 
   inpPregunta.addEventListener('input', () => {
     escribirAlmacen(CLAVES.pregunta, inpPregunta.value.trim());

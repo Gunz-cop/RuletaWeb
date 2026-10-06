@@ -188,11 +188,9 @@ const schemaLD = {
       <div class="flex flex-wrap items-center gap-x-5 mt-2">
         <button class="ruleta-text-btn" id="ruleta-mezclar" type="button">Mezclar</button>
         <button class="ruleta-text-btn" id="ruleta-ordenar" type="button">Ordenar</button>
-        <button class="ruleta-text-btn" id="ruleta-vaciar" type="button">Vaciar</button>
-        <button class="ruleta-text-btn" id="ruleta-compartir" type="button">Compartir</button>
+        <button class="ruleta-text-btn is-danger" id="ruleta-vaciar" type="button">Vaciar</button>
         <button class="ruleta-text-btn" id="ruleta-foco" type="button" aria-pressed="false">Modo foco</button>
         <button class="ruleta-text-btn" id="ruleta-reiniciar" type="button" hidden>Reiniciar cuentas</button>
-        <span class="ruleta-share-status" id="ruleta-compartir-estado" role="status"></span>
       </div>
     </section>
 
@@ -416,6 +414,8 @@ const schemaLD = {
   .ruleta-text-btn.is-quiet { color: var(--text-secondary); font-weight: 500; }
   .ruleta-text-btn:focus-visible { outline: 2px solid var(--accent-warm); outline-offset: 3px; }
   .ruleta-text-btn[aria-pressed="true"] { color: var(--accent-warm); }
+  /* «Vaciar»: color semántico, no decorativo (SDD §6.7) */
+  .ruleta-text-btn.is-danger { color: var(--accent-danger); }
 
   /* ---------- Editor en lista (SDD §6.14.5) ---------- */
   .ruleta-label {
@@ -468,7 +468,6 @@ const schemaLD = {
     border: 1px solid var(--divider-line); color: var(--text-primary); font: 400 0.9rem 'Inter', sans-serif; cursor: pointer;
   }
   .ruleta-chip:focus-visible { outline: 2px solid var(--accent-warm); outline-offset: 3px; }
-  .ruleta-share-status { font-size: 0.8rem; color: var(--text-secondary); }
 
   /* ---------- Historial (patrón de la moneda: lista dividida y numerada) ---------- */
   .ruleta-hist-head .ruleta-label { margin: 0; }

@@ -260,6 +260,13 @@ export const ESTADOS = [
       { sel: '#ruleta-foco', props: ['color'] },
       { sel: '#ruleta-girar', props: ['display', 'backgroundColor'] },
     ],
+    // RF-12: Esc sale del modo foco, y el icono de la rueda lo dice
+    invariante: async (pagina) => {
+      const etiqueta = await pagina.getAttribute('#wheel-fullscreen', 'aria-label');
+      await pagina.keyboard.press('Escape');
+      const sigue = await pagina.evaluate(() => document.body.classList.contains('is-foco'));
+      return { ok: !sigue && etiqueta === 'Salir del modo foco', mensaje: `modo foco: icono «${etiqueta}», tras Esc el foco sigue activo=${sigue} (se esperaba «Salir del modo foco» y que Esc lo quite)` };
+    },
   },
   {
     // Ocultar una opción sin borrarla (RF-08): la fila se tacha y su punto se

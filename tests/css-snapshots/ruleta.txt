@@ -75,6 +75,7 @@
 .ruleta-text-btn[S].is-quiet{color:var(--text-secondary);font-weight:500}
 .ruleta-text-btn[S]:focus-visible{outline:2px solid var(--accent-warm);outline-offset:3px}
 .ruleta-text-btn[S][aria-pressed=true]{color:var(--accent-warm)}
+.ruleta-text-btn[S].is-danger{color:var(--accent-danger)}
 .ruleta-label[S]{letter-spacing:.08em;text-transform:uppercase;color:var(--text-tertiary);margin:0 0 4px;font-size:.72rem;display:block}
 .ruleta-line[S],.ruleta-box[S]{width:100%;color:var(--text-primary);border:0;border-bottom:1px solid var(--divider-line);background:0 0;border-radius:0;min-height:44px;padding:10px 0;font:400 16px/1.5 Inter,sans-serif;display:block}
 .ruleta-box[S]{border:1px solid var(--divider-line);border-radius:var(--radius-md);resize:vertical;min-height:9rem;padding:12px}
@@ -111,7 +112,6 @@
 .ruleta-chips[S] .ruleta-label[S]{margin:0 4px 0 0}
 .ruleta-chip[S]{border:1px solid var(--divider-line);min-height:44px;color:var(--text-primary);cursor:pointer;background:0 0;border-radius:999px;padding:0 16px;font:400 .9rem Inter,sans-serif}
 .ruleta-chip[S]:focus-visible{outline:2px solid var(--accent-warm);outline-offset:3px}
-.ruleta-share-status[S]{color:var(--text-secondary);font-size:.8rem}
 .ruleta-hist-head[S] .ruleta-label[S]{margin:0}
 .ruleta-hist-list[S]{border-top:1px solid var(--divider-line);counter-reset:h;margin:0;padding:0;list-style:none}
 .ruleta-hist-list[S] li[S]{border-bottom:1px solid var(--divider-line);counter-increment:h;overflow-wrap:anywhere;gap:12px;min-width:0;padding:10px 0;font-size:.95rem;display:flex}

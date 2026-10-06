@@ -220,7 +220,7 @@ cada página suelen llevar una barra de 3-4px en `--accent-gradient` como
 `::before` absoluto — es un pseudo-elemento con fondo en degradado, así que
 vive en CSS, no como utilidad (ver más abajo).
 
-**Botones**: `.primary-btn` (fondo en degradado, texto oscuro,
+**Botones**: `.primary-btn`/`.btn-spin` (fondo en degradado, texto oscuro,
 para la acción principal de cada herramienta), `.secondary-btn` (fondo
 translúcido blanco al 5%), `.danger-btn` (rojo translúcido). Los CTA dentro
 de contenido (`.tool-cta`) reutilizan el mismo degradado que las barras de
