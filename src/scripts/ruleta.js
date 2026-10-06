@@ -464,7 +464,9 @@ function initRuleta() {
     pintarPuntos();
     etiquetaOpciones();
     // Mientras haya 100 activas el aviso sigue a la vista (también tras recargar): las demás están ocultas
-    $('ruleta-aviso-max').hidden = !(activas().length >= MAX_ACTIVAS && estado.items.some((i) => i.oculta));
+    const hayOcultas = estado.items.some((i) => i.oculta);
+    $('ruleta-aviso-max').hidden = !(activas().length >= MAX_ACTIVAS && hayOcultas);
+    $('ruleta-activar').hidden = !hayOcultas; // RF-08: sin ocultas no ocupa sitio
   }
   function pintarPuntos() {
     let k = 0;
@@ -593,6 +595,18 @@ function initRuleta() {
     guardarLista();
     actualizarFilas();
     avisar('Cuentas reiniciadas', () => restaurar(foto));
+  }, { signal });
+  // RF-08: activa las ocultas hasta el máximo (RF-01); si alguna se queda fuera, el aviso de máximo sigue a la vista.
+  $('ruleta-activar').addEventListener('click', () => {
+    const foto = fotoLista();
+    let k = activas().length, n = 0;
+    estado.items.forEach((i) => {
+      if (i.oculta && (i.t.trim() === '' || k < MAX_ACTIVAS)) { i.oculta = false; n++; k += i.t.trim() !== ''; }
+    });
+    if (!n) return; // con 100 activas no hay nada que activar: sin cambio, sin «Deshacer»
+    actualizarFilas(); renderPegar(); editado();
+    if ($('ruleta-activar').hidden) $('ruleta-pegar-toggle').focus(); // el botón desaparece: el foco no se pierde
+    avisar('Opciones activadas', () => restaurar(foto));
   }, { signal });
   btnQuitar.addEventListener('click', () => {
     const it = estado.refsRueda[estado.ganador];

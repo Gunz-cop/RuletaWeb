@@ -491,6 +491,60 @@ export const ESTADOS = [
     },
   },
   {
+    // «Activar todas» (RF-08): visible solo con alguna oculta, activa todas, se
+    // deshace devolviendo exactamente las ocultas de antes y, sin ocultas, no ocupa sitio.
+    ruta: '/ruleta',
+    nombre: 'activar-todas',
+    contexto: { reducedMotion: 'reduce' },
+    init: () => {
+      localStorage.setItem('decidelo_ruleta_opciones', 'A\nB\nC\nD\nE\nF');
+      localStorage.setItem('decidelo_ruleta_ocultas', JSON.stringify({ v: 2, indices: [1, 4, 5] }));
+    },
+    verificarRelacion: async (pagina) => {
+      const leer = () => pagina.evaluate(() => {
+        const b = document.getElementById('ruleta-activar').getBoundingClientRect();
+        return {
+          ocultas: [...document.querySelectorAll('.ruleta-opt-row')].flatMap((f, k) => (f.classList.contains('is-oculta') ? [k] : [])).join(','),
+          gajos: document.querySelectorAll('#wheel-slices path').length,
+          ocupa: b.width > 0 && b.height > 0,
+        };
+      });
+      const a = await leer();
+      await pagina.click('#ruleta-activar');
+      const b = await leer();
+      await pagina.click('#ruleta-aviso-deshacer');
+      const c = await leer();
+      const ok = a.ocultas === '1,4,5' && a.ocupa && b.ocultas === '' && !b.ocupa && b.gajos === 6
+        && c.ocultas === '1,4,5' && c.ocupa && c.gajos === 3;
+      return { ok, mensaje: `ocultas antes «${a.ocultas}» (botón ${a.ocupa}), tras activar «${b.ocultas}» (botón ${b.ocupa}, ${b.gajos} gajos), tras deshacer «${c.ocultas}» (botón ${c.ocupa}, ${c.gajos} gajos)` };
+    },
+  },
+  {
+    // Con 130 opciones y 100 activas «Activar todas» no activa ninguna más (RF-01):
+    // sin cambio ni «Deshacer», y el aviso del máximo sigue a la vista.
+    ruta: '/ruleta',
+    nombre: 'activar-todas-limite',
+    contexto: { reducedMotion: 'reduce' },
+    init: () => {
+      localStorage.setItem('decidelo_ruleta_opciones', Array.from({ length: 130 }, (_, i) => `Op ${i + 1}`).join('\n'));
+      localStorage.setItem('decidelo_ruleta_ocultas', JSON.stringify({ v: 2, indices: [] }));
+    },
+    verificarRelacion: async (pagina) => {
+      const leer = () => pagina.evaluate(() => ({
+        ocultas: document.querySelectorAll('.ruleta-opt-row.is-oculta').length,
+        gajos: document.querySelectorAll('#wheel-slices path').length,
+        max: !document.getElementById('ruleta-aviso-max').hidden,
+        deshacer: !document.getElementById('ruleta-aviso').hidden,
+        boton: !document.getElementById('ruleta-activar').hidden,
+      }));
+      const a = await leer();
+      await pagina.click('#ruleta-activar');
+      const b = await leer();
+      const ok = a.ocultas === 30 && a.gajos === 100 && a.boton && b.ocultas === 30 && b.gajos === 100 && b.max && !b.deshacer && b.boton;
+      return { ok, mensaje: `antes ${a.ocultas} ocultas/${a.gajos} gajos; tras pulsar ${b.ocultas} ocultas/${b.gajos} gajos, aviso de máximo=${b.max}, «Deshacer»=${b.deshacer}` };
+    },
+  },
+  {
     // Modo Eliminar (SDD §6.14.3): el ganador se oculta solo como cambio
     // pendiente (RF-05): el resultado sigue sobre la rueda que giró (6 gajos)
     // y se repinta en la siguiente acción.

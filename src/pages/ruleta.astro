@@ -172,7 +172,10 @@ const schemaLD = {
       </div>
       <div class="ruleta-editor-head flex items-end justify-between mt-5">
         <span class="ruleta-label" id="ruleta-etq-opciones">Opciones</span>
-        <button class="ruleta-text-btn" id="ruleta-pegar-toggle" type="button" aria-expanded="false" aria-controls="ruleta-pegar-panel">Pegar lista</button>
+        <span class="flex items-end gap-x-5">
+          <button class="ruleta-text-btn" id="ruleta-activar" type="button" hidden>Activar todas</button>
+          <button class="ruleta-text-btn" id="ruleta-pegar-toggle" type="button" aria-expanded="false" aria-controls="ruleta-pegar-panel">Pegar lista</button>
+        </span>
       </div>
       <div class="ruleta-opt-wrap">
         <ul class="ruleta-opt-list" id="ruleta-lista" aria-labelledby="ruleta-etq-opciones"></ul>
