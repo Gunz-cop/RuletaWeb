@@ -523,14 +523,15 @@ export const ESTADOS = [
         await pagina.waitForTimeout(100);
         const m = await pagina.evaluate(() => {
           const lineas = (el) => { const r = document.createRange(); r.selectNodeContents(el); return new Set([...r.getClientRects()].map((q) => Math.round(q.top))).size; };
-          const alto = (id) => Math.round(document.getElementById(id).getBoundingClientRect().height);
+          // Los botones, pegados al borde derecho de la cabecera también en la 2.ª línea (ml-auto)
+          const hueco = Math.round(document.querySelector('.ruleta-editor-head').getBoundingClientRect().right - document.getElementById('ruleta-pegar-toggle').getBoundingClientRect().right);
           return {
-            activar: alto('ruleta-activar'), pegar: alto('ruleta-pegar-toggle'),
+            hueco,
             lineas: lineas(document.getElementById('ruleta-etq-opciones')) + lineas(document.getElementById('ruleta-activar')) + lineas(document.getElementById('ruleta-pegar-toggle')),
             scroll: document.documentElement.scrollWidth - document.documentElement.clientWidth,
           };
         });
-        if (m.activar > 44 || m.pegar > 44 || m.lineas !== 3 || m.scroll > 0) cabecera.push(`${vp.width}px: botones ${m.activar}/${m.pegar} px de alto, ${m.lineas} líneas de 3 textos, ${m.scroll}px de scroll horizontal`);
+        if (m.lineas !== 3 || m.scroll > 0 || Math.abs(m.hueco) > 1) cabecera.push(`${vp.width}px: ${m.lineas} líneas de 3 textos, ${m.scroll}px de scroll horizontal, ${m.hueco}px entre los botones y el borde derecho`);
       }
       if (cabecera.length) return { ok: false, mensaje: `cabecera del editor con ocultas: ${cabecera.join('; ')}` };
       const ok = a.ocultas === '1,4,5' && a.ocupa && b.ocultas === '' && !b.ocupa && b.gajos === 6
