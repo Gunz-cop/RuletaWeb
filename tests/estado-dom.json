@@ -221,6 +221,18 @@
       "mensaje": "claves viejas: lista «Ana, Luis, Marta», ocultas false,true,false, pregunta «¿Quién friega?», etiqueta «Opciones · 2 de 3», 2 gajos, clave vieja intacta=true"
     }
   },
+  "/ruleta [compartir-copia]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "enlace copiado «/ruleta#para=%C2%BFQui%C3%A9n+friega%3F&opcion=Pizza&opcion=Sushi&opcion=Hamburguesa&opcion=Ensalada&opcion=Pasta», leído {\"para\":\"¿Quién friega?\",\"opciones\":[\"Pizza\",\"Sushi\",\"Hamburguesa\",\"Ensalada\",\"Pasta\"]}, activas [\"Pizza\",\"Sushi\",\"Hamburguesa\",\"Ensalada\",\"Pasta\"], aviso «Enlace copiado» (con Deshacer: false)"
+    }
+  },
+  "/ruleta#para=%C2%BFQui%C3%A9n+friega%3F&opcion=Ana&opcion=Luis&opcion=Sof%C3%ADa [compartida-por-enlace]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "al abrir: {\"opciones\":[\"Ana\",\"Luis\",\"Sofía\"],\"pregunta\":\"¿Quién friega?\",\"gajos\":3,\"aviso\":\"Se cargó la ruleta compartida\",\"hash\":\"\"}; tras Deshacer: {\"opciones\":[\"Uno\",\"Dos\"],\"pregunta\":\"\",\"gajos\":2,\"aviso\":null,\"hash\":\"\"}"
+    }
+  },
   "/ruleta [rueda-entera-visible-android-360x560]": {
     "relacion": {
       "ok": true,

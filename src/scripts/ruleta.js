@@ -19,6 +19,7 @@
 import {
   leerOpciones, indiceAlAzar, geometria, tonoDe, margenReposo, amplitudReposo,
   elegirFinal, planGiro, poseFinal, reasignarOcultas, migrarGuardado,
+  enlace, leerEnlace, ENLACE_MAX_CARACTERES,
   CLAVES, TONOS, HISTORIAL_MAX,
 } from './ruleta-logica.js';
 
@@ -602,17 +603,72 @@ function initRuleta() {
     avisar(`«${it.t.trim()}» quitada`, () => restaurar(foto));
   }, { signal });
 
+  /* --- Compartir por enlace (SDD §6.10, RF-11, D5) ---
+     Solo viajan las opciones activas y la pregunta; las ocultas, el modo y las
+     cuentas se quedan. Va en el fragmento: no llega a ningún servidor. */
+  async function copiar(texto) {
+    try { await navigator.clipboard.writeText(texto); return true; } catch { /* sin permiso o sin contexto seguro: se prueba el método antiguo */ }
+    const t = document.createElement('textarea');
+    t.value = texto;
+    t.setAttribute('readonly', '');
+    t.style.cssText = 'position:fixed;top:0;opacity:0';
+    document.body.append(t);
+    t.select();
+    let ok = false;
+    try { ok = document.execCommand('copy'); } catch { /* sin portapapeles */ }
+    t.remove();
+    return ok;
+  }
+  async function compartir() {
+    const opciones = textosActivos();
+    if (!opciones.length) { avisar('Añade opciones para compartir'); return; }
+    const url = enlace(location.href, { para: inpPregunta.value.trim(), opciones });
+    if (url.length > ENLACE_MAX_CARACTERES) { avisar('Demasiado largo para un enlace: quita algunas opciones'); return; }
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: 'Decídelo.app — ruleta', text: inpPregunta.value.trim() || 'Gira mi ruleta', url });
+        return;
+      } catch (e) {
+        if (e?.name === 'AbortError') return; // el visitante cerró el menú de compartir
+      }
+    }
+    avisar(await copiar(url) ? 'Enlace copiado' : 'No se pudo copiar el enlace');
+  }
+  $('ruleta-compartir').addEventListener('click', compartir, { signal });
+
+  // Abrir un enlace compartido sustituye la lista y la pregunta, y se puede deshacer.
+  // Al arrancar (`inicial`) la rueda aún no se ha pintado: lo hace el arranque.
+  function cargarEnlace(inicial = false) {
+    const e = leerEnlace(location.hash);
+    if (!e) return; // fragmento ausente o mal formado: la página se queda como estaba
+    const foto = fotoLista(), preguntaAntes = inpPregunta.value;
+    estado.items = e.opciones.map((t) => ({ t, oculta: false }));
+    estado.cuentas = {};
+    inpPregunta.value = e.para;
+    escribirAlmacen(CLAVES.pregunta, e.para);
+    history.replaceState(history.state, '', location.pathname + location.search);
+    if (inicial) guardarLista();
+    else { renderLista(); editado(); }
+    avisar('Se cargó la ruleta compartida', () => {
+      inpPregunta.value = preguntaAntes;
+      escribirAlmacen(CLAVES.pregunta, preguntaAntes.trim());
+      restaurar(foto);
+    });
+  }
+  window.addEventListener('hashchange', () => cargarEnlace(), { signal });
+
   /* --- Aviso con «Deshacer» (7 s; se detiene con el ratón o el foco encima, WCAG 2.2.1) --- */
   let avisoTimer = null, avisoUndo = null;
-  function avisar(texto, deshacer) {
+  function avisar(texto, deshacer = null) {
     clearTimeout(avisoTimer);
     avisoUndo = deshacer;
     $('ruleta-aviso-texto').textContent = texto;
+    avisoDeshacer.hidden = !deshacer; // los avisos que solo informan («Enlace copiado») no llevan botón
     avisoEl.hidden = false;
     avisoTimer = setTimeout(cerrarAviso, DESHACER_MS);
     // El lector de pantalla lo anuncia por el anunciador compartido; el aviso no es una región viva
     const anunciador = $('sr-announcer');
-    if (anunciador) { anunciador.textContent = ''; setTimeout(() => { anunciador.textContent = `${texto}. Botón Deshacer disponible.`; }, 50); }
+    if (anunciador) { anunciador.textContent = ''; setTimeout(() => { anunciador.textContent = deshacer ? `${texto}. Botón Deshacer disponible.` : texto; }, 50); }
   }
   function cerrarAviso() { avisoEl.hidden = true; avisoUndo = null; clearTimeout(avisoTimer); }
   const rearmarAviso = () => { if (!avisoEl.hidden) { clearTimeout(avisoTimer); avisoTimer = setTimeout(cerrarAviso, DESHACER_MS); } };
@@ -792,6 +848,7 @@ function initRuleta() {
   estado.items = leerOpciones(guardado.opciones).map((t, i) => ({ t, oculta: guardado.ocultas.has(i) }));
   limitarActivas();
   inpPregunta.value = guardado.pregunta;
+  cargarEnlace(true);
   renderLista();
   renderHistorial();
   aplicarModo();
