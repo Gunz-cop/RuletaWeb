@@ -2,8 +2,8 @@
 
 | | |
 |---|---|
-| Estado | **Implementado** en la fase 3 (#9, PR #18) — v1.11; pendientes la fase 4 (#10, compartir) y la 5 (#11, texto). Diseño aprobado por el propietario (prototipo v2, §6.15); auditado §14; bloqueantes §15 |
-| Fecha | 2026-10-05 (v1.11: 2026-10-06) |
+| Estado | **Implementado** en la fase 3 (#9, PR #18) — v1.12; pendientes la fase 4 (#10, compartir) y la 5 (#11, texto). Diseño aprobado por el propietario (prototipo v2, §6.15); auditado §14; bloqueantes §15 |
+| Fecha | 2026-10-05 (v1.11 y v1.12: 2026-10-06) |
 | Alcance | `src/pages/ruleta.astro`, sus componentes y su JS, tests de estado de `/ruleta`, texto SEO de la página |
 | Normas que manda | `AGENTS.md` → `DESIGN.md` → skill `decidelo-herramienta` → skills de terceros |
 | Issues | Épica #4 · fase 0a #5 · 0b #6 · 1 #7 · 2 #8 · 3 #9 · 4 #10 · 5 #11 |
@@ -158,8 +158,8 @@ fase de texto.
   azar justo y complica el objeto. Se descarta.
 - Imágenes o colores por opción elegidos por el usuario.
 - Cuentas, servidor o sincronización: el sitio es estático a propósito.
-- Pantalla completa (Fullscreen API) para proyectar: posible mejora
-  posterior; el modo foco cubre el caso hoy.
+- ~~Pantalla completa (Fullscreen API) para proyectar~~: pasó a objetivo
+  en la v1.4 (D7, §6.14); en iPhone cae al modo foco.
 - Cambiar la ruta `/ruleta`, el `name` del Worker o el sitemap.
 
 ## 4. Requisitos funcionales
@@ -172,8 +172,8 @@ fase de texto.
 | RF-04 | «Girar ruleta» elige un ganador uniforme entre las opciones **activas**, anima la rueda hasta que el puntero señala ese gajo y escribe el resultado al resolver `.finished`. |
 | RF-05 | Durante el giro el botón queda desactivado y la lista no cambia la rueda: lo escrito se guarda (`localStorage`) pero **no se aplica al aterrizar**. El resultado se muestra sobre la rueda que giró, con las opciones, N y la pregunta congeladas al empezar. Lo pendiente se aplica en la **siguiente acción** del visitante: al volver a escribir, al ocultar/activar una opción o al pulsar «Girar ruleta» (se repinta la rueda antes de planificar el giro). Así nunca hay un resultado sobre una rueda que no lo produjo (§15). Un «Deshacer» pulsado durante el giro es un cambio de lista más: queda pendiente igual. |
 | RF-06 | El resultado aparece bajo la rueda: el texto de la opción grande en Outfit; debajo, en terciario, «¿Qué se decide?» o «1 de N opciones». Se anuncia por `aria-live="polite"`. Un texto largo usa el patrón `.is-largo` de los dados: tamaño menor y hasta dos líneas dentro del mismo alto reservado; solo pasado eso, elipsis. **El resultado vigente se oculta en cuanto la rueda se repinta con otra lista** (queda en el historial), y con él la marca `is-ganador`. |
-| RF-07 | Tras un resultado, botón de texto «Quitar «X» y seguir»: oculta esa opción (no la borra) para eliminatorias; deshacible con el aviso existente, que deja de ser solo de «Vaciar»: guarda una foto genérica `{tipo, texto, ocultas}` y su mensaje dice qué se deshace. |
-| RF-08 | Lista «Ocultas»: ver todas las opciones con casilla para ocultar/activar sin borrar, y «Activar todas». Mantiene la identidad por índice y el emparejamiento por texto actuales (`updateFromTextarea`). |
+| RF-07 | Tras un resultado, botón de texto «Quitar «X»»: oculta esa opción (no la borra) para eliminatorias; deshacible con el aviso existente, que deja de ser solo de «Vaciar»: guarda una foto genérica `{tipo, texto, ocultas}` y su mensaje dice qué se deshace. |
+| RF-08 | Lista «Ocultas»: ver todas las opciones con casilla para ocultar/activar sin borrar, y «Activar todas» (v1.12: interruptor por fila en la fase 3; «Activar todas» llega en una fase aparte, §10, porque el prototipo aprobado no lo tenía). Mantiene la identidad por índice y el emparejamiento por texto actuales (`updateFromTextarea`). |
 | RF-09 | «Mezclar» reordena las líneas (Fisher-Yates con `crypto`). «Vaciar» vacía y ofrece «Deshacer» durante 7 s, como hoy (incluido el WCAG 2.2.1 del foco). |
 | RF-10 | Historial: últimos 20 resultados, numerados, con la pregunta si la había; contador en texto plano y «Borrar» como texto subrayado. |
 | RF-11 | Compartir: enlace `/ruleta#para=…&opcion=…&opcion=…` (mismo formato que el dado de opciones). Al abrirlo carga esas opciones, ofrece «Deshacer» para recuperar la lista propia y limpia el fragmento de la barra. Escucha `hashchange`. |
@@ -187,7 +187,7 @@ fase de texto.
 | Id | Requisito | Cómo se verifica |
 |---|---|---|
 | RNF-01 | Uniformidad: χ² de 60 000 sorteos con N ∈ {2, 3, 6, 7, 13, 50} no rechaza uniformidad a α = 0,001. Sin sesgo de módulo (muestreo por rechazo). | `scripts/ruleta-check.mjs` en `npm test` |
-| RNF-02 | Coherencia objeto–texto: el gajo bajo el puntero tras el aterrizaje es el del resultado, también con N = 1, N = 2 y N = 40. | Estado `ganador-coincide-con-la-rueda` en `test:estado`: 3 giros animados de verdad y 30 con `reducedMotion: 'reduce'` (cada giro animado dura ~4 s; 30 alargarían CI dos minutos) |
+| RNF-02 | Coherencia objeto–texto: el gajo bajo el puntero tras el aterrizaje es el del resultado, también con N = 1, N = 2 y N = 40. | Estado `ganador-coincide-con-la-rueda` en `test:estado`: 4 giros animados de verdad, uno por final (v1.11), y 30 con `reducedMotion: 'reduce'` (cada giro animado dura 5–7 s; 30 alargarían CI varios minutos) |
 | RNF-03 | La pose final siempre queda dentro del gajo ganador a ≥ `max(0,03 × gajo, 1,5°)` de la frontera, y el balanceo de reposo nunca la saca de él. Durante la animación sí puede cruzar (finales de §6.13); el resultado se escribe solo con la pose final. | `ruleta-check.mjs` |
 | RNF-04 | Acción principal visible con ≥ 16 px de holgura en 360×560, 375×548 y 393×659, y en los formatos de `estadosResponsive`; sin scroll horizontal a 344 px. | `estadosAccionVisible` + `estadosResponsive` |
 | RNF-05 | La rueda entera (no solo el botón) dentro de la primera pantalla en los tres móviles de referencia y en 1280×720. | Invariante nuevo `rueda-entera-visible` (§9) |
@@ -222,7 +222,7 @@ MÓVIL (base, < 640px)                 ESCRITORIO (≥ 1024px)
 │ Sushi   (resultado)      │          │ Últimos resultados (lista dividida)          │
 │ ¿Qué comemos hoy?        │          └──────────────────────────────────────────────┘
 │ ( Girar ruleta )         │
-│ Quitar «Sushi» y seguir  │
+│ Quitar «Sushi»           │
 ├──────────────────────────┤
 │ ¿QUÉ SE DECIDE? ______   │
 │ OPCIONES · OCULTAS (2)   │
@@ -318,8 +318,9 @@ desaparece). Estructura:
   gajo lo da `tonoDe(i, N)`, que garantiza que dos gajos vecinos (también el
   último y el primero) no comparten tono.
 - **Ganador marcado con el acento** al aterrizar: el gajo ganador recibe
-  `.is-ganador` (borde o relleno `--accent-warm`, texto `#1a0e06`), el resto
-  no cambia. Nunca verde/rojo.
+  `.is-ganador`; desde la v1.4 el marcado es el de §6.12 (contorno claro de
+  3 px, etiqueta 700 y el resto atenuado al 30 %), no el acento. Nunca
+  verde/rojo.
 - **Puntero** arriba (ángulo de lectura −90°), como hoy.
 
 ### 6.3 Lógica pura: `src/scripts/ruleta-logica.js`
@@ -392,7 +393,7 @@ Todas las fases con `element.animate()`, solo `transform` y `opacity`.
   para que el botón no salte. El `#sr-announcer` compartido deja de usarse
   para el ganador (el `aria-live` propio basta y evita el doble anuncio);
   se sigue usando para «Deshacer».
-- Debajo, «Quitar «X» y seguir» (texto subrayado), visible solo tras un
+- Debajo, «Quitar «X»» (texto subrayado), visible solo tras un
   resultado y si quedan ≥ 2 opciones activas.
 - Historial con el patrón de la moneda (`.history-list`, filas divididas
   por `--divider-line`), clave `decidelo_ruleta_historial`, máx. 20,
@@ -467,7 +468,7 @@ Siguiendo «Cómo decidir entre CSS propio y utilidad de Tailwind»:
 | `<h1>` con `clamp()`, `letter-spacing` de etiquetas | CSS propio |
 | Resultado (`.is-shown`), filas del historial y de ocultas (las crea el JS) | CSS propio |
 | Botón principal y campos (`:focus`, `:disabled`, `::placeholder`) | CSS propio |
-| Media queries propias | Solo `@media (max-width: 639px)` y `(max-width: 639px) and (max-height: 620px)` |
+| Media queries propias | Solo `@media (max-width: 639px)` y `(max-width: 639px) and (max-height: 620px)`; además `(min-width: 1024px)` para las áreas de la rejilla de escritorio, como la moneda (v1.12) |
 
 ### 6.12 Paleta pastel viva (D2)
 
@@ -580,8 +581,8 @@ control donde se usa):
 7. **Herramientas de la lista** en una fila de texto: Mezclar · Ordenar ·
    Vaciar · Compartir («Compartir» desde la fase 4, #10). Nada pide confirmación: todo se deshace. El aviso
    «Deshacer» vive dentro de la zona de la rueda (así se ve también en
-   pantalla completa): abajo y centrado en móvil, arriba a la derecha desde
-   1024 px para no tapar los iconos.
+   pantalla completa): arriba en móvil (`top: 72px`) y arriba a la derecha
+   desde 1024 px, para no tapar «Girar ruleta» ni los iconos (§6.15).
 8. **Sin pesos ni probabilidades distintas**: la página promete que todas
    las opciones tienen la misma probabilidad.
 
@@ -630,8 +631,9 @@ Decisiones que cierran lo que la auditoría del prototipo dejó abierto (v1.8):
   un control deshabilitado): si el visitante pasó a otro control mientras
   giraba, se respeta (v1.11).
   (Hoy salta al modal.)
-- Pestañas con `role="tablist"`, flechas izquierda/derecha y
-  `aria-selected` (hoy faltan las flechas).
+- Las pestañas «Opciones · Ocultas» desaparecen (§6.14). El selector de
+  modo (Normal · Eliminar · Contar) es un grupo (`role="group"`) de botones
+  con `aria-pressed` (v1.12).
 - Aviso de «Deshacer»: se conserva tal cual (ya cumple 2.2.1 y foco).
 
 ## 8. Seguridad y privacidad
@@ -684,6 +686,7 @@ funcionando y se mergea con confirmación del propietario.
 | 2. Lógica pura | `ruleta-logica.js` + `ruleta-check.mjs` en `npm test`. Sin cambios visibles | 1 (decisiones de paleta y duración) | Bajo |
 | 3. Migración de la página | `Wheel.astro`, `ruleta.astro` con la anatomía, `ruleta.js`, resultado, historial, quitar ganador, ocultas, modo foco en la herramienta, cabecera sin controles, claves migradas; borrar canvas, modal, confeti, audio y hoja inferior; tests de estado de §9; DESIGN.md y AGENTS.md. **En el mismo PR**, las correcciones de hecho del texto que dejan de ser verdad (§2.3: meta description, FAQ, artículo y los tres posts del blog) | 2 | **Alto**: es la página que da nombre al sitio |
 | 4. Compartir por enlace | Botón «Compartir» (§6.10, D5) + RF-11 + estado `compartida-por-enlace` (v1.11: el botón se mueve aquí desde la fase 3) | 3 | Bajo |
+| 4b. «Activar todas» | RF-08: botón de texto visible solo con alguna oculta; activa hasta el máximo de 100 (RF-01); deshacible con el aviso | 3 | Bajo |
 | 5. Texto | Título, meta, H1, artículo, FAQ y JSON-LD con `decidelo-textos`, a partir de un export de Search Console de `/ruleta` | 3 (describe la herramienta nueva) | Medio (SEO) |
 
 La fase 3 podría partirse (objeto y resultado primero; página después),
@@ -724,7 +727,7 @@ documenta en DESIGN.md en la fase 3.
 
 - Uniformidad y coherencia en verde en CI (RNF-01, RNF-02).
 - Todos los invariantes móviles en verde (RNF-04, RNF-05).
-- JS ≤ 5 KB gzip, hoja compartida +≤ 0,3 KB gzip (RNF-06).
+- JS ≤ 10 KB gzip (objetivo 8; O6 y RNF-06 desde la v1.4), hoja compartida +≤ 0,3 KB gzip.
 - Search Console a 4 semanas: CTR y posición media de `/ruleta` no peores
   que las 4 semanas previas.
 
@@ -777,3 +780,4 @@ resolvieron cambiando este documento. Cada fila enlaza el issue.
 | #17 | El «≤ 17°/fotograma» de §6.3 y de #8 medía giros de vueltas exactas; con el reparto real del prototipo aprobado (tramo hasta el ganador y ±300 ms) el arranque llega a 20°. | Opción 1: se corrige la cifra a ≤ 21°/fotograma medida sobre el reparto real; el comportamiento aprobado no cambia. La regla de vueltas y duración pasa al SDD. | §6.3 | v1.9 |
 | PR #16 (#8), diferencias anotadas | Frase empalmada y desfase viejo en `planGiro` (§6.3); historial con `cuenta`; «30°/s» de «Por los pelos» no se cumple con N pequeño; no había máximo de opciones fuera del enlace. | Corregido; máximo de 100 opciones activas (RF-01); «30°/s» pasa a descripción. Se acepta que `leerEnlace` quite caracteres de control y de dirección (defensivo, §8). | §6.3, §6.9, §6.13, RF-01 | v1.10 |
 | PR #18 (#9), auditoría ciclo 1 | (1) El criterio «SDD en `main` con Estado: implementado» chocaba con el protocolo de las sesiones («no copies el SDD a tu rama»). (2) RF-01 no decía qué pasa con las opciones 101+ al pegar o cargar, y el aviso se perdía. (3) El modo foco recordado dejaba sin salida visible. (4) Destino del foco si el visitante se movió durante el giro. (5) «Compartir» publicaba enlaces que no cargan hasta #10. (6) «Sin giros aún» en el historial vacío, sin fuente. (7) Margen lateral de 24 px en móvil frente a 16 px del prototipo. (8) AGENTS.md regla 6 y la checklist de la skill no recogen el tic (D1). (9) Textos del blog fuera de §2.3 que dejan de ser verdad. | (1) Gana el issue: el PR #18 trae este archivo **copiado tal cual** de la rama del SDD (`git show origin/claude/rediseno-ruleta-sdd:docs/sdd-ruleta.md`); tras el merge, el SDD vive en `main` y esta rama se retira. (2) Las sobrantes quedan ocultas, no se pierden; aviso persistente calculado en cada pintado (RF-01). (3) Icono «Salir del modo foco» + `Esc` (RF-12). (4) Solo se mueve si se perdió (§7). (5) El botón pasa a la fase 4 (§6.7, §10). (6) Se acepta, por coherencia con «Sin lanzamientos aún» de la moneda y los dados. (7) Se acepta: es el `.wrap` del sitio, como la moneda. (8) Se corrigen en el PR #18: «y el tic opcional de la ruleta (apagado por defecto)». (9) Se corrigen en el PR #18 (principio de A1): duración «3 o 4 segundos» → 5–7 s y «cientos de opciones» → hasta 100 activas. El PR #18 se mergea con *squash* (un commit intermedio rompe `/ruleta`). | Estado, RF-01, RF-12, §6.7, §7, §9, §10 | v1.11 |
+| PR #18 (#9), auditoría ciclo 3 y revisión del propietario del SDD | (1) El h1 pasa de «Ruleta Aleatoria *Online*» a «Ruleta aleatoria, que *decida el azar*» (prototipo aprobado). (2) RF-08 «Activar todas» no estaba ni en el prototipo ni en el sitio. (3) Corte `(min-width: 1024px)` en CSS propio. (4) Texto del SDD desfasado: §3 (pantalla completa), §6.2 (marcado del ganador), RF-07 y §6.6 («y seguir»), §6.14.7 (posición del aviso), §7 (pestañas), RNF-02 (3 giros), §13 (5 KB). | (1) Se acepta hasta #11: el título y la meta conservan «Online», y el texto definitivo sale de Search Console. (2) Fase 4b aparte (§10): no bloquea el merge y en clase hace falta para recuperar a los que ya salieron. (3) Se acepta, como la moneda (§6.11). (4) Corregido. | Estado, §3, RF-07, RF-08, RNF-02, §6.2, §6.6, §6.11, §6.14, §7, §10, §13 | v1.12 |
