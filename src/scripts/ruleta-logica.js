@@ -339,14 +339,17 @@ export function migrarGuardado(leer) {
     return v !== null || !VIEJAS[dato] ? v : leerSeguro(VIEJAS[dato]);
   };
 
-  const opcionesGuardadas = nuevaOVieja('opciones');
+  const opcionesNuevas = leerSeguro(CLAVES.opciones);
+  const opcionesGuardadas = opcionesNuevas ?? leerSeguro(VIEJAS.opciones);
   const opciones = opcionesGuardadas ?? OPCIONES_POR_DEFECTO.join('\n');
   const lista = leerOpciones(opciones);
 
   // Ocultas: v2 = {v:2, indices}; v1 = textos ocultos, que ocultan todas las
   // líneas con ese texto (lo que hacía el código viejo).
   const ocultas = new Set();
-  const o = json(nuevaOVieja('ocultas'));
+  // Los índices viejos solo valen para la lista vieja: con la lista nueva
+  // guardada, sin ocultas nuevas no hay ninguna oculta.
+  const o = json(opcionesNuevas === null ? nuevaOVieja('ocultas') : leerSeguro(CLAVES.ocultas));
   if (esObjeto(o) && o.v === 2 && Array.isArray(o.indices)) {
     o.indices.forEach((i) => { if (Number.isInteger(i) && i >= 0 && i < lista.length) ocultas.add(i); });
   } else if (Array.isArray(o)) {
@@ -401,7 +404,7 @@ export const ENLACE_MAX_CARACTERES = 2000;
 // /ruleta#para=…&opcion=…&opcion=…  En el fragmento: no llega a ningún
 // servidor, y las opciones suelen ser nombres de personas. Mismo formato que
 // el dado de opciones, con los límites de la ruleta.
-export function enlace(base, { para, opciones }) {
+export function enlace(base, { para = '', opciones = [] } = {}) {
   const u = new URL(base);
   u.search = '';
   const p = new URLSearchParams();
@@ -416,19 +419,36 @@ export function enlace(base, { para, opciones }) {
   return u.toString();
 }
 
+// Caracteres de control y de dirección del texto (U+202A–202E, U+2066–2069):
+// no se ven y pueden desordenar lo que se muestra. El texto ya va con
+// textContent; esto es solo para que se lea como se escribió.
+const INVISIBLES = /[\p{Cc}\u202A-\u202E\u2066-\u2069]/gu;
+const decodificar = (v) => decodeURIComponent(v.replace(/\+/g, ' '));
+
 // Lee un enlace compartido (location.hash, con o sin #). null si no trae una
-// ruleta válida: entonces la página se abre como siempre. Nunca lanza.
+// ruleta válida o el fragmento está mal codificado (SDD §8: decodeURIComponent
+// en try/catch; URLSearchParams no lanza y cambiaría lo roto por «�»): la
+// página se abre como siempre. Nunca lanza.
 export function leerEnlace(hash) {
+  if (typeof hash !== 'string') return null;
+  let para = null;
+  const opciones = [];
   try {
-    if (typeof hash !== 'string') return null;
-    const p = new URLSearchParams(hash.replace(/^#/, ''));
-    const opciones = p.getAll('opcion')
-      .map((op) => limpiar(op, ENLACE_OPCION_MAX))
-      .filter(Boolean)
-      .slice(0, ENLACE_MAX_OPCIONES);
-    if (!opciones.length) return null;
-    return { para: limpiar(p.get('para'), PARA_MAX), opciones };
+    for (const par of hash.replace(/^#/, '').split('&')) {
+      const igual = par.indexOf('=');
+      if (igual === -1) continue;
+      const clave = decodificar(par.slice(0, igual));
+      const valor = decodificar(par.slice(igual + 1)).replace(INVISIBLES, '');
+      if (clave === 'opcion') opciones.push(valor);
+      else if (clave === 'para' && para === null) para = valor;
+    }
   } catch {
     return null;
   }
+  const lista = opciones
+    .map((op) => limpiar(op, ENLACE_OPCION_MAX))
+    .filter(Boolean)
+    .slice(0, ENLACE_MAX_OPCIONES);
+  if (!lista.length) return null;
+  return { para: limpiar(para, PARA_MAX), opciones: lista };
 }

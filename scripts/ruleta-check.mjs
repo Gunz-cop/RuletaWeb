@@ -112,6 +112,18 @@ const FINALES = ['normal', 'casi', 'pelos', 'atras'];
   check(cerca(nl, 0.12) && cerca(nh, 0.88), `N=6 «Normal» = [${nl}, ${nh}], esperado [0,12; 0,88]`);
 }
 
+/* --- Más de 120 opciones (gajo < 3°): el margen no cabe, la pose va al centro del gajo --- */
+{
+  for (const n of [121, 200]) {
+    for (const final of FINALES) {
+      const [lo, hi] = intervaloFinal(final, n);
+      check(lo === 0.5 && hi === 0.5, `N=${n} «${final}»: intervalo [${lo}, ${hi}], esperado el centro`);
+    }
+    const plan = planGiro({ anguloActual: 3, ganador: n - 1, n, rnd: u32Semilla });
+    check(gajoBajoPuntero(plan.anguloFinal, n) === n - 1, `N=${n}: no para en el ganador`);
+  }
+}
+
 /* --- RNF-03: pose final en el gajo ganador con margen, y reposo dentro del gajo --- */
 // Fotogramas válidos para element.animate(): offsets en [0, 1] y no decrecientes
 // (si no, el navegador lanza y no hay giro).
@@ -338,8 +350,11 @@ const RADIOS = [100, 160, 230, 350, 600]; // px: de un móvil a pantalla complet
     ['solo nuevas', nuevas, { opciones: 'Uno\nDos\nTres', ocultas: [2], pregunta: '¿Qué vemos?', foco: false, sonido: true, modo: 'contar' }],
     // 3. Las dos: mandan las nuevas.
     ['nuevas y viejas', { ...viejas, ...nuevas }, { opciones: 'Uno\nDos\nTres', ocultas: [2], pregunta: '¿Qué vemos?', foco: false, sonido: true }],
-    // 4. Opciones nuevas, el resto viejo (cada dato se busca por separado).
-    ['opciones nuevas, resto viejo', { ...viejas, [CLAVES.opciones]: 'Ana\nEva' }, { opciones: 'Ana\nEva', ocultas: [0], pregunta: '¿Quién friega?', foco: true }],
+    // 4. Opciones nuevas, el resto viejo: pregunta y foco se buscan por separado;
+    // las ocultas viejas no, porque sus índices son de la lista vieja.
+    ['opciones nuevas, resto viejo', { ...viejas, [CLAVES.opciones]: 'Ana\nEva' }, { opciones: 'Ana\nEva', ocultas: [], pregunta: '¿Quién friega?', foco: true }],
+    // Lista nueva sin ocultas nuevas: los índices viejos no se aplican a otra lista.
+    ['lista nueva sin ocultas nuevas', { [CLAVES.opciones]: 'X\nY\nZ', ruleta_opciones: 'A\nB\nC', ruleta_ocultas: JSON.stringify({ v: 2, indices: [0] }) }, { opciones: 'X\nY\nZ', ocultas: [] }],
     // 5. Ocultas viejas en v2.
     ['ocultas viejas v2', { ruleta_opciones: 'A\nB\nC', ruleta_ocultas: JSON.stringify({ v: 2, indices: [0, 2, 9, -1, 1.5, 'x'] }) }, { opciones: 'A\nB\nC', ocultas: [0, 2] }],
     // 6. Título viejo por defecto: pregunta vacía.
@@ -358,7 +373,7 @@ const RADIOS = [100, 160, 230, 350, 600]; // px: de un móvil a pantalla complet
       check(JSON.stringify(real) === JSON.stringify(v), `migrarGuardado (${nombre}): ${k} = ${JSON.stringify(real)}, esperado ${JSON.stringify(v)}`);
     }
   }
-  const raros = migrarGuardado(desde(combinaciones[7][1]));
+  const raros = migrarGuardado(desde(combinaciones.find(([nombre]) => nombre === 'tipos raros')[1]));
   check(JSON.stringify(raros.conteo) === '{"v":1,"cuentas":{"C":3}}', `migrarGuardado: conteo ${JSON.stringify(raros.conteo)}`);
   check(JSON.stringify(raros.historial) === '[{"opcion":"A","para":"","t":0}]', `migrarGuardado: historial ${JSON.stringify(raros.historial)}`);
   const n2 = migrarGuardado(desde(nuevas));
@@ -401,15 +416,25 @@ const RADIOS = [100, 160, 230, 350, 600]; // px: de un móvil a pantalla complet
   const recortado = leerEnlace(new URL(enlace(BASE, { para: '', opciones: Array.from({ length: 120 }, () => 'y'.repeat(70)) })).hash);
   check(recortado.opciones.length === 100 && recortado.opciones[0].length === 60, 'enlace no aplica los límites');
   // Mal formados: null, sin lanzar.
-  const malos = ['', '#', '#para=Hola', '#opcion=', '#opcion=%20%20&opcion=', '#%E0%A4%A', '#opcion=%', '#opcion=%ZZ%', '#&&&', null, undefined, 123, {}, [], '#opcion'];
+  const malos = ['', '#', '#para=Hola', '#opcion=', '#opcion=%20%20&opcion=', '#%E0%A4%A', '#opcion=%', '#opcion=%ZZ%',
+    '#opcion=%E0%A4%A', '#opcion=%C0%AF', '#para=%FF&opcion=Bien', '#opcion=%E0%A4%A&opcion=Bien', '#&&&', '#opcion',
+    '#opcion=%00%01', null, undefined, 123, {}, []];
   for (const m of malos) {
     let r;
     try { r = leerEnlace(m); } catch (e) { check(false, `leerEnlace(${JSON.stringify(m)}) lanza: ${e.message}`); continue; }
-    const aceptable = r === null || (m === '#opcion=%' && r && r.opciones[0] === '%') || (m === '#opcion=%ZZ%' && r && r.opciones[0] === '%ZZ%');
-    check(aceptable, `leerEnlace(${JSON.stringify(m)}) = ${JSON.stringify(r)}, esperado null`);
+    check(r === null, `leerEnlace(${JSON.stringify(m)}) = ${JSON.stringify(r)}, esperado null`);
   }
-  const unaMala = leerEnlace('#opcion=%E0%A4%A&opcion=Bien');
-  check(unaMala && unaMala.opciones.includes('Bien'), 'leerEnlace descarta un enlace por una opción mal codificada');
+  // «+» es un espacio (application/x-www-form-urlencoded, como URLSearchParams).
+  check(JSON.stringify(leerEnlace('#opcion=Ana+Mar%C3%ADa&opcion=a%2Bb')) === '{"para":"","opciones":["Ana María","a+b"]}', 'leerEnlace no trata «+» como espacio');
+  // Caracteres de control e inversión bidireccional fuera; los emoji compuestos (ZWJ) se quedan.
+  const raro = leerEnlace('#opcion=A%00B&opcion=%E2%80%AEdcba&opcion=%F0%9F%91%A8%E2%80%8D%F0%9F%91%A9');
+  check(raro && JSON.stringify(raro.opciones) === JSON.stringify(['AB', 'dcba', '👨\u200d👩']), `leerEnlace con caracteres invisibles: ${JSON.stringify(raro)}`);
+  // Solo cuenta el primer «para», aunque esté vacío.
+  check(leerEnlace('#para=&para=Otra&opcion=X').para === '', 'leerEnlace no toma el primer «para»');
+  // enlace sin datos no lanza.
+  let sinDatos;
+  try { sinDatos = enlace('https://decidelo.app/ruleta', {}); } catch (e) { check(false, `enlace(base, {}) lanza: ${e.message}`); }
+  check(sinDatos === 'https://decidelo.app/ruleta' && leerEnlace(new URL(sinDatos).hash) === null, `enlace(base, {}) = ${sinDatos}`);
 }
 
 if (fallos.length) {
