@@ -127,9 +127,9 @@ const schemaLD = {
     <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@1,400&display=swap" rel="stylesheet">
   </Fragment>
 
-  <main class="ruleta-tool wheel-palette wrap" id="ruleta-tool">
+  <main class="ruleta-tool wheel-palette wrap pb-8" id="ruleta-tool">
 
-    <section class="ruleta-hero">
+    <section class="ruleta-hero pt-2 sm:pt-6 lg:pt-4">
       <h1>Ruleta aleatoria, que <em>decida el azar</em></h1>
       <p class="ruleta-lede">Escribe tus opciones y deja que el azar elija: todas tienen la misma probabilidad.</p>
       <div class="ruleta-modes" role="group" aria-label="Modo">
@@ -145,7 +145,7 @@ const schemaLD = {
         <span class="ruleta-result-main" id="ruleta-result-main"></span>
         <span class="ruleta-result-side" id="ruleta-result-side"></span>
       </p>
-      <div class="ruleta-spin-wrap"><button class="ruleta-spin" id="ruleta-girar" type="button">Girar ruleta</button></div>
+      <div class="flex justify-center mt-2"><button class="ruleta-spin" id="ruleta-girar" type="button">Girar ruleta</button></div>
       <div class="ruleta-actions" id="ruleta-acciones-resultado" hidden>
         <button class="ruleta-text-btn is-quiet" id="ruleta-quitar" type="button" hidden></button>
       </div>
@@ -162,7 +162,7 @@ const schemaLD = {
         <label class="ruleta-label" for="ruleta-pregunta">¿Qué se decide?</label>
         <input class="ruleta-line" id="ruleta-pregunta" type="text" maxlength="60" placeholder="¿Qué comemos hoy?" autocomplete="off">
       </div>
-      <div class="ruleta-editor-head">
+      <div class="ruleta-editor-head flex items-end justify-between mt-5">
         <span class="ruleta-label" id="ruleta-etq-opciones">Opciones</span>
         <button class="ruleta-text-btn" id="ruleta-pegar-toggle" type="button" aria-expanded="false" aria-controls="ruleta-pegar-panel">Pegar lista</button>
       </div>
@@ -173,19 +173,19 @@ const schemaLD = {
           <input class="ruleta-line" id="ruleta-nueva" type="text" placeholder="Añadir opción" enterkeyhint="enter" autocomplete="off" autocapitalize="sentences">
         </form>
       </div>
-      <div class="ruleta-paste" id="ruleta-pegar-panel" hidden>
+      <div class="mt-3" id="ruleta-pegar-panel" hidden>
         <label class="sr-only" for="ruleta-opciones">Opciones, una por línea</label>
         <textarea class="ruleta-box" id="ruleta-opciones" spellcheck="false" autocomplete="off" placeholder="Una opción por línea"></textarea>
       </div>
-      <p class="ruleta-hint" id="ruleta-aviso-n" hidden>Con más de 40 opciones la rueda no pinta etiquetas; el resultado dice cuál salió.</p>
-      <p class="ruleta-hint" id="ruleta-aviso-max" hidden>Caben 100 opciones activas. Las que sobran quedan ocultas.</p>
-      <div class="ruleta-chips" role="group" aria-label="Ejemplos para empezar">
+      <p class="ruleta-hint mt-1.5 text-ink-tertiary" id="ruleta-aviso-n" hidden>Con más de 40 opciones la rueda no pinta etiquetas; el resultado dice cuál salió.</p>
+      <p class="ruleta-hint mt-1.5 text-ink-tertiary" id="ruleta-aviso-max" hidden>Caben 100 opciones activas; las demás quedan ocultas.</p>
+      <div class="ruleta-chips flex flex-wrap items-center gap-2 mt-4" role="group" aria-label="Ejemplos para empezar">
         <span class="ruleta-label">Ejemplos</span>
         <button class="ruleta-chip" type="button" data-ejemplo="comida">Comida</button>
         <button class="ruleta-chip" type="button" data-ejemplo="verdad">Verdad o reto</button>
         <button class="ruleta-chip" type="button" data-ejemplo="nombres">Nombres</button>
       </div>
-      <div class="ruleta-text-actions">
+      <div class="flex flex-wrap items-center gap-x-5 mt-2">
         <button class="ruleta-text-btn" id="ruleta-mezclar" type="button">Mezclar</button>
         <button class="ruleta-text-btn" id="ruleta-ordenar" type="button">Ordenar</button>
         <button class="ruleta-text-btn" id="ruleta-vaciar" type="button">Vaciar</button>
@@ -197,9 +197,9 @@ const schemaLD = {
     </section>
 
     <section class="ruleta-hist" aria-label="Historial">
-      <div class="ruleta-hist-head">
+      <div class="ruleta-hist-head flex items-center gap-3">
         <span class="ruleta-label" id="ruleta-etq-hist">Últimos resultados</span>
-        <span class="ruleta-hist-count" id="ruleta-hist-count"></span>
+        <span class="ruleta-hist-count flex-1 text-sm text-ink-tertiary tabular-nums" id="ruleta-hist-count"></span>
         <button class="ruleta-text-btn" id="ruleta-borrar-hist" type="button" hidden>Borrar</button>
       </div>
       <ol class="ruleta-hist-list" id="ruleta-historial" aria-labelledby="ruleta-etq-hist">
@@ -316,7 +316,7 @@ const schemaLD = {
     padding-top: 0;
     padding-bottom: 32px;
   }
-  .ruleta-hero { grid-area: hero; padding-top: 8px; }
+  .ruleta-hero { grid-area: hero; }
   .ruleta-stage { grid-area: wheel; }
   .ruleta-inputs { grid-area: inputs; padding-top: 24px; display: flex; flex-direction: column; min-height: 0; }
   .ruleta-hist { grid-area: hist; padding-top: 24px; }
@@ -329,7 +329,7 @@ const schemaLD = {
   }
   .ruleta-hero h1 em { font: italic 400 1.08em/1 'Newsreader', Georgia, serif; color: var(--accent-warm); letter-spacing: 0; }
   .ruleta-lede {
-    margin: 6px 0 0; color: var(--text-secondary); font-size: 0.95rem; line-height: 1.4;
+    margin: 6px 0 0; color: var(--text-secondary); font-size: 1.05rem; line-height: 1.4;
     min-height: 2.8em; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; /* 2 líneas reservadas */
   }
   /* La entradilla se oculta si el alto es corto (DESIGN.md, «Pantallas bajas») */
@@ -354,15 +354,16 @@ const schemaLD = {
      mínimo de 12rem evita un ancho negativo en móvil horizontal, donde se
      acepta scroll vertical. */
   .ruleta-stage {
-    --wheel-d: min(100%, max(12rem, calc(100svh - 371px - var(--hero-extra))), 32rem); /* con entradilla (alto > 620 px) */
+    --wheel-d: min(100%, max(12rem, calc(100svh - 394px - var(--hero-extra))), 36rem); /* desde 640 px */
     --ink-on-warm: #1a0e06; /* texto sobre --accent-warm (DESIGN.md) */
+  }
+  @media (max-width: 639px) {
+    .ruleta-stage { --wheel-d: min(100%, max(12rem, calc(100svh - 371px - var(--hero-extra))), 32rem); } /* con entradilla (alto > 620 px) */
+    .ruleta-lede { font-size: 0.95rem; }
   }
   /* Sin entradilla la rueda gana 48 px; el valor se ajustó con la medida, no a ojo */
   @media (max-width: 639px) and (max-height: 620px) {
     .ruleta-stage { --wheel-d: min(100%, max(12rem, calc(100svh - 322px - var(--hero-extra))), 32rem); }
-  }
-  @media (min-width: 640px) {
-    .ruleta-stage { --wheel-d: min(100%, max(12rem, calc(100svh - 394px - var(--hero-extra))), 36rem); }
   }
   @media (min-width: 1024px) {
     .ruleta-stage { --wheel-d: min(100%, max(12rem, calc(100svh - 267px)), 44rem); }
@@ -394,7 +395,6 @@ const schemaLD = {
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; /* una pregunta de 60 caracteres no debe mover el botón */
   }
 
-  .ruleta-spin-wrap { display: flex; justify-content: center; margin-top: 8px; }
   /* Botón principal: acento liso, sin degradado ni glow */
   .ruleta-spin {
     min-width: 200px; height: 48px; padding: 0 32px; border: 0;
@@ -432,16 +432,15 @@ const schemaLD = {
   .ruleta-line:focus, .ruleta-box:focus { outline: none; border-color: var(--accent-warm); }
   .ruleta-line::placeholder, .ruleta-box::placeholder { color: var(--text-tertiary); }
 
-  .ruleta-editor-head { display: flex; align-items: flex-end; justify-content: space-between; margin-top: 20px; }
   .ruleta-editor-head .ruleta-label { margin: 0; padding-bottom: 12px; }
   .ruleta-opt-wrap { display: flex; flex-direction: column; flex: none; min-height: 0; }
   .ruleta-opt-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--divider-line); flex: 0 1 auto; min-height: 0; overflow-y: auto; max-height: 22rem; }
   .ruleta-opt-row { display: flex; align-items: center; gap: 4px; min-height: 44px; border-bottom: 1px solid var(--divider-line); }
   .ruleta-opt-dot { flex: none; width: 14px; height: 14px; border-radius: 50%; margin-right: 8px; background: var(--text-tertiary); }
-  .ruleta-opt-dot.tono-0 { background: var(--wheel-p0); } .ruleta-opt-dot.tono-1 { background: var(--wheel-p1); }
-  .ruleta-opt-dot.tono-2 { background: var(--wheel-p2); } .ruleta-opt-dot.tono-3 { background: var(--wheel-p3); }
-  .ruleta-opt-dot.tono-4 { background: var(--wheel-p4); } .ruleta-opt-dot.tono-5 { background: var(--wheel-p5); }
-  .ruleta-opt-dot.tono-6 { background: var(--wheel-p6); } .ruleta-opt-dot.tono-7 { background: var(--wheel-p7); }
+  .ruleta-opt-dot.wheel-tono-0 { background: var(--wheel-p0); } .ruleta-opt-dot.wheel-tono-1 { background: var(--wheel-p1); }
+  .ruleta-opt-dot.wheel-tono-2 { background: var(--wheel-p2); } .ruleta-opt-dot.wheel-tono-3 { background: var(--wheel-p3); }
+  .ruleta-opt-dot.wheel-tono-4 { background: var(--wheel-p4); } .ruleta-opt-dot.wheel-tono-5 { background: var(--wheel-p5); }
+  .ruleta-opt-dot.wheel-tono-6 { background: var(--wheel-p6); } .ruleta-opt-dot.wheel-tono-7 { background: var(--wheel-p7); }
   .ruleta-opt-row.is-oculta .ruleta-opt-dot { background: transparent; border: 1px solid var(--text-tertiary); }
   .ruleta-opt-text {
     flex: 1 1 auto; min-width: 0; height: 44px; background: transparent; border: 0; padding: 0;
@@ -460,25 +459,19 @@ const schemaLD = {
   .ruleta-opt-vis[aria-checked="false"] .ruleta-vis-off { display: block; }
   .ruleta-opt-vis[aria-checked="true"] { color: var(--text-primary); }
   .ruleta-add-row { margin: 0; }
-  .ruleta-paste { margin-top: 12px; }
-  .ruleta-paste[hidden] { display: none; }
-  .ruleta-hint { margin: 6px 0 0; font-size: 0.8rem; color: var(--text-tertiary); }
+  .ruleta-hint { font-size: 0.8rem; }
   .ruleta-hint[hidden] { display: none; }
 
-  .ruleta-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; align-items: center; }
   .ruleta-chips .ruleta-label { margin: 0 4px 0 0; }
   .ruleta-chip {
     min-height: 44px; padding: 0 16px; border-radius: 999px; background: transparent;
     border: 1px solid var(--divider-line); color: var(--text-primary); font: 400 0.9rem 'Inter', sans-serif; cursor: pointer;
   }
   .ruleta-chip:focus-visible { outline: 2px solid var(--accent-warm); outline-offset: 3px; }
-  .ruleta-text-actions { display: flex; flex-wrap: wrap; gap: 0 20px; margin-top: 8px; align-items: center; }
   .ruleta-share-status { font-size: 0.8rem; color: var(--text-secondary); }
 
   /* ---------- Historial (patrón de la moneda: lista dividida y numerada) ---------- */
-  .ruleta-hist-head { display: flex; align-items: center; gap: 12px; }
   .ruleta-hist-head .ruleta-label { margin: 0; }
-  .ruleta-hist-count { flex: 1; font-size: 0.85rem; color: var(--text-tertiary); font-variant-numeric: tabular-nums; }
   .ruleta-hist-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--divider-line); counter-reset: h; }
   .ruleta-hist-list li {
     display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--divider-line);
@@ -515,11 +508,6 @@ const schemaLD = {
   .ruleta-stage:-webkit-full-screen { --wheel-d: min(100%, calc(100svh - 200px), 44rem); }
   .ruleta-stage:fullscreen { background: var(--bg-body); display: flex; flex-direction: column; justify-content: center; padding: 16px; overflow: auto; }
 
-  @media (min-width: 640px) {
-    .ruleta-hero { padding-top: 24px; }
-    .ruleta-lede { font-size: 1.05rem; }
-  }
-
   /* Escritorio y tablet horizontal: dos columnas, rueda a la izquierda y más
      grande (3fr), editor a la derecha (2fr): es la colocación que el visitante
      ya conoce de otras ruletas (SDD §6.1). */
@@ -533,7 +521,6 @@ const schemaLD = {
       grid-template-areas: "wheel hero" "wheel inputs" "hist hist";
       column-gap: 48px;
     }
-    .ruleta-hero { padding-top: 16px; }
     .ruleta-hero h1 { font-size: clamp(1.8rem, 2.4vw, 2.4rem); }
     /* La rueda sigue a la vista mientras se recorre una lista larga (SDD §6.15) */
     .ruleta-stage { padding-top: 16px; position: sticky; top: 16px; align-self: start; }

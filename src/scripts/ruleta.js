@@ -135,7 +135,7 @@ function initRuleta() {
       const path = tplGajo.content.firstElementChild.firstElementChild.cloneNode(true);
       path.setAttribute('d', g.d);
       path.dataset.i = i;
-      path.classList.add(`tono-${tonoDe(i, n, TONOS)}`);
+      path.classList.add(`wheel-tono-${tonoDe(i, n, TONOS)}`);
       gajosEl.append(path);
       if (n > SIN_ETIQUETAS) return;
       const etq = tplEtq.content.firstElementChild.cloneNode(true);
@@ -267,6 +267,7 @@ function initRuleta() {
     const preguntaGiro = inpPregunta.value.trim();
     const ganador = indiceAlAzar(n);                   // se decide ANTES de animar
     const final = eligeFinal(n);                       // se sortea aparte, independiente del ganador
+    rueda.dataset.final = reducido() ? 'normal' : final; // último final usado: lo lee el test de estado
 
     cancelarTodo();
     entradaViva = false;
@@ -430,10 +431,8 @@ function initRuleta() {
       if (i.oculta || i.t.trim() === '') return;
       if (++k > MAX_ACTIVAS) { i.oculta = true; sobran = true; }
     });
-    if (sobran) $('ruleta-aviso-max').hidden = false;
     return sobran;
   }
-  const avisoMax = (ver) => { $('ruleta-aviso-max').hidden = !ver; };
 
   /* --- Editor en lista (SDD §6.14.5) --- */
   function fotoLista() { return { items: estado.items.map((i) => ({ ...i })), cuentas: { ...estado.cuentas } }; }
@@ -463,6 +462,8 @@ function initRuleta() {
     });
     pintarPuntos();
     etiquetaOpciones();
+    // Mientras haya 100 activas el aviso sigue a la vista (también tras recargar): las demás están ocultas
+    $('ruleta-aviso-max').hidden = activas().length < MAX_ACTIVAS;
   }
   function pintarPuntos() {
     let k = 0;
@@ -470,7 +471,7 @@ function initRuleta() {
     [...listaEl.children].forEach((fila) => {
       const it = fila._item, dot = fila.querySelector('.ruleta-opt-dot');
       dot.className = 'ruleta-opt-dot';
-      if (!it.oculta && it.t.trim() !== '') dot.classList.add(`tono-${tonoDe(k++, n, TONOS)}`);
+      if (!it.oculta && it.t.trim() !== '') dot.classList.add(`wheel-tono-${tonoDe(k++, n, TONOS)}`);
       const c = fila.querySelector('.ruleta-opt-count');
       c.hidden = estado.modo !== 'contar';
       c.textContent = `×${estado.cuentas[it.t.trim()] || 0}`;
@@ -508,7 +509,7 @@ function initRuleta() {
     if (!fila) return;
     const it = fila._item;
     if (ev.target.closest('.ruleta-opt-vis')) {
-      if (it.oculta && activas().length >= MAX_ACTIVAS) { avisoMax(true); return; }
+      if (it.oculta && activas().length >= MAX_ACTIVAS) return; // el aviso ya está a la vista
       it.oculta = !it.oculta;
       actualizarFilas(); renderPegar();
       editado();
@@ -531,8 +532,7 @@ function initRuleta() {
     ev.preventDefault();
     const t = inpNueva.value.trim();
     if (!t) return;
-    if (activas().length >= MAX_ACTIVAS) { avisoMax(true); return; }
-    avisoMax(false);
+    if (activas().length >= MAX_ACTIVAS) return;
     estado.items.push({ t, oculta: false });
     inpNueva.value = '';
     renderLista();
@@ -555,7 +555,7 @@ function initRuleta() {
     const lineas = leerOpciones(txtOpciones.value);
     const nuevas = reasignarOcultas(antes, lineas, ocultas);
     estado.items = lineas.map((t, i) => ({ t, oculta: nuevas.has(i) }));
-    avisoMax(limitarActivas());
+    limitarActivas();
     renderLista();
     editado();
   }, { signal });
@@ -565,7 +565,6 @@ function initRuleta() {
     const foto = fotoLista();
     estado.items = lista.map((t) => ({ t, oculta: false }));
     estado.cuentas = {}; // un ejemplo reinicia las cuentas
-    avisoMax(false);
     renderLista();
     editado();
     if (foto.items.length) avisar('Se cambió la lista', () => restaurar(foto));
@@ -585,7 +584,6 @@ function initRuleta() {
     const foto = fotoLista();
     estado.items = [];
     estado.cuentas = {};
-    avisoMax(false);
     renderLista(); editado(); avisar('Lista vaciada', () => restaurar(foto));
   }, { signal });
   btnReiniciar.addEventListener('click', () => {
@@ -690,7 +688,12 @@ function initRuleta() {
      el modo foco. «Modo foco» es el mismo interruptor en texto y se recuerda. */
   const sinFullscreen = () => !(document.fullscreenEnabled && stageEl.requestFullscreen);
   function actualizarPantalla() {
-    btnPantalla.setAttribute('aria-pressed', String(estado.enFoco || !!document.fullscreenElement));
+    const activa = estado.enFoco || !!document.fullscreenElement;
+    btnPantalla.setAttribute('aria-pressed', String(activa));
+    // Con el foco recordado la cabecera y «Modo foco» no se ven: este icono es la salida y tiene que decirlo
+    const texto = activa ? 'Salir de pantalla completa' : 'Pantalla completa';
+    btnPantalla.setAttribute('aria-label', texto);
+    btnPantalla.title = texto;
   }
   function ponerFoco(on, { guardar = true } = {}) {
     estado.enFoco = on;
@@ -806,7 +809,7 @@ function initRuleta() {
 
   /* --- Arranque --- */
   estado.items = leerOpciones(guardado.opciones).map((t, i) => ({ t, oculta: guardado.ocultas.has(i) }));
-  avisoMax(limitarActivas());
+  limitarActivas();
   inpPregunta.value = guardado.pregunta;
   renderLista();
   renderHistorial();
@@ -817,7 +820,8 @@ function initRuleta() {
   entrar();
   // Calienta el cálculo del plan (el primer giro con 4× de CPU tardaba 300 ms en arrancar)
   (window.requestIdleCallback || ((f) => setTimeout(f, 500)))(() => {
-    planGiro({ anguloActual: 0, ganador: 0, n: 13, duracion: 6000, vueltas: 6, final: 'casi' });
+    // con su propio azar: es solo calentamiento y no debe gastar el que fuerzan los tests
+    planGiro({ anguloActual: 0, ganador: 0, n: 13, duracion: 6000, vueltas: 6, final: 'casi', rnd: () => Math.floor(Math.random() * 4294967296) });
   });
 }
 

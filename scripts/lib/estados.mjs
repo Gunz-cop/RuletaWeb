@@ -382,12 +382,12 @@ export const ESTADOS = [
     // O2 / RNF-02: lo que enseña la rueda coincide con lo que dice el texto.
     // Lee la matriz real del rotor (incluido el balanceo de reposo), calcula
     // qué gajo queda bajo el puntero con la lógica pura y compara su etiqueta
-    // con el resultado. Giros animados de verdad con los tres finales con
-    // suspenso (el «normal» sale en los de movimiento reducido): se fuerza el
+    // con el resultado. Giros animados de verdad con los cuatro finales, tres con
+    // suspenso y el normal: se fuerza el
     // azar que decide el ganador y el final (crypto.getRandomValues con una
     // cola), y se recarga entre giros porque «nunca dos finales distintos de
     // normal seguidos» los convertiría en normal. Cada giro dura unos 6 s, así
-    // que son tres; los 30 de movimiento reducido van en el estado siguiente.
+    // que son cuatro; los 30 de movimiento reducido van en el estado siguiente.
     ruta: '/ruleta',
     nombre: 'ganador-coincide-con-la-rueda',
     init: forzarAzar,
@@ -397,6 +397,7 @@ export const ESTADOS = [
         { n: 13, ganador: 4, final: 'casi', roll: 70 },
         { n: 2, ganador: 1, final: 'pelos', roll: 85 },
         { n: 6, ganador: 3, final: 'atras', roll: 97 },
+        { n: 6, ganador: 2, final: 'normal', roll: 10 },
       ];
       for (const [k, g] of giros.entries()) {
         if (k > 0) await pagina.reload({ waitUntil: 'load' });
@@ -405,13 +406,15 @@ export const ESTADOS = [
         await pagina.evaluate(([ganador, roll]) => { window.__azar.push(ganador, roll); }, [g.ganador, g.roll]);
         await pagina.click('#ruleta-girar');
         await pagina.waitForSelector('#ruleta-result.is-shown', { timeout: 20000 });
+        const usado = await pagina.evaluate(() => document.getElementById('wheel-box').dataset.final);
         const c = await coherenciaRueda(pagina);
-        if (c.error) errores.push(`giro ${k + 1} (N=${g.n}, final ${g.final}): ${c.error}`);
+        if (usado !== g.final) errores.push(`giro ${k + 1} (N=${g.n}): se forzó el final ${g.final} y salió ${usado}`);
+        else if (c.error) errores.push(`giro ${k + 1} (N=${g.n}, final ${g.final}): ${c.error}`);
         else if (c.gajo !== g.ganador) errores.push(`giro ${k + 1} (N=${g.n}, final ${g.final}): el azar forzado eligió el gajo ${g.ganador} y el puntero señala el ${c.gajo}`);
       }
       return errores.length
         ? { ok: false, mensaje: errores.join('; ') }
-        : { ok: true, mensaje: 'en 3 giros animados (finales casi, por los pelos y vuelta atrás) el puntero señala el gajo del resultado' };
+        : { ok: true, mensaje: 'en 4 giros animados (los cuatro finales: normal, casi, por los pelos y vuelta atrás) el puntero señala el gajo del resultado' };
     },
   },
   {

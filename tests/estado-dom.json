@@ -146,7 +146,7 @@
   "/ruleta [ganador-coincide-con-la-rueda]": {
     "relacion": {
       "ok": true,
-      "mensaje": "en 3 giros animados (finales casi, por los pelos y vuelta atrás) el puntero señala el gajo del resultado"
+      "mensaje": "en 4 giros animados (los cuatro finales: normal, casi, por los pelos y vuelta atrás) el puntero señala el gajo del resultado"
     }
   },
   "/ruleta [ganador-coincide-con-la-rueda-reducido]": {

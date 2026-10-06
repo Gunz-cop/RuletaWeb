@@ -30,7 +30,7 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5z"></path><g class="wheel-tool-off"><path d="m16.5 9.5 5 5M21.5 9.5l-5 5"></path></g><g class="wheel-tool-on"><path d="M16 9a4.2 4.2 0 0 1 0 6M18.6 6.6a7.6 7.6 0 0 1 0 10.8"></path></g></svg>
     </button>
     <button class="wheel-tool" id="wheel-fullscreen" type="button" aria-pressed="false" aria-label="Pantalla completa" title="Pantalla completa">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"></path></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><g class="wheel-tool-off"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"></path></g><g class="wheel-tool-on"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"></path></g></svg>
     </button>
   </div>
 </div>
@@ -97,14 +97,14 @@
      círculo, se quedan con los toques de los controles vecinos. */
   .wheel-slices, .wheel-labels { pointer-events: none; }
   .wheel-slice { stroke: var(--wheel-trazo); stroke-width: 0.8; transition: opacity 0.2s; }
-  .wheel-slice.tono-0 { fill: var(--wheel-p0); }
-  .wheel-slice.tono-1 { fill: var(--wheel-p1); }
-  .wheel-slice.tono-2 { fill: var(--wheel-p2); }
-  .wheel-slice.tono-3 { fill: var(--wheel-p3); }
-  .wheel-slice.tono-4 { fill: var(--wheel-p4); }
-  .wheel-slice.tono-5 { fill: var(--wheel-p5); }
-  .wheel-slice.tono-6 { fill: var(--wheel-p6); }
-  .wheel-slice.tono-7 { fill: var(--wheel-p7); }
+  .wheel-slice.wheel-tono-0 { fill: var(--wheel-p0); }
+  .wheel-slice.wheel-tono-1 { fill: var(--wheel-p1); }
+  .wheel-slice.wheel-tono-2 { fill: var(--wheel-p2); }
+  .wheel-slice.wheel-tono-3 { fill: var(--wheel-p3); }
+  .wheel-slice.wheel-tono-4 { fill: var(--wheel-p4); }
+  .wheel-slice.wheel-tono-5 { fill: var(--wheel-p5); }
+  .wheel-slice.wheel-tono-6 { fill: var(--wheel-p6); }
+  .wheel-slice.wheel-tono-7 { fill: var(--wheel-p7); }
   /* Ganador: conserva su color; el resto, capa oscura al 30 % (opacidad 0,7
      sobre el fondo del rotor), y contorno claro de 3 px (no escala con el
      viewBox). Nunca verde/rojo (SDD §6.12). */

@@ -71,7 +71,7 @@ Sin embargo, para garantizar una justicia absoluta, las ruletas de alta calidad 
 Lo que hace que la ruleta virtual sea satisfactoria no es solo el resultado, sino *cómo* llega al resultado. Para que se sienta real, los desarrolladores utilizan ecuaciones de movimiento cinemático.
 1.  **Aceleración Inmediata:** Cuando el usuario hace clic en "Girar", la ruleta adquiere una velocidad angular alta casi instantánea.
 2.  **Desaceleración Exponencial:** En lugar de detenerse bruscamente, el código aplica un coeficiente de fricción. La velocidad se reduce gradualmente en cada *frame* (60 veces por segundo). La ecuación suele verse algo así: `velocidadActual = velocidadActual * friccion`.
-3.  **Cálculo del Ángulo Final:** El programa ya sabe en qué opción se va a detener en el milisegundo en que haces clic, gracias al cálculo del RNG. Toda la animación de 3 o 4 segundos es simplemente teatro visual para mantener la tensión, calculando la distancia de frenado exacta para que la aguja quede en la rebanada ganadora.
+3.  **Cálculo del Ángulo Final:** El programa ya sabe en qué opción se va a detener en el milisegundo en que haces clic, gracias al cálculo del RNG. Toda la animación de 5 a 7 segundos es simplemente teatro visual para mantener la tensión, calculando la distancia de frenado exacta para que la aguja quede en la rebanada ganadora.
 
 ### Equidad de las Áreas
 En una [Ruleta de Opciones](https://decidelo.app/ruleta), cada ítem introducido por el usuario se mapea a una "rebanada" (un sector circular). Si hay 5 opciones, cada una ocupa exactamente 72 grados del círculo de 360 grados ($360 / 5 = 72$). El algoritmo asegura que cada grado tiene exactamente la misma probabilidad de ser seleccionado.
@@ -129,7 +129,7 @@ Para las personas multipotenciales que tienen cinco libros empezados y no saben 
 Sí, en términos prácticos. Aunque técnicamente son números "pseudoaleatorios", los algoritmos modernos de JavaScript y las APIs de criptografía aseguran una distribución uniforme que es imposible de predecir o hackear a nivel de usuario. Para cualquier sorteo o decisión, es estadísticamente justa.
 
 ### ¿Cuántos nombres o elementos puedo poner en la ruleta?
-En herramientas modernas como la nuestra, puedes poner cientos de opciones. La interfaz comprimirá las rebanadas visualmente, y aunque sean tan delgadas que no puedas leer el texto en el círculo, el algoritmo interno matemático funcionará con total precisión y anunciará al ganador en grande al detenerse.
+En herramientas modernas como la nuestra, puedes poner hasta 100 opciones. La interfaz comprimirá las rebanadas visualmente, y aunque sean tan delgadas que no puedas leer el texto en el círculo, el algoritmo interno matemático funcionará con total precisión y anunciará al ganador en grande al detenerse.
 
 ### ¿Puedo guardar mi ruleta para usarla después?
 Actualmente, puedes simplemente copiar tus listas de opciones en un bloc de notas y pegarlas de golpe. Muchas versiones avanzadas permiten crear cuentas o guardar parámetros en la URL o el almacenamiento local del navegador (LocalStorage) para no perder tus listas de alumnos o tareas.

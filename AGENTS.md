@@ -305,6 +305,9 @@ nueva o migrada cumple esto:
   ubicación"). Nunca `navigator.geolocation`.
 - **Sin sonidos ni efectos de premio.** La página es para decidir, no un
   casino. Como mucho `navigator.vibrate` corto al terminar.
+  **Excepción: la ruleta** (pedida por el propietario): un «tic» al cruzar
+  cada gajo, sintetizado con Web Audio, **desactivado por defecto** y
+  recordado (`decidelo_ruleta_sonido`); sin arpegio ni celebración.
   **Excepción: el temporizador** (pedida por el propietario). Un
   temporizador tiene que avisar mientras la gente está en otra cosa
   (pasando el móvil, con los ojos cerrados), así que lleva un cuenco
