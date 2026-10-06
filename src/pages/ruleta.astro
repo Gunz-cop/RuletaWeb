@@ -170,11 +170,11 @@ const schemaLD = {
         <label class="ruleta-label" for="ruleta-pregunta">¿Qué se decide?</label>
         <input class="ruleta-line" id="ruleta-pregunta" type="text" maxlength="60" placeholder="¿Qué comemos hoy?" autocomplete="off">
       </div>
-      <div class="ruleta-editor-head flex items-end justify-between mt-5">
-        <span class="ruleta-label" id="ruleta-etq-opciones">Opciones</span>
-        <span class="flex items-end gap-x-5">
-          <button class="ruleta-text-btn" id="ruleta-activar" type="button" hidden>Activar todas</button>
-          <button class="ruleta-text-btn" id="ruleta-pegar-toggle" type="button" aria-expanded="false" aria-controls="ruleta-pegar-panel">Pegar lista</button>
+      <div class="ruleta-editor-head flex flex-wrap items-end justify-between gap-y-2 mt-5">
+        <span class="ruleta-label whitespace-nowrap" id="ruleta-etq-opciones">Opciones</span>
+        <span class="flex items-end gap-x-5 ml-auto">
+          <button class="ruleta-text-btn whitespace-nowrap" id="ruleta-activar" type="button" hidden>Activar todas</button>
+          <button class="ruleta-text-btn whitespace-nowrap" id="ruleta-pegar-toggle" type="button" aria-expanded="false" aria-controls="ruleta-pegar-panel">Pegar lista</button>
         </span>
       </div>
       <div class="ruleta-opt-wrap">

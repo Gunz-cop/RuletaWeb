@@ -516,6 +516,23 @@ export const ESTADOS = [
       const foco = await pagina.evaluate(() => document.activeElement.id);
       await pagina.click('#ruleta-aviso-deshacer');
       const c = await leer();
+      // Maquetación de la cabecera con ocultas: ningún texto se parte (una línea) y sin scroll horizontal
+      const cabecera = [];
+      for (const vp of [{ width: 360, height: 640 }, { width: 320, height: 640 }]) {
+        await pagina.setViewportSize(vp);
+        await pagina.waitForTimeout(100);
+        const m = await pagina.evaluate(() => {
+          const lineas = (el) => { const r = document.createRange(); r.selectNodeContents(el); return new Set([...r.getClientRects()].map((q) => Math.round(q.top))).size; };
+          const alto = (id) => Math.round(document.getElementById(id).getBoundingClientRect().height);
+          return {
+            activar: alto('ruleta-activar'), pegar: alto('ruleta-pegar-toggle'),
+            lineas: lineas(document.getElementById('ruleta-etq-opciones')) + lineas(document.getElementById('ruleta-activar')) + lineas(document.getElementById('ruleta-pegar-toggle')),
+            scroll: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+          };
+        });
+        if (m.activar > 44 || m.pegar > 44 || m.lineas !== 3 || m.scroll > 0) cabecera.push(`${vp.width}px: botones ${m.activar}/${m.pegar} px de alto, ${m.lineas} líneas de 3 textos, ${m.scroll}px de scroll horizontal`);
+      }
+      if (cabecera.length) return { ok: false, mensaje: `cabecera del editor con ocultas: ${cabecera.join('; ')}` };
       const ok = a.ocultas === '1,4,5' && a.ocupa && b.ocultas === '' && !b.ocupa && b.gajos === 6
         && c.ocultas === '1,4,5' && c.ocupa && c.gajos === 3 && foco === 'ruleta-pegar-toggle';
       return { ok, mensaje: `foco tras activar «${foco}»; ocultas antes «${a.ocultas}» (botón ${a.ocupa}), tras activar «${b.ocultas}» (botón ${b.ocupa}, ${b.gajos} gajos), tras deshacer «${c.ocultas}» (botón ${c.ocupa}, ${c.gajos} gajos)` };

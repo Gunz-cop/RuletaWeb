@@ -153,6 +153,7 @@ footer a:hover{color:var(--accent-coral)}
 .mb-8{margin-bottom:calc(var(--spacing) * 8)}
 .mb-10{margin-bottom:calc(var(--spacing) * 10)}
 .mb-\[0\.8rem\]{margin-bottom:.8rem}
+.ml-auto{margin-left:auto}
 .block{display:block}
 .flex{display:flex}
 .grid{display:grid}
@@ -275,6 +276,7 @@ footer a:hover{color:var(--accent-coral)}
 .tracking-tight{--tw-tracking:var(--tracking-tight);letter-spacing:var(--tracking-tight)}
 .tracking-widest{--tw-tracking:var(--tracking-widest);letter-spacing:var(--tracking-widest)}
 .\[overflow-wrap\:anywhere\]{overflow-wrap:anywhere}
+.whitespace-nowrap{white-space:nowrap}
 .text-\[\#1a0e06\]{color:#1a0e06}
 .text-ink-primary{color:var(--color-ink-primary)}
 .text-ink-secondary{color:var(--color-ink-secondary)}
