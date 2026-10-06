@@ -2,8 +2,8 @@
 
 | | |
 |---|---|
-| Estado | v1.10 — diseño aprobado por el propietario (prototipo v2, §6.15); auditado §14; bloqueantes §15 — pendiente de las decisiones del propietario de §12 |
-| Fecha | 2026-10-05 |
+| Estado | **Implementado** en la fase 3 (#9, PR #18) — v1.11; pendientes la fase 4 (#10, compartir) y la 5 (#11, texto). Diseño aprobado por el propietario (prototipo v2, §6.15); auditado §14; bloqueantes §15 |
+| Fecha | 2026-10-05 (v1.11: 2026-10-06) |
 | Alcance | `src/pages/ruleta.astro`, sus componentes y su JS, tests de estado de `/ruleta`, texto SEO de la página |
 | Normas que manda | `AGENTS.md` → `DESIGN.md` → skill `decidelo-herramienta` → skills de terceros |
 | Issues | Épica #4 · fase 0a #5 · 0b #6 · 1 #7 · 2 #8 · 3 #9 · 4 #10 · 5 #11 |
@@ -166,7 +166,7 @@ fase de texto.
 
 | Id | Requisito |
 |---|---|
-| RF-01 | El visitante escribe opciones (en lista o pegándolas, §6.14); se ignoran líneas vacías y espacios sobrantes. La rueda se actualiza al escribir. **Como mucho 100 opciones activas** (lo mismo que admite el enlace, §6.10; con más de 120 el margen de 1,5° ya no cabe en un gajo): al pasar de 100, la página lo dice bajo el editor y no añade más. |
+| RF-01 | El visitante escribe opciones (en lista o pegándolas, §6.14); se ignoran líneas vacías y espacios sobrantes. La rueda se actualiza al escribir. **Como mucho 100 opciones activas** (lo mismo que admite el enlace, §6.10; con más de 120 el margen de 1,5° ya no cabe en un gajo): al pasar de 100 (escribiendo, pegando o al cargar datos guardados), las que sobran **no se pierden**: quedan como ocultas, y el interruptor de visibilidad no activa una 101.ª. Mientras haya 100 activas y alguna oculta, bajo el editor se lee un aviso persistente con el máximo (se calcula en cada pintado; no es un aviso efímero). |
 | RF-02 | Sin opciones activas, la rueda muestra un estado vacío con texto («Escribe al menos una opción») y el botón principal queda desactivado. Con una sola opción, la rueda es un círculo completo y el giro funciona (gana esa). |
 | RF-03 | Campo «¿Qué se decide?» (opcional, máx. 60 caracteres). Si tiene texto, el resultado lo repite encima del ganador. |
 | RF-04 | «Girar ruleta» elige un ganador uniforme entre las opciones **activas**, anima la rueda hasta que el puntero señala ese gajo y escribe el resultado al resolver `.finished`. |
@@ -177,7 +177,7 @@ fase de texto.
 | RF-09 | «Mezclar» reordena las líneas (Fisher-Yates con `crypto`). «Vaciar» vacía y ofrece «Deshacer» durante 7 s, como hoy (incluido el WCAG 2.2.1 del foco). |
 | RF-10 | Historial: últimos 20 resultados, numerados, con la pregunta si la había; contador en texto plano y «Borrar» como texto subrayado. |
 | RF-11 | Compartir: enlace `/ruleta#para=…&opcion=…&opcion=…` (mismo formato que el dado de opciones). Al abrirlo carga esas opciones, ofrece «Deshacer» para recuperar la lista propia y limpia el fragmento de la barra. Escucha `hashchange`. |
-| RF-12 | Modo foco: oculta todo salvo la rueda, el resultado y el botón, con la rueda al mayor tamaño que quepa. Se recuerda. Su interruptor vive en la herramienta, no en la cabecera. |
+| RF-12 | Modo foco: oculta todo salvo la rueda, el resultado y el botón, con la rueda al mayor tamaño que quepa. Se recuerda. Su interruptor vive en la herramienta, no en la cabecera. Como en modo foco ese interruptor queda oculto, la salida tiene que verse siempre: el icono de la rueda pasa a «Salir del modo foco» (`aria-label`, `title` y dibujo de contraer) y `Esc` también sale. |
 | RF-13 | Todo lo anterior se recuerda en `localStorage` (§6.9) y sobrevive a una recarga. |
 | RF-14 | Con `prefers-reduced-motion`: sin entrada, reposo ni anticipación; fundido de 200 ms a la posición final y el resultado. |
 | RF-15 | Al aterrizar, `navigator.vibrate(15)` si existe. Sin sonidos ni celebraciones. |
@@ -413,6 +413,8 @@ Todas las fases con `element.animate()`, solo `transform` y `opacity`.
   acento), sin emojis. La lista de ocultas usa filas divididas (no
   tarjetas) generadas desde un `<template>`.
 - Barra de acciones de texto: Mezclar · Vaciar · Compartir · Modo foco.
+  «Compartir» llega con la fase 4 (#10): la fase 3 no lo pinta, para no
+  publicar enlaces que todavía no cargan nada (v1.11).
   «Vaciar» en `--accent-danger` solo como color semántico.
 - Opciones por defecto sin emojis: Pizza, Tacos, Sushi, Hamburguesa,
   Ensalada, Pasta.
@@ -576,7 +578,7 @@ control donde se usa):
 6. **Ejemplos para empezar**: fichas «Comida», «Verdad o reto», «Nombres»
    que llenan la lista (como los ejemplos del dado de opciones).
 7. **Herramientas de la lista** en una fila de texto: Mezclar · Ordenar ·
-   Vaciar · Compartir. Nada pide confirmación: todo se deshace. El aviso
+   Vaciar · Compartir («Compartir» desde la fase 4, #10). Nada pide confirmación: todo se deshace. El aviso
    «Deshacer» vive dentro de la zona de la rueda (así se ve también en
    pantalla completa): abajo y centrado en móvil, arriba a la derecha desde
    1024 px para no tapar los iconos.
@@ -624,6 +626,9 @@ Decisiones que cierran lo que la auditoría del prototipo dejó abierto (v1.8):
 - Foco: tras girar vuelve al control que lanzó el giro (el botón o la
   rueda); si se giró arrastrando, al botón principal; con el atajo
   Ctrl/Cmd+Intro desde un campo, el foco se queda en ese campo (v1.8).
+  Solo se mueve si el foco se perdió durante el giro (quedó en `body` o en
+  un control deshabilitado): si el visitante pasó a otro control mientras
+  giraba, se respeta (v1.11).
   (Hoy salta al modal.)
 - Pestañas con `role="tablist"`, flechas izquierda/derecha y
   `aria-selected` (hoy faltan las flechas).
@@ -653,13 +658,13 @@ Decisiones que cierran lo que la auditoría del prototipo dejó abierto (v1.8):
 |---|---|
 | `modo-foco` | Se conserva con los selectores nuevos (`#ruleta-foco`). |
 | `pestana-gestionar` | Se conserva con los selectores nuevos. |
-| `modal-ganador` | **Sustituido** por `girada` (resultado `.is-shown`, fila de historial) y `ganador-coincide-con-la-rueda` (lee la matriz del rotor y la compara con el texto, como `suma-coincide-con-las-caras`). |
+| `modal-ganador` | **Sustituido** por `girada` (resultado `.is-shown`, fila de historial) y `ganador-coincide-con-la-rueda` (lee la matriz del rotor y la compara con el texto, como `suma-coincide-con-las-caras`). Los giros animados cubren **los cuatro finales, Normal incluido**, forzando cada uno y comprobando que fue el que salió (v1.11). |
 | `titulo-edicion` | **Sustituido** por `pregunta-en-resultado` (escribe «¿Quién friega?», gira y comprueba que el resultado la repite). |
 | `deshacer-limpiar` | Se conserva (`#clear-btn` pasa a `#ruleta-vaciar`, se actualiza) y gana un invariante: el aviso cae dentro de la ventana (RNF-11). |
 | `reposo` | Se conserva: sin resultado, historial vacío. |
 | `h1-visible-390x844` | Se conserva. |
 | `panel-opciones-movil`, `panel-opciones-movil-gestionar`, `panel-fijo-tras-scroll`, `boton-girar-visible-con-panel-*` (×3) | **Sustituidos**, porque la hoja inferior desaparece (D3), por `estadosAccionVisible('/ruleta', '#ruleta-girar')`, `estadosResponsive('/ruleta', '#ruleta-girar')` y `rueda-entera-visible-*` (×3 móviles + 1280×720). El commit explica la sustitución. |
-| — | Nuevos: `quitar-ganador`, `compartida-por-enlace`, `ida-y-vuelta` (RNF-10), `claves-viejas-migradas` (siembra `ruleta_opciones`, `ruleta_ocultas` v1 y `ruleta_titulo` en el contexto antes de cargar y comprueba lista, ocultas y pregunta). |
+| — | Nuevos: `quitar-ganador`, `compartida-por-enlace` (fase 4), `ida-y-vuelta` (RNF-10), `claves-viejas-migradas` (siembra `ruleta_opciones`, `ruleta_ocultas` v1 y `ruleta_titulo` en el contexto antes de cargar y comprueba lista, ocultas y pregunta). |
 
 **Manual** (skill §4): móviles de referencia, Fold cerrado y abierto, tablet,
 1280×720; girar varias veces y comprobar puntero = texto; sin scroll
@@ -678,7 +683,7 @@ funcionando y se mergea con confirmación del propietario.
 | 1. Prototipo del objeto | HTML autónomo publicado aparte (como el de los dados de rol), **no** una página en `src/pages/`: todo push a `main` es producción y el sitemap solo filtra el blog. Muestra la rueda con las paletas A y B, el ciclo de movimiento y la duración propuesta, para que el propietario lo apruebe en su iPhone y cierre D1–D5 | — | Bajo |
 | 2. Lógica pura | `ruleta-logica.js` + `ruleta-check.mjs` en `npm test`. Sin cambios visibles | 1 (decisiones de paleta y duración) | Bajo |
 | 3. Migración de la página | `Wheel.astro`, `ruleta.astro` con la anatomía, `ruleta.js`, resultado, historial, quitar ganador, ocultas, modo foco en la herramienta, cabecera sin controles, claves migradas; borrar canvas, modal, confeti, audio y hoja inferior; tests de estado de §9; DESIGN.md y AGENTS.md. **En el mismo PR**, las correcciones de hecho del texto que dejan de ser verdad (§2.3: meta description, FAQ, artículo y los tres posts del blog) | 2 | **Alto**: es la página que da nombre al sitio |
-| 4. Compartir por enlace | RF-11 + estado `compartida-por-enlace` | 3 | Bajo |
+| 4. Compartir por enlace | Botón «Compartir» (§6.10, D5) + RF-11 + estado `compartida-por-enlace` (v1.11: el botón se mueve aquí desde la fase 3) | 3 | Bajo |
 | 5. Texto | Título, meta, H1, artículo, FAQ y JSON-LD con `decidelo-textos`, a partir de un export de Search Console de `/ruleta` | 3 (describe la herramienta nueva) | Medio (SEO) |
 
 La fase 3 podría partirse (objeto y resultado primero; página después),
@@ -771,3 +776,4 @@ resolvieron cambiando este documento. Cada fila enlaza el issue.
 | Propietario (prototipo v2) y auditoría v2 ciclo 5 | Paleta elegida: «Pastel vivo». Abiertos del prototipo: posición del aviso, suelo de la rueda, rueda en escritorio con muchas opciones, normalización del ángulo, reposo al redimensionar, arrastre con cambios pendientes, lista durante la entrada, foco con el atajo. | Prototipo v2 como implementación de referencia (§6.15) y una decisión por cada abierto. | §6.12, §6.15, §7, §12 | v1.8 |
 | #17 | El «≤ 17°/fotograma» de §6.3 y de #8 medía giros de vueltas exactas; con el reparto real del prototipo aprobado (tramo hasta el ganador y ±300 ms) el arranque llega a 20°. | Opción 1: se corrige la cifra a ≤ 21°/fotograma medida sobre el reparto real; el comportamiento aprobado no cambia. La regla de vueltas y duración pasa al SDD. | §6.3 | v1.9 |
 | PR #16 (#8), diferencias anotadas | Frase empalmada y desfase viejo en `planGiro` (§6.3); historial con `cuenta`; «30°/s» de «Por los pelos» no se cumple con N pequeño; no había máximo de opciones fuera del enlace. | Corregido; máximo de 100 opciones activas (RF-01); «30°/s» pasa a descripción. Se acepta que `leerEnlace` quite caracteres de control y de dirección (defensivo, §8). | §6.3, §6.9, §6.13, RF-01 | v1.10 |
+| PR #18 (#9), auditoría ciclo 1 | (1) El criterio «SDD en `main` con Estado: implementado» chocaba con el protocolo de las sesiones («no copies el SDD a tu rama»). (2) RF-01 no decía qué pasa con las opciones 101+ al pegar o cargar, y el aviso se perdía. (3) El modo foco recordado dejaba sin salida visible. (4) Destino del foco si el visitante se movió durante el giro. (5) «Compartir» publicaba enlaces que no cargan hasta #10. (6) «Sin giros aún» en el historial vacío, sin fuente. (7) Margen lateral de 24 px en móvil frente a 16 px del prototipo. (8) AGENTS.md regla 6 y la checklist de la skill no recogen el tic (D1). (9) Textos del blog fuera de §2.3 que dejan de ser verdad. | (1) Gana el issue: el PR #18 trae este archivo **copiado tal cual** de la rama del SDD (`git show origin/claude/rediseno-ruleta-sdd:docs/sdd-ruleta.md`); tras el merge, el SDD vive en `main` y esta rama se retira. (2) Las sobrantes quedan ocultas, no se pierden; aviso persistente calculado en cada pintado (RF-01). (3) Icono «Salir del modo foco» + `Esc` (RF-12). (4) Solo se mueve si se perdió (§7). (5) El botón pasa a la fase 4 (§6.7, §10). (6) Se acepta, por coherencia con «Sin lanzamientos aún» de la moneda y los dados. (7) Se acepta: es el `.wrap` del sitio, como la moneda. (8) Se corrigen en el PR #18: «y el tic opcional de la ruleta (apagado por defecto)». (9) Se corrigen en el PR #18 (principio de A1): duración «3 o 4 segundos» → 5–7 s y «cientos de opciones» → hasta 100 activas. El PR #18 se mergea con *squash* (un commit intermedio rompe `/ruleta`). | Estado, RF-01, RF-12, §6.7, §7, §9, §10 | v1.11 |
