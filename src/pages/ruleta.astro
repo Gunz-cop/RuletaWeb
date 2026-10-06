@@ -118,7 +118,7 @@ const schemaLD = {
   historial, y debajo AdSlot, artículo e índice de herramientas.
 
   El contenedor de la herramienta no lleva `.reveal`: su `transform` haría de
-  bloque contenedor del aviso «Deshacer» (position: fixed) y lo sacaría de la
+  bloque contenedor del aviso «Deshacer» (posición fija) y lo sacaría de la
   ventana en escritorio (SDD de la ruleta, RNF-11).
 */}
 <Layout title={title} description={description} keywords={keywords} schemaLD={schemaLD} showHomeHeader={false}>
@@ -492,9 +492,9 @@ const schemaLD = {
   /* ---------- Aviso con «Deshacer» ---------- */
   /* Arriba y no abajo: en un móvil de 560 px de alto abajo taparía «Girar
      ruleta» durante 7 s (SDD §6.15). Ningún ancestro lleva `transform`
-     (RNF-11), así que fixed se ancla a la ventana. */
+     (RNF-11), así que se ancla a la ventana. */
   .ruleta-aviso {
-    position: fixed; z-index: 10; top: 72px; left: 16px; right: 16px; margin-inline: auto;
+    position:fixed; z-index: 10; top: 72px; left: 16px; right: 16px; margin-inline: auto;
     display: flex; align-items: center; gap: 4px; width: fit-content; max-width: calc(100vw - 32px);
     padding: 4px 4px 4px 16px; border-radius: 999px;
     background: var(--bg-surface-alt); border: 1px solid var(--divider-line); font-size: 0.9rem;

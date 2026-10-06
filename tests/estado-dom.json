@@ -1,5 +1,8 @@
 {
   "/ruleta [modo-foco]": {
+    "header": {
+      "display": "none"
+    },
     ".hub-section": {
       "display": "none"
     },
@@ -9,76 +12,297 @@
     "footer": {
       "display": "none"
     },
-    "main.wrap": "NO EXISTE EN EL DOM",
-    ".roulette-section": {
-      "display": "flex",
-      "alignItems": "center",
-      "padding": "0px",
-      "minHeight": "820px"
-    },
-    ".roulette-section .section-header": {
+    ".ruleta-hero": {
       "display": "none"
     },
-    ".app-grid": {
-      "gridTemplateColumns": "500.5px 409.5px"
-    },
-    "body": {
-      "backgroundColor": "rgb(6, 6, 8)"
-    }
-  },
-  "/ruleta [pestana-gestionar]": {
-    "#tab-manage-content": {
-      "display": "flex"
-    },
-    "#tab-edit-content": {
+    ".ruleta-inputs": {
       "display": "none"
     },
-    "#tab-manage": {
-      "color": "rgb(226, 144, 90)",
-      "backgroundColor": "rgba(0, 0, 0, 0)"
-    }
-  },
-  "/ruleta [modal-ganador]": {
-    "#winner-modal": {
-      "display": "flex",
-      "opacity": "1",
-      "visibility": "visible",
-      "position": "fixed"
+    ".ruleta-hist": {
+      "display": "none"
     },
-    ".modal-card": {
-      "transform": "matrix(1, 0, 0, 1, 0, 0)",
-      "backgroundColor": "rgb(15, 15, 21)",
-      "borderRadius": "24px"
+    ".ruleta-tool": {
+      "display": "grid",
+      "gridTemplateColumns": "1232px"
     },
-    ".modal-title": {
-      "fontFamily": "Outfit, sans-serif",
-      "color": "rgb(139, 139, 158)"
+    "#ruleta-foco": {
+      "color": "rgb(226, 144, 90)"
     },
-    ".winner-name-text": {
-      "fontSize": "32px",
-      "fontWeight": "800"
-    },
-    ".celebration-emoji": {
+    "#ruleta-girar": {
       "display": "block",
-      "fontSize": "56px"
+      "backgroundColor": "rgb(226, 144, 90)"
     }
   },
-  "/ruleta [titulo-edicion]": {
-    "#wheel-title-text.title-editing": {
-      "cursor": "text",
-      "userSelect": "text"
+  "/ruleta [ocultar-opcion]": {
+    ".ruleta-opt-row:nth-child(2) .ruleta-opt-text": {
+      "color": "rgb(90, 90, 110)",
+      "textDecorationLine": "line-through"
+    },
+    ".ruleta-opt-row:nth-child(2) .ruleta-opt-dot": {
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderTopWidth": "1px"
+    },
+    ".ruleta-opt-row:nth-child(3) .ruleta-opt-dot": {
+      "backgroundColor": "rgb(255, 193, 94)"
+    },
+    ".ruleta-opt-row:nth-child(2) .ruleta-opt-vis": {
+      "color": "rgb(139, 139, 158)"
     }
   },
   "/ruleta [deshacer-limpiar]": {
-    "#undo-toast": {
+    "#ruleta-aviso": {
       "display": "flex",
       "position": "fixed",
-      "zIndex": "60"
+      "zIndex": "10"
     },
-    "#undo-toast-btn": {
+    "#ruleta-aviso-deshacer": {
       "display": "block",
       "cursor": "pointer",
       "minHeight": "44px"
+    }
+  },
+  "/ruleta [reposo]": {
+    "#ruleta-result": {
+      "opacity": "0"
+    },
+    ".ruleta-hist-vacio": {
+      "display": "flex",
+      "color": "rgb(90, 90, 110)"
+    },
+    "#ruleta-borrar-hist": {
+      "display": "none"
+    },
+    "#ruleta-girar": {
+      "backgroundColor": "rgb(226, 144, 90)",
+      "color": "rgb(26, 14, 6)",
+      "borderRadius": "24px",
+      "height": "48px"
+    },
+    ".ruleta-mode[aria-pressed=\"true\"]": {
+      "backgroundColor": "rgb(20, 20, 29)",
+      "fontWeight": "600"
+    },
+    ".ruleta-opt-row:nth-child(1) .ruleta-opt-dot": {
+      "backgroundColor": "rgb(255, 160, 141)"
+    },
+    ".ruleta-opt-count": {
+      "display": "none"
+    },
+    "#ruleta-reiniciar": {
+      "display": "none"
+    },
+    "#wheel-sound": {
+      "display": "grid",
+      "width": "44px",
+      "height": "44px"
+    },
+    "#wheel-slices path:nth-child(1)": {
+      "fill": "rgb(255, 160, 141)",
+      "opacity": "1"
+    }
+  },
+  "/ruleta [h1-visible-390x844]": {
+    "h1": {
+      "display": "block"
+    }
+  },
+  "/ruleta [girada]": {
+    "#ruleta-result": {
+      "opacity": "1",
+      "textAlign": "center"
+    },
+    "#ruleta-result-main": {
+      "fontFamily": "Outfit, sans-serif",
+      "fontWeight": "600",
+      "color": "rgb(240, 240, 245)",
+      "fontSize": "25.6px"
+    },
+    "#ruleta-result-side": {
+      "color": "rgb(90, 90, 110)",
+      "fontSize": "12.8px"
+    },
+    "#ruleta-girar": {
+      "backgroundColor": "rgb(226, 144, 90)",
+      "color": "rgb(26, 14, 6)"
+    },
+    "#ruleta-historial li": {
+      "display": "flex",
+      "borderBottomWidth": "1px"
+    },
+    "#ruleta-borrar-hist": {
+      "display": "block"
+    },
+    "#wheel-slices .is-ganador": {
+      "strokeWidth": "3px",
+      "stroke": "rgb(240, 240, 245)"
+    },
+    "#wheel-slices path:not(.is-ganador)": {
+      "opacity": "0.7"
+    },
+    "#wheel-labels .is-ganador": {
+      "fontWeight": "700"
+    }
+  },
+  "/ruleta [ganador-coincide-con-la-rueda]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "en 3 giros animados (finales casi, por los pelos y vuelta atrás) el puntero señala el gajo del resultado"
+    }
+  },
+  "/ruleta [ganador-coincide-con-la-rueda-reducido]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "30 giros con movimiento reducido (N = 1, 2 y 40): el puntero señala siempre el gajo del resultado"
+    }
+  },
+  "/ruleta [pregunta-en-resultado]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "resultado «¿Quién friega?», historial «¿Quién friega?», guardada «¿Quién friega?» (se esperaba «¿Quién friega?» en las tres)"
+    }
+  },
+  "/ruleta [quitar-ganador]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "tras quitar al ganador: 1 oculta(s) de 6 filas, 5 gajos, resultado visible=false, aviso=true, botón «Girar ruleta»"
+    }
+  },
+  "/ruleta [modo-eliminar]": {
+    ".ruleta-mode[aria-pressed=\"true\"]": {
+      "backgroundColor": "rgb(20, 20, 29)",
+      "fontWeight": "600"
+    },
+    ".ruleta-opt-row.is-oculta .ruleta-opt-text": {
+      "textDecorationLine": "line-through",
+      "color": "rgb(90, 90, 110)"
+    },
+    "#ruleta-aviso": {
+      "display": "flex",
+      "position": "fixed"
+    },
+    "#ruleta-acciones-resultado": {
+      "display": "flex"
+    }
+  },
+  "/ruleta [modo-contar]": {
+    ".ruleta-opt-count": {
+      "display": "block",
+      "color": "rgb(139, 139, 158)",
+      "fontSize": "13.6px"
+    },
+    "#ruleta-reiniciar": {
+      "display": "block"
+    },
+    "#ruleta-acciones-resultado": {
+      "display": "flex"
+    }
+  },
+  "/ruleta [anadir-opcion-teclado-abierto]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "tras añadir «Ramen» con Intro: foco en #ruleta-nueva, campo «», 7 filas (última «Ramen»), 7 gajos (se esperaba el foco en #ruleta-nueva, campo vacío, 7 filas y 7 gajos)"
+    }
+  },
+  "/ruleta [girar-arrastrando]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "arrastrar la rueda gira una vez y el puntero señala el resultado"
+    }
+  },
+  "/ruleta [ida-y-vuelta]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "ida y vuelta sin listeners duplicados ni vivos"
+    }
+  },
+  "/ruleta [claves-viejas-migradas]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "claves viejas: lista «Ana, Luis, Marta», ocultas false,true,false, pregunta «¿Quién friega?», etiqueta «Opciones · 2 de 3», 2 gajos, clave vieja intacta=true"
+    }
+  },
+  "/ruleta [rueda-entera-visible-android-360x560]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "rueda top=178.4 (con el puntero) bottom=430.3 left=61.0 right=299.0 en una ventana de 360×560, botón top=494.3: la rueda tiene que verse entera y sin tapar por el botón"
+    }
+  },
+  "/ruleta [rueda-entera-visible-iphone-se-375x548]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "rueda top=178.4 (con el puntero) bottom=418.3 left=74.5 right=300.5 en una ventana de 375×548, botón top=482.3: la rueda tiene que verse entera y sin tapar por el botón"
+    }
+  },
+  "/ruleta [rueda-entera-visible-iphone-393x659]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "rueda top=226.9 (con el puntero) bottom=528.9 left=52.5 right=340.5 en una ventana de 393×659, botón top=592.9: la rueda tiene que verse entera y sin tapar por el botón"
+    }
+  },
+  "/ruleta [rueda-entera-visible-portatil-1280x720]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "rueda top=79.6 (con el puntero) bottom=546.6 left=152.7 right=605.7 en una ventana de 1280×720, botón top=610.6: la rueda tiene que verse entera y sin tapar por el botón"
+    }
+  },
+  "/ruleta [accion-principal-visible-android-360x560]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#ruleta-girar.bottom=542.3px con 560px visibles (holgura 17.7px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/ruleta [accion-principal-visible-iphone-se-375x548]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#ruleta-girar.bottom=530.3px con 548px visibles (holgura 17.7px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/ruleta [accion-principal-visible-iphone-393x659]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#ruleta-girar.bottom=640.9px con 659px visibles (holgura 18.1px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/ruleta [responsive-fold-cerrado-344x680]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#ruleta-girar.bottom=648.9px con 680px visibles (holgura 31.1px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/ruleta [responsive-fold-abierto-673x760]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#ruleta-girar.bottom=739.4px con 760px visibles (holgura 20.6px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/ruleta [responsive-tablet-vertical-768x960]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#ruleta-girar.bottom=939.4px con 960px visibles (holgura 20.6px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/ruleta [responsive-tablet-horizontal-1024x700]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#ruleta-girar.bottom=638.6px con 700px visibles (holgura 61.4px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/ruleta [responsive-movil-horizontal-740x340]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "sin scroll horizontal (740px en 740px)"
+    }
+  },
+  "/ruleta [responsive-escritorio-1280x720]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#ruleta-girar.bottom=658.6px con 720px visibles (holgura 61.4px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/ruleta [responsive-escritorio-1920x1000]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#ruleta-girar.bottom=909.6px con 1000px visibles (holgura 90.4px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
     }
   },
   "/ [cabeceras-de-seccion]": {
@@ -90,71 +314,6 @@
     },
     ".hub-section .section-header": {
       "marginBottom": "48px"
-    }
-  },
-  "/ruleta [reposo]": {
-    "#tab-manage-content": {
-      "display": "none"
-    },
-    ".roulette-section .section-header": {
-      "display": "block"
-    },
-    "#winner-modal": {
-      "display": "flex",
-      "opacity": "0",
-      "visibility": "visible"
-    }
-  },
-  "/ruleta [h1-visible-390x844]": {
-    "h1": {
-      "display": "block"
-    }
-  },
-  "/ruleta [panel-opciones-movil]": {
-    "#mobile-options-panel": {
-      "position": "fixed",
-      "zIndex": "55",
-      "transform": "matrix(1, 0, 0, 1, 0, 0)"
-    },
-    "#options-panel-toggle": {
-      "height": "56px",
-      "cursor": "pointer"
-    },
-    ".roulette-section .section-tag": "NO EXISTE EN EL DOM"
-  },
-  "/ruleta [panel-fijo-tras-scroll]": {
-    "relacion": {
-      "ok": true,
-      "mensaje": "bottom antes de scrollear=1193.1px, después de scrollear a 900px=1193.1px (delta 0.0px, tolerancia 2px). Un delta grande significa que el panel no está fixed al viewport de verdad -- algún ancestro le puso un transform."
-    }
-  },
-  "/ruleta [boton-girar-visible-con-panel-390x844]": {
-    "relacion": {
-      "ok": true,
-      "mensaje": "spin-button.bottom=311.2px, panel.top=438.9px (holgura 127.7px, mínimo 16px). Holgura por debajo del mínimo significa que el panel abierto tapa (o casi tapa) el botón GIRAR."
-    }
-  },
-  "/ruleta [boton-girar-visible-con-panel-375x667]": {
-    "relacion": {
-      "ok": true,
-      "mensaje": "spin-button.bottom=316.1px, panel.top=346.8px (holgura 30.8px, mínimo 16px). Holgura por debajo del mínimo significa que el panel abierto tapa (o casi tapa) el botón GIRAR."
-    }
-  },
-  "/ruleta [boton-girar-visible-con-panel-360x640]": {
-    "relacion": {
-      "ok": true,
-      "mensaje": "spin-button.bottom=308.6px, panel.top=332.8px (holgura 24.3px, mínimo 16px). Holgura por debajo del mínimo significa que el panel abierto tapa (o casi tapa) el botón GIRAR."
-    }
-  },
-  "/ruleta [panel-opciones-movil-gestionar]": {
-    "#mobile-options-panel": {
-      "transform": "matrix(1, 0, 0, 1, 0, 0)"
-    },
-    "#tab-manage-content": {
-      "display": "flex"
-    },
-    "#tab-edit-content": {
-      "display": "none"
     }
   },
   "/dados [lanzados]": {
@@ -337,7 +496,7 @@
   "/dados [responsive-fold-cerrado-344x680]": {
     "relacion": {
       "ok": true,
-      "mensaje": "#btn-roll.bottom=543.9px con 680px visibles (holgura 136.1px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+      "mensaje": "#btn-roll.bottom=563.9px con 680px visibles (holgura 116.1px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
     }
   },
   "/dados [responsive-fold-abierto-673x760]": {
@@ -379,7 +538,7 @@
   "/dados [responsive-seis-dados-fold-cerrado-344x680]": {
     "relacion": {
       "ok": true,
-      "mensaje": "#btn-roll.bottom=543.9px con 680px visibles (holgura 136.1px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+      "mensaje": "#btn-roll.bottom=563.9px con 680px visibles (holgura 116.1px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
     }
   },
   "/amigo-secreto [sorteo-hecho]": {
@@ -617,7 +776,7 @@
   "/si-o-no [gato]": {
     "relacion": {
       "ok": true,
-      "mensaje": "gatos en 10 consultas vacías: [{\"i\":5,\"gato\":true,\"texto\":\"Otra vez alguien dejó al gato jugando con el móvil\",\"lado\":\"Frase de gato 1 de 8\"},{\"i\":10,\"gato\":true,\"texto\":\"«Miau» no cuenta como pregunta\",\"lado\":\"Frase de gato 2 de 8\"}]"
+      "mensaje": "gatos en 10 consultas vacías: [{\"i\":5,\"gato\":true,\"texto\":\"Otra vez alguien dejó al gato jugando con el móvil\",\"lado\":\"Frase de gato 1 de 8\"},{\"i\":10,\"gato\":true,\"texto\":\"Suelta el móvil, gato. Esto es para humanos\",\"lado\":\"Frase de gato 2 de 8\"}]"
     }
   },
   "/si-o-no [agitar-movil]": {
@@ -646,8 +805,8 @@
   },
   "/si-o-no [responsive-fold-cerrado-344x680]": {
     "relacion": {
-      "ok": true,
-      "mensaje": "#btn-ask.bottom=633.5px con 680px visibles (holgura 46.5px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+      "ok": false,
+      "mensaje": "scroll horizontal: el documento mide 362px en una ventana de 344px. Algo tiene un ancho fijo o un min-width mayor que la pantalla."
     }
   },
   "/si-o-no [responsive-fold-abierto-673x760]": {
@@ -838,7 +997,7 @@
   "/temporizador?modo=impulso&min=1&max=1 [impulso-registrado]": {
     "relacion": {
       "ok": true,
-      "mensaje": "fila del historial: «01Ganas de mirar el móvilGanas 7 → 3 · 1 s · 00:53»"
+      "mensaje": "fila del historial: «01Ganas de mirar el móvilGanas 7 → 3 · 1 s · 03:09»"
     }
   },
   "/temporizador?modo=avisos&min=1&max=1 [avisos-repetidos]": {
@@ -886,7 +1045,7 @@
   "/temporizador [responsive-fold-cerrado-344x680]": {
     "relacion": {
       "ok": true,
-      "mensaje": "#timer-start.bottom=494.9px con 680px visibles (holgura 185.1px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+      "mensaje": "#timer-start.bottom=460.9px con 680px visibles (holgura 219.1px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
     }
   },
   "/temporizador [responsive-fold-abierto-673x760]": {

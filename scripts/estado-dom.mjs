@@ -72,6 +72,10 @@ async function medir() {
       viewport: est.viewport ?? { width: 1280, height: 900 },
       ...est.contexto,
     });
+    // `init`: código que se ejecuta en la página antes de cargar nada, para
+    // sembrar `localStorage` con el formato de antes de un rediseño o para
+    // forzar el azar de un giro.
+    if (est.init) await ctx.addInitScript(est.init);
     // Sin red externa: las fuentes y los anuncios no cambian estas propiedades
     // y sí harían el resultado dependiente de la conexión.
     await ctx.route('**/*', (r) =>
