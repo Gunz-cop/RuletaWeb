@@ -510,13 +510,15 @@ export const ESTADOS = [
         };
       });
       const a = await leer();
+      await pagina.focus('#ruleta-activar'); // con teclado el botón tiene el foco: al desaparecer pasa a «Pegar lista»
       await pagina.click('#ruleta-activar');
       const b = await leer();
+      const foco = await pagina.evaluate(() => document.activeElement.id);
       await pagina.click('#ruleta-aviso-deshacer');
       const c = await leer();
       const ok = a.ocultas === '1,4,5' && a.ocupa && b.ocultas === '' && !b.ocupa && b.gajos === 6
-        && c.ocultas === '1,4,5' && c.ocupa && c.gajos === 3;
-      return { ok, mensaje: `ocultas antes «${a.ocultas}» (botón ${a.ocupa}), tras activar «${b.ocultas}» (botón ${b.ocupa}, ${b.gajos} gajos), tras deshacer «${c.ocultas}» (botón ${c.ocupa}, ${c.gajos} gajos)` };
+        && c.ocultas === '1,4,5' && c.ocupa && c.gajos === 3 && foco === 'ruleta-pegar-toggle';
+      return { ok, mensaje: `foco tras activar «${foco}»; ocultas antes «${a.ocultas}» (botón ${a.ocupa}), tras activar «${b.ocultas}» (botón ${b.ocupa}, ${b.gajos} gajos), tras deshacer «${c.ocultas}» (botón ${c.ocupa}, ${c.gajos} gajos)` };
     },
   },
   {

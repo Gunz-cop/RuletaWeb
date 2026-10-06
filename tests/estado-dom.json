@@ -170,7 +170,7 @@
   "/ruleta [activar-todas]": {
     "relacion": {
       "ok": true,
-      "mensaje": "ocultas antes «1,4,5» (botón true), tras activar «» (botón false, 6 gajos), tras deshacer «1,4,5» (botón true, 3 gajos)"
+      "mensaje": "foco tras activar «ruleta-pegar-toggle»; ocultas antes «1,4,5» (botón true), tras activar «» (botón false, 6 gajos), tras deshacer «1,4,5» (botón true, 3 gajos)"
     }
   },
   "/ruleta [activar-todas-limite]": {
