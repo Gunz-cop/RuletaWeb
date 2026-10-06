@@ -598,14 +598,14 @@ function initRuleta() {
   }, { signal });
   // RF-08: activa las ocultas hasta el máximo (RF-01); si alguna se queda fuera, el aviso de máximo sigue a la vista.
   $('ruleta-activar').addEventListener('click', () => {
-    const foto = fotoLista();
+    const foto = fotoLista(), teniaFoco = document.activeElement === $('ruleta-activar');
     let k = activas().length, n = 0;
     estado.items.forEach((i) => {
       if (i.oculta && (i.t.trim() === '' || k < MAX_ACTIVAS)) { i.oculta = false; n++; k += i.t.trim() !== ''; }
     });
     if (!n) return; // con 100 activas no hay nada que activar: sin cambio, sin «Deshacer»
     actualizarFilas(); renderPegar(); editado();
-    if ($('ruleta-activar').hidden) $('ruleta-pegar-toggle').focus(); // el botón desaparece: el foco no se pierde
+    if (teniaFoco && $('ruleta-activar').hidden) $('ruleta-pegar-toggle').focus(); // el botón desaparece con el foco encima: no se pierde (Safari no enfoca con el ratón)
     avisar('Opciones activadas', () => restaurar(foto));
   }, { signal });
   btnQuitar.addEventListener('click', () => {
