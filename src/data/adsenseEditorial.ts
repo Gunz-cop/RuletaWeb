@@ -25,6 +25,20 @@ export const adsenseReadySlugs = [
   'temporizador/metodo-pomodoro-tdah-temporizador',
   'ruleta/ruleta-aleatoria-guia-definitiva',
   'ruleta/sorteo-ruleta',
+  'dados/dados-virtuales-sistemas-rol',
+  'dados/juegos-de-mesa-clasicos-era-digital',
+  'dados/juegos-de-beber-con-dados',
+  'equipos/scrum-agile-division-equipos-tareas',
+  'amigo-secreto/cultura-organizacional-dinamicas-gratitud-remoto',
+  'ruleta/herramientas-digitales-gratuitas-estudiantes',
+  'si-o-no/fatiga-de-decision-y-oraculo',
+  'amigo-secreto/algoritmos-tradiciones-intercambio-regalos',
+  'piedra-papel-tijera/teoria-de-juegos-y-psicologia',
+  'piedra-papel-tijera/como-ganar-piedra-papel-o-tijera',
+  'piedra-papel-tijera/teoria-de-juegos-resolucion-disputas',
+  'equipos/actividades-teambuilding-teletrabajo',
+  'si-o-no/ia-toma-decisiones-carrera-profesional',
+  'temporizador/entrenamiento-reaccion',
 ] as const;
 
 export const adsenseReadySet = new Set<string>(adsenseReadySlugs);
