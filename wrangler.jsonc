@@ -9,7 +9,12 @@
     "enabled": true
   },
   "assets": {
-    "directory": "dist"
+    "directory": "dist",
+    // Astro escribe cada página como carpeta/index.html y el modo por
+    // defecto (auto-trailing-slash) servía /amigo-secreto/ como página
+    // aparte: Google la indexaba duplicada. Con este modo /ruta/ redirige
+    // con 307 a /ruta, que es la canónica (trailingSlash: 'never').
+    "html_handling": "drop-trailing-slash"
   },
   "compatibility_flags": [
     "nodejs_compat"
