@@ -39,6 +39,18 @@ export const adsenseReadySlugs = [
   'equipos/actividades-teambuilding-teletrabajo',
   'si-o-no/ia-toma-decisiones-carrera-profesional',
   'temporizador/entrenamiento-reaccion',
+  'equipos/dinamicas-grupales',
+  'equipos/equipos-gaming',
+  'amigo-secreto/regalos-economicos',
+  'amigo-secreto/secreto-whatsapp',
+  'si-o-no/tarot-si-no',
+  'si-o-no/desbloqueo-oraculo',
+  'dados/juego-generala',
+  'moneda/dinamicas-pareja-aleatoriedad-relacion',
+  'moneda/juego-chapas',
+  'numeros/criptografia-generacion-numeros-aleatorios',
+  'numeros/bingo-movil',
+  'piedra-papel-tijera/historia-janken',
 ] as const;
 
 export const adsenseReadySet = new Set<string>(adsenseReadySlugs);
