@@ -1,0 +1,85 @@
+---
+// Sobre de amigo secreto (SDD de amigo secreto §6.2). Lo anima amigo-secreto.js
+// con la Web Animations API sobre .env-flap, .env-card y la raíz; aquí solo
+// vive la forma y el 3D de la solapa, que Tailwind no expresa.
+// Estados en data-state: cerrado | abierto. Con movimiento reducido el JS
+// pasa directo a abierto.
+interface Props {
+  id: string;
+  nameId: string;
+  label?: string;
+}
+const { id, nameId, label = 'Sobre de tu amigo secreto. Toca para abrirlo.' } = Astro.props;
+---
+
+<button
+  type="button"
+  id={id}
+  class="env group relative block w-[min(78vw,320px)] aspect-[4/3] mx-auto mt-[clamp(7.5rem,32vw,8.5rem)] p-0 border-0 bg-transparent cursor-pointer select-none [perspective:900px] focus-visible:outline-2 focus-visible:outline-offset-8 focus-visible:outline-(--as-oro) rounded-lg"
+  data-state="cerrado"
+  aria-label={label}
+>
+  <!-- Tarjeta: sale por arriba al abrir -->
+  <span class="env-card absolute inset-x-[7%] top-[6%] bottom-[8%] z-[1] flex flex-col items-center justify-center gap-1 rounded-md bg-(--as-papel) px-3 text-center shadow-md">
+    <span class="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-(--as-lacre-oscuro)">Te toca regalarle a</span>
+    <span id={nameId} class="env-name font-display text-[clamp(1.4rem,6.5vw,2rem)] font-bold leading-tight text-(--as-tinta) break-words [overflow-wrap:anywhere]"></span>
+  </span>
+
+  <!-- Cuerpo del sobre (delante de la tarjeta) -->
+  <span class="env-body absolute inset-0 z-[2] overflow-hidden rounded-lg bg-(--as-sobre) shadow-lg" aria-hidden="true">
+    <svg class="absolute inset-0 h-full w-full" viewBox="0 0 400 300" preserveAspectRatio="none">
+      <path d="M0 300 L200 165 L400 300 Z" fill="var(--as-sobre-sombra)" />
+      <path d="M0 0 L200 175 L0 300 Z" fill="var(--as-sobre-claro)" />
+      <path d="M400 0 L200 175 L400 300 Z" fill="var(--as-sobre-claro)" />
+      <!-- Cordel -->
+      <rect x="0" y="138" width="400" height="10" fill="var(--as-lacre)" opacity="0.85" />
+    </svg>
+  </span>
+
+  <!-- Solapa: gira sobre su borde superior -->
+  <span class="env-flap absolute inset-x-0 top-0 z-[3] h-[62%] origin-top [transform-style:preserve-3d]" aria-hidden="true">
+    <svg class="absolute inset-0 h-full w-full drop-shadow-md" viewBox="0 0 400 186" preserveAspectRatio="none">
+      <path d="M0 0 H400 L200 186 Z" fill="var(--as-sobre-solapa)" />
+    </svg>
+  </span>
+
+  <!-- Lacre -->
+  <span class="env-seal absolute left-1/2 top-[54%] z-[4] grid size-16 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-(--as-lacre) text-(--as-papel) shadow-md ring-4 ring-(--as-lacre-oscuro)/40" aria-hidden="true">
+    <svg viewBox="0 0 24 24" class="size-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 12v9H4v-9" /><path d="M2 7h20v5H2z" /><path d="M12 21V7" />
+      <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" /><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />
+    </svg>
+  </span>
+
+  <span class="env-hint absolute -bottom-9 inset-x-0 text-center text-sm text-ink-secondary group-data-[state=abierto]:invisible" aria-hidden="true">Toca para abrir</span>
+</button>
+
+<style>
+  /* La solapa cerrada tapa la tarjeta; abierta queda detrás del cuerpo. */
+  .env[data-state='abierto'] .env-flap {
+    transform: rotateX(180deg);
+    z-index: 0;
+  }
+  /* Abierta, la tarjeta sale por arriba y queda delante de todo: el nombre
+     se lee entero sin que lo tape el cuerpo del sobre. */
+  .env[data-state='abierto'] .env-card {
+    transform: translateY(-62%);
+    z-index: 5;
+  }
+  .env[data-state='abierto'] .env-seal {
+    opacity: 0;
+  }
+  .env-flap svg {
+    backface-visibility: visible;
+  }
+  /* Reposo: el sobre respira (salvo movimiento reducido). */
+  @media (prefers-reduced-motion: no-preference) {
+    .env[data-state='cerrado'] {
+      animation: env-respira 3.2s ease-in-out infinite;
+    }
+  }
+  @keyframes env-respira {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+  }
+</style>

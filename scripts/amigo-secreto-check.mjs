@@ -10,6 +10,8 @@
  */
 import {
   sortearCadena, matrizPermitidos, cadenaValida, contarCadenas, barajar, indiceAlAzar,
+  leerParticipantes, escribirParticipantes, duplicados, leerExclusiones, problemaEvidente, leerCSV,
+  numeroWhatsapp, formatoPresupuesto, generarIcs,
 } from '../src/scripts/amigo-secreto-logica.js';
 
 const fallos = [];
@@ -168,6 +170,31 @@ for (const [n, grupos] of [
   const r = sortearCadena(permitido, { rnd, intentos: 0 });
   check(r.metodo === 'busqueda' && r.uniforme === false && cadenaValida(r.orden, permitido),
     'Con 20 personas y sin intentos de rechazo debería usar la búsqueda y marcarla no uniforme');
+}
+
+/* --- Lectura de lo que escribe el organizador --- */
+{
+  const lista = leerParticipantes('Ana\n  \nBruno, 300 123 4567 | café, té\nCarla, carla@x.co\n, sin nombre');
+  check(lista.length === 3 && lista[1].contacto === '300 123 4567' && lista[1].pista === 'café, té', `leerParticipantes: ${JSON.stringify(lista)}`);
+  check(escribirParticipantes(lista) === 'Ana\nBruno, 300 123 4567 | café, té\nCarla, carla@x.co', 'escribirParticipantes no es la inversa');
+  const d = duplicados(leerParticipantes('José\njose\nAna\nANA\nLuis'));
+  check(d.exactos.length === 1 && d.exactos[0].length === 2 && d.parecidos.length === 1, `duplicados: ${JSON.stringify(d)}`);
+  const p = leerParticipantes('Ana\nBruno\nCarla\nDiego');
+  const e = leerExclusiones('Ana, Bruno\nCarla > Ana, Diego\nZoe, Ana\nSolo', p);
+  check(JSON.stringify(e.grupos) === '[[0,1]]' && JSON.stringify(e.unSentido) === '[[2,0],[2,3]]'
+    && e.desconocidos.join() === 'Zoe' && e.sueltos.join() === 'Solo', `leerExclusiones: ${JSON.stringify(e)}`);
+  check(problemaEvidente(p, { grupos: [[0, 1, 2]], unSentido: [] }).includes('como mucho 2'), 'Grupo de 3 en 4 debería ser imposible evidente');
+  check(problemaEvidente(p, { grupos: [], unSentido: [[0, 1], [0, 2], [0, 3]] }).includes('a quién regalarle'), 'Quien no puede regalar a nadie debería detectarse');
+  check(problemaEvidente(p, { grupos: [[0, 1]], unSentido: [] }) === '', 'Una pareja en 4 no es imposible');
+  const csv = leerCSV('﻿Nombre,Contacto\n"Pérez, Ana",3001234567\nBruno,x\n\n"Carla ""la jefa""",');
+  check(csv.length === 3 && csv[0].nombre === 'Pérez, Ana' && csv[0].contacto === '3001234567' && csv[2].nombre === 'Carla "la jefa"', `leerCSV: ${JSON.stringify(csv)}`);
+  check(leerCSV('Nombre;Correo\nAna;a@b.c')[0]?.contacto === 'a@b.c', 'leerCSV con punto y coma');
+  check(numeroWhatsapp('300 123 4567') === '573001234567' && numeroWhatsapp('+34 600 11 22 33') === '34600112233' && numeroWhatsapp('a@b.c') === '', 'numeroWhatsapp');
+  check(/50\.000/.test(formatoPresupuesto('50000')), `formatoPresupuesto: ${formatoPresupuesto('50000')}`);
+  const ics = generarIcs({ fecha: '2026-12-19', grupo: 'Oficina', lugar: 'Casa; sur', nombre: 'Ana', mensaje: 'Hola' }, { ahora: new Date(0), uid: 'x' });
+  check(ics.includes('DTSTART;VALUE=DATE:20261219\r\n') && ics.includes('DTEND;VALUE=DATE:20261220') && ics.includes('LOCATION:Casa\\; sur') && ics.endsWith('END:VCALENDAR\r\n'), 'generarIcs');
+  check(generarIcs({ fecha: '19/12/2026', nombre: 'A' }) === null, 'generarIcs sin fecha válida debería dar null');
+  resumen.push('lectura: participantes, duplicados, exclusiones (grupos y un sentido), CSV, WhatsApp, presupuesto e .ics');
 }
 
 for (const l of resumen) console.log('  ' + l);

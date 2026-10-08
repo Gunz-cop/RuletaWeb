@@ -1,839 +1,620 @@
 // ==========================================================
-// AMIGO SECRETO — LÓGICA DE ORGANIZADOR Y REVELACIÓN MÁGICA
+// AMIGO SECRETO — página (organizar, repartir y abrir el sobre)
 // ==========================================================
+// SDD de amigo secreto (docs/sdd-amigo-secreto.md). La lógica que se puede
+// probar sin navegador vive en amigo-secreto-logica.js (sorteo y lectura de
+// lo escrito) y amigo-secreto-enlace.js (enlaces y sorteo guardado).
+//
+// Reglas de esta página:
+// - Todo texto del usuario se pinta con textContent: nunca innerHTML.
+// - El marcado repetido se clona de <template> del .astro, donde Tailwind ve
+//   sus clases; el JS solo cambia atributos (hidden, data-*, aria-*).
+// - localStorage puede fallar (modo privado): la herramienta sigue igual.
 
-import { sortearCadena, matrizPermitidos, barajar } from './amigo-secreto-logica.js';
-import { leerEnlace } from './amigo-secreto-enlace.js';
+import {
+  sortearCadena, matrizPermitidos, barajar, leerParticipantes, escribirParticipantes, duplicados,
+  leerExclusiones, problemaEvidente, leerCSV, quitarCabecera, numeroWhatsapp, formatoPresupuesto, generarIcs,
+} from './amigo-secreto-logica.js';
+import { leerEnlace, crearV2, urlV2, cargarGuardado, guardar, borrarGuardado } from './amigo-secreto-enlace.js';
 
-async function initAmigoSecreto() {
-  const organizerScreen = document.getElementById('organizer-screen');
-  const revealScreen = document.getElementById('reveal-screen');
-  const seoSection = document.getElementById('seo-article-section');
-  const giftContainer = document.getElementById('gift-container');
+const $ = (id) => document.getElementById(id);
+const movimientoReducido = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+const almacen = (() => { try { return window.localStorage; } catch { return null; } })();
+const almacenSeguro = almacen ?? { getItem: () => null, setItem: () => {}, removeItem: () => {} };
 
-  const textInput = document.getElementById('participants-textarea');
-  const csvDropzone = document.getElementById('csv-dropzone');
-  const csvFileInput = document.getElementById('csv-file-input');
-  const tagsContainer = document.getElementById('participants-tags-container');
-  const countBadge = document.getElementById('participants-count');
-  const btnDraw = document.getElementById('btn-draw');
-  const validationSection = document.getElementById('validation-section');
-  const matrixTbody = document.getElementById('matrix-tbody');
-  const resultsSection = document.getElementById('results-section');
-  const linksContainer = document.getElementById('links-list-container');
-  const toast = document.getElementById('toast-message');
-  const drawWarning = document.getElementById('draw-warning');
-  const savedDrawBanner = document.getElementById('saved-draw');
-  const exclusionsInput = document.getElementById('exclusions-textarea');
-  const exclusionsDetails = document.getElementById('exclusions-details');
-  const STORAGE_KEY = 'amigo-secreto:ultimo-sorteo';
+/* ---------------- utilidades de interfaz ---------------- */
 
-  let participantsList = []; // Array de { id, name, contact }
-  let globalActiveTab = 'tab-manual';
-  let audioCtx = null;
-  let currentDraw = null; // { date, text, exclusions, matrixRows, links: [{ name, contact, url, sent }] }
+let temporizadorAviso = 0;
+function aviso(texto) {
+  const t = $('toast-message');
+  if (!t) return;
+  t.textContent = texto;
+  clearTimeout(temporizadorAviso);
+  try { t.showPopover(); } catch { t.dataset.visible = 'true'; }
+  temporizadorAviso = setTimeout(() => {
+    try { t.hidePopover(); } catch { /* sin Popover API */ }
+    t.dataset.visible = 'false';
+  }, 2600);
+}
 
-  // El dato va en el fragmento (#revelar=) porque el navegador nunca envía
-  // el fragmento al servidor: así el nombre no queda en registros ni en la
-  // analítica. Se sigue aceptando ?revelar= para no romper los enlaces que
-  // ya se repartieron antes del cambio.
-  // leerEnlace entiende los enlaces v1 de siempre y los v2 (SDD §5); un
-  // formato desconocido o dañado llega como error y no como organizador.
-  const enlace = await leerEnlace(window.location.href);
-
-  if (enlace) {
-    // MODO REVELACIÓN INTERACTIVA
-    if (organizerScreen) organizerScreen.style.display = 'none';
-    if (seoSection) seoSection.style.display = 'none';
-    if (revealScreen) {
-      revealScreen.style.display = 'flex';
-      revealScreen.classList.add('slide-up');
-    }
-
-    // La vista de revelación es personal: que no se indexe ni comparta título
-    // con la página del organizador.
-    const robotsMeta = document.querySelector('meta[name="robots"]');
-    if (robotsMeta) robotsMeta.setAttribute('content', 'noindex, nofollow');
-    document.title = 'Tu amigo secreto 🎁 | Decídelo.app';
-
-    const decryptedName = enlace.datos ? enlace.datos.nombre : null;
-    const revealedNameEl = document.getElementById('revealed-name');
-
-    if (!decryptedName) {
-      // Un enlace roto no debe celebrar nada: se explica y no se abre el regalo.
-      const inviteBox = revealScreen && revealScreen.querySelector('.invite-box');
-      if (inviteBox) {
-        inviteBox.querySelector('h2').textContent = 'Este enlace no funciona';
-        inviteBox.querySelector('p').textContent = 'Puede que se haya copiado incompleto. Pídele a quien organizó el sorteo que te lo envíe de nuevo.';
-      }
-      if (giftContainer) giftContainer.style.display = 'none';
-      return;
-    }
-
-    if (revealedNameEl) revealedNameEl.textContent = decryptedName;
-
-    // Listener para abrir el regalo
-    if (giftContainer) {
-      // Eliminar clase por si quedó de una transición previa
-      giftContainer.classList.remove('opened');
-      const openGift = () => {
-        if (!giftContainer.classList.contains('opened')) {
-          giftContainer.classList.add('opened');
-          playRevealSound();
-        }
-      };
-      giftContainer.addEventListener('click', openGift, { once: true });
-      giftContainer.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          openGift();
-        }
-      });
-    }
-    return; // No configurar el organizador si estamos en pantalla de revelación
-  } else {
-    // MODO ORGANIZADOR
-    if (organizerScreen) organizerScreen.style.display = 'block';
-    if (seoSection) seoSection.style.display = 'block';
-    if (revealScreen) revealScreen.style.display = 'none';
-  }
-
-  // Verificar que existen los elementos del organizador antes de continuar
-  if (!textInput || !btnDraw || !tagsContainer) return;
-
-  // Si el organizador abre un enlace en la misma pestaña, solo cambia el
-  // fragmento y la página no se recarga: hay que recargar a mano para
-  // entrar en modo revelación.
-  if (!window.__amigoHashListener) {
-    window.__amigoHashListener = true;
-    window.addEventListener('hashchange', () => {
-      const h = new URLSearchParams(window.location.hash.slice(1));
-      if (h.get('revelar') || h.get('v')) {
-        window.location.reload();
-      }
-    });
-  }
-
-  // Resetear estados al re-entrar
-  participantsList = [];
-  textInput.value = '';
-  if (exclusionsInput) exclusionsInput.value = '';
-  updateParticipantsUI();
-  offerSavedDraw();
-
-  // Control de Pestañas
-  const tabButtons = document.querySelectorAll('.tab-btn');
-  tabButtons.forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const tabId = e.currentTarget.getAttribute('data-tab');
-      switchTab(tabId, e.currentTarget);
-    });
+// Confirmación en <dialog>; sin soporte, window.confirm.
+function confirmar(texto, si = 'Sí') {
+  const d = $('as-confirmar');
+  if (!d || typeof d.showModal !== 'function') return Promise.resolve(window.confirm(texto));
+  $('as-conf-texto').textContent = texto;
+  $('as-conf-si').textContent = si;
+  return new Promise((resolver) => {
+    d.addEventListener('close', () => resolver(d.returnValue === 'si'), { once: true });
+    d.returnValue = '';
+    d.showModal();
   });
+}
 
-  // Flechas izquierda/derecha entre pestañas, como espera un lector de
-  // pantalla de un role="tablist".
-  tabButtons.forEach((btn, idx) => {
-    btn.addEventListener('keydown', (e) => {
-      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
-      const step = e.key === 'ArrowRight' ? 1 : -1;
-      const next = tabButtons[(idx + step + tabButtons.length) % tabButtons.length];
-      switchTab(next.getAttribute('data-tab'), next);
-      next.focus();
-    });
-  });
+function clonar(idPlantilla) {
+  return $(idPlantilla).content.firstElementChild.cloneNode(true);
+}
 
-  function switchTab(tabId, targetBtn) {
-    globalActiveTab = tabId;
-    tabButtons.forEach(btn => {
-      btn.classList.remove('active');
-      btn.setAttribute('aria-selected', 'false');
-      btn.tabIndex = -1;
-    });
-    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+/* ---------------- el sobre ---------------- */
 
-    if (targetBtn) {
-      targetBtn.classList.add('active');
-      targetBtn.setAttribute('aria-selected', 'true');
-      targetBtn.tabIndex = 0;
-    }
-    const contentEl = document.getElementById(tabId);
-    if (contentEl) contentEl.classList.add('active');
+// Ciclo de movimiento (SDD §6.2): anticipación, acción y aterrizaje. La
+// promesa se resuelve cuando el nombre ya se ve.
+async function abrirSobre(sobre) {
+  if (sobre.dataset.state === 'abierto') return;
+  const flap = sobre.querySelector('.env-flap');
+  const card = sobre.querySelector('.env-card');
+  const seal = sobre.querySelector('.env-seal');
+  if (movimientoReducido() || typeof sobre.animate !== 'function') {
+    sobre.dataset.state = 'abierto';
+    card.animate?.([{ opacity: 0 }, { opacity: 1 }], { duration: 200 });
+    return;
+  }
+  sobre.style.animation = 'none';
+  await sobre.animate([{ transform: 'scale(1)' }, { transform: 'scale(0.97)' }], { duration: 140, easing: 'ease-out', fill: 'forwards' }).finished;
+  seal.animate([{ opacity: 1, transform: 'translate(-50%,-50%) scale(1)' }, { opacity: 0, transform: 'translate(-50%,-50%) scale(1.5)' }], { duration: 260, easing: 'ease-in', fill: 'forwards' });
+  sobre.animate([{ transform: 'scale(0.97)' }, { transform: 'scale(1)' }], { duration: 420, easing: 'cubic-bezier(.34,1.56,.64,1)', fill: 'forwards' });
+  await flap.animate([{ transform: 'rotateX(0deg)' }, { transform: 'rotateX(180deg)' }], { duration: 520, easing: 'cubic-bezier(.65,0,.35,1)', fill: 'forwards' }).finished;
+  flap.style.zIndex = '0';
+  card.style.zIndex = '5';
+  try { if (navigator.vibrate) navigator.vibrate(25); } catch { /* sin vibración */ }
+  await card.animate([
+    { transform: 'translateY(0)' },
+    { transform: 'translateY(-68%)', offset: 0.75 },
+    { transform: 'translateY(-62%)' },
+  ], { duration: 700, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'forwards' }).finished;
+  sobre.dataset.state = 'abierto';
+  for (const el of [sobre, flap, card, seal]) el.getAnimations().forEach((a) => a.cancel());
+  flap.style.zIndex = card.style.zIndex = sobre.style.animation = '';
+}
+
+function cerrarSobre(sobre) {
+  sobre.getAnimations({ subtree: true }).forEach((a) => a.cancel());
+  sobre.dataset.state = 'cerrado';
+  sobre.querySelectorAll('.env-flap, .env-card').forEach((el) => { el.style.zIndex = ''; });
+  sobre.style.animation = '';
+}
+
+/* ==========================================================
+   PANTALLA «ABRIR»
+   ========================================================== */
+
+function pintarDetalles(datos) {
+  const dl = $('as-abrir-detalles');
+  let alguno = false;
+  const poner = (campo, texto) => {
+    const caja = dl.querySelector(`[data-campo="${campo}"]`);
+    caja.hidden = !texto;
+    if (texto) { caja.querySelector('dd').textContent = texto; alguno = true; }
+  };
+  poner('presupuesto', datos.presupuesto ? formatoPresupuesto(datos.presupuesto) : '');
+  let fecha = '';
+  if (datos.fecha && /^\d{4}-\d{2}-\d{2}$/.test(datos.fecha)) {
+    const [y, m, d] = datos.fecha.split('-').map(Number);
+    fecha = new Intl.DateTimeFormat('es-CO', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date(y, m - 1, d));
+  }
+  poner('fecha', fecha);
+  poner('lugar', datos.lugar ?? '');
+  poner('pista', datos.pista ?? '');
+  poner('mensaje', datos.mensaje ?? '');
+  dl.hidden = !alguno;
+}
+
+function descargarIcs(datos) {
+  const ics = generarIcs(datos);
+  if (!ics) return;
+  const url = URL.createObjectURL(new Blob([ics], { type: 'text/calendar;charset=utf-8' }));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'amigo-secreto.ics';
+  document.body.append(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function modoAbrir(enlace) {
+  document.body.dataset.asModo = 'abrir';
+  $('as-app').dataset.modo = 'abrir';
+  $('organizer-screen').hidden = true;
+  $('reveal-screen').hidden = false;
+  document.querySelector('meta[name="robots"]')?.setAttribute('content', 'noindex, nofollow');
+  document.title = 'Tu amigo secreto | Decídelo.app';
+  window.scrollTo(0, 0);
+
+  const sobre = $('gift-container');
+  if (!enlace.datos) {
+    $('as-abrir-titulo').textContent = 'Este enlace no funciona';
+    $('as-abrir-intro').textContent = enlace.error === 'desconocido'
+      ? 'Este enlace es de una versión más nueva de la página. Recarga o actualiza tu navegador e inténtalo de nuevo.'
+      : 'Parece que se copió incompleto. Pídele a quien organizó el sorteo que te lo envíe de nuevo.';
+    $('as-sobre-zona').hidden = true;
+    return;
   }
 
-  // Listeners de entrada manual
-  textInput.addEventListener('input', handleManualInput);
-  if (exclusionsInput) exclusionsInput.addEventListener('input', updateParticipantsUI);
+  const datos = enlace.datos;
+  $('revealed-name').textContent = datos.nombre;
+  if (datos.grupo) { $('as-abrir-grupo').textContent = datos.grupo; $('as-abrir-grupo').hidden = false; }
+  const abrir = async () => {
+    await abrirSobre(sobre);
+    sobre.setAttribute('aria-label', `Te toca regalarle a ${datos.nombre}`);
+    pintarDetalles(datos);
+    if (datos.fecha) $('as-calendario').hidden = false;
+  };
+  sobre.addEventListener('click', abrir, { once: true });
+  $('as-calendario').addEventListener('click', () => descargarIcs(datos));
+}
 
-  // Carga CSV & Drag and Drop
-  if (csvDropzone && csvFileInput) {
-    csvDropzone.addEventListener('click', () => csvFileInput.click());
-    csvDropzone.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        csvFileInput.click();
-      }
-    });
-    csvFileInput.addEventListener('change', handleCSVFileSelect);
+/* ==========================================================
+   PANTALLA «ORGANIZAR»
+   ========================================================== */
 
-    ['dragenter', 'dragover'].forEach(eventName => {
-      csvDropzone.addEventListener(eventName, (e) => {
-        e.preventDefault();
-        csvDropzone.classList.add('dragover');
-      }, false);
-    });
+function modoOrganizar() {
+  const lista = $('participants-textarea');
+  const exclusiones = $('exclusions-textarea');
+  const btn = $('btn-draw');
+  const fichas = $('participants-tags-container');
+  const avisoSorteo = $('draw-warning');
+  const camposDetalle = ['grupo', 'presupuesto', 'fecha', 'lugar', 'mensaje'];
 
-    ['dragleave', 'drop'].forEach(eventName => {
-      csvDropzone.addEventListener(eventName, (e) => {
-        e.preventDefault();
-        csvDropzone.classList.remove('dragover');
-      }, false);
-    });
+  let participantes = [];
+  let sorteo = null; // formato de amigo-secreto-enlace.js (version 2)
+  let emparejando = null; // null = apagado; -1 = esperando el primero; i = primero elegido
+  let bloqueo = '';
 
-    csvDropzone.addEventListener('drop', (e) => {
-      const dt = e.dataTransfer;
-      const files = dt.files;
-      if (files.length) {
-        csvFileInput.files = files;
-        handleCSVFileSelect();
-      }
-    });
+  /* ---- participantes ---- */
+
+  function actualizar() {
+    participantes = leerParticipantes(lista.value);
+    $('participants-count').textContent = `${participantes.length} ${participantes.length === 1 ? 'persona' : 'personas'}`;
+    pintarFichas();
+    validar();
   }
 
-  // Listener para el botón principal del sorteo
-  btnDraw.addEventListener('click', runSorteo);
-
-  // Encriptación XOR + Base64 local
-  function encryptName(name) {
-    const key = 'decidelo';
-    let xor = '';
-    const utf8 = unescape(encodeURIComponent(name));
-    for (let i = 0; i < utf8.length; i++) {
-      xor += String.fromCharCode(utf8.charCodeAt(i) ^ key.charCodeAt(i % key.length));
-    }
-    return encodeURIComponent(btoa(xor));
-  }
-
-  // Desencriptación local
-  function decryptName(encoded) {
-    try {
-      const key = 'decidelo';
-      const decodedB64 = atob(decodeURIComponent(encoded));
-      let xor = '';
-      for (let i = 0; i < decodedB64.length; i++) {
-        xor += String.fromCharCode(decodedB64.charCodeAt(i) ^ key.charCodeAt(i % key.length));
-      }
-      return decodeURIComponent(escape(xor));
-    } catch (e) {
-      return null;
-    }
-  }
-
-  // Procesar entrada manual
-  function handleManualInput() {
-    const text = textInput.value;
-    const lines = text.split('\n');
-    participantsList = [];
-
-    lines.forEach((line, index) => {
-      const trimmed = line.trim();
-      if (!trimmed) return;
-
-      let name = trimmed;
-      let contact = '';
-
-      if (trimmed.includes(',')) {
-        const parts = trimmed.split(',');
-        name = parts[0].trim();
-        contact = parts.slice(1).join(',').trim(); // Soporta comas extras
-      }
-
-      if (name) {
-        participantsList.push({
-          id: index + 1,
-          name: name,
-          contact: contact
-        });
-      }
-    });
-
-    updateParticipantsUI();
-  }
-
-  // Procesar CSV seleccionado
-  function handleCSVFileSelect() {
-    const file = csvFileInput.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      const text = e.target.result;
-      const parsed = parseCSV(text);
-      if (parsed.length > 0) {
-        // Combinar con la lista o reemplazar
-        participantsList = parsed.map((item, idx) => ({
-          id: participantsList.length + idx + 1,
-          name: item.name,
-          contact: item.contact
-        }));
-
-        // Rellenar el textarea para visualización y edición
-        let manualText = '';
-        participantsList.forEach(p => {
-          if (p.contact) {
-            manualText += `${p.name}, ${p.contact}\n`;
-          } else {
-            manualText += `${p.name}\n`;
-          }
-        });
-        textInput.value = manualText;
-
-        updateParticipantsUI();
-        showToast(`Cargados ${parsed.length} participantes del CSV`);
-        // Cambiar a la pestaña manual para ver la lista final cargada
-        const manualTabBtn = document.querySelector('.tab-btn[data-tab="tab-manual"]');
-        switchTab('tab-manual', manualTabBtn);
-      } else {
-        showToast("El archivo CSV está vacío o mal formateado");
-      }
-    };
-    reader.readAsText(file, 'UTF-8');
-  }
-
-  // CSV Parser simple
-  function parseCSV(text) {
-    const lines = text.split(/\r?\n/);
-    const parsed = [];
-
-    lines.forEach(line => {
-      if (!line.trim()) return;
-
-      const row = [];
-      let inQuotes = false;
-      let current = '';
-
-      for (let i = 0; i < line.length; i++) {
-        const char = line[i];
-        if (char === '"' || char === "'") {
-          inQuotes = !inQuotes;
-        } else if (char === ',' && !inQuotes) {
-          row.push(current.trim());
-          current = '';
-        } else {
-          current += char;
-        }
-      }
-      row.push(current.trim());
-
-      if (row.length > 0 && row[0]) {
-        const checkHeader = row[0].toLowerCase();
-        if (checkHeader === 'nombre' || checkHeader === 'name' || checkHeader === 'participante' || checkHeader === 'participant' || checkHeader === 'contacto' || checkHeader === 'email') {
-          return; // Omitir fila cabecera
-        }
-        parsed.push({
-          name: row[0].replace(/^["']|["']$/g, ''),
-          contact: (row[1] || '').replace(/^["']|["']$/g, '')
-        });
-      }
-    });
-    return parsed;
-  }
-
-  // Mostrar notificaciones flotantes Toast
-  function showToast(message) {
-    if (!toast) return;
-    toast.textContent = message;
-    toast.classList.add('visible');
-    setTimeout(() => {
-      toast.classList.remove('visible');
-    }, 2500);
-  }
-
-  // Eliminar participante individual
-  function removeParticipant(id) {
-    participantsList = participantsList.filter(p => p.id !== id);
-
-    // Re-generar textarea
-    let manualText = '';
-    participantsList.forEach(p => {
-      if (p.contact) {
-        manualText += `${p.name}, ${p.contact}\n`;
-      } else {
-        manualText += `${p.name}\n`;
-      }
-    });
-    textInput.value = manualText;
-
-    updateParticipantsUI();
-  }
-
-  // Sincronizar UI de etiquetas e interactivos
-  function updateParticipantsUI() {
-    tagsContainer.innerHTML = '';
-    countBadge.textContent = `${participantsList.length} participantes`;
-
-    if (participantsList.length === 0) {
-      tagsContainer.innerHTML = '<span class="tag-empty">Ninguno aún. Agrega nombres arriba para empezar.</span>';
-      btnDraw.disabled = true;
-      if (validationSection) validationSection.classList.remove('show');
-      if (resultsSection) resultsSection.classList.remove('show');
-      updateDrawWarning([]);
-      return;
-    }
-
-    participantsList.forEach(p => {
-      const tag = document.createElement('span');
-      tag.className = 'participant-tag';
-      // textContent, nunca innerHTML: el nombre lo escribe el usuario o llega
-      // de un CSV ajeno, y como HTML podría ejecutar código en la página.
-      tag.textContent = `${p.name} `;
-
-      const removeBtn = document.createElement('button');
-      removeBtn.type = 'button';
-      removeBtn.className = 'tag-remove';
-      removeBtn.textContent = '×';
-      removeBtn.setAttribute('aria-label', `Quitar a ${p.name}`);
-      removeBtn.addEventListener('click', () => removeParticipant(p.id));
-
-      tag.appendChild(removeBtn);
-      tagsContainer.appendChild(tag);
-    });
-
-    const duplicates = findDuplicateNames();
-    const exclusionProblem = duplicates.length ? '' : checkExclusions(parseExclusions());
-    btnDraw.disabled = participantsList.length < 2 || duplicates.length > 0 || !!exclusionProblem;
-    updateDrawWarning(duplicates, exclusionProblem);
-  }
-
-  // Dos personas con el mismo nombre reciben enlaces idénticos y una creerá
-  // que se tocó a sí misma: se bloquea el sorteo hasta que se distingan.
-  function findDuplicateNames() {
-    const seen = new Map();
-    participantsList.forEach(p => {
-      const key = nameKey(p.name);
-      if (!seen.has(key)) seen.set(key, { name: p.name, count: 0 });
-      seen.get(key).count++;
-    });
-    return [...seen.values()].filter(v => v.count > 1);
-  }
-
-  function updateDrawWarning(duplicates, exclusionProblem) {
-    if (!drawWarning) return;
-    let message = '';
-    if (duplicates.length > 0) {
-      const names = duplicates.map(d => `«${d.name}» (${d.count} veces)`).join(', ');
-      message = `Hay nombres repetidos: ${names}. Agrega una inicial o un apellido para distinguirlos; si no, quien reciba ese nombre creerá que se tocó a sí mismo.`;
-    } else if (exclusionProblem) {
-      message = exclusionProblem;
-    } else if (participantsList.length === 2 || participantsList.length === 3) {
-      message = `Con ${participantsList.length} participantes cada uno puede deducir quién le regala. El sorteo funciona, pero la sorpresa es mejor desde 4 personas.`;
-    }
-    drawWarning.textContent = message;
-    drawWarning.hidden = !message;
-  }
-
-  // Cada línea del campo de exclusiones es un grupo: nadie del grupo puede
-  // regalarle a otro del mismo grupo. Se comparan los nombres igual que al
-  // buscar repetidos, para que «ana» y «Ana» sean la misma persona.
-  function parseExclusions() {
-    const byKey = new Map(participantsList.map(p => [nameKey(p.name), p]));
-    const groups = [];
-    const unknown = [];
-    const single = [];
-    const text = exclusionsInput ? exclusionsInput.value : '';
-    text.split('\n').forEach(line => {
-      const names = line.split(',').map(n => n.trim()).filter(Boolean);
-      if (names.length === 0) return;
-      const members = [];
-      names.forEach(n => {
-        const p = byKey.get(nameKey(n));
-        if (!p) {
-          if (!unknown.includes(n)) unknown.push(n);
-        } else if (!members.includes(p)) {
-          members.push(p);
-        }
+  function pintarFichas() {
+    const { parecidos } = duplicados(participantes);
+    const marcados = new Set(parecidos.flat());
+    fichas.replaceChildren(...participantes.map((p, i) => {
+      const li = clonar('tpl-ficha');
+      const nombre = li.querySelector('[data-ficha-nombre]');
+      nombre.textContent = p.nombre;
+      nombre.dataset.tocable = String(emparejando !== null);
+      nombre.addEventListener('click', () => tocarFicha(i));
+      if (marcados.has(p.nombre)) li.dataset.aviso = 'true';
+      if (emparejando === i) li.dataset.elegida = 'true';
+      const quitar = li.querySelector('[data-ficha-quitar]');
+      quitar.setAttribute('aria-label', `Quitar a ${p.nombre}`);
+      quitar.addEventListener('click', () => {
+        participantes.splice(i, 1);
+        lista.value = escribirParticipantes(participantes);
+        actualizar();
       });
-      if (names.length === 1) single.push(names[0]);
-      else if (members.length >= 2) groups.push(members);
-    });
-    return { groups, unknown, single };
-  }
-
-  // Devuelve el motivo por el que no se puede sortear, o '' si se puede
-  // intentar. Solo detecta los imposibles evidentes; el resto lo decide la
-  // búsqueda al pulsar el botón.
-  function checkExclusions({ groups, unknown, single }) {
-    if (unknown.length) {
-      const names = unknown.map(n => `«${n}»`).join(', ');
-      return `En las exclusiones hay nombres que no están en la lista de participantes: ${names}. Revisa que estén escritos igual.`;
-    }
-    if (single.length) {
-      return `En las exclusiones, «${single[0]}» está solo en su línea. Escribe en la misma línea, separados por coma, los nombres que no deben tocarse entre sí.`;
-    }
-    const n = participantsList.length;
-    if (n < 2 || groups.length === 0) return '';
-
-    // En una cadena de n personas, los de un mismo grupo no pueden ir
-    // seguidos, así que como mucho caben la mitad.
-    const max = Math.floor(n / 2);
-    const big = groups.find(g => g.length > max);
-    if (big) {
-      return `El grupo «${big.map(p => p.name).join(', ')}» tiene ${big.length} de ${n} personas. Con estas exclusiones no hay sorteo posible: cada grupo puede tener como mucho ${max}. Agrega participantes o parte el grupo.`;
-    }
-
-    // Cada persona necesita a alguien a quien regalar y alguien que le
-    // regale; con 3 o más, esas son dos personas distintas.
-    const forbidden = buildForbidden(groups);
-    const needed = n === 2 ? 1 : 2;
-    const stuck = participantsList.find(p =>
-      participantsList.filter(o => o !== p && !forbidden.has(pairKey(p, o))).length < needed);
-    if (stuck) {
-      return `Con estas exclusiones no hay sorteo posible: a «${stuck.name}» no le quedan suficientes personas con quien cruzarse. Quita alguna exclusión o agrega participantes.`;
-    }
-    return '';
-  }
-
-  // Sorteo de ciclo cerrado: todos regalan y todos reciben en una sola cadena,
-  // sin subgrupos. El resultado se guarda en el navegador porque el móvil
-  // descarga la pestaña al cambiar a WhatsApp y el organizador perdería los
-  // enlaces que le faltaba repartir.
-  function runSorteo() {
-    if (participantsList.length < 2) return;
-
-    const exclusions = parseExclusions();
-    const problem = checkExclusions(exclusions);
-    if (problem) {
-      updateDrawWarning([], problem);
-      return;
-    }
-    const cycle = findCycle(participantsList, exclusions.groups);
-    if (!cycle.order) {
-      const message = cycle.proven
-        ? 'Con estas exclusiones no hay sorteo posible. Quita alguna exclusión o agrega participantes.'
-        : 'Con estas exclusiones no encontramos un sorteo posible. Quita alguna exclusión o agrega participantes.';
-      updateDrawWarning([], message);
-      showToast('Con estas exclusiones no hay sorteo posible');
-      return;
-    }
-
-    const saved = loadSavedDraw();
-    const sentCount = saved ? saved.links.filter(l => l.sent).length : 0;
-    if (sentCount > 0 && !window.confirm(`Ya enviaste ${sentCount} enlace(s) del sorteo anterior. Si sorteas de nuevo, esos enlaces dejan de coincidir con los nuevos. ¿Sortear de nuevo?`)) {
-      return;
-    }
-
-    // 1. Orden de la cadena, ya barajado y respetando las exclusiones
-    const shuffled = cycle.order;
-
-    // 2. Asignación secuencial cerrada (A -> B -> C -> ... -> A)
-    const n = shuffled.length;
-    const assignments = shuffled.map((giver, i) => ({ giver, receiver: shuffled[(i + 1) % n] }));
-
-    // 3. Números anónimos para la matriz de validación
-    const numberPool = barajar(Array.from({ length: n }, (_, idx) => idx + 1));
-    const anonymousIds = {};
-    participantsList.forEach((p, idx) => {
-      anonymousIds[p.id] = `Participante #${numberPool[idx]}`;
-    });
-
-    // Filas mezcladas para no revelar el orden de la cadena
-    const matrixRows = barajar(assignments.map(pair => ({
-      giverAnon: anonymousIds[pair.giver.id],
-      receiverAnon: anonymousIds[pair.receiver.id]
-    })));
-
-    const baseUrl = window.location.origin + window.location.pathname;
-    const links = assignments.map(pair => ({
-      name: pair.giver.name,
-      contact: pair.giver.contact,
-      url: `${baseUrl}#revelar=${encryptName(pair.receiver.name)}`,
-      sent: false
+      return li;
     }));
-
-    currentDraw = {
-      date: Date.now(),
-      text: textInput.value,
-      exclusions: exclusionsInput ? exclusionsInput.value : '',
-      matrixRows,
-      links
-    };
-    saveDraw();
-    if (savedDrawBanner) savedDrawBanner.hidden = true;
-    renderDraw(true);
   }
 
-  function renderDraw(scroll) {
-    if (!currentDraw) return;
-
-    if (matrixTbody) {
-      matrixTbody.innerHTML = '';
-      currentDraw.matrixRows.forEach(row => {
-        const tr = document.createElement('tr');
-        const cells = [row.giverAnon, '➔ Regala a ➔', row.receiverAnon];
-        cells.forEach((text, idx) => {
-          const td = document.createElement('td');
-          if (idx === 1) {
-            td.className = 'matrix-arrow';
-            td.textContent = text;
-          } else {
-            const strong = document.createElement('strong');
-            strong.textContent = text;
-            td.appendChild(strong);
-          }
-          tr.appendChild(td);
-        });
-        matrixTbody.appendChild(tr);
-      });
+  function tocarFicha(i) {
+    if (emparejando === null) return;
+    if (emparejando === -1) { emparejando = i; pintarFichas(); return; }
+    if (emparejando !== i) {
+      const linea = `${participantes[emparejando].nombre}, ${participantes[i].nombre}`;
+      exclusiones.value = (exclusiones.value.trim() ? `${exclusiones.value.trim()}\n` : '') + linea;
+      aviso(`No se tocarán: ${linea}`);
     }
-    if (validationSection) validationSection.classList.add('show');
+    emparejando = -1;
+    pintarFichas();
+    validar();
+  }
 
-    if (linksContainer) {
-      linksContainer.innerHTML = '';
-      currentDraw.links.forEach(link => linksContainer.appendChild(buildLinkRow(link)));
+  function validar() {
+    const n = participantes.length;
+    const { exactos, parecidos } = duplicados(participantes);
+    const excl = leerExclusiones(exclusiones.value, participantes);
+    const lineasExcl = excl.grupos.length + excl.unSentido.length;
+    $('as-excl-cuenta').textContent = lineasExcl ? `${lineasExcl} activa${lineasExcl === 1 ? '' : 's'}` : '';
+
+    let msg = '';
+    bloqueo = '';
+    if (exactos.length) {
+      bloqueo = msg = `Hay nombres repetidos: ${exactos.map((g) => `«${g[0]}» (${g.length} veces)`).join(', ')}. Agrega una inicial o un apellido para distinguirlos; si no, quien reciba ese nombre creerá que se tocó a sí mismo.`;
+    } else if (excl.desconocidos.length) {
+      bloqueo = msg = `En las exclusiones hay nombres que no están en la lista: ${excl.desconocidos.map((x) => `«${x}»`).join(', ')}. Revisa que estén escritos igual.`;
+    } else if (excl.sueltos.length) {
+      bloqueo = msg = `En las exclusiones, «${excl.sueltos[0]}» está solo en su línea. Escribe en la misma línea, separados por coma, quienes no deben tocarse.`;
+    } else {
+      bloqueo = problemaEvidente(participantes, excl);
+      msg = bloqueo;
     }
+    if (!msg && parecidos.length) {
+      msg = `¿Son la misma persona? ${parecidos.map((g) => g.map((x) => `«${x}»`).join(' y ')).join('; ')}. Si son distintas, sortea sin problema.`;
+    }
+    if (!msg && (n === 2 || n === 3)) {
+      msg = `Con ${n} personas cada uno puede deducir quién le regala. Funciona, pero la sorpresa es mejor desde 4.`;
+    }
+    avisoSorteo.textContent = msg;
+    avisoSorteo.hidden = !msg;
+    btn.disabled = n < 2 || Boolean(bloqueo);
+  }
 
-    if (resultsSection) {
-      resultsSection.classList.add('show');
-      if (scroll) {
-        setTimeout(() => {
-          resultsSection.scrollIntoView({ behavior: 'smooth' });
-        }, 300);
+  /* ---- importar ---- */
+
+  function añadir(nuevos) {
+    if (!nuevos.length) return;
+    participantes = [...participantes, ...nuevos];
+    lista.value = escribirParticipantes(participantes);
+    actualizar();
+    aviso(`${nuevos.length} ${nuevos.length === 1 ? 'persona añadida' : 'personas añadidas'}`);
+  }
+
+  $('csv-file-input').addEventListener('change', async (e) => {
+    const archivo = e.target.files?.[0];
+    e.target.value = '';
+    if (!archivo) return;
+    try {
+      if (/\.xlsx$/i.test(archivo.name)) {
+        const { leerXlsx } = await import('./amigo-secreto-xlsx.js');
+        añadir(quitarCabecera(await leerXlsx(await archivo.arrayBuffer())));
+      } else {
+        añadir(leerCSV(await archivo.text()));
       }
+    } catch (err) {
+      aviso(String(err?.message) === 'sin-descompresion'
+        ? 'Tu navegador no abre Excel: guárdalo como CSV e impórtalo'
+        : 'No se pudo leer el archivo. Prueba a guardarlo como CSV');
     }
-  }
+  });
 
-  function buildLinkRow(link) {
-    const row = document.createElement('div');
-    row.className = 'link-row';
-
-    const rowInfo = document.createElement('div');
-    rowInfo.className = 'row-info';
-    const rowName = document.createElement('div');
-    rowName.className = 'row-name';
-    const rowContact = document.createElement('div');
-    rowContact.className = 'row-contact';
-    rowContact.textContent = `Contacto: ${link.contact || 'No especificado'}`;
-    rowInfo.append(rowName, rowContact);
-
-    const paintSent = () => {
-      rowName.textContent = link.sent ? `${link.name} · Enviado ✓` : link.name;
-    };
-    paintSent();
-    const markSent = () => {
-      link.sent = true;
-      saveDraw();
-      paintSent();
-    };
-
-    const rowActions = document.createElement('div');
-    rowActions.className = 'row-actions';
-
-    const btnCopy = document.createElement('button');
-    btnCopy.className = 'btn-action';
-    btnCopy.textContent = '📋 Copiar Enlace';
-    btnCopy.addEventListener('click', () => {
-      navigator.clipboard.writeText(link.url).then(() => {
-        showToast("¡Enlace copiado al portapapeles!");
-        markSent();
-      });
+  const contactos = $('as-contactos');
+  if (navigator.contacts && typeof navigator.contacts.select === 'function') {
+    contactos.hidden = false;
+    contactos.addEventListener('click', async () => {
+      try {
+        const elegidos = await navigator.contacts.select(['name', 'tel'], { multiple: true });
+        añadir(elegidos.filter((c) => c.name?.[0]).map((c) => ({ nombre: c.name[0], contacto: c.tel?.[0] ?? '', pista: '' })));
+      } catch { /* cancelado */ }
     });
+  }
 
-    const btnWa = document.createElement('button');
-    btnWa.className = 'btn-action btn-wa';
-    btnWa.textContent = '💬 Compartir';
-    btnWa.addEventListener('click', () => {
-      const text = `¡Hola ${link.name}! Aquí tienes tu enlace secreto de Amigo Secreto. Haz clic para descubrir quién te tocó regalar: ${link.url}`;
-      const encodedText = encodeURIComponent(text);
-      const number = whatsappNumber(link.contact);
-      const waUrl = number
-        ? `https://wa.me/${number}?text=${encodedText}`
-        : `https://api.whatsapp.com/send?text=${encodedText}`;
-      markSent();
-      window.open(waUrl, '_blank');
+  $('as-emparejar').addEventListener('click', (e) => {
+    emparejando = emparejando === null ? -1 : null;
+    e.currentTarget.setAttribute('aria-pressed', String(emparejando !== null));
+    e.currentTarget.textContent = emparejando === null ? 'Emparejar tocando dos nombres' : 'Listo, dejar de emparejar';
+    if (emparejando !== null) aviso('Toca dos nombres de la lista de arriba');
+    pintarFichas();
+  });
+
+  lista.addEventListener('input', actualizar);
+  exclusiones.addEventListener('input', validar);
+
+  /* ---- sortear ---- */
+
+  function detalles() {
+    const d = {};
+    for (const c of camposDetalle) {
+      const v = $(`as-${c}`).value.trim();
+      if (v) d[c] = c === 'presupuesto' ? v.replace(/[^\d]/g, '') || v : v;
+    }
+    return d;
+  }
+
+  btn.addEventListener('click', async () => {
+    if (btn.disabled) return;
+    const guardado = cargarGuardado(almacenSeguro);
+    const enviados = guardado ? guardado.enlaces.filter((l) => l.enviado).length : 0;
+    if (enviados && !(await confirmar(`Ya enviaste ${enviados} enlace(s) del sorteo anterior. Si sorteas de nuevo, esos enlaces dejan de coincidir con el nuevo sorteo. ¿Sortear de nuevo?`, 'Sortear de nuevo'))) return;
+
+    const excl = leerExclusiones(exclusiones.value, participantes);
+    const r = sortearCadena(matrizPermitidos(participantes.length, excl.grupos, excl.unSentido));
+    if (!r.orden) {
+      const msg = r.demostrado
+        ? 'Con estas exclusiones no hay sorteo posible. Quita alguna o agrega participantes.'
+        : 'No encontramos un sorteo con estas exclusiones. Prueba a quitar alguna.';
+      avisoSorteo.textContent = msg;
+      avisoSorteo.hidden = false;
+      return;
+    }
+    btn.disabled = true;
+    try {
+      sorteo = await construirSorteo(r);
+    } finally {
+      btn.disabled = false;
+    }
+    guardar(almacenSeguro, sorteo);
+    $('saved-draw').hidden = true;
+    pintarResultado(true);
+  });
+
+  async function construirSorteo({ orden, metodo, uniforme }) {
+    const n = orden.length;
+    const base = location.origin + location.pathname;
+    const det = detalles();
+    const numeros = barajar(Array.from({ length: n }, (_, i) => i + 1));
+    const etiqueta = (i) => `#${numeros[i]}`;
+    const pares = orden.map((da, k) => ({ da, recibe: orden[(k + 1) % n] }));
+    const enlaces = [];
+    for (const { da, recibe } of pares) {
+      const p = participantes[recibe];
+      const d = await crearV2({ ...det, nombre: p.nombre, pista: p.pista });
+      enlaces.push({ nombre: participantes[da].nombre, contacto: participantes[da].contacto, url: urlV2(base, d), enviado: false });
+    }
+    // Las filas se muestran en el orden de la lista, no en el de la cadena.
+    const enLista = new Map(participantes.map((p, i) => [p.nombre, i]));
+    enlaces.sort((a, b) => enLista.get(a.nombre) - enLista.get(b.nombre));
+    return {
+      version: 2,
+      fecha: Date.now(),
+      texto: lista.value,
+      exclusiones: exclusiones.value,
+      detalles: det,
+      metodo: uniforme ? metodo : 'busqueda',
+      matriz: barajar(pares.map(({ da, recibe }) => ({ da: etiqueta(da), recibe: etiqueta(recibe) }))),
+      enlaces,
+    };
+  }
+
+  /* ---- resultado ---- */
+
+  function textoMensaje(e) {
+    const grupo = sorteo.detalles?.grupo ? ` de ${sorteo.detalles.grupo}` : '';
+    return `¡Hola ${e.nombre}! Este es tu enlace del amigo secreto${grupo}. Ábrelo cuando nadie esté mirando: ${e.url}`;
+  }
+
+  function marcarEnviado(e, fila) {
+    e.enviado = true;
+    fila.dataset.enviado = 'true';
+    fila.querySelector('[data-enviar]').textContent = 'Reenviar';
+    guardar(almacenSeguro, sorteo);
+    contarEnviados();
+  }
+
+  function contarEnviados() {
+    const n = sorteo.enlaces.filter((e) => e.enviado).length;
+    $('as-enviados').textContent = `${n} de ${sorteo.enlaces.length} enviados`;
+  }
+
+  function abrirWhatsapp(e) {
+    const texto = encodeURIComponent(textoMensaje(e));
+    const num = numeroWhatsapp(e.contacto);
+    window.open(num ? `https://wa.me/${num}?text=${texto}` : `https://api.whatsapp.com/send?text=${texto}`, '_blank', 'noopener');
+  }
+
+  function filaEnlace(e) {
+    const fila = clonar('tpl-enlace');
+    fila.dataset.enviado = String(e.enviado);
+    fila.querySelector('[data-nombre]').textContent = e.nombre;
+    fila.querySelector('[data-contacto]').textContent = e.contacto || 'Sin contacto';
+    const enviar = fila.querySelector('[data-enviar]');
+    if (e.enviado) enviar.textContent = 'Reenviar';
+    const puedeCompartir = typeof navigator.share === 'function';
+    const wa = fila.querySelector('[data-whatsapp]');
+    if (puedeCompartir && numeroWhatsapp(e.contacto)) {
+      wa.hidden = false;
+      wa.addEventListener('click', () => { abrirWhatsapp(e); marcarEnviado(e, fila); });
+    }
+    enviar.addEventListener('click', async () => {
+      if (puedeCompartir) {
+        try {
+          await navigator.share({ title: 'Tu amigo secreto', text: textoMensaje(e) });
+          marcarEnviado(e, fila);
+        } catch (err) {
+          if (err?.name !== 'AbortError') { abrirWhatsapp(e); marcarEnviado(e, fila); }
+        }
+      } else {
+        abrirWhatsapp(e);
+        marcarEnviado(e, fila);
+      }
     });
-
-    rowActions.append(btnCopy, btnWa);
-    row.append(rowInfo, rowActions);
-    return row;
+    fila.querySelector('[data-copiar]').addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(e.url);
+        aviso(`Enlace de ${e.nombre} copiado`);
+        marcarEnviado(e, fila);
+      } catch {
+        window.prompt('Copia el enlace:', e.url);
+        marcarEnviado(e, fila);
+      }
+    });
+    return fila;
   }
 
-  // localStorage puede no existir o lanzar (modo privado, datos bloqueados):
-  // en ese caso la herramienta funciona igual, solo que sin recuperar.
-  function saveDraw() {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(currentDraw));
-    } catch (e) { /* sin almacenamiento disponible */ }
-  }
-
-  function loadSavedDraw() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      const data = raw ? JSON.parse(raw) : null;
-      if (data && Array.isArray(data.links) && Array.isArray(data.matrixRows)) return data;
-    } catch (e) { /* sin almacenamiento o dato corrupto */ }
-    return null;
-  }
-
-  function clearSavedDraw() {
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-    } catch (e) { /* sin almacenamiento disponible */ }
-  }
-
-  function offerSavedDraw() {
-    const saved = loadSavedDraw();
-    if (!saved || !savedDrawBanner) return;
-
-    const sent = saved.links.filter(l => l.sent).length;
-    // Los sorteos guardados antes de existir las exclusiones no traen el campo.
-    const savedExclusions = typeof saved.exclusions === 'string' ? saved.exclusions : '';
-    const date = new Date(saved.date).toLocaleString('es', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
-    const info = savedDrawBanner.querySelector('[data-saved-info]');
-    if (info) {
-      const withExclusions = savedExclusions.trim() ? ', con exclusiones' : '';
-      info.textContent = `Tienes un sorteo guardado del ${date}: ${saved.links.length} participantes${withExclusions}, ${sent} enlace(s) ya enviados.`;
+  function pintarResultado(desplazar) {
+    const res = $('results-section');
+    res.hidden = false;
+    const n = sorteo.enlaces.length;
+    const d = sorteo.detalles ?? {};
+    const partes = [`${n} personas`];
+    if (d.presupuesto) partes.push(formatoPresupuesto(d.presupuesto));
+    if (d.grupo) partes.unshift(d.grupo);
+    $('as-res-sub').textContent = partes.join(' · ');
+    $('links-list-container').replaceChildren(...sorteo.enlaces.map(filaEnlace));
+    contarEnviados();
+    $('matrix-tbody').replaceChildren(...sorteo.matriz.map((f) => {
+      const tr = clonar('tpl-matriz');
+      tr.querySelector('[data-da]').textContent = f.da;
+      tr.querySelector('[data-recibe]').textContent = f.recibe;
+      return tr;
+    }));
+    $('as-metodo').textContent = sorteo.metodo === 'busqueda'
+      ? 'Cada número es una persona. La cadena se cierra: todos dan y reciben un regalo. Con exclusiones tan apretadas en un grupo tan grande, el sorteo no es perfectamente uniforme.'
+      : 'Cada número es una persona. La cadena se cierra: todos dan y reciben un regalo, y cualquier cadena válida tenía la misma probabilidad de salir.';
+    elegirPestaña('enlaces');
+    if (desplazar) {
+      requestAnimationFrame(() => res.scrollIntoView({ behavior: movimientoReducido() ? 'auto' : 'smooth', block: 'start' }));
+      if (!movimientoReducido()) res.animate?.([{ opacity: 0, transform: 'translateY(12px)' }, { opacity: 1, transform: 'none' }], { duration: 380, easing: 'cubic-bezier(.2,.8,.2,1)' });
     }
-    savedDrawBanner.hidden = false;
-
-    savedDrawBanner.querySelector('[data-saved-restore]').onclick = () => {
-      currentDraw = saved;
-      textInput.value = saved.text || '';
-      if (exclusionsInput) exclusionsInput.value = savedExclusions;
-      if (exclusionsDetails && savedExclusions.trim()) exclusionsDetails.open = true;
-      handleManualInput();
-      savedDrawBanner.hidden = true;
-      renderDraw(true);
-    };
-    savedDrawBanner.querySelector('[data-saved-clear]').onclick = () => {
-      if (!window.confirm('¿Borrar el sorteo guardado? Los enlaces que ya enviaste siguen funcionando, pero no podrás volver a verlos aquí.')) return;
-      clearSavedDraw();
-      savedDrawBanner.hidden = true;
-    };
   }
 
+  $('as-nuevo').addEventListener('click', async () => {
+    const enviados = sorteo?.enlaces.filter((e) => e.enviado).length ?? 0;
+    if (enviados && !(await confirmar(`Ya enviaste ${enviados} enlace(s). Si empiezas otro sorteo, esos enlaces siguen funcionando pero no coincidirán con el nuevo. ¿Empezar de nuevo?`, 'Empezar de nuevo'))) return;
+    $('results-section').hidden = true;
+    sorteo = null;
+    lista.focus();
+  });
 
-  // Sintetizador de Web Audio para la animación mágica de revelado
-  function playRevealSound() {
-    // Quien pidió menos movimiento al sistema tampoco quiere una explosión
-    // de confeti ni campanas: el nombre se revela igual, en silencio.
-    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    try {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
-      const now = audioCtx.currentTime;
+  /* ---- pestañas de reparto ---- */
 
-      // Escala armónica de campanadas celestiales ascendentes
-      const freqs = [523.25, 659.25, 783.99, 1046.50, 1318.51, 1567.98]; // C5, E5, G5, C6, E6, G6
+  const pestañas = { enlaces: $('as-tab-enlaces'), telefono: $('as-tab-telefono') };
+  function elegirPestaña(cual) {
+    for (const [k, b] of Object.entries(pestañas)) {
+      const activa = k === cual;
+      b.setAttribute('aria-selected', String(activa));
+      b.tabIndex = activa ? 0 : -1;
+      $(`as-panel-${k}`).hidden = !activa;
+    }
+  }
+  for (const [k, b] of Object.entries(pestañas)) {
+    b.addEventListener('click', () => elegirPestaña(k));
+    b.addEventListener('keydown', (ev) => {
+      if (ev.key !== 'ArrowLeft' && ev.key !== 'ArrowRight') return;
+      const otra = k === 'enlaces' ? 'telefono' : 'enlaces';
+      elegirPestaña(otra);
+      pestañas[otra].focus();
+    });
+  }
 
-      freqs.forEach((freq, idx) => {
-        const time = now + (idx * 0.08);
+  /* ---- pasa el teléfono ---- */
 
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
+  const tel = $('as-telefono');
+  const telSobre = $('as-tel-env');
+  let telActual = -1;
+  const vistos = new Set();
 
-        // Mezcla de sierra y senoidal para un sonido metálico pero dulce
-        osc.type = idx % 2 === 0 ? 'sine' : 'triangle';
-        osc.frequency.setValueAtTime(freq, time);
+  function telVista(cual) {
+    $('as-tel-lista-zona').hidden = cual !== 'lista';
+    $('as-tel-confirmar').hidden = cual !== 'confirmar';
+    $('as-tel-sobre').hidden = cual !== 'sobre';
+  }
 
-        gain.gain.setValueAtTime(0.06, time);
-        gain.gain.exponentialRampToValueAtTime(0.0001, time + 0.5);
-
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-
-        osc.start(time);
-        osc.stop(time + 0.55);
+  function telLista() {
+    const faltan = sorteo.enlaces.length - vistos.size;
+    $('as-tel-faltan').textContent = faltan ? `Faltan ${faltan}.` : 'Ya abrieron todos.';
+    $('as-tel-lista').replaceChildren(...sorteo.enlaces.map((e, i) => {
+      const li = clonar('tpl-tel-nombre');
+      const b = li.querySelector('button');
+      b.textContent = e.nombre;
+      b.disabled = vistos.has(i);
+      b.addEventListener('click', () => {
+        telActual = i;
+        $('as-tel-quien').textContent = e.nombre;
+        telVista('confirmar');
       });
-
-      // Crear partículas de confeti visual
-      createConfetti();
-    } catch (e) {
-      console.warn("Audio Context bloqueado o no soportado en este dispositivo.");
-    }
+      return li;
+    }));
+    telVista('lista');
   }
 
-  // Animación del Confeti
-  function createConfetti() {
-    if (!giftContainer) return;
-    const colors = ['#00e5ff', '#b366ff', '#ff3366', '#ffcc00', '#39ff14'];
+  $('as-empezar-telefono').addEventListener('click', () => {
+    if (!sorteo) return;
+    if (typeof tel.showModal === 'function') tel.showModal(); else tel.setAttribute('open', '');
+    telLista();
+  });
+  // Esc no cierra por accidente: solo «Terminar».
+  tel.addEventListener('cancel', (ev) => ev.preventDefault());
+  $('as-tel-salir').addEventListener('click', async () => {
+    if (vistos.size < sorteo.enlaces.length && !(await confirmar('Aún faltan personas por abrir su sobre. ¿Terminar de todos modos?', 'Terminar'))) return;
+    cerrarSobre(telSobre);
+    tel.close?.();
+    tel.removeAttribute('open');
+  });
+  $('as-tel-no').addEventListener('click', telLista);
+  $('as-tel-si').addEventListener('click', async () => {
+    const e = sorteo.enlaces[telActual];
+    const leido = await leerEnlace(e.url);
+    if (!leido?.datos) { aviso('No se pudo leer este sobre'); telLista(); return; }
+    cerrarSobre(telSobre);
+    $('as-tel-nombre').textContent = leido.datos.nombre;
+    const pista = $('as-tel-pista');
+    pista.hidden = !leido.datos.pista;
+    pista.textContent = leido.datos.pista ? `Pista: ${leido.datos.pista}` : '';
+    $('as-tel-listo').hidden = true;
+    telVista('sobre');
+    telSobre.focus();
+  });
+  telSobre.addEventListener('click', async () => {
+    if (telSobre.dataset.state === 'abierto') return;
+    await abrirSobre(telSobre);
+    $('as-tel-listo').hidden = false;
+  });
+  $('as-tel-listo').addEventListener('click', () => {
+    vistos.add(telActual);
+    cerrarSobre(telSobre);
+    $('as-tel-nombre').textContent = '';
+    telLista();
+  });
 
-    for (let i = 0; i < 50; i++) {
-      const p = document.createElement('div');
-      p.className = 'confetti-particle';
-      p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-      
-      // Centrar sobre el regalo
-      p.style.left = '100px';
-      p.style.top = '100px';
+  /* ---- sorteo guardado ---- */
 
-      // Ángulo y distancia aleatoria
-      const angle = Math.random() * Math.PI * 2;
-      const distance = 40 + Math.random() * 150;
-      const destX = Math.cos(angle) * distance;
-      const destY = Math.sin(angle) * distance - 50; // Elevación vertical
-      const rot = Math.random() * 360;
-
-      p.style.setProperty('--x', `${destX}px`);
-      p.style.setProperty('--y', `${destY}px`);
-      p.style.setProperty('--rot', `${rot}deg`);
-
-      giftContainer.appendChild(p);
-
-      setTimeout(() => {
-        p.remove();
-      }, 1200);
-    }
+  const banner = $('saved-draw');
+  const guardado = cargarGuardado(almacenSeguro);
+  if (guardado) {
+    const enviados = guardado.enlaces.filter((l) => l.enviado).length;
+    const fecha = new Date(guardado.fecha).toLocaleString('es', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
+    banner.querySelector('[data-saved-info]').textContent =
+      `Tienes un sorteo guardado del ${fecha}: ${guardado.enlaces.length} personas, ${enviados} enlace(s) enviados.`;
+    banner.hidden = false;
+    banner.querySelector('[data-saved-restore]').addEventListener('click', () => {
+      sorteo = guardado;
+      guardar(almacenSeguro, sorteo); // pasa al formato y la clave nuevos
+      lista.value = guardado.texto ?? '';
+      exclusiones.value = guardado.exclusiones ?? '';
+      if (exclusiones.value.trim()) $('exclusions-details').open = true;
+      for (const c of camposDetalle) $(`as-${c}`).value = guardado.detalles?.[c] ?? '';
+      actualizar();
+      banner.hidden = true;
+      pintarResultado(true);
+    });
+    banner.querySelector('[data-saved-clear]').addEventListener('click', async () => {
+      if (!(await confirmar('¿Borrar el sorteo guardado? Los enlaces que ya enviaste siguen funcionando, pero no podrás volver a verlos aquí.', 'Borrar'))) return;
+      borrarGuardado(almacenSeguro);
+      banner.hidden = true;
+    });
   }
+
+  actualizar();
 }
 
-function nameKey(name) {
-  return name.toLocaleLowerCase('es').replace(/\s+/g, ' ');
+/* ==========================================================
+   ARRANQUE
+   ========================================================== */
+
+async function iniciar() {
+  const app = $('as-app');
+  if (!app || app.dataset.ready) return;
+  app.dataset.ready = 'true';
+  const enlace = await leerEnlace(location.href);
+  if (enlace) modoAbrir(enlace);
+  else modoOrganizar();
 }
 
-// wa.me necesita el número con indicativo de país y sin «+». La mayoría de
-// quienes usan la herramienta escriben el celular colombiano tal cual
-// (10 dígitos que empiezan por 3), y sin el 57 WhatsApp no encuentra a
-// nadie. Un correo o un texto sin número abre WhatsApp para elegir contacto.
-function whatsappNumber(contact) {
-  if (!contact || contact.includes('@')) return '';
-  const digits = contact.replace(/\D/g, '');
-  if (!digits) return '';
-  if (!contact.trim().startsWith('+') && /^3\d{9}$/.test(digits)) return `57${digits}`;
-  return digits;
+// Si alguien pega un enlace en la misma pestaña solo cambia el fragmento y
+// la página no se recarga: se recarga a mano para entrar en «abrir».
+if (!window.__asHash) {
+  window.__asHash = true;
+  window.addEventListener('hashchange', () => {
+    const h = new URLSearchParams(location.hash.slice(1));
+    if (h.get('revelar') || h.get('v')) location.reload();
+  });
 }
 
-function pairKey(a, b) {
-  return `${a.id}|${b.id}`;
-}
-
-// Las exclusiones son simétricas: si Ana no puede tocarle a Luis, Luis
-// tampoco a Ana. Se guardan las dos direcciones para no tener que pensarlo.
-function buildForbidden(groups) {
-  const forbidden = new Set();
-  groups.forEach(g => g.forEach(a => g.forEach(b => {
-    if (a !== b) forbidden.add(pairKey(a, b));
-  })));
-  return forbidden;
-}
-
-// Sorteo de una sola cadena cerrada con crypto y uniforme (la lógica y su
-// prueba viven en amigo-secreto-logica.js). Devuelve { order } con las
-// personas en orden de cadena o { order: null, proven } como antes.
-function findCycle(people, groups) {
-  const index = new Map(people.map((p, i) => [p, i]));
-  const permitido = matrizPermitidos(people.length, groups.map(g => g.map(p => index.get(p))));
-  const r = sortearCadena(permitido);
-  if (!r.orden) return { order: null, proven: r.demostrado };
-  return { order: r.orden.map(i => people[i]) };
-}
-
-// Inicializar script según estado del DOM o transiciones Astro
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initAmigoSecreto);
-} else {
-  initAmigoSecreto();
-}
-document.addEventListener('astro:page-load', initAmigoSecreto);
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar);
+else iniciar();
+document.addEventListener('astro:page-load', iniciar);

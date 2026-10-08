@@ -177,3 +177,178 @@ export function sortearCadena(permitido, {
   if (r.orden) return { orden: r.orden, metodo: 'busqueda', uniforme: false };
   return { orden: null, demostrado: !r.agotado };
 }
+
+/* ==========================================================
+   Lectura de lo que escribe el organizador
+   ========================================================== */
+
+// «José» y «jose» → «jose»: para avisar de parecidos. Sin tildes ni mayúsculas.
+export function claveParecida(nombre) {
+  return String(nombre).normalize('NFD').replace(/[̀-ͯ]/g, '').toLocaleLowerCase('es').replace(/\s+/g, ' ').trim();
+}
+// «Ana» y «ana» → iguales: estos sí bloquean, como antes.
+export function claveExacta(nombre) {
+  return String(nombre).toLocaleLowerCase('es').replace(/\s+/g, ' ').trim();
+}
+
+/** «Nombre, contacto | pista», una persona por línea. */
+export function leerParticipantes(texto) {
+  const out = [];
+  for (const linea of String(texto ?? '').split(/\r?\n/)) {
+    if (!linea.trim()) continue;
+    const [antes, ...resto] = linea.split('|');
+    const pista = resto.join('|').trim();
+    const coma = antes.indexOf(',');
+    const nombre = (coma < 0 ? antes : antes.slice(0, coma)).trim();
+    const contacto = coma < 0 ? '' : antes.slice(coma + 1).trim();
+    if (nombre) out.push({ nombre, contacto, pista });
+  }
+  return out;
+}
+
+export function escribirParticipantes(lista) {
+  return lista.map((p) => p.nombre + (p.contacto ? `, ${p.contacto}` : '') + (p.pista ? ` | ${p.pista}` : '')).join('\n');
+}
+
+/** Repetidos exactos (bloquean) y parecidos por tildes (solo aviso). */
+export function duplicados(lista) {
+  const agrupar = (f) => {
+    const m = new Map();
+    for (const p of lista) {
+      const k = f(p.nombre);
+      if (!m.has(k)) m.set(k, []);
+      m.get(k).push(p.nombre);
+    }
+    return [...m.values()].filter((g) => g.length > 1);
+  };
+  const exactos = agrupar(claveExacta);
+  const conExacto = new Set(exactos.flat().map(claveExacta));
+  const parecidos = agrupar(claveParecida).filter((g) => !g.some((n) => conExacto.has(claveExacta(n))));
+  return { exactos, parecidos };
+}
+
+/**
+ * Exclusiones: «Ana, Luis» (grupo, los dos sentidos) o «Ana > Luis, Sofía»
+ * (Ana no le regala a Luis ni a Sofía). Devuelve índices sobre `lista`.
+ */
+export function leerExclusiones(texto, lista) {
+  const indice = new Map(lista.map((p, i) => [claveExacta(p.nombre), i]));
+  const grupos = [], unSentido = [], desconocidos = [], sueltos = [];
+  const buscar = (n) => {
+    const i = indice.get(claveExacta(n));
+    if (i === undefined && !desconocidos.includes(n)) desconocidos.push(n);
+    return i;
+  };
+  for (const linea of String(texto ?? '').split(/\r?\n/)) {
+    if (!linea.trim()) continue;
+    if (linea.includes('>')) {
+      const [izq, der] = linea.split('>');
+      const a = buscar(izq.trim());
+      for (const n of der.split(',').map((x) => x.trim()).filter(Boolean)) {
+        const b = buscar(n);
+        if (a !== undefined && b !== undefined && a !== b) unSentido.push([a, b]);
+      }
+      continue;
+    }
+    const nombres = linea.split(',').map((x) => x.trim()).filter(Boolean);
+    if (nombres.length === 1) { sueltos.push(nombres[0]); continue; }
+    const g = [...new Set(nombres.map(buscar).filter((i) => i !== undefined))];
+    if (g.length >= 2) grupos.push(g);
+  }
+  return { grupos, unSentido, desconocidos, sueltos };
+}
+
+/** Imposibles evidentes antes de sortear. Devuelve un mensaje o ''. */
+export function problemaEvidente(lista, { grupos, unSentido }) {
+  const n = lista.length;
+  if (n < 2) return '';
+  const max = Math.floor(n / 2);
+  const grande = grupos.find((g) => g.length > max);
+  if (grande) {
+    return `El grupo «${grande.map((i) => lista[i].nombre).join(', ')}» tiene ${grande.length} de ${n} personas. Así no hay sorteo posible: cada grupo puede tener como mucho ${max}. Agrega participantes o parte el grupo.`;
+  }
+  const permitido = matrizPermitidos(n, grupos, unSentido);
+  for (let a = 0; a < n; a++) {
+    const salen = permitido[a].filter(Boolean).length;
+    const entran = permitido.filter((fila) => fila[a]).length;
+    if (salen === 0 || entran === 0) {
+      return `Con estas exclusiones no hay sorteo posible: «${lista[a].nombre}» no tiene ${salen === 0 ? 'a quién regalarle' : 'quién le regale'}. Quita alguna exclusión o agrega participantes.`;
+    }
+  }
+  return '';
+}
+
+/** CSV simple: dos primeras columnas, con comillas, sin la fila de cabecera. */
+export function leerCSV(texto) {
+  const filas = [];
+  const sep = /;/.test(String(texto).split(/\r?\n/)[0] ?? '') && !/,/.test(String(texto).split(/\r?\n/)[0] ?? '') ? ';' : ',';
+  for (const linea of String(texto ?? '').replace(/^﻿/, '').split(/\r?\n/)) {
+    if (!linea.trim()) continue;
+    const celdas = [];
+    let actual = '', comillas = false;
+    for (let i = 0; i < linea.length; i++) {
+      const c = linea[i];
+      if (c === '"') {
+        if (comillas && linea[i + 1] === '"') { actual += '"'; i++; }
+        else comillas = !comillas;
+      } else if (c === sep && !comillas) { celdas.push(actual.trim()); actual = ''; }
+      else actual += c;
+    }
+    celdas.push(actual.trim());
+    filas.push([celdas[0] ?? '', celdas[1] ?? '']);
+  }
+  return quitarCabecera(filas);
+}
+
+export function quitarCabecera(filas) {
+  const cab = ['nombre', 'name', 'participante', 'participantes', 'participant', 'contacto', 'email', 'correo'];
+  const out = filas.filter((f) => f[0]);
+  if (out.length && cab.includes(claveParecida(out[0][0]))) out.shift();
+  return out.map(([nombre, contacto]) => ({ nombre, contacto: contacto ?? '', pista: '' }));
+}
+
+// wa.me necesita el indicativo: un celular colombiano escrito tal cual (10
+// dígitos que empiezan por 3) recibe el 57. Un correo no es número.
+export function numeroWhatsapp(contacto) {
+  if (!contacto || contacto.includes('@')) return '';
+  const d = contacto.replace(/\D/g, '');
+  if (!d) return '';
+  if (!contacto.trim().startsWith('+') && /^3\d{9}$/.test(d)) return `57${d}`;
+  return d.length >= 8 ? d : '';
+}
+
+export function formatoPresupuesto(valor, { moneda = 'COP', locale = 'es-CO' } = {}) {
+  const limpio = String(valor ?? '').replace(/[^\d]/g, '');
+  if (!limpio) return String(valor ?? '').trim();
+  try {
+    return new Intl.NumberFormat(locale, { style: 'currency', currency: moneda, maximumFractionDigits: 0 }).format(Number(limpio));
+  } catch { return limpio; }
+}
+
+const escIcs = (s) => String(s).replace(/[\;,]/g, (c) => `\\${c}`).replace(/\r?\n/g, '\\n');
+
+/** Evento de día completo (RFC 5545) para el intercambio. */
+export function generarIcs({ fecha, grupo, lugar, mensaje, nombre }, { ahora = new Date(), uid = '' } = {}) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(fecha ?? ''))) return null;
+  const [y, m, d] = fecha.split('-').map(Number);
+  const dia = (dt) => dt.toISOString().slice(0, 10).replace(/-/g, '');
+  const ini = new Date(Date.UTC(y, m - 1, d));
+  const fin = new Date(Date.UTC(y, m - 1, d + 1));
+  const sello = ahora.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+  const titulo = `Amigo secreto${grupo ? ` · ${grupo}` : ''}`;
+  const desc = [`Le regalas a: ${nombre}`, mensaje].filter(Boolean).join('\n');
+  const lineas = [
+    'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Decidelo.app//Amigo secreto//ES', 'CALSCALE:GREGORIAN',
+    'BEGIN:VEVENT',
+    `UID:${uid || `${dia(ini)}-${Math.abs(hash(titulo + nombre))}`}@decidelo.app`,
+    `DTSTAMP:${sello}`,
+    `DTSTART;VALUE=DATE:${dia(ini)}`,
+    `DTEND;VALUE=DATE:${dia(fin)}`,
+    `SUMMARY:${escIcs(titulo)}`,
+    `DESCRIPTION:${escIcs(desc)}`,
+    ...(lugar ? [`LOCATION:${escIcs(lugar)}`] : []),
+    'END:VEVENT', 'END:VCALENDAR',
+  ];
+  return lineas.join('\r\n') + '\r\n';
+}
+function hash(s) { let h = 0; for (const c of s) h = (h * 31 + c.codePointAt(0)) | 0; return h; }

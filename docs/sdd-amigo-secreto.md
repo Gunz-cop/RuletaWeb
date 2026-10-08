@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Estado | **Propuesta** — v1.1 (correcciones de la auditoría del 2026-10-08), pendiente de aprobación del propietario |
+| Estado | **Implementado en ramas** — v1.2 (2026-10-08). Fase 1 `claude/amigo-secreto-fase-1`; 2a `claude/amigo-secreto-fase-2a`; 2b, 3, 4, 5 y 6 `claude/amigo-secreto-rediseno`. Se despliegan en ese orden (§5.3). El prototipo visual se construyó directamente en la página por delegación del propietario; su aprobación sigue pendiente (§7) |
 | Fecha | 2026-10-08 |
 | Alcance | `src/pages/amigo-secreto.astro`, sus componentes y su JS, tests de `/amigo-secreto`, texto SEO de la página |
 | Navegador mínimo | **Chrome 111 / Safari e iOS 16.4** (base de Tailwind 4) con el diseño completo. Por debajo, la herramienta **funciona** (sortear, repartir, abrir un enlace) aunque no se vea con todo el diseño. Decidido por el propietario el 2026-10-08 |
