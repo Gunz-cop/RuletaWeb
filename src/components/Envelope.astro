@@ -15,7 +15,7 @@ const { id, nameId, label = 'Sobre de tu amigo secreto. Toca para abrirlo.' } = 
 <button
   type="button"
   id={id}
-  class="env group relative block w-[min(78vw,320px)] aspect-[4/3] mx-auto mt-[clamp(7.5rem,32vw,8.5rem)] p-0 border-0 bg-transparent cursor-pointer select-none [perspective:900px] focus-visible:outline-2 focus-visible:outline-offset-8 focus-visible:outline-(--as-oro) rounded-lg"
+  class="env group relative block w-[min(78vw,320px)] aspect-[4/3] mx-auto mt-[clamp(7.5rem,32vw,8.5rem)] p-0 border-0 bg-transparent cursor-pointer select-none [perspective:900px] focus-visible:outline-2 focus-visible:outline-offset-8 focus-visible:outline-warm rounded-lg"
   data-state="cerrado"
   aria-label={label}
 >
@@ -55,6 +55,18 @@ const { id, nameId, label = 'Sobre de tu amigo secreto. Toca para abrirlo.' } = 
 </button>
 
 <style>
+  /* Paleta del objeto ilustrado (DESIGN.md, «Excepción: objetos
+     ilustrados»): vive aquí y no en los tokens del sitio. */
+  .env {
+    --as-lacre: #b8323d;
+    --as-lacre-oscuro: #8e1f2b;
+    --as-papel: #fbf3e4;
+    --as-tinta: #1a1a24;
+    --as-sobre: #e9d6b4;
+    --as-sobre-claro: #f2e3c6;
+    --as-sobre-sombra: #d6bd92;
+    --as-sobre-solapa: #dcc39b;
+  }
   /* La solapa cerrada tapa la tarjeta; abierta queda detrás del cuerpo. */
   .env[data-state='abierto'] .env-flap {
     transform: rotateX(180deg);

@@ -194,17 +194,36 @@ export function claveExacta(nombre) {
   return String(nombre).toLocaleLowerCase('es').replace(/\s+/g, ' ').trim();
 }
 
-/** «Nombre, contacto | pista», una persona por línea. */
+// Un celular (7+ dígitos) o un correo: es el contacto de la persona de al
+// lado, no otra persona.
+const pareceContacto = (t) => /@/.test(t) || (t.replace(/\D/g, '').length >= 7 && !/[a-zñáéíóú]{2}/i.test(t));
+
+/**
+ * Lo que la gente escribe de verdad: «Ana, Bruno, Carla» o una por línea.
+ * Las comas y los punto y coma separan personas; un celular o correo se pega
+ * a la persona anterior («Bruno, 3001234567» o «Bruno 3001234567»); lo que va
+ * tras «|» es la pista de la última persona de la línea.
+ */
 export function leerParticipantes(texto) {
   const out = [];
   for (const linea of String(texto ?? '').split(/\r?\n/)) {
     if (!linea.trim()) continue;
     const [antes, ...resto] = linea.split('|');
     const pista = resto.join('|').trim();
-    const coma = antes.indexOf(',');
-    const nombre = (coma < 0 ? antes : antes.slice(0, coma)).trim();
-    const contacto = coma < 0 ? '' : antes.slice(coma + 1).trim();
-    if (nombre) out.push({ nombre, contacto, pista });
+    let ultima = null;
+    for (const trozo of antes.split(/[,;]/).map((x) => x.trim()).filter(Boolean)) {
+      if (pareceContacto(trozo)) {
+        if (ultima && !ultima.contacto) ultima.contacto = trozo;
+        continue;
+      }
+      // «Ana 3001234567» o «Ana ana@correo.com» en el mismo trozo
+      const m = /^(.*?)\s+(\+?[\d\s().-]{7,}|\S+@\S+)$/.exec(trozo);
+      ultima = m && pareceContacto(m[2])
+        ? { nombre: m[1].trim(), contacto: m[2].trim(), pista: '' }
+        : { nombre: trozo, contacto: '', pista: '' };
+      out.push(ultima);
+    }
+    if (ultima && pista) ultima.pista = pista;
   }
   return out;
 }

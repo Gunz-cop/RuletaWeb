@@ -174,8 +174,12 @@ for (const [n, grupos] of [
 
 /* --- Lectura de lo que escribe el organizador --- */
 {
-  const lista = leerParticipantes('Ana\n  \nBruno, 300 123 4567 | café, té\nCarla, carla@x.co\n, sin nombre');
+  const lista = leerParticipantes('Ana\n  \nBruno, 300 123 4567 | café, té\nCarla, carla@x.co');
   check(lista.length === 3 && lista[1].contacto === '300 123 4567' && lista[1].pista === 'café, té', `leerParticipantes: ${JSON.stringify(lista)}`);
+  // Lo que la gente escribe de verdad: nombres separados por coma en una línea.
+  const comas = leerParticipantes('Kevin, Kenneth, Wilson,\nSergio,Gonzalo,Carlos, Marcos\nAna 3001234567; María José');
+  check(comas.length === 9 && comas[7].nombre === 'Ana' && comas[7].contacto === '3001234567' && comas[8].nombre === 'María José',
+    `leerParticipantes con comas: ${JSON.stringify(comas)}`);
   check(escribirParticipantes(lista) === 'Ana\nBruno, 300 123 4567 | café, té\nCarla, carla@x.co', 'escribirParticipantes no es la inversa');
   const d = duplicados(leerParticipantes('José\njose\nAna\nANA\nLuis'));
   check(d.exactos.length === 1 && d.exactos[0].length === 2 && d.parecidos.length === 1, `duplicados: ${JSON.stringify(d)}`);
