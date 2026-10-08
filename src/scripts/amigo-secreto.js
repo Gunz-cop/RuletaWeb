@@ -3,8 +3,9 @@
 // ==========================================================
 
 import { sortearCadena, matrizPermitidos, barajar } from './amigo-secreto-logica.js';
+import { leerEnlace } from './amigo-secreto-enlace.js';
 
-function initAmigoSecreto() {
+async function initAmigoSecreto() {
   const organizerScreen = document.getElementById('organizer-screen');
   const revealScreen = document.getElementById('reveal-screen');
   const seoSection = document.getElementById('seo-article-section');
@@ -36,11 +37,11 @@ function initAmigoSecreto() {
   // el fragmento al servidor: así el nombre no queda en registros ni en la
   // analítica. Se sigue aceptando ?revelar= para no romper los enlaces que
   // ya se repartieron antes del cambio.
-  const hashParams = new URLSearchParams(window.location.hash.slice(1));
-  const urlParams = new URLSearchParams(window.location.search);
-  const encodedSecret = hashParams.get('revelar') || urlParams.get('revelar');
+  // leerEnlace entiende los enlaces v1 de siempre y los v2 (SDD §5); un
+  // formato desconocido o dañado llega como error y no como organizador.
+  const enlace = await leerEnlace(window.location.href);
 
-  if (encodedSecret) {
+  if (enlace) {
     // MODO REVELACIÓN INTERACTIVA
     if (organizerScreen) organizerScreen.style.display = 'none';
     if (seoSection) seoSection.style.display = 'none';
@@ -55,7 +56,7 @@ function initAmigoSecreto() {
     if (robotsMeta) robotsMeta.setAttribute('content', 'noindex, nofollow');
     document.title = 'Tu amigo secreto 🎁 | Decídelo.app';
 
-    const decryptedName = decryptName(encodedSecret);
+    const decryptedName = enlace.datos ? enlace.datos.nombre : null;
     const revealedNameEl = document.getElementById('revealed-name');
 
     if (!decryptedName) {
@@ -106,7 +107,8 @@ function initAmigoSecreto() {
   if (!window.__amigoHashListener) {
     window.__amigoHashListener = true;
     window.addEventListener('hashchange', () => {
-      if (new URLSearchParams(window.location.hash.slice(1)).get('revelar')) {
+      const h = new URLSearchParams(window.location.hash.slice(1));
+      if (h.get('revelar') || h.get('v')) {
         window.location.reload();
       }
     });

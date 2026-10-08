@@ -112,6 +112,14 @@ import { crearReto, nuevoId } from '../../src/scripts/ppt-reto.js';
 import { forma } from '../../src/scripts/dados-poliedros.js';
 import { NORMAL } from '../../src/scripts/dados-fisica.js';
 import { gajoBajoPuntero, leerEnlace } from '../../src/scripts/ruleta-logica.js';
+import { readFileSync } from 'node:fs';
+import { crearV2, urlV2 } from '../../src/scripts/amigo-secreto-enlace.js';
+
+const ENLACE_V1 = JSON.parse(readFileSync(new URL('../../tests/fixtures/amigo-secreto-enlaces-v1.json', import.meta.url)))
+  .casos.find((c) => c.forma === 'mas-como-espacio');
+const ENLACE_V2_HASH = urlV2('', await crearV2({ nombre: 'Ñandú José 🎁', presupuesto: '50000' }, { aleatorio: (n) => new Uint8Array(n).fill(7) })).slice(1);
+const SEL_NOMBRE_REVELADO = '#revealed-name';
+
 
 // El aviso "Deshacer" es position:fixed. Si un ancestro tiene `transform`
 // (.reveal.revealed), ese ancestro pasa a ser su bloque contenedor y el aviso
@@ -1069,6 +1077,24 @@ export const ESTADOS = [
       { sel: '.row-actions', props: ['width', 'justifyContent'] },
     ],
   },
+  // Enlaces que ya están repartidos (SDD de amigo secreto §5.1): uno v1 fijo,
+  // generado con el código de 2026 y con «+» convertido en espacio, que el
+  // lector viejo no abría; y uno v2. Los dos tienen que abrir el sobre con
+  // el nombre exacto.
+  ...[
+    { nombre: 'revelar-v1-fijo', hash: ENLACE_V1.url.split('#')[1], esperado: ENLACE_V1.nombre },
+    { nombre: 'revelar-v2', hash: ENLACE_V2_HASH, esperado: 'Ñandú José 🎁' },
+  ].map(({ nombre, hash, esperado }) => ({
+    ruta: `/amigo-secreto#${hash}`,
+    nombre,
+    esperarSelector: SEL_NOMBRE_REVELADO,
+    comprobar: [{ sel: SEL_NOMBRE_REVELADO, props: ['display'] }],
+    invariante: async (pagina) => {
+      await pagina.waitForFunction((sel) => document.querySelector(sel)?.textContent.trim().length > 0 && !/Cargando/.test(document.querySelector(sel).textContent), SEL_NOMBRE_REVELADO);
+      const texto = (await pagina.textContent(SEL_NOMBRE_REVELADO)).trim();
+      return { ok: texto === esperado, mensaje: `el enlace abre «${texto}» (se esperaba «${esperado}»)` };
+    },
+  })),
   // --- Moneda -------------------------------------------------------------
   // Implementación de referencia del sistema editorial (ver DESIGN.md,
   // "Anatomía de una página de herramienta"). El resultado se muestra con
