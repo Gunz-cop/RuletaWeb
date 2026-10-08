@@ -608,6 +608,137 @@
       "justifyContent": "flex-end"
     }
   },
+  "/amigo-secreto-nuevo [sorteo-hecho]": {
+    ".participant-tag": {
+      "display": "flex",
+      "borderRadius": "3.35544e+07px"
+    },
+    ".link-row": {
+      "display": "flex",
+      "flexDirection": "row",
+      "alignItems": "center"
+    },
+    ".row-name": {
+      "fontWeight": "600",
+      "color": "rgb(240, 240, 245)"
+    },
+    ".row-actions": {
+      "display": "flex",
+      "gap": "16px"
+    },
+    "#results-section": {
+      "display": "block"
+    },
+    "#reveal-screen": {
+      "display": "none"
+    },
+    "#matrix-tbody tr": {
+      "display": "table-row"
+    }
+  },
+  "/amigo-secreto-nuevo [sorteo-hecho-movil]": {
+    ".link-row": {
+      "flexDirection": "row"
+    },
+    ".row-actions": {
+      "display": "flex"
+    }
+  },
+  "/amigo-secreto-nuevo [pasa-el-telefono]": {
+    "#as-telefono": {
+      "display": "block"
+    }
+  },
+  "/amigo-secreto-nuevo [recuperar-sorteo-viejo]": {
+    ".link-row[data-enviado=\"true\"] [data-estado]": {
+      "display": "inline"
+    }
+  },
+  "/amigo-secreto-nuevo#v=2&d=IAAAAAAA [enlace-danado]": {
+    "#as-sobre-zona": {
+      "display": "none"
+    }
+  },
+  "/amigo-secreto-nuevo [accion-principal-visible-android-360x560]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#btn-draw.bottom=425.6px con 560px visibles (holgura 134.4px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/amigo-secreto-nuevo [accion-principal-visible-iphone-se-375x548]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#btn-draw.bottom=425.6px con 548px visibles (holgura 122.4px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/amigo-secreto-nuevo [accion-principal-visible-iphone-393x659]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#btn-draw.bottom=425.6px con 659px visibles (holgura 233.4px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/amigo-secreto-nuevo [responsive-fold-cerrado-344x680]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#btn-draw.bottom=425.6px con 680px visibles (holgura 254.4px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/amigo-secreto-nuevo [responsive-fold-abierto-673x760]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#btn-draw.bottom=421.5px con 760px visibles (holgura 338.5px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/amigo-secreto-nuevo [responsive-tablet-vertical-768x960]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#btn-draw.bottom=478.6px con 960px visibles (holgura 481.4px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/amigo-secreto-nuevo [responsive-tablet-horizontal-1024x700]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#btn-draw.bottom=478.6px con 700px visibles (holgura 221.4px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/amigo-secreto-nuevo [responsive-movil-horizontal-740x340]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "sin scroll horizontal (740px en 740px)"
+    }
+  },
+  "/amigo-secreto-nuevo [responsive-escritorio-1280x720]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#btn-draw.bottom=478.6px con 720px visibles (holgura 241.4px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/amigo-secreto-nuevo [responsive-escritorio-1920x1000]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#btn-draw.bottom=478.6px con 1000px visibles (holgura 521.4px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/amigo-secreto#revelar=p/QCBwCm1k U u3o [revelar-v1-fijo]": {
+    "#revealed-name": {
+      "display": "block"
+    }
+  },
+  "/amigo-secreto-nuevo#revelar=p/QCBwCm1k U u3o [revelar-v1-fijo]": {
+    "#revealed-name": {
+      "display": "block"
+    }
+  },
+  "/amigo-secreto#v=2&d=IAcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcZa2RGZmq6Xf4JR8Vw-UOJHZVGHzxdCzMVRIlbojnGftUyMMoF9m3v-GOt3z1VQP1pNzJAlC8 [revelar-v2]": {
+    "#revealed-name": {
+      "display": "block"
+    }
+  },
+  "/amigo-secreto-nuevo#v=2&d=IAcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcZa2RGZmq6Xf4JR8Vw-UOJHZVGHzxdCzMVRIlbojnGftUyMMoF9m3v-GOt3z1VQP1pNzJAlC8 [revelar-v2]": {
+    "#revealed-name": {
+      "display": "block"
+    }
+  },
   "/moneda [lanzada]": {
     "#coin-result": {
       "opacity": "1",
@@ -800,7 +931,7 @@
   "/si-o-no [gato]": {
     "relacion": {
       "ok": true,
-      "mensaje": "gatos en 10 consultas vacías: [{\"i\":5,\"gato\":true,\"texto\":\"Otra vez alguien dejó al gato jugando con el móvil\",\"lado\":\"Frase de gato 1 de 8\"},{\"i\":10,\"gato\":true,\"texto\":\"Suelta el móvil, gato. Esto es para humanos\",\"lado\":\"Frase de gato 2 de 8\"}]"
+      "mensaje": "gatos en 10 consultas vacías: [{\"i\":5,\"gato\":true,\"texto\":\"Otra vez alguien dejó al gato jugando con el móvil\",\"lado\":\"Frase de gato 1 de 8\"},{\"i\":10,\"gato\":true,\"texto\":\"Hola, michi. Dile a tu humano que escriba una pregunta\",\"lado\":\"Frase de gato 2 de 8\"}]"
     }
   },
   "/si-o-no [agitar-movil]": {
@@ -829,8 +960,8 @@
   },
   "/si-o-no [responsive-fold-cerrado-344x680]": {
     "relacion": {
-      "ok": false,
-      "mensaje": "scroll horizontal: el documento mide 362px en una ventana de 344px. Algo tiene un ancho fijo o un min-width mayor que la pantalla."
+      "ok": true,
+      "mensaje": "#btn-ask.bottom=633.5px con 680px visibles (holgura 46.5px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
     }
   },
   "/si-o-no [responsive-fold-abierto-673x760]": {
@@ -1021,7 +1152,7 @@
   "/temporizador?modo=impulso&min=1&max=1 [impulso-registrado]": {
     "relacion": {
       "ok": true,
-      "mensaje": "fila del historial: «01Ganas de mirar el móvilGanas 7 → 3 · 1 s · 03:09»"
+      "mensaje": "fila del historial: «01Ganas de mirar el móvilGanas 7 → 3 · 1 s · 21:52»"
     }
   },
   "/temporizador?modo=avisos&min=1&max=1 [avisos-repetidos]": {

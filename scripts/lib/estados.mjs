@@ -112,6 +112,14 @@ import { crearReto, nuevoId } from '../../src/scripts/ppt-reto.js';
 import { forma } from '../../src/scripts/dados-poliedros.js';
 import { NORMAL } from '../../src/scripts/dados-fisica.js';
 import { gajoBajoPuntero, leerEnlace } from '../../src/scripts/ruleta-logica.js';
+import { readFileSync } from 'node:fs';
+import { crearV2, urlV2, leerEnlace as leerEnlaceAmigo } from '../../src/scripts/amigo-secreto-enlace.js';
+
+const ENLACE_V1 = JSON.parse(readFileSync(new URL('../../tests/fixtures/amigo-secreto-enlaces-v1.json', import.meta.url)))
+  .casos.find((c) => c.forma === 'mas-como-espacio');
+const ENLACE_V2_HASH = urlV2('', await crearV2({ nombre: 'Ñandú José 🎁', presupuesto: '50000' }, { aleatorio: (n) => new Uint8Array(n).fill(7) })).slice(1);
+const SEL_NOMBRE_REVELADO = '#revealed-name';
+
 
 // El aviso "Deshacer" es position:fixed. Si un ancestro tiene `transform`
 // (.reveal.revealed), ese ancestro pasa a ser su bloque contenedor y el aviso
@@ -1034,7 +1042,7 @@ export const ESTADOS = [
       },
     },
   ]),
-  // --- Amigo secreto -----------------------------------------------------
+  // --- Amigo secreto (página de siempre) -----------------------------------------------------
   // Las etiquetas de participante, las filas de enlaces y sus botones los
   // construye amigo-secreto.js con lo que escribe el visitante: en reposo no
   // existen, así que ninguna captura los ve. Es la herramienta con tráfico
@@ -1069,6 +1077,129 @@ export const ESTADOS = [
       { sel: '.row-actions', props: ['width', 'justifyContent'] },
     ],
   },
+  // --- Amigo secreto, versión nueva (/amigo-secreto-nuevo) -----------------------------------------------------
+  // Rediseño (SDD de amigo secreto): las fichas, las filas de enlaces y las de
+  // la verificación se clonan de <template> con lo que escribe el visitante,
+  // así que en reposo no existen y ninguna captura las ve.
+  {
+    ruta: '/amigo-secreto-nuevo',
+    nombre: 'sorteo-hecho',
+    escribir: [{ sel: '#participants-textarea', texto: 'Ana\nBruno, 3001234567\nCarla\nDiego' }],
+    clics: ['#btn-draw'],
+    esperarSelector: '#links-list-container .link-row',
+    espera: 600,
+    comprobar: [
+      { sel: '.participant-tag', props: ['display', 'borderRadius'] },
+      { sel: '.link-row', props: ['display', 'flexDirection', 'alignItems'] },
+      { sel: '.row-name', props: ['fontWeight', 'color'] },
+      { sel: '.row-actions', props: ['display', 'gap'] },
+      { sel: '#results-section', props: ['display'] },
+      { sel: '#reveal-screen', props: ['display'] },
+      { sel: '#matrix-tbody tr', props: ['display'] },
+    ],
+    // Cada fila lleva un enlace v2 que abre el nombre de alguien distinto de
+    // quien lo recibe, y entre todos forman una sola cadena.
+    invariante: async (pagina) => {
+      const r = await pagina.evaluate(async () => {
+        const s = JSON.parse(localStorage.getItem('decidelo_amigo_sorteo'));
+        return s.enlaces.map((e) => ({ da: e.nombre, url: e.url }));
+      });
+      const mapa = new Map();
+      for (const { da, url } of r) {
+        const l = await leerEnlaceAmigo(url);
+        mapa.set(da, l?.datos?.nombre);
+      }
+      let n = 0, actual = r[0].da;
+      const vistos = new Set();
+      while (!vistos.has(actual)) { vistos.add(actual); actual = mapa.get(actual); n++; }
+      const ok = r.length === 4 && n === 4 && actual === r[0].da && [...mapa].every(([a, b]) => a !== b && b);
+      return { ok, mensaje: `enlaces: ${JSON.stringify([...mapa])} (se esperaba una sola cadena de 4 sin nadie consigo mismo)` };
+    },
+  },
+  {
+    ruta: '/amigo-secreto-nuevo',
+    nombre: 'sorteo-hecho-movil',
+    viewport: { width: 390, height: 844 },
+    escribir: [{ sel: '#participants-textarea', texto: 'Ana\nBruno\nCarla\nDiego' }],
+    clics: ['#btn-draw'],
+    esperarSelector: '#links-list-container .link-row',
+    espera: 600,
+    comprobar: [
+      { sel: '.link-row', props: ['flexDirection'] },
+      { sel: '.row-actions', props: ['display'] },
+    ],
+  },
+  {
+    // Pasa el teléfono: una persona abre su sobre y queda tachada.
+    ruta: '/amigo-secreto-nuevo',
+    nombre: 'pasa-el-telefono',
+    viewport: { width: 390, height: 844 },
+    escribir: [{ sel: '#participants-textarea', texto: 'Ana\nBruno\nCarla\nDiego' }],
+    clics: ['#btn-draw', '#as-tab-telefono', '#as-empezar-telefono', '#as-tel-lista li:nth-child(2) button', '#as-tel-si'],
+    esperarSelector: '#as-tel-sobre:not([hidden])',
+    comprobar: [{ sel: '#as-telefono', props: ['display'] }],
+    invariante: async (pagina) => {
+      await pagina.click('#as-tel-env', { force: true });
+      await pagina.waitForSelector('#as-tel-listo:not([hidden])', { timeout: 5000 });
+      const nombre = (await pagina.textContent('#as-tel-nombre')).trim();
+      await pagina.click('#as-tel-listo');
+      const tachado = await pagina.evaluate(() => document.querySelector('#as-tel-lista li:nth-child(2) button').disabled);
+      return { ok: Boolean(nombre) && nombre !== 'Bruno' && tachado, mensaje: `Bruno abrió «${nombre}» y quedó tachado=${tachado}` };
+    },
+  },
+  {
+    // RF-13: un sorteo guardado con el formato de antes se recupera con sus
+    // URLs originales y su estado «enviado».
+    ruta: '/amigo-secreto-nuevo',
+    nombre: 'recuperar-sorteo-viejo',
+    init: `localStorage.setItem('amigo-secreto:ultimo-sorteo', ${JSON.stringify(JSON.stringify({
+      date: 1764000000000, text: 'Ana\nBruno\nCarla', exclusions: '',
+      matrixRows: [{ giverAnon: 'Participante #1', receiverAnon: 'Participante #2' }],
+      links: [
+        { name: 'Ana', contact: '', url: 'https://decidelo.app/amigo-secreto#revelar=JhcWBws%3D', sent: true },
+        { name: 'Bruno', contact: '', url: 'https://decidelo.app/amigo-secreto#revelar=JwQRBQU%3D', sent: false },
+        { name: 'Carla', contact: '', url: 'https://decidelo.app/amigo-secreto#revelar=JQsC', sent: false },
+      ],
+    }))})`,
+    clics: ['[data-saved-restore]'],
+    esperarSelector: '#links-list-container .link-row',
+    comprobar: [{ sel: '.link-row[data-enviado="true"] [data-estado]', props: ['display'] }],
+    invariante: async (pagina) => {
+      const r = await pagina.evaluate(() => JSON.parse(localStorage.getItem('decidelo_amigo_sorteo'))?.enlaces);
+      const ok = r?.[0]?.url === 'https://decidelo.app/amigo-secreto#revelar=JhcWBws%3D' && r[0].enviado === true;
+      return { ok, mensaje: `sorteo recuperado: ${JSON.stringify(r?.[0])}` };
+    },
+  },
+  {
+    ruta: '/amigo-secreto-nuevo#v=2&d=IAAAAAAA',
+    nombre: 'enlace-danado',
+    esperarSelector: '#reveal-screen:not([hidden])',
+    comprobar: [{ sel: '#as-sobre-zona', props: ['display'] }],
+    invariante: async (pagina) => {
+      const titulo = (await pagina.textContent('#as-abrir-titulo')).trim();
+      return { ok: titulo === 'Este enlace no funciona', mensaje: `un enlace dañado muestra «${titulo}»` };
+    },
+  },
+  ...estadosAccionVisible('/amigo-secreto-nuevo', '#btn-draw'),
+  ...estadosResponsive('/amigo-secreto-nuevo', '#btn-draw'),
+  // Enlaces que ya están repartidos (SDD de amigo secreto §5.1): uno v1 fijo,
+  // generado con el código de 2026 y con «+» convertido en espacio, que el
+  // lector viejo no abría; y uno v2. Los dos tienen que abrir el sobre con
+  // el nombre exacto.
+  ...[
+    { nombre: 'revelar-v1-fijo', hash: ENLACE_V1.url.split('#')[1], esperado: ENLACE_V1.nombre },
+    { nombre: 'revelar-v2', hash: ENLACE_V2_HASH, esperado: 'Ñandú José 🎁' },
+  ].flatMap((e) => ['/amigo-secreto', '/amigo-secreto-nuevo'].map((ruta) => ({ ...e, ruta }))).map(({ nombre, hash, esperado, ruta }) => ({
+    ruta: `${ruta}#${hash}`,
+    nombre,
+    esperarSelector: SEL_NOMBRE_REVELADO,
+    comprobar: [{ sel: SEL_NOMBRE_REVELADO, props: ['display'] }],
+    invariante: async (pagina) => {
+      await pagina.waitForFunction((sel) => document.querySelector(sel)?.textContent.trim().length > 0, SEL_NOMBRE_REVELADO);
+      const texto = (await pagina.textContent(SEL_NOMBRE_REVELADO)).trim();
+      return { ok: texto === esperado, mensaje: `el enlace abre «${texto}» (se esperaba «${esperado}»)` };
+    },
+  })),
   // --- Moneda -------------------------------------------------------------
   // Implementación de referencia del sistema editorial (ver DESIGN.md,
   // "Anatomía de una página de herramienta"). El resultado se muestra con

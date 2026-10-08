@@ -13,7 +13,9 @@ export default defineConfig({
   trailingSlash: 'never',
   integrations: [
     sitemap({
-      filter: (page) => !page.includes('/blog/') || page === 'https://decidelo.app/blog' || adsenseReadyBlogUrls.has(page),
+      // /amigo-secreto-nuevo es la versión en pruebas (noindex): fuera.
+      filter: (page) => !page.includes('/amigo-secreto-nuevo')
+        && (!page.includes('/blog/') || page === 'https://decidelo.app/blog' || adsenseReadyBlogUrls.has(page)),
     }),
   ],
   build: {
