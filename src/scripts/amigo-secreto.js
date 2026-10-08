@@ -30,7 +30,8 @@ function aviso(texto) {
   if (!t) return;
   t.textContent = texto;
   clearTimeout(temporizadorAviso);
-  try { t.showPopover(); } catch { t.dataset.visible = 'true'; }
+  t.dataset.visible = 'true';
+  try { t.showPopover(); } catch { /* sin Popover API: basta data-visible */ }
   temporizadorAviso = setTimeout(() => {
     try { t.hidePopover(); } catch { /* sin Popover API */ }
     t.dataset.visible = 'false';
@@ -87,7 +88,8 @@ async function abrirSobre(sobre) {
 }
 
 function cerrarSobre(sobre) {
-  sobre.getAnimations({ subtree: true }).forEach((a) => a.cancel());
+  sobre.setAttribute('aria-label', 'Sobre de tu amigo secreto. Toca para abrirlo.');
+  sobre.getAnimations?.({ subtree: true }).forEach((a) => a.cancel());
   sobre.dataset.state = 'cerrado';
   sobre.querySelectorAll('.env-flap, .env-card').forEach((el) => { el.style.zIndex = ''; });
   sobre.style.animation = '';
@@ -321,21 +323,33 @@ function modoOrganizar() {
     const enviados = guardado ? guardado.enlaces.filter((l) => l.enviado).length : 0;
     if (enviados && !(await confirmar(`Ya enviaste ${enviados} enlace(s) del sorteo anterior. Si sorteas de nuevo, esos enlaces dejan de coincidir con el nuevo sorteo. ¿Sortear de nuevo?`, 'Sortear de nuevo'))) return;
 
-    const excl = leerExclusiones(exclusiones.value, participantes);
-    const r = sortearCadena(matrizPermitidos(participantes.length, excl.grupos, excl.unSentido));
-    if (!r.orden) {
-      const msg = r.demostrado
-        ? 'Con estas exclusiones no hay sorteo posible. Quita alguna o agrega participantes.'
-        : 'No encontramos un sorteo con estas exclusiones. Prueba a quitar alguna.';
-      avisoSorteo.textContent = msg;
+    // El botón se apaga y avisa ANTES de sortear: con exclusiones muy
+    // apretadas el conteo exacto puede tardar en un teléfono lento.
+    const textoBoton = btn.lastChild.textContent;
+    btn.disabled = true;
+    btn.lastChild.textContent = ' Sorteando…';
+    await new Promise((r) => requestAnimationFrame(() => setTimeout(r, 0)));
+    try {
+      const excl = leerExclusiones(exclusiones.value, participantes);
+      const r = sortearCadena(matrizPermitidos(participantes.length, excl.grupos, excl.unSentido));
+      if (!r.orden) {
+        avisoSorteo.textContent = r.demostrado
+          ? 'Con estas exclusiones no hay sorteo posible. Quita alguna o agrega participantes.'
+          : 'No encontramos un sorteo con estas exclusiones. Prueba a quitar alguna.';
+        avisoSorteo.hidden = false;
+        return;
+      }
+      sorteo = await construirSorteo(r);
+    } catch {
+      // Sin Web Crypto (navegador muy viejo o página sin HTTPS) no se sortea:
+      // un sorteo con un azar que no es criptográfico no vale.
+      avisoSorteo.textContent = 'Tu navegador no permite hacer el sorteo de forma segura. Actualízalo o prueba con Chrome o Safari recientes.';
       avisoSorteo.hidden = false;
       return;
-    }
-    btn.disabled = true;
-    try {
-      sorteo = await construirSorteo(r);
     } finally {
+      btn.lastChild.textContent = textoBoton;
       btn.disabled = false;
+      validar();
     }
     guardar(almacenSeguro, sorteo);
     $('saved-draw').hidden = true;
@@ -552,6 +566,8 @@ function modoOrganizar() {
   telSobre.addEventListener('click', async () => {
     if (telSobre.dataset.state === 'abierto') return;
     await abrirSobre(telSobre);
+    // El aria-label del botón tapa su contenido: hay que decir el nombre.
+    telSobre.setAttribute('aria-label', `Te toca regalarle a ${$('as-tel-nombre').textContent}`);
     $('as-tel-listo').hidden = false;
   });
   $('as-tel-listo').addEventListener('click', () => {

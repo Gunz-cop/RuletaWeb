@@ -194,6 +194,12 @@ for (const [n, grupos] of [
   const ics = generarIcs({ fecha: '2026-12-19', grupo: 'Oficina', lugar: 'Casa; sur', nombre: 'Ana', mensaje: 'Hola' }, { ahora: new Date(0), uid: 'x' });
   check(ics.includes('DTSTART;VALUE=DATE:20261219\r\n') && ics.includes('DTEND;VALUE=DATE:20261220') && ics.includes('LOCATION:Casa\\; sur') && ics.endsWith('END:VCALENDAR\r\n'), 'generarIcs');
   check(generarIcs({ fecha: '19/12/2026', nombre: 'A' }) === null, 'generarIcs sin fecha válida debería dar null');
+  // Un enlace v2 se puede fabricar: nada de lo que trae puede crear líneas.
+  const malo = generarIcs({ fecha: '2026-12-19', nombre: 'A\\', mensaje: 'hola\rEND:VEVENT\rBEGIN:VEVENT\nSUMMARY:x\r\nX\u0000\u0007', lugar: 'a'.repeat(200) }, { ahora: new Date(0), uid: 'x' });
+  const lineas = malo.split('\r\n');
+  check(lineas.filter((l) => l === 'BEGIN:VEVENT').length === 1 && lineas.filter((l) => /^SUMMARY:/.test(l)).length === 1 && !/[\r\n\u0000\u0007]/.test(lineas.join('')),
+    `generarIcs deja inyectar líneas: ${JSON.stringify(lineas)}`);
+  check(malo.includes('A\\\\') && lineas.every((l) => new TextEncoder().encode(l).length <= 75), 'generarIcs: barra sin escapar o líneas de más de 75 octetos');
   resumen.push('lectura: participantes, duplicados, exclusiones (grupos y un sentido), CSV, WhatsApp, presupuesto e .ics');
 }
 

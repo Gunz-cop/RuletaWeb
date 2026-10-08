@@ -20,7 +20,7 @@ export const faqs = [
   },
   {
     q: '¿El sorteo es realmente al azar?',
-    a: 'Sí. Usa el generador aleatorio criptográfico del navegador y todas las cadenas válidas tienen la misma probabilidad de salir, también cuando hay exclusiones. Cada cambio del código pasa una prueba estadística que lo comprueba.'
+    a: 'Sí. Usa el generador aleatorio criptográfico del navegador y todas las cadenas válidas tienen la misma probabilidad de salir, también cuando hay exclusiones. La única excepción son los grupos muy grandes con exclusiones muy apretadas: ahí la página lo avisa en la verificación. Cada cambio del código pasa una prueba estadística que lo comprueba.'
   },
   {
     q: '¿Cómo excluyo a mi pareja?',

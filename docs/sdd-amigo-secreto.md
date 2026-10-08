@@ -89,12 +89,12 @@ Conclusión:
 Método de la fase 1, en este orden:
 
 1. **Muestreo por rechazo** con `crypto` (como hoy, uniforme por construcción).
-2. Si no acierta y n ≤ 18: **conteo exacto por programación dinámica sobre
+2. Si no acierta y n ≤ 16: **conteo exacto por programación dinámica sobre
    subconjuntos** (O(2ⁿ·n²), cadenas hamiltonianas que empiezan en P0) y
    **muestreo secuencial por pesos**: cada paso elige al siguiente con
    probabilidad proporcional al número de cadenas que lo completan. Uniforme
    exacto. No se enumeran las cadenas.
-3. Si n > 18 y el rechazo no acierta: el **backtracking actual** como último
+3. Si n > 16 y el rechazo no acierta: el **backtracking actual** como último
    recurso, con `crypto`. No es uniforme y se dice en la verificación anónima.
 4. «No hay sorteo posible» **solo cuando está demostrado** (conteo = 0 o
    búsqueda exhaustiva), como hace hoy `proven`. **Nunca** se rechaza un
@@ -158,7 +158,7 @@ echaloasuerte.com/secret-santa, secretsantaorganizer.com.
 | RF-01 | Añadir participantes pegando una lista (`Nombre` o `Nombre, contacto` por línea), con detección de duplicados insensible a mayúsculas y acentos (`Intl.Collator`, sensibilidad `base`). **Cambio respecto a hoy**: «José» y «Jose» pasan a avisarse como posible duplicado; es un aviso, no un bloqueo |
 | RF-02 | Importar CSV y **Excel** (`.xlsx`, carga diferida de la librería solo al usarlo) |
 | RF-03 | Elegir desde la agenda con Contact Picker API cuando existe (Chrome Android); si no, el botón no aparece |
-| RF-04 | Exclusiones visuales: tocar dos nombres para emparejarlos. Simétricas por defecto, **de un solo sentido** opcional. El texto de exclusiones actual se sigue aceptando |
+| RF-04 | Exclusiones visuales: tocar dos nombres para emparejarlos (crea una pareja simétrica). Las de **un solo sentido** se escriben «Ana > Luis». El texto de exclusiones actual se sigue aceptando |
 | RF-05 | Sorteo de una sola cadena cerrada, con `crypto`, uniforme (§2.1). Mensaje honesto si no hay sorteo posible |
 | RF-06 | Detalles del intercambio opcionales: nombre del grupo, presupuesto (COP por defecto, moneda por `Intl.NumberFormat`), fecha, lugar, mensaje, pista por persona |
 | RF-07 | Repartir por enlace: botón «Enviar» con Web Share API; si no hay, WhatsApp directo y copiar. Marca «enviado», **reenviar uno solo** sin repetir sorteo |
@@ -324,7 +324,7 @@ medias.
 3. `npm test` y `npm run test:estado` en verde.
 4. Botón Sortear visible sin scroll en 360×560, 375×548 y 393×659.
 5. Sin scroll horizontal a 360px.
-6. Ningún `Math.random` en los scripts de amigo secreto.
+6. Ningún `Math.random` en los scripts de amigo secreto: sin Web Crypto no se sortea y la página lo explica.
 7. Con Chrome 111 / iOS 16.4 en un teléfono de gama baja, la herramienta completa va sin tirones; por debajo del mínimo, se puede sortear, repartir y abrir un enlace.
 8. Ningún sorteo que hoy sale deja de salir.
 

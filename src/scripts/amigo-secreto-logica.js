@@ -19,9 +19,10 @@
 
 const U32 = 4294967296;
 
+// Sin Web Crypto no se sortea: lanza y la página lo explica (criterio 6 de
+// la SDD: ningún azar que no sea criptográfico).
 export function u32Crypto() {
-  try { return crypto.getRandomValues(new Uint32Array(1))[0]; }
-  catch { return Math.floor(Math.random() * U32); } // solo sin Web Crypto
+  return crypto.getRandomValues(new Uint32Array(1))[0];
 }
 
 // Real uniforme en [0, 1) con 53 bits: los pesos del paso 2 llegan a 10^14.
@@ -64,7 +65,9 @@ export function cadenaValida(orden, permitido) {
 }
 
 export const INTENTOS_RECHAZO = 2000;
-export const MAX_EXACTO = 18;
+// 16 y no 18: con 18 el conteo reserva ~19 MB y tarda segundos en un
+// teléfono de gama baja; con 16, ~4 MB y cuatro veces menos trabajo.
+export const MAX_EXACTO = 16;
 
 // Paso 2. f[mask][v]: cuántas maneras hay de terminar la cadena estando en v
 // con `mask` ya usado (bit i = persona i+1; la persona 0 abre siempre).
@@ -325,7 +328,30 @@ export function formatoPresupuesto(valor, { moneda = 'COP', locale = 'es-CO' } =
   } catch { return limpio; }
 }
 
-const escIcs = (s) => String(s).replace(/[\;,]/g, (c) => `\\${c}`).replace(/\r?\n/g, '\\n');
+// RFC 5545 §3.3.11: se escapan «\», «;», «,» y los saltos de línea; los
+// demás caracteres de control se quitan. Sin esto, un enlace fabricado con
+// un «\r» en el mensaje inyectaba propiedades o eventos en el .ics.
+const escIcs = (s) => String(s)
+  .replace(/\r\n|\r|\n/g, '\n')
+  .replace(/[\u0000-\u0009\u000b-\u001f\u007f]/g, '')
+  .replace(/\\/g, '\\\\')
+  .replace(/[;,]/g, (c) => `\\${c}`)
+  .replace(/\n/g, '\\n');
+
+// Líneas de 75 octetos como máximo, continuadas con un espacio (§3.1).
+const octetos = (s) => new TextEncoder().encode(s).length;
+function plegar(linea) {
+  if (octetos(linea) <= 75) return linea;
+  const partes = [];
+  let actual = '', tam = 0;
+  for (const ch of linea) {
+    const n = octetos(ch);
+    if (tam + n > (partes.length ? 74 : 75)) { partes.push(actual); actual = ''; tam = 0; }
+    actual += ch; tam += n;
+  }
+  partes.push(actual);
+  return partes.join('\r\n ');
+}
 
 /** Evento de día completo (RFC 5545) para el intercambio. */
 export function generarIcs({ fecha, grupo, lugar, mensaje, nombre }, { ahora = new Date(), uid = '' } = {}) {
@@ -349,6 +375,6 @@ export function generarIcs({ fecha, grupo, lugar, mensaje, nombre }, { ahora = n
     ...(lugar ? [`LOCATION:${escIcs(lugar)}`] : []),
     'END:VEVENT', 'END:VCALENDAR',
   ];
-  return lineas.join('\r\n') + '\r\n';
+  return lineas.map(plegar).join('\r\n') + '\r\n';
 }
 function hash(s) { let h = 0; for (const c of s) h = (h * 31 + c.codePointAt(0)) | 0; return h; }
