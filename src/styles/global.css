@@ -440,6 +440,17 @@ main .hero {
   margin: 0 auto;
 }
 
+/* Una tabla no puede ser más estrecha que la suma de sus palabras más
+   largas: la de las 15 respuestas de /si-o-no («Definitivamente» ×2,
+   «Concéntrate») medía 362px en un Fold cerrado (344px) y abría scroll
+   horizontal, solo cuando Inter ya había cargado. `anywhere` deja partir
+   la palabra si no cabe; `hyphens` le pone guion donde el navegador sabe. */
+.seo-article th,
+.seo-article td {
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
+
 .seo-article h2,
 .seo-article h3 {
   color: #ffffff;

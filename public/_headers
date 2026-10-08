@@ -3,6 +3,7 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
   X-Frame-Options: SAMEORIGIN
+  Strict-Transport-Security: max-age=31536000
 
 /favicon.ico
   Cache-Control: public, max-age=604800

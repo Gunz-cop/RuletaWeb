@@ -65,6 +65,7 @@ main .hero{text-align:center;width:100%;max-width:700px;padding:2.5rem 1rem 1rem
 .ad-placeholder:before{content:"Espacio Publicitario";opacity:.35}
 .seo-section{background:var(--bg-surface-alt);border-top:1px solid var(--card-border);border-bottom:1px solid var(--card-border);width:100%;padding:4.5rem 0}
 .seo-article{color:var(--text-secondary);max-width:780px;margin:0 auto;font-size:1rem;line-height:1.8}
+.seo-article th,.seo-article td{overflow-wrap:anywhere;hyphens:auto}
 .seo-article h2,.seo-article h3{color:#fff;letter-spacing:-.01em;font-family:Outfit,sans-serif;font-weight:700}
 .seo-article h2{border-bottom:1px solid #ffffff0d;margin-top:2.75rem;margin-bottom:.75rem;padding-bottom:.5rem;font-size:1.5rem}
 .seo-article h2:first-child{margin-top:0}
