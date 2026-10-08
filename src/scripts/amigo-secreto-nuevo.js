@@ -13,7 +13,7 @@
 
 import {
   sortearCadena, matrizPermitidos, barajar, leerParticipantes, escribirParticipantes, duplicados,
-  leerExclusiones, problemaEvidente, leerCSV, quitarCabecera, numeroWhatsapp, formatoPresupuesto, generarIcs,
+  leerExclusiones, problemaEvidente, leerCSV, quitarCabecera, numeroWhatsapp, formatoPresupuesto, generarIcs, claveExacta,
 } from './amigo-secreto-logica.js';
 import { leerEnlace, crearV2, urlV2, cargarGuardado, guardar, borrarGuardado } from './amigo-secreto-enlace.js';
 
@@ -185,11 +185,51 @@ function modoOrganizar() {
 
   /* ---- participantes ---- */
 
+  // Deseos por persona (clave: nombre normalizado). Se escriben en su
+  // propia sección; un «Ana | café» escrito en la lista o una columna C del
+  // Excel también los rellenan.
+  const deseos = new Map();
+
   function actualizar() {
     participantes = leerParticipantes(lista.value);
+    for (const p of participantes) {
+      const k = claveExacta(p.nombre);
+      if (p.pista && !deseos.has(k)) deseos.set(k, p.pista);
+      p.pista = deseos.get(k) ?? '';
+    }
     $('participants-count').textContent = `${participantes.length} ${participantes.length === 1 ? 'persona' : 'personas'}`;
     pintarFichas();
+    pintarDeseos();
     validar();
+  }
+
+  function pintarDeseos() {
+    const ul = $('as-deseos');
+    const enFoco = document.activeElement?.closest?.('#as-deseos li')?.dataset.clave;
+    ul.replaceChildren(...participantes.map((p) => {
+      const li = clonar('tpl-deseo');
+      const k = claveExacta(p.nombre);
+      li.dataset.clave = k;
+      li.querySelector('[data-nombre]').textContent = p.nombre;
+      const input = li.querySelector('[data-deseo]');
+      input.value = deseos.get(k) ?? '';
+      input.setAttribute('aria-label', `Deseo o pista de ${p.nombre}`);
+      input.addEventListener('input', () => {
+        const v = input.value.trim();
+        if (v) deseos.set(k, v); else deseos.delete(k);
+        p.pista = v;
+        contarDeseos();
+      });
+      return li;
+    }));
+    if (enFoco) ul.querySelector(`li[data-clave="${CSS.escape(enFoco)}"] input`)?.focus();
+    $('as-deseos-vacio').hidden = participantes.length > 0;
+    contarDeseos();
+  }
+
+  function contarDeseos() {
+    const n = participantes.filter((p) => deseos.get(claveExacta(p.nombre))).length;
+    $('as-deseos-cuenta').textContent = n ? `${n} de ${participantes.length}` : '';
   }
 
   function pintarFichas() {
@@ -263,8 +303,10 @@ function modoOrganizar() {
 
   function añadir(nuevos) {
     if (!nuevos.length) return;
+    for (const p of nuevos) if (p.pista) deseos.set(claveExacta(p.nombre), p.pista);
     participantes = [...participantes, ...nuevos];
-    lista.value = escribirParticipantes(participantes);
+    // La lista queda con nombre y celular; los deseos van en su sección.
+    lista.value = escribirParticipantes(participantes.map((p) => ({ ...p, pista: '' })));
     actualizar();
     aviso(`${nuevos.length} ${nuevos.length === 1 ? 'persona añadida' : 'personas añadidas'}`);
   }
@@ -384,6 +426,7 @@ function modoOrganizar() {
       fecha: Date.now(),
       texto: lista.value,
       exclusiones: exclusiones.value,
+      deseos: Object.fromEntries(deseos),
       detalles: det,
       metodo: uniforme ? metodo : 'busqueda',
       matriz: barajar(pares.map(({ da, recibe }) => ({ da: etiqueta(da), recibe: etiqueta(recibe) }))),
@@ -463,7 +506,7 @@ function modoOrganizar() {
     const n = sorteo.enlaces.length;
     const d = sorteo.detalles ?? {};
     const partes = [`${n} personas`];
-    if (d.presupuesto) partes.push(formatoPresupuesto(d.presupuesto));
+    if (d.presupuesto) partes.push(`presupuesto máximo ${formatoPresupuesto(d.presupuesto)}`);
     if (d.grupo) partes.unshift(d.grupo);
     $('as-res-sub').textContent = partes.join(' · ');
     $('links-list-container').replaceChildren(...sorteo.enlaces.map(filaEnlace));
@@ -605,6 +648,8 @@ function modoOrganizar() {
       exclusiones.value = guardado.exclusiones ?? '';
       if (exclusiones.value.trim()) $('exclusions-details').open = true;
       for (const c of camposDetalle) $(`as-${c}`).value = guardado.detalles?.[c] ?? '';
+      deseos.clear();
+      for (const [k, v] of Object.entries(guardado.deseos ?? {})) deseos.set(k, v);
       actualizar();
       banner.hidden = true;
       pintarResultado(true);
@@ -614,6 +659,39 @@ function modoOrganizar() {
       borrarGuardado(almacenSeguro);
       banner.hidden = true;
     });
+  }
+
+  /* ---- plantilla para Excel ---- */
+
+  $('as-plantilla').addEventListener('click', () => {
+    // CSV con BOM para que Excel lea bien las tildes; abre en Excel y Sheets.
+    const csv = '\uFEFFNombre;Celular;Deseo o pista\r\nAna;3001234567;Le gusta el café\r\nBruno;;Talla M\r\nCarla;;\r\n';
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'amigo-secreto-plantilla.csv';
+    document.body.append(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  });
+
+  /* ---- Sortear fijo abajo en móvil ---- */
+  // Aparece cuando el botón de verdad sale de la vista mientras se llenan
+  // las opciones; desaparece al volver a verlo o al bajar al resultado.
+  const fija = $('as-fija');
+  const fijo = $('as-sortear-fijo');
+  fijo.addEventListener('click', () => btn.click());
+  if ('IntersectionObserver' in window) {
+    let botonVisible = true, opcionesVisibles = false, resultadoVisible = false;
+    const pintar = () => {
+      fija.hidden = botonVisible || !opcionesVisibles || resultadoVisible;
+      fijo.disabled = btn.disabled;
+    };
+    new IntersectionObserver(([e]) => { botonVisible = e.isIntersecting; pintar(); }).observe(btn);
+    new IntersectionObserver(([e]) => { opcionesVisibles = e.isIntersecting; pintar(); }).observe($('as-opcional'));
+    new IntersectionObserver(([e]) => { resultadoVisible = e.isIntersecting; pintar(); }).observe($('results-section'));
+    new MutationObserver(pintar).observe(btn, { attributes: true, attributeFilter: ['disabled'] });
   }
 
   actualizar();

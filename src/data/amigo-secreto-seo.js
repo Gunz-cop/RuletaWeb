@@ -43,8 +43,12 @@ export const faqs = [
     a: 'El sorteo queda guardado en tu teléfono o computador. Al volver aparece la opción de recuperarlo con los mismos enlaces y ver cuáles ya enviaste. Los enlaces de años anteriores siguen funcionando.'
   },
   {
+    q: '¿Puedo subir la lista en Excel?',
+    a: 'Sí. Sube un .xlsx o un .csv con el nombre en la columna A, el celular en la B y el deseo o pista en la C; la B y la C pueden ir vacías y la fila de títulos se salta sola. En la página hay una plantilla para descargar.'
+  },
+  {
     q: '¿Puedo poner presupuesto, fecha y lugar?',
-    a: 'Sí. En los detalles opcionales puedes poner el nombre del grupo, el presupuesto (en pesos colombianos por defecto), la fecha, el lugar, un mensaje y una pista por persona. Quien abre su enlace los ve y puede añadir la fecha a su calendario.'
+    a: 'Sí. En los detalles opcionales puedes poner el nombre del grupo, el presupuesto máximo, la fecha, el lugar y un mensaje, y en «Qué le gustaría recibir a cada uno», un deseo o pista por persona. Quien abre su enlace los ve y puede añadir la fecha a su calendario.'
   },
   {
     q: '¿Sirve para la novena o el intercambio de la oficina?',
