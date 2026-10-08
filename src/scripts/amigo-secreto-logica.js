@@ -339,11 +339,13 @@ export function numeroWhatsapp(contacto) {
   return d.length >= 8 ? d : '';
 }
 
-export function formatoPresupuesto(valor, { moneda = 'COP', locale = 'es-CO' } = {}) {
+// Sin símbolo de moneda por ahora (el grupo sabe en qué moneda habla):
+// solo el número con separador de miles, «50.000».
+export function formatoPresupuesto(valor, { locale = 'es-CO' } = {}) {
   const limpio = String(valor ?? '').replace(/[^\d]/g, '');
   if (!limpio) return String(valor ?? '').trim();
   try {
-    return new Intl.NumberFormat(locale, { style: 'currency', currency: moneda, maximumFractionDigits: 0 }).format(Number(limpio));
+    return new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(Number(limpio));
   } catch { return limpio; }
 }
 

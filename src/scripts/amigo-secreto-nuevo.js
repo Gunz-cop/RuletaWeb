@@ -179,6 +179,7 @@ function modoOrganizar() {
 
   let participantes = [];
   let sorteo = null; // formato de amigo-secreto-enlace.js (version 2)
+  const TEXTO_EMPAREJAR = $('as-emparejar').textContent.trim();
   let emparejando = null; // null = apagado; -1 = esperando el primero; i = primero elegido
   let bloqueo = '';
 
@@ -219,7 +220,7 @@ function modoOrganizar() {
     if (emparejando !== i) {
       const linea = `${participantes[emparejando].nombre}, ${participantes[i].nombre}`;
       exclusiones.value = (exclusiones.value.trim() ? `${exclusiones.value.trim()}\n` : '') + linea;
-      aviso(`No se tocarán: ${linea}`);
+      aviso(`${linea}: no se regalarán entre sí`);
     }
     emparejando = -1;
     pintarFichas();
@@ -240,7 +241,7 @@ function modoOrganizar() {
     } else if (excl.desconocidos.length) {
       bloqueo = msg = `En las exclusiones hay nombres que no están en la lista: ${excl.desconocidos.map((x) => `«${x}»`).join(', ')}. Revisa que estén escritos igual.`;
     } else if (excl.sueltos.length) {
-      bloqueo = msg = `En las exclusiones, «${excl.sueltos[0]}» está solo en su línea. Escribe en la misma línea, separados por coma, quienes no deben tocarse.`;
+      bloqueo = msg = `En las exclusiones, «${excl.sueltos[0]}» está solo en su línea. Escribe en la misma línea, separados por coma, quienes no deben regalarse entre síse.`;
     } else {
       bloqueo = problemaEvidente(participantes, excl);
       msg = bloqueo;
@@ -254,6 +255,7 @@ function modoOrganizar() {
     avisoSorteo.textContent = msg;
     avisoSorteo.hidden = !msg;
     btn.disabled = n < 2 || Boolean(bloqueo);
+    $('as-emparejar').hidden = n < 2;
     $('as-falta').hidden = n >= 2;
   }
 
@@ -299,10 +301,9 @@ function modoOrganizar() {
   $('as-emparejar').addEventListener('click', (e) => {
     emparejando = emparejando === null ? -1 : null;
     e.currentTarget.setAttribute('aria-pressed', String(emparejando !== null));
-    e.currentTarget.textContent = emparejando === null ? 'Elegir tocando dos nombres' : 'Listo';
+    e.currentTarget.textContent = emparejando === null ? TEXTO_EMPAREJAR : 'Listo, ya terminé de elegir';
     if (emparejando !== null) {
-      aviso('Toca dos nombres de la lista de participantes');
-      lista.scrollIntoView({ behavior: movimientoReducido() ? 'auto' : 'smooth', block: 'center' });
+      aviso('Toca los dos nombres');
     }
     pintarFichas();
   });
