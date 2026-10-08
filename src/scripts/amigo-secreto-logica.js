@@ -300,7 +300,7 @@ export function problemaEvidente(lista, { grupos, unSentido }) {
   return '';
 }
 
-/** CSV simple: dos primeras columnas, con comillas, sin la fila de cabecera. */
+/** CSV simple: tres primeras columnas (nombre, celular, deseo), con comillas, sin cabecera. */
 export function leerCSV(texto) {
   const filas = [];
   const sep = /;/.test(String(texto).split(/\r?\n/)[0] ?? '') && !/,/.test(String(texto).split(/\r?\n/)[0] ?? '') ? ';' : ',';
@@ -317,16 +317,17 @@ export function leerCSV(texto) {
       else actual += c;
     }
     celdas.push(actual.trim());
-    filas.push([celdas[0] ?? '', celdas[1] ?? '']);
+    filas.push([celdas[0] ?? '', celdas[1] ?? '', celdas[2] ?? '']);
   }
   return quitarCabecera(filas);
 }
 
 export function quitarCabecera(filas) {
-  const cab = ['nombre', 'name', 'participante', 'participantes', 'participant', 'contacto', 'email', 'correo'];
+  const cab = ['nombre', 'nombres', 'name', 'participante', 'participantes', 'participant', 'contacto', 'email', 'correo', 'celular'];
   const out = filas.filter((f) => f[0]);
   if (out.length && cab.includes(claveParecida(out[0][0]))) out.shift();
-  return out.map(([nombre, contacto]) => ({ nombre, contacto: contacto ?? '', pista: '' }));
+  // Columna A: nombre · B: celular o correo (opcional) · C: deseo (opcional)
+  return out.map(([nombre, contacto, pista]) => ({ nombre, contacto: contacto ?? '', pista: pista ?? '' }));
 }
 
 // wa.me necesita el indicativo: un celular colombiano escrito tal cual (10

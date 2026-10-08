@@ -1,0 +1,4 @@
+# Versión de prueba de amigo secreto (oct. 2026): sus enlaces siguen abriendo.
+# El fragmento (#v=2&d=…) se conserva en la redirección.
+/amigo-secreto-nuevo /amigo-secreto 301
+/amigo-secreto-nuevo/ /amigo-secreto 301

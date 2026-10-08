@@ -1042,47 +1042,12 @@ export const ESTADOS = [
       },
     },
   ]),
-  // --- Amigo secreto (página de siempre) -----------------------------------------------------
-  // Las etiquetas de participante, las filas de enlaces y sus botones los
-  // construye amigo-secreto.js con lo que escribe el visitante: en reposo no
-  // existen, así que ninguna captura los ve. Es la herramienta con tráfico
-  // real del sitio, de modo que conviene cubrirla de verdad.
-  {
-    ruta: '/amigo-secreto',
-    nombre: 'sorteo-hecho',
-    escribir: [{ sel: '#participants-textarea', texto: 'Ana\nBruno\nCarla\nDiego' }],
-    clics: ['#btn-draw'],
-    esperarSelector: '#links-list-container .link-row',
-    comprobar: [
-      { sel: '.participant-tag', props: ['display', 'backgroundColor', 'borderRadius'] },
-      { sel: '.link-row', props: ['display', 'flexDirection', 'alignItems', 'backgroundColor'] },
-      { sel: '.row-name', props: ['fontFamily', 'fontWeight', 'color'] },
-      { sel: '.row-actions', props: ['display', 'gap'] },
-      { sel: '.btn-action', props: ['display', 'borderRadius', 'cursor'] },
-      { sel: '#results-section', props: ['display'] },
-      { sel: '#matrix-tbody tr', props: ['display'] },
-    ],
-  },
-  {
-    // El mismo sorteo a 390px: aquí viven las dos reglas que estaban dentro
-    // de la media query y que era fácil dejarse atrás al extraer el CSS.
-    ruta: '/amigo-secreto',
-    nombre: 'sorteo-hecho-movil',
-    viewport: { width: 390, height: 844 },
-    escribir: [{ sel: '#participants-textarea', texto: 'Ana\nBruno\nCarla\nDiego' }],
-    clics: ['#btn-draw'],
-    esperarSelector: '#links-list-container .link-row',
-    comprobar: [
-      { sel: '.link-row', props: ['flexDirection', 'alignItems'] },
-      { sel: '.row-actions', props: ['width', 'justifyContent'] },
-    ],
-  },
-  // --- Amigo secreto, versión nueva (/amigo-secreto-nuevo) -----------------------------------------------------
+  // --- Amigo secreto -----------------------------------------------------
   // Rediseño (SDD de amigo secreto): las fichas, las filas de enlaces y las de
   // la verificación se clonan de <template> con lo que escribe el visitante,
   // así que en reposo no existen y ninguna captura las ve.
   {
-    ruta: '/amigo-secreto-nuevo',
+    ruta: '/amigo-secreto',
     nombre: 'sorteo-hecho',
     escribir: [{ sel: '#participants-textarea', texto: 'Ana\nBruno, 3001234567\nCarla\nDiego' }],
     clics: ['#btn-draw'],
@@ -1117,7 +1082,7 @@ export const ESTADOS = [
     },
   },
   {
-    ruta: '/amigo-secreto-nuevo',
+    ruta: '/amigo-secreto',
     nombre: 'sorteo-hecho-movil',
     viewport: { width: 390, height: 844 },
     escribir: [{ sel: '#participants-textarea', texto: 'Ana\nBruno\nCarla\nDiego' }],
@@ -1131,7 +1096,7 @@ export const ESTADOS = [
   },
   {
     // Pasa el teléfono: una persona abre su sobre y queda tachada.
-    ruta: '/amigo-secreto-nuevo',
+    ruta: '/amigo-secreto',
     nombre: 'pasa-el-telefono',
     viewport: { width: 390, height: 844 },
     escribir: [{ sel: '#participants-textarea', texto: 'Ana\nBruno\nCarla\nDiego' }],
@@ -1150,7 +1115,7 @@ export const ESTADOS = [
   {
     // RF-13: un sorteo guardado con el formato de antes se recupera con sus
     // URLs originales y su estado «enviado».
-    ruta: '/amigo-secreto-nuevo',
+    ruta: '/amigo-secreto',
     nombre: 'recuperar-sorteo-viejo',
     init: `localStorage.setItem('amigo-secreto:ultimo-sorteo', ${JSON.stringify(JSON.stringify({
       date: 1764000000000, text: 'Ana\nBruno\nCarla', exclusions: '',
@@ -1171,7 +1136,7 @@ export const ESTADOS = [
     },
   },
   {
-    ruta: '/amigo-secreto-nuevo#v=2&d=IAAAAAAA',
+    ruta: '/amigo-secreto#v=2&d=IAAAAAAA',
     nombre: 'enlace-danado',
     esperarSelector: '#reveal-screen:not([hidden])',
     comprobar: [{ sel: '#as-sobre-zona', props: ['display'] }],
@@ -1180,8 +1145,8 @@ export const ESTADOS = [
       return { ok: titulo === 'Este enlace no funciona', mensaje: `un enlace dañado muestra «${titulo}»` };
     },
   },
-  ...estadosAccionVisible('/amigo-secreto-nuevo', '#btn-draw'),
-  ...estadosResponsive('/amigo-secreto-nuevo', '#btn-draw'),
+  ...estadosAccionVisible('/amigo-secreto', '#btn-draw'),
+  ...estadosResponsive('/amigo-secreto', '#btn-draw'),
   // Enlaces que ya están repartidos (SDD de amigo secreto §5.1): uno v1 fijo,
   // generado con el código de 2026 y con «+» convertido en espacio, que el
   // lector viejo no abría; y uno v2. Los dos tienen que abrir el sobre con
@@ -1189,7 +1154,7 @@ export const ESTADOS = [
   ...[
     { nombre: 'revelar-v1-fijo', hash: ENLACE_V1.url.split('#')[1], esperado: ENLACE_V1.nombre },
     { nombre: 'revelar-v2', hash: ENLACE_V2_HASH, esperado: 'Ñandú José 🎁' },
-  ].flatMap((e) => ['/amigo-secreto', '/amigo-secreto-nuevo'].map((ruta) => ({ ...e, ruta }))).map(({ nombre, hash, esperado, ruta }) => ({
+  ].map((e) => ({ ...e, ruta: '/amigo-secreto' })).map(({ nombre, hash, esperado, ruta }) => ({
     ruta: `${ruta}#${hash}`,
     nombre,
     esperarSelector: SEL_NOMBRE_REVELADO,

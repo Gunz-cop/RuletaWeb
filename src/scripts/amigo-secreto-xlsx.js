@@ -3,7 +3,7 @@
 // ==========================================================
 // Se carga con import() solo cuando alguien elige un Excel. Un .xlsx es un
 // ZIP con XML: se lee el directorio central, se descomprime con
-// DecompressionStream('deflate-raw') y se toman las dos primeras columnas de
+// DecompressionStream('deflate-raw') y se toman las tres primeras columnas de
 // la primera hoja. Sin dependencias. Si el navegador no tiene
 // DecompressionStream (por debajo de Chrome 103 / iOS 16.4) lanza un error
 // que la página traduce a «guárdalo como CSV».
@@ -54,7 +54,7 @@ const columna = (ref) => {
   return n - 1;
 };
 
-/** Devuelve las filas [[col A, col B], …] de la primera hoja como texto. */
+/** Devuelve las filas [[col A, col B, col C], …] de la primera hoja como texto. */
 export async function leerXlsx(arrayBuffer) {
   const buf = new Uint8Array(arrayBuffer);
   const zip = entradas(buf);
@@ -72,10 +72,10 @@ export async function leerXlsx(arrayBuffer) {
   const doc = xml(await leerArchivo(buf, zip.get(hoja)));
   const filas = [];
   for (const row of doc.getElementsByTagName('row')) {
-    const fila = ['', ''];
+    const fila = ['', '', ''];
     for (const c of row.getElementsByTagName('c')) {
       const col = columna(c.getAttribute('r') ?? 'A');
-      if (col > 1) continue;
+      if (col > 2) continue;
       const t = c.getAttribute('t');
       let val = '';
       if (t === 's') val = compartidas[Number(c.getElementsByTagName('v')[0]?.textContent)] ?? '';

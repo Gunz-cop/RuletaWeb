@@ -193,6 +193,8 @@ for (const [n, grupos] of [
   const csv = leerCSV('﻿Nombre,Contacto\n"Pérez, Ana",3001234567\nBruno,x\n\n"Carla ""la jefa""",');
   check(csv.length === 3 && csv[0].nombre === 'Pérez, Ana' && csv[0].contacto === '3001234567' && csv[2].nombre === 'Carla "la jefa"', `leerCSV: ${JSON.stringify(csv)}`);
   check(leerCSV('Nombre;Correo\nAna;a@b.c')[0]?.contacto === 'a@b.c', 'leerCSV con punto y coma');
+  const plantilla = leerCSV('\uFEFFNombre;Celular;Deseo o pista\r\nAna;3001234567;Le gusta el café\r\nBruno;;Talla M\r\nCarla;;\r\n');
+  check(plantilla.length === 3 && plantilla[0].pista === 'Le gusta el café' && plantilla[1].contacto === '' && plantilla[1].pista === 'Talla M', `leerCSV con la plantilla: ${JSON.stringify(plantilla)}`);
   check(numeroWhatsapp('300 123 4567') === '573001234567' && numeroWhatsapp('+34 600 11 22 33') === '34600112233' && numeroWhatsapp('a@b.c') === '', 'numeroWhatsapp');
   check(/50\.000/.test(formatoPresupuesto('50000')), `formatoPresupuesto: ${formatoPresupuesto('50000')}`);
   const ics = generarIcs({ fecha: '2026-12-19', grupo: 'Oficina', lugar: 'Casa; sur', nombre: 'Ana', mensaje: 'Hola' }, { ahora: new Date(0), uid: 'x' });
