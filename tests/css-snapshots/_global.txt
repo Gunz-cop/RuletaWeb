@@ -298,6 +298,8 @@ footer a:hover{color:var(--accent-coral)}
 .bg-surface-alt{background-color:var(--color-surface-alt)}
 .bg-transparent{background-color:#0000}
 .bg-warm{background-color:var(--color-warm)}
+.bg-white\/\[0\.04\]{background-color:#ffffff0a}
+@supports (color:color-mix(in lab, red, red)){.bg-white\/\[0\.04\]{background-color:color-mix(in oklab, var(--color-white) 4%, transparent)}}
 .object-cover{object-fit:cover}
 .p-0{padding:0}
 .p-1{padding:var(--spacing)}
@@ -309,6 +311,7 @@ footer a:hover{color:var(--accent-coral)}
 .px-1{padding-inline:var(--spacing)}
 .px-2{padding-inline:calc(var(--spacing) * 2)}
 .px-3{padding-inline:calc(var(--spacing) * 3)}
+.px-3\.5{padding-inline:calc(var(--spacing) * 3.5)}
 .px-4{padding-inline:calc(var(--spacing) * 4)}
 .px-5{padding-inline:calc(var(--spacing) * 5)}
 .px-6{padding-inline:calc(var(--spacing) * 6)}
@@ -344,6 +347,7 @@ footer a:hover{color:var(--accent-coral)}
 .font-display{font-family:var(--font-display)}
 .font-sans{font-family:var(--font-sans)}
 .\!text-sm{font-size:var(--text-sm)!important;line-height:var(--tw-leading,var(--text-sm--line-height))!important}
+.\!text-xs{font-size:var(--text-xs)!important;line-height:var(--tw-leading,var(--text-xs--line-height))!important}
 .text-2xl{font-size:var(--text-2xl);line-height:var(--tw-leading,var(--text-2xl--line-height))}
 .text-base{font-size:var(--text-base);line-height:var(--tw-leading,var(--text-base--line-height))}
 .text-lg{font-size:var(--text-lg);line-height:var(--tw-leading,var(--text-lg--line-height))}
@@ -410,6 +414,7 @@ footer a:hover{color:var(--accent-coral)}
 .group-data-\[enviado\=true\]\:inline:is(:where(.group)[data-enviado=true] *){display:inline}
 .group-data-\[state\=abierto\]\:invisible:is(:where(.group)[data-state=abierto] *){visibility:hidden}
 .first-letter\:uppercase:first-letter{text-transform:uppercase}
+.placeholder\:text-ink-secondary::placeholder{color:var(--color-ink-secondary)}
 .placeholder\:text-ink-tertiary::placeholder{color:var(--color-ink-tertiary)}
 .first\:border-t-0:first-child{border-top-style:var(--tw-border-style);border-top-width:0}
 @media (hover:hover){.hover\:border-current:hover{border-color:currentColor}.hover\:border-warm:hover{border-color:var(--color-warm)}.hover\:text-ink-primary:hover{color:var(--color-ink-primary)}.hover\:text-warm:hover{color:var(--color-warm)}}
