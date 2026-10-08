@@ -5,7 +5,6 @@
 | Estado | **Propuesta** — v1.0, pendiente de aprobación del propietario |
 | Fecha | 2026-10-08 |
 | Alcance | `src/pages/amigo-secreto.astro`, sus componentes y su JS, tests de `/amigo-secreto`, texto SEO de la página |
-| Fuera de alcance | Todo lo que necesita servidor (listas de deseos, «ya lo abrió», preguntas anónimas): ver `docs/propuestas-futuras.md` §1 |
 | Fecha límite | **En `main` antes del 2026-11-07.** Desde ahí hasta enero, solo correcciones: es la temporada alta |
 | Referencia de implementación | La ruleta (`ruleta-logica.js` probada con Node, SDD `docs/sdd-ruleta.md`) |
 
@@ -14,22 +13,27 @@ paso** lo pone la skill `decidelo-herramienta`.
 
 ---
 
-## 0. Decisiones del propietario que cambian las normas
+## 0. Principios del rediseño
 
-El propietario pidió explícitamente no limitar esta propuesta por
-`AGENTS.md` ni `DESIGN.md` (2026-10-08). Lo que esta SDD hace distinto, y que
-**hay que reflejar en esos archivos en el mismo PR que lo introduce**:
+Decididos por el propietario el 2026-10-08. **Mandan sobre `AGENTS.md` y
+`DESIGN.md` para esta página**; el propietario revisará después qué reglas de
+esos archivos se mantienen. Esta SDD no los modifica.
 
-| Norma actual | Decisión para amigo secreto | Dónde se actualiza |
-|---|---|---|
-| Regla 2: Tailwind convive con CSS propio, se usa donde toca | **Tailwind a fondo**: toda la maquetación, espaciado, tipografía, color y estados en utilidades y variantes (`data-*:`, `aria-*:`, `group-*`, `peer-*`, `starting:`). CSS propio solo para el sobre 3D y sus keyframes | AGENTS.md regla 2, DESIGN.md "Cómo decidir" |
-| DESIGN.md: anatomía y estética editorial | Se mantiene la paleta y el acento (`--accent-warm`): coherencia de marca. Se libera la composición: la página tiene **dos pantallas** (organizar / abrir el sobre) y un **modo presencial** a pantalla completa | DESIGN.md "Anatomía" |
-| Sin sonidos ni celebraciones | Sin confeti ni fanfarria. Se permite **vibración háptica corta** (`navigator.vibrate`) al abrir el sobre, apagable | DESIGN.md, excepciones |
-| Sin backend | Se mantiene **en esta entrega**. El servidor llega en enero (propuestas-futuras §1) | — |
-
-Lo que **no** cambia, porque es funcionamiento: el sorteo es una sola cadena
-cerrada, las exclusiones son simétricas por defecto y **todo enlace ya
-repartido sigue funcionando** (§5).
+1. **Se rehace todo lo que haga falta.** Página, componentes y JS nuevos
+   desde cero; las malas prácticas se quitan, no se parchean.
+2. **Tailwind a fondo.** Toda la maquetación, color, tipografía, estados y
+   animaciones sencillas en utilidades y variantes (`data-*:`, `aria-*:`,
+   `group-*`, `peer-*`, `starting:`, `motion-reduce:`). CSS propio solo donde
+   Tailwind no llega (el sobre 3D).
+3. **Vibrante y atractiva**, que la gente quiera volver: color, ilustración,
+   movimiento con intención y momentos de sorpresa al abrir el sobre. Sin
+   ruido ni efectos baratos.
+4. **Ligera y para teléfonos viejos, sin renunciar a tecnología moderna.**
+   Todo lo nuevo es mejora progresiva: si el navegador no lo tiene, la
+   herramienta sigue funcionando. Se acepta algo más de peso si compra
+   experiencia; el presupuesto está en §6.3.
+5. **Lo que no cambia es el funcionamiento**: una sola cadena cerrada,
+   exclusiones, y **todo enlace ya repartido sigue funcionando** (§5).
 
 ## 1. Resumen
 
@@ -98,7 +102,7 @@ que el navegador no envía al servidor.
 |---|---|---|
 | Página | 813 líneas, estilos inline, pestañas Manual/CSV, matriz de validación | Reescrita con Tailwind |
 | Script | 891 líneas en un archivo, `innerHTML`, DOM y lógica mezclados | `amigo-secreto-logica.js` (puro, Node) + `amigo-secreto-enlace.js` (formatos v1/v2) + `amigo-secreto.js` (DOM) |
-| Revelación | Caja de regalo, confeti, sonido Web Audio, título con 🎁 | Sobre, sin confeti ni sonido, vibración corta opcional |
+| Revelación | Caja de regalo, confeti, sonido Web Audio, título con 🎁 | Sobre ilustrado con su propia celebración al abrirse (sin confeti genérico ni sonido por defecto), vibración corta opcional |
 | Confirmación | `window.confirm` | `<dialog>` |
 | Avisos | Toast propio | Popover API |
 | `localStorage` | `amigo-secreto:ultimo-sorteo` | `decidelo_amigo_sorteo`, leyendo la clave vieja |
@@ -111,9 +115,9 @@ Revisado el 2026-10-08.
 
 | Producto | Qué copiamos o mejoramos |
 |---|---|
-| Elfster | Lista de deseos, preguntas anónimas, cuestionario, evitar el emparejamiento del año pasado → **servidor, enero** |
+| Elfster | Lista de deseos, preguntas anónimas, cuestionario, evitar el emparejamiento del año pasado → **fuera de esta SDD** |
 | DrawNames | Sin email, sin registro, modo presencial → **ya somos así; añadimos presencial** |
-| amigosecretoonline.com | Presupuesto, fecha, mensaje, CSV/Excel, «quién ya lo vio», reusar el sorteo → **detalles y CSV ahora; estado en enero** |
+| amigosecretoonline.com | Presupuesto, fecha, mensaje, CSV/Excel, «quién ya lo vio», reusar el sorteo → **detalles y CSV ahora; el estado necesita servidor, fuera de esta SDD** |
 | Échalo a Suerte | Reenviar a una persona sin repetir sorteo → **ahora** |
 | Secret Santa Organizer | Exclusiones de un solo sentido → **ahora** |
 
@@ -173,8 +177,7 @@ JSON = { n: nombre, g?: grupo, p?: presupuesto, f?: fecha, l?: lugar, m?: mensaj
   válido con otro nombre (AES-GCM autentica), que nada en la URL es legible a
   simple vista, y que el sorteo guardado en el dispositivo no lleva la
   asignación en claro: guarda solo los enlaces. El organizador sigue pudiendo
-  abrir los enlaces que reparte; para que no pueda, existe «pasa el teléfono»
-  ahora y el servidor en enero.
+  abrir los enlaces que reparte; para que no pueda, existe «pasa el teléfono».
 - Longitud objetivo: < 200 caracteres sin detalles; se mide en el test.
 
 ## 6. Diseño
@@ -190,6 +193,11 @@ JSON = { n: nombre, g?: grupo, p?: presupuesto, f?: fecha, l?: lugar, m?: mensaj
    detalles y el calendario. `noindex`. Sin artículo SEO.
 3. **Pasa el teléfono**: pantalla completa (`<dialog>` modal), sin salida
    accidental; cada nombre abre el sobre de esa persona.
+
+Dirección visual: festiva y cálida, con la marca del sitio como base y una
+paleta de temporada propia para esta página (papel de regalo, lacre,
+sobre ilustrado). Se prototipa antes de construir y el propietario lo aprueba,
+como se hizo con la ruleta.
 
 Escritorio (≥ 1024px): dos columnas en Organizar (entradas a la izquierda,
 resultado fijo a la derecha).
@@ -217,8 +225,11 @@ aparece abierto con un fundido.
 | `Intl.Collator` · `Intl.NumberFormat` · `Intl.DateTimeFormat` | Duplicados, presupuesto, fecha |
 | `navigator.vibrate` | Vibración corta al abrir, apagable |
 
-Sin framework de UI: JS vanilla en módulos ES. Peso objetivo del JS de la
-página ≤ 15 KB gzip (sin la librería de Excel, que se carga solo al usarla).
+JS nuevo en módulos ES. Se puede usar una librería si compra experiencia
+(p. ej. animación), cargada solo cuando hace falta. Presupuesto orientativo:
+JS de la página ≤ 40 KB gzip en la carga inicial; Excel y lo pesado, diferido.
+Cloudflare Workers sirve los estáticos desde el borde con caché, así que el
+peso extra se paga una vez.
 
 ## 7. Fases
 
@@ -227,7 +238,7 @@ página ≤ 15 KB gzip (sin la librería de Excel, que se carga solo al usarla).
 | 0 | Esta SDD, épica e issues | PR de docs |
 | 1 | `amigo-secreto-logica.js`: sorteo con `crypto` y uniforme; `scripts/amigo-secreto-check.mjs` (χ² con y sin exclusiones, casos imposibles) en `npm test` | PR lógica |
 | 2 | `amigo-secreto-enlace.js`: v2 cifrado, lectura v1 con enlaces fijos reales, migración de `localStorage` | PR compatibilidad |
-| 3 | Página nueva con Tailwind, `Envelope.astro`, pantallas Organizar y Abrir; estados nuevos; AGENTS.md y DESIGN.md actualizados (§0) | PR página |
+| 3 | Prototipo visual aprobado por el propietario; página nueva con Tailwind, `Envelope.astro`, pantallas Organizar y Abrir; estados nuevos | PR página |
 | 4 | Detalles del intercambio, `.ics`, Web Share, reenviar uno, Contact Picker, Excel, exclusiones de un sentido | PR funciones |
 | 5 | Pasa el teléfono | PR diferenciador |
 | 6 | Texto SEO, FAQ y JSON-LD (`decidelo-textos`), enlaces con el blog de amigo secreto | PR texto |
@@ -255,7 +266,7 @@ pasan a enero. Las fases 1, 2 y 3 son el mínimo.
 4. Botón Sortear visible sin scroll en 360×560, 375×548 y 393×659.
 5. Sin scroll horizontal a 360px.
 6. Ningún `Math.random` en los scripts de amigo secreto.
-7. AGENTS.md y DESIGN.md actualizados con las decisiones de §0.
+7. Un 360×640 con Chrome de hace 4 años (gama baja) usa la herramienta completa sin tirones.
 
 ## 10. Riesgos
 
