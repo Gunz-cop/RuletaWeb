@@ -1,0 +1,179 @@
+// ==========================================================
+// AMIGO SECRETO — lógica pura del sorteo (sin DOM)
+// ==========================================================
+// El sorteo es una sola cadena cerrada: order[0] regala a order[1], …, y el
+// último a order[0]. Así no hay «islas» (A↔B) y todos quedan conectados.
+//
+// Método (SDD de amigo secreto, §2.1), en este orden:
+//   1. Barajar y descartar: uniforme por construcción. Sin exclusiones acierta
+//      a la primera.
+//   2. Si no acierta y n ≤ MAX_EXACTO: contar las cadenas válidas por
+//      programación dinámica sobre subconjuntos y elegir una paso a paso con
+//      probabilidad proporcional a las que la completan. Uniforme exacto.
+//   3. Si n > MAX_EXACTO: búsqueda con vuelta atrás (la de antes). No es
+//      uniforme y se informa con `uniforme: false`.
+// «No hay sorteo» solo se devuelve cuando está demostrado.
+//
+// La fuente de azar se inyecta (`rnd`, enteros de 32 bits): crypto en la
+// página y un generador con semilla en scripts/amigo-secreto-check.mjs.
+
+const U32 = 4294967296;
+
+export function u32Crypto() {
+  try { return crypto.getRandomValues(new Uint32Array(1))[0]; }
+  catch { return Math.floor(Math.random() * U32); } // solo sin Web Crypto
+}
+
+// Real uniforme en [0, 1) con 53 bits: los pesos del paso 2 llegan a 10^14.
+export function unidad53(rnd = u32Crypto) {
+  return ((rnd() >>> 5) * 67108864 + (rnd() >>> 6)) / 9007199254740992;
+}
+
+// Entero uniforme en [0, n) sin sesgo de módulo.
+export function indiceAlAzar(n, rnd = u32Crypto) {
+  const lim = U32 - (U32 % n);
+  let x;
+  do { x = rnd(); } while (x >= lim);
+  return x % n;
+}
+
+// Fisher–Yates sobre una copia.
+export function barajar(lista, rnd = u32Crypto) {
+  const out = [...lista];
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = indiceAlAzar(i + 1, rnd);
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
+// Matriz n×n: permitido[a][b] dice si a puede regalarle a b. Cada grupo
+// prohíbe todas las parejas internas en los dos sentidos; `unSentido` es una
+// lista de [a, b] en la que solo a no puede regalarle a b.
+export function matrizPermitidos(n, grupos = [], unSentido = []) {
+  const m = Array.from({ length: n }, (_, a) => Array.from({ length: n }, (_, b) => a !== b));
+  for (const g of grupos) for (const a of g) for (const b of g) m[a][b] = false;
+  for (const [a, b] of unSentido) m[a][b] = false;
+  return m;
+}
+
+export function cadenaValida(orden, permitido) {
+  const n = orden.length;
+  if (n < 2 || new Set(orden).size !== n) return false;
+  return orden.every((a, i) => permitido[a][orden[(i + 1) % n]]);
+}
+
+export const INTENTOS_RECHAZO = 2000;
+export const MAX_EXACTO = 18;
+
+// Paso 2. f[mask][v]: cuántas maneras hay de terminar la cadena estando en v
+// con `mask` ya usado (bit i = persona i+1; la persona 0 abre siempre).
+// Devuelve { total, f } o null si no cabe en memoria.
+export function contarCadenas(permitido) {
+  const n = permitido.length;
+  const resto = n - 1;
+  const lleno = (1 << resto) - 1;
+  let f;
+  try { f = new Float64Array((lleno + 1) * n); }
+  catch { return null; }
+  const idx = (mask, v) => mask * n + v;
+  for (let v = 1; v < n; v++) f[idx(lleno, v)] = permitido[v][0] ? 1 : 0;
+  for (let mask = lleno - 1; mask >= 0; mask--) {
+    for (let v = 0; v < n; v++) {
+      if (v === 0 ? mask !== 0 : !(mask & (1 << (v - 1)))) continue;
+      let s = 0;
+      for (let u = 1; u < n; u++) {
+        const bit = 1 << (u - 1);
+        if (!(mask & bit) && permitido[v][u]) s += f[idx(mask | bit, u)];
+      }
+      f[idx(mask, v)] = s;
+    }
+  }
+  return { total: f[idx(0, 0)], f };
+}
+
+function muestrearExacto(permitido, conteo, rnd) {
+  const n = permitido.length;
+  const { f } = conteo;
+  const orden = [0];
+  let mask = 0, v = 0;
+  while (orden.length < n) {
+    let r = unidad53(rnd) * f[mask * n + v];
+    let elegido = -1;
+    for (let u = 1; u < n; u++) {
+      const bit = 1 << (u - 1);
+      if (mask & bit || !permitido[v][u]) continue;
+      const w = f[(mask | bit) * n + u];
+      if (w === 0) continue;
+      elegido = u;
+      if (r < w) break;
+      r -= w;
+    }
+    mask |= 1 << (elegido - 1);
+    v = elegido;
+    orden.push(v);
+  }
+  // Se abre en la persona 0; rotar al azar no cambia la cadena pero evita que
+  // la primera fila de la lista sea siempre la misma.
+  const k = indiceAlAzar(n, rnd);
+  return [...orden.slice(k), ...orden.slice(0, k)];
+}
+
+// Paso 3: vuelta atrás probando primero a quien le quedan menos opciones.
+function buscar(permitido, rnd, ahora, limiteMs) {
+  const n = permitido.length;
+  const orden = [indiceAlAzar(n, rnd)];
+  const usado = new Set(orden);
+  const fin = ahora() + limiteMs;
+  let agotado = false;
+  const extender = () => {
+    if (ahora() > fin) { agotado = true; return false; }
+    const ultimo = orden[orden.length - 1];
+    if (orden.length === n) return permitido[ultimo][orden[0]];
+    const libres = [];
+    for (let p = 0; p < n; p++) if (!usado.has(p)) libres.push(p);
+    const opciones = barajar(libres.filter((p) => permitido[ultimo][p]), rnd)
+      .map((p) => ({ p, grado: libres.filter((o) => o !== p && permitido[p][o]).length }))
+      .sort((x, y) => x.grado - y.grado);
+    for (const { p } of opciones) {
+      orden.push(p); usado.add(p);
+      if (extender()) return true;
+      orden.pop(); usado.delete(p);
+      if (agotado) return false;
+    }
+    return false;
+  };
+  if (extender()) return { orden, agotado: false };
+  return { orden: null, agotado };
+}
+
+/**
+ * Sortea una cadena cerrada sobre las personas 0..n-1.
+ * Devuelve { orden, metodo, uniforme } o { orden: null, demostrado }.
+ * `demostrado: false` significa que se agotó el tiempo sin poder probarlo.
+ */
+export function sortearCadena(permitido, {
+  rnd = u32Crypto, intentos = INTENTOS_RECHAZO, maxExacto = MAX_EXACTO,
+  ahora = () => Date.now(), limiteMs = 1000,
+} = {}) {
+  const n = permitido.length;
+  if (n < 2) return { orden: null, demostrado: true };
+  const personas = Array.from({ length: n }, (_, i) => i);
+
+  for (let i = 0; i < intentos; i++) {
+    const orden = barajar(personas, rnd);
+    if (cadenaValida(orden, permitido)) return { orden, metodo: 'rechazo', uniforme: true };
+  }
+
+  if (n <= maxExacto) {
+    const conteo = contarCadenas(permitido);
+    if (conteo) {
+      if (conteo.total === 0) return { orden: null, demostrado: true };
+      return { orden: muestrearExacto(permitido, conteo, rnd), metodo: 'exacto', uniforme: true };
+    }
+  }
+
+  const r = buscar(permitido, rnd, ahora, limiteMs);
+  if (r.orden) return { orden: r.orden, metodo: 'busqueda', uniforme: false };
+  return { orden: null, demostrado: !r.agotado };
+}

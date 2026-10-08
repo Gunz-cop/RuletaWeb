@@ -2,6 +2,8 @@
 // AMIGO SECRETO — LÓGICA DE ORGANIZADOR Y REVELACIÓN MÁGICA
 // ==========================================================
 
+import { sortearCadena, matrizPermitidos, barajar } from './amigo-secreto-logica.js';
+
 function initAmigoSecreto() {
   const organizerScreen = document.getElementById('organizer-screen');
   const revealScreen = document.getElementById('reveal-screen');
@@ -501,7 +503,7 @@ function initAmigoSecreto() {
       updateDrawWarning([], problem);
       return;
     }
-    const cycle = findCycle(participantsList, buildForbidden(exclusions.groups));
+    const cycle = findCycle(participantsList, exclusions.groups);
     if (!cycle.order) {
       const message = cycle.proven
         ? 'Con estas exclusiones no hay sorteo posible. Quita alguna exclusión o agrega participantes.'
@@ -525,25 +527,17 @@ function initAmigoSecreto() {
     const assignments = shuffled.map((giver, i) => ({ giver, receiver: shuffled[(i + 1) % n] }));
 
     // 3. Números anónimos para la matriz de validación
-    const numberPool = Array.from({ length: n }, (_, idx) => idx + 1);
-    for (let i = numberPool.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [numberPool[i], numberPool[j]] = [numberPool[j], numberPool[i]];
-    }
+    const numberPool = barajar(Array.from({ length: n }, (_, idx) => idx + 1));
     const anonymousIds = {};
     participantsList.forEach((p, idx) => {
       anonymousIds[p.id] = `Participante #${numberPool[idx]}`;
     });
 
     // Filas mezcladas para no revelar el orden de la cadena
-    const matrixRows = assignments.map(pair => ({
+    const matrixRows = barajar(assignments.map(pair => ({
       giverAnon: anonymousIds[pair.giver.id],
       receiverAnon: anonymousIds[pair.receiver.id]
-    }));
-    for (let i = matrixRows.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [matrixRows[i], matrixRows[j]] = [matrixRows[j], matrixRows[i]];
-    }
+    })));
 
     const baseUrl = window.location.origin + window.location.pathname;
     const links = assignments.map(pair => ({
@@ -823,63 +817,15 @@ function buildForbidden(groups) {
   return forbidden;
 }
 
-function shuffleInPlace(list) {
-  for (let i = list.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [list[i], list[j]] = [list[j], list[i]];
-  }
-  return list;
-}
-
-// Busca una sola cadena cerrada (A -> B -> ... -> A) en la que nadie quede
-// al lado de alguien de su grupo excluido. Devuelve { order } si la
-// encuentra; si no, { order: null, proven } donde proven dice si se probó
-// que no existe o solo se agotó el presupuesto de búsqueda.
-function findCycle(people, forbidden) {
-  const n = people.length;
-  const fits = (order) => order.every((p, i) => !forbidden.has(pairKey(p, order[(i + 1) % n])));
-
-  // Primero, barajar y descartar: cada cadena válida sale con la misma
-  // probabilidad, igual que sin exclusiones. Sin exclusiones acierta a la
-  // primera, así que el sorteo de siempre no cambia.
-  for (let attempt = 0; attempt < 2000; attempt++) {
-    const order = shuffleInPlace([...people]);
-    if (fits(order)) return { order };
-  }
-
-  // Con exclusiones muy apretadas barajar casi nunca acierta: se construye
-  // la cadena paso a paso, deshaciendo cuando se atasca. Se prueba primero a
-  // quien le quedan menos opciones (así los de un grupo grande se van
-  // intercalando antes de que no quede con quién separarlos), y entre
-  // empates al azar. El límite de tiempo evita que la página se cuelgue.
-  const allowed = (a, b) => !forbidden.has(pairKey(a, b));
-  const order = [people[Math.floor(Math.random() * n)]];
-  const used = new Set(order);
-  const deadline = Date.now() + 1000;
-  let gaveUp = false;
-  const extend = () => {
-    if (Date.now() > deadline) {
-      gaveUp = true;
-      return false;
-    }
-    const last = order[order.length - 1];
-    if (order.length === n) return allowed(last, order[0]);
-    const free = people.filter(p => !used.has(p));
-    const options = shuffleInPlace(free.filter(p => allowed(last, p)))
-      .map(p => ({ p, degree: free.filter(o => o !== p && allowed(p, o)).length }))
-      .sort((x, y) => x.degree - y.degree);
-    for (const { p } of options) {
-      order.push(p);
-      used.add(p);
-      if (extend()) return true;
-      order.pop();
-      used.delete(p);
-      if (gaveUp) return false;
-    }
-    return false;
-  };
-  if (extend()) return { order };
-  return { order: null, proven: !gaveUp };
+// Sorteo de una sola cadena cerrada con crypto y uniforme (la lógica y su
+// prueba viven en amigo-secreto-logica.js). Devuelve { order } con las
+// personas en orden de cadena o { order: null, proven } como antes.
+function findCycle(people, groups) {
+  const index = new Map(people.map((p, i) => [p, i]));
+  const permitido = matrizPermitidos(people.length, groups.map(g => g.map(p => index.get(p))));
+  const r = sortearCadena(permitido);
+  if (!r.orden) return { order: null, proven: r.demostrado };
+  return { order: r.orden.map(i => people[i]) };
 }
 
 // Inicializar script según estado del DOM o transiciones Astro
