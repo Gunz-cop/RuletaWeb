@@ -347,10 +347,12 @@ function modoOrganizar() {
       avisoSorteo.hidden = false;
       return;
     } finally {
+      // Sin validar() aquí: borraría el mensaje de error que se acaba de
+      // escribir (también corre tras los return de arriba).
       btn.lastChild.textContent = textoBoton;
       btn.disabled = false;
-      validar();
     }
+    validar();
     guardar(almacenSeguro, sorteo);
     $('saved-draw').hidden = true;
     pintarResultado(true);
