@@ -503,6 +503,7 @@ function modoOrganizar() {
   function pintarResultado(desplazar) {
     const res = $('results-section');
     res.hidden = false;
+    $('as-previa').hidden = true; // en escritorio, el resultado ocupa el sitio del sobre de muestra
     const n = sorteo.enlaces.length;
     const d = sorteo.detalles ?? {};
     const partes = [`${n} personas`];

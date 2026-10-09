@@ -655,7 +655,7 @@
   "/amigo-secreto [responsive-tablet-horizontal-1024x700]": {
     "relacion": {
       "ok": true,
-      "mensaje": "#btn-draw.bottom=571.4px con 700px visibles (holgura 128.6px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+      "mensaje": "#btn-draw.bottom=672.3px con 700px visibles (holgura 27.7px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
     }
   },
   "/amigo-secreto [responsive-movil-horizontal-740x340]": {
@@ -667,13 +667,13 @@
   "/amigo-secreto [responsive-escritorio-1280x720]": {
     "relacion": {
       "ok": true,
-      "mensaje": "#btn-draw.bottom=571.4px con 720px visibles (holgura 148.6px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+      "mensaje": "#btn-draw.bottom=672.3px con 720px visibles (holgura 47.7px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
     }
   },
   "/amigo-secreto [responsive-escritorio-1920x1000]": {
     "relacion": {
       "ok": true,
-      "mensaje": "#btn-draw.bottom=571.4px con 1000px visibles (holgura 428.6px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+      "mensaje": "#btn-draw.bottom=672.3px con 1000px visibles (holgura 327.7px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
     }
   },
   "/amigo-secreto#revelar=p/QCBwCm1k U u3o [revelar-v1-fijo]": {
@@ -878,7 +878,7 @@
   "/si-o-no [gato]": {
     "relacion": {
       "ok": true,
-      "mensaje": "gatos en 10 consultas vacías: [{\"i\":5,\"gato\":true,\"texto\":\"Otra vez alguien dejó al gato jugando con el móvil\",\"lado\":\"Frase de gato 1 de 8\"},{\"i\":10,\"gato\":true,\"texto\":\"A esta hora el gato debería estar en la siesta\",\"lado\":\"Frase de gato 2 de 8\"}]"
+      "mensaje": "gatos en 10 consultas vacías: [{\"i\":5,\"gato\":true,\"texto\":\"Otra vez alguien dejó al gato jugando con el móvil\",\"lado\":\"Frase de gato 1 de 8\"},{\"i\":10,\"gato\":true,\"texto\":\"Suelta el móvil, gato. Esto es para humanos\",\"lado\":\"Frase de gato 2 de 8\"}]"
     }
   },
   "/si-o-no [agitar-movil]": {
@@ -1099,7 +1099,7 @@
   "/temporizador?modo=impulso&min=1&max=1 [impulso-registrado]": {
     "relacion": {
       "ok": true,
-      "mensaje": "fila del historial: «01Ganas de mirar el móvilGanas 7 → 3 · 1 s · 23:27»"
+      "mensaje": "fila del historial: «01Ganas de mirar el móvilGanas 7 → 3 · 1 s · 13:17»"
     }
   },
   "/temporizador?modo=avisos&min=1&max=1 [avisos-repetidos]": {
