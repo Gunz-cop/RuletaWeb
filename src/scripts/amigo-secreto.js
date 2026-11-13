@@ -229,6 +229,9 @@ function modoOrganizar() {
       p.pista = deseos.get(k) ?? '';
     }
     $('participants-count').textContent = plural(participantes.length, 'persona', 'personas');
+    // Si se editó la lista a medio emparejar, el primero elegido ya no es
+    // de fiar (pudo borrarse o cambiar de posición): se vuelve a pedir.
+    if (emparejando !== null) emparejando = -1;
     pintarFichas();
     pintarDeseos();
     validar();
@@ -314,7 +317,9 @@ function modoOrganizar() {
       quitar.setAttribute('aria-label', `Quitar a ${p.nombre}`);
       quitar.addEventListener('click', () => {
         participantes.splice(i, 1);
-        lista.value = escribirParticipantes(participantes);
+        // Sin la pista, como en añadir(): los deseos viven en su sección y
+        // no deben aparecer de golpe en la lista como «Ana | café».
+        lista.value = escribirParticipantes(participantes.map((x) => ({ ...x, pista: '' })));
         actualizar();
       });
       return li;
@@ -741,6 +746,12 @@ function modoOrganizar() {
 
   const banner = $('saved-draw');
 
+  // Lo que viaja en cada enlace no puede quedar escondido en una sección
+  // plegada: quien vuelve tiene que ver el presupuesto y la fecha que hay.
+  function abrirDetallesSiHay() {
+    if (camposDetalle.some((c) => $(`as-${c}`).value.trim())) $('as-detalles').open = true;
+  }
+
   function restaurar(guardado, desplazar) {
     sorteo = guardado;
     guardar(almacenSeguro, sorteo); // pasa al formato y la clave nuevos
@@ -748,6 +759,7 @@ function modoOrganizar() {
     exclusiones.value = guardado.exclusiones ?? '';
     if (exclusiones.value.trim()) $('exclusions-details').open = true;
     for (const c of camposDetalle) $(`as-${c}`).value = guardado.detalles?.[c] ?? '';
+    abrirDetallesSiHay();
     deseos.clear();
     for (const [k, v] of Object.entries(guardado.deseos ?? {})) deseos.set(k, v);
     actualizar();
@@ -861,8 +873,17 @@ function modoOrganizar() {
   // Si lo escrito es justo lo que se sorteó, la página vuelve como se dejó,
   // con sus enlaces y lo ya enviado. Si no, el sorteo guardado se ofrece.
   const previo = cargarGuardado(almacenSeguro);
-  if (previo?.huella && previo.huella === huella()) { restaurar(previo, false); pintarAviso(true); }
-  else pintarAviso(false);
+  if (previo?.huella && previo.huella === huella()) {
+    restaurar(previo, false);
+    pintarAviso(true);
+  } else {
+    // Un borrador con la fecha ya pasada es de otra temporada: la fecha no
+    // se arrastra a un sorteo nuevo sin que nadie la vea.
+    const dias = diasHasta($('as-fecha').value);
+    if (dias !== null && dias < 0) { $('as-fecha').value = ''; alCambiar(); }
+    abrirDetallesSiHay();
+    pintarAviso(false);
+  }
 }
 
 /* ==========================================================

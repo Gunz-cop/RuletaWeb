@@ -380,6 +380,33 @@ mensaje del grupo), `amigo-secreto-enlace-check.mjs` (destinatario, borrador)
 y cuatro estados en `estados.mjs` (recarga con y sin sorteo,
 pasa el teléfono tras sortear de nuevo, sobre con destinatario).
 
-**Propuestas sin hacer** (necesitan decisión del propietario): no repetir la
-pareja del sorteo anterior sin revelarla; imagen propia de Open Graph para
-el enlace que llega por WhatsApp (hoy usa la genérica del sitio).
+**Propuestas pendientes** (no implementadas)
+
+- **No repetir la pareja del sorteo anterior.** Aplazada por el propietario
+  el 2026-11-13: no le ve valor en plena temporada y prefiere no arriesgar.
+  El caso ya queda cubierto a mano con las exclusiones de un solo sentido:
+  quien no quiera repetir se lo dice al organizador y este escribe
+  «Ana > Luis». Si se retoma: sin base de datos (guardar nombres en un
+  servidor rompería la promesa de que la lista no sale del navegador); una
+  casilla que lee las parejas del sorteo guardado en el dispositivo y las
+  aplica como exclusiones de un sentido sin mostrarlas, desactivada por
+  debajo de 5 personas (con 3 o 4 delata el resultado). Límites: solo en el
+  mismo teléfono y navegador, y Safari borra lo guardado tras unos días sin
+  visitar el sitio; para que aguante un año haría falta un enlace «guardar
+  este grupo» que el organizador se envíe a sí mismo (formato nuevo, fuera
+  de temporada).
+- Imagen propia de Open Graph para el enlace que llega por WhatsApp (hoy
+  usa la genérica del sitio).
+
+**Segunda auditoría (2026-11-13)**, tras la primera entrega:
+
+- Quitar una ficha reescribía la lista con las pistas dentro («Ana | café»).
+- Editar la lista a medio emparejar dejaba elegido un nombre que ya no
+  estaba (error al tocar el siguiente).
+- Un borrador con presupuesto o fecha volvía con la sección plegada: ahora
+  se abre, porque lo que viaja en cada enlace tiene que verse. Una fecha ya
+  pasada no vuelve con el borrador.
+- Compatibilidad cruzada con `main` comprobada en los dos sentidos: enlaces
+  y sorteo guardado de la rama se leen con el código de producción y al
+  revés (una reversión no rompe nada), y 800 sorteos con la misma semilla
+  dan el mismo resultado que en `main`.

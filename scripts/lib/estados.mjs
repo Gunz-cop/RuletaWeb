@@ -1203,18 +1203,29 @@ export const ESTADOS = [
     invariante: async (pagina) => {
       await pagina.evaluate(() => { document.getElementById('as-detalles').open = true; });
       await pagina.fill('#as-presupuesto', '50 mil');
-      await pagina.waitForFunction(() => localStorage.getItem('decidelo_amigo_borrador')?.includes('50 mil'));
+      // Una fecha ya pasada es de otra temporada: no vuelve con el borrador.
+      await pagina.fill('#as-fecha', '2020-12-16');
+      await pagina.waitForFunction(() => { const b = localStorage.getItem('decidelo_amigo_borrador'); return b?.includes('50 mil') && b.includes('2020-12-16'); });
       await pagina.reload();
       await pagina.waitForSelector('.participant-tag');
       const r = await pagina.evaluate(() => ({
         lista: document.getElementById('participants-textarea').value,
         fichas: document.querySelectorAll('.participant-tag').length,
         presupuesto: document.getElementById('as-presupuesto').value,
+        fecha: document.getElementById('as-fecha').value,
+        detallesAbiertos: document.getElementById('as-detalles').open,
         resultado: document.getElementById('results-section').hidden,
         boton: document.getElementById('btn-draw').disabled,
       }));
-      const ok = r.lista === 'Ana 3001234567, Bruno' && r.fichas === 2 && r.presupuesto === '50 mil' && r.resultado && !r.boton;
-      return { ok, mensaje: `borrador tras recargar: ${JSON.stringify(r)}` };
+      // Quitar una ficha no reescribe la lista con las pistas dentro.
+      await pagina.evaluate(() => { document.getElementById('as-deseos-zona').open = true; });
+      await pagina.fill('#as-deseos li:nth-child(1) input', 'café');
+      await pagina.fill('#participants-textarea', 'Ana 3001234567, Bruno, Carla');
+      await pagina.click('.participant-tag:nth-child(3) [data-ficha-quitar]');
+      const trasQuitar = await pagina.inputValue('#participants-textarea');
+      const ok = r.lista === 'Ana 3001234567, Bruno' && r.fichas === 2 && r.presupuesto === '50 mil' && r.fecha === '' && r.detallesAbiertos
+        && r.resultado && !r.boton && trasQuitar === 'Ana, 3001234567\nBruno';
+      return { ok, mensaje: `borrador tras recargar: ${JSON.stringify(r)}; lista tras quitar una ficha: ${JSON.stringify(trasQuitar)}` };
     },
   },
   {
