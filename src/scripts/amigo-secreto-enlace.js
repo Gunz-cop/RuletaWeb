@@ -59,7 +59,10 @@ export function leerV1(valor) {
 
 /* ---------- v2 ---------- */
 
-const CAMPOS = { n: 'nombre', g: 'grupo', p: 'presupuesto', f: 'fecha', l: 'lugar', m: 'mensaje', h: 'pista' };
+// `d` («de»): a quién va dirigido el enlace, para saludarle y que note si
+// le llegó el de otra persona. Un lector anterior ignora los campos que no
+// conoce, así que añadir uno no rompe nada ya repartido.
+const CAMPOS = { n: 'nombre', g: 'grupo', p: 'presupuesto', f: 'fecha', l: 'lugar', m: 'mensaje', h: 'pista', d: 'de' };
 
 function compactar(datos) {
   const o = {};
@@ -187,6 +190,38 @@ export function cargarGuardado(almacen) {
 export function guardar(almacen, sorteo) {
   try { almacen.setItem(CLAVE_GUARDADO, JSON.stringify(sorteo)); return true; }
   catch { return false; }
+}
+
+/* ---------- borrador: lo escrito antes de sortear ---------- */
+
+// Una recarga (o WhatsApp sacando al navegador de memoria) no debe borrar
+// una lista de veinte nombres a medio escribir.
+export const CLAVE_BORRADOR = 'decidelo_amigo_borrador';
+
+const soloTextos = (o) => Object.fromEntries(
+  Object.entries(o && typeof o === 'object' ? o : {}).filter(([, v]) => typeof v === 'string'),
+);
+
+export function cargarBorrador(almacen) {
+  try {
+    const b = JSON.parse(almacen.getItem(CLAVE_BORRADOR) ?? 'null');
+    if (!b || typeof b !== 'object') return null;
+    return {
+      texto: typeof b.texto === 'string' ? b.texto : '',
+      exclusiones: typeof b.exclusiones === 'string' ? b.exclusiones : '',
+      detalles: soloTextos(b.detalles),
+      deseos: soloTextos(b.deseos),
+    };
+  } catch { return null; }
+}
+
+export function guardarBorrador(almacen, borrador) {
+  try { almacen.setItem(CLAVE_BORRADOR, JSON.stringify(borrador)); return true; }
+  catch { return false; }
+}
+
+export function borrarBorrador(almacen) {
+  try { almacen.removeItem(CLAVE_BORRADOR); } catch { /* nada */ }
 }
 
 export function borrarGuardado(almacen) {

@@ -616,6 +616,26 @@
       "display": "none"
     }
   },
+  "/amigo-secreto [recarga-conserva-lista-y-sorteo]": {
+    "#as-desfase": {
+      "display": "none"
+    }
+  },
+  "/amigo-secreto [recarga-conserva-borrador]": {
+    "#as-vaciar": {
+      "display": "flex"
+    }
+  },
+  "/amigo-secreto [pasa-el-telefono-sorteo-nuevo]": {
+    "#as-telefono": {
+      "display": "block"
+    }
+  },
+  "/amigo-secreto#v=2&d=IAkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkewxHxNXmSm1G8Um8MmREfHjYMv6xxi9jae4BPHqyaNr1ua4JtIN78fZnE07_7UudmO4PUzB_8lovLX9615FHNfG5BxTQ [revelar-v2-con-destinatario]": {
+    "#as-abrir-intro": {
+      "display": "block"
+    }
+  },
   "/amigo-secreto [accion-principal-visible-android-360x560]": {
     "relacion": {
       "ok": true,

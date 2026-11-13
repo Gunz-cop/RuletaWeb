@@ -11,7 +11,7 @@
 import {
   sortearCadena, matrizPermitidos, cadenaValida, contarCadenas, barajar, indiceAlAzar,
   leerParticipantes, escribirParticipantes, duplicados, leerExclusiones, problemaEvidente, leerCSV,
-  numeroWhatsapp, formatoPresupuesto, generarIcs,
+  numeroWhatsapp, formatoPresupuesto, generarIcs, fechaLocal, fechaLarga, diasHasta, textoCuenta, mensajeGrupo,
 } from '../src/scripts/amigo-secreto-logica.js';
 
 const fallos = [];
@@ -197,6 +197,23 @@ for (const [n, grupos] of [
   check(plantilla.length === 3 && plantilla[0].pista === 'Le gusta el café' && plantilla[1].contacto === '' && plantilla[1].pista === 'Talla M', `leerCSV con la plantilla: ${JSON.stringify(plantilla)}`);
   check(numeroWhatsapp('300 123 4567') === '573001234567' && numeroWhatsapp('+34 600 11 22 33') === '34600112233' && numeroWhatsapp('a@b.c') === '', 'numeroWhatsapp');
   check(/50\.000/.test(formatoPresupuesto('50000')), `formatoPresupuesto: ${formatoPresupuesto('50000')}`);
+  // Un presupuesto con letras se respeta: quedarse con los dígitos dejaba «50 mil» en «50».
+  check(formatoPresupuesto('50 mil') === '50 mil' && formatoPresupuesto('entre 30 y 50') === 'entre 30 y 50' && /50\.000/.test(formatoPresupuesto('$ 50.000')),
+    `formatoPresupuesto con texto: ${formatoPresupuesto('50 mil')} / ${formatoPresupuesto('$ 50.000')}`);
+  // Fecha del intercambio: local, real, y cuenta de días de calendario.
+  check(fechaLocal('2026-12-16')?.getDate() === 16 && fechaLocal('2026-02-31') === null && fechaLocal('16/12/2026') === null, 'fechaLocal');
+  check(/16 de diciembre/.test(fechaLarga('2026-12-16')) && fechaLarga('nada') === '', `fechaLarga: ${fechaLarga('2026-12-16')}`);
+  const hoy = new Date(2026, 10, 13, 23, 59);
+  check(diasHasta('2026-11-13', hoy) === 0 && diasHasta('2026-11-14', hoy) === 1 && diasHasta('2026-12-16', hoy) === 33
+    && diasHasta('2026-11-12', hoy) === -1 && diasHasta('', hoy) === null, `diasHasta: ${diasHasta('2026-12-16', hoy)}`);
+  // Cambio de hora (Europa, 25 oct 2026): un día de 25 horas sigue siendo un día.
+  check(diasHasta('2026-10-26', new Date(2026, 9, 24, 12)) === 2, 'diasHasta cruza un cambio de hora');
+  check(textoCuenta(0) === 'Es hoy' && textoCuenta(1) === 'Es mañana' && textoCuenta(33) === 'Faltan 33 días' && textoCuenta(-1) === '' && textoCuenta(null) === '', 'textoCuenta');
+  const grupo = mensajeGrupo({ grupo: 'Oficina', presupuesto: '50000', fecha: '2026-12-16', lugar: 'Casa de Ana', mensaje: 'Nada de medias' }, 5);
+  check(/de Oficina\. Somos 5\./.test(grupo) && /Presupuesto máximo: 50\.000/.test(grupo) && /16 de diciembre/.test(grupo)
+    && grupo.includes('Lugar: Casa de Ana') && grupo.includes('Nada de medias') && grupo.endsWith('https://decidelo.app/amigo-secreto'), `mensajeGrupo: ${grupo}`);
+  check(mensajeGrupo({}, 0).split('\n').length === 3 && !/undefined|null/.test(mensajeGrupo(undefined, 3)), `mensajeGrupo sin detalles: ${mensajeGrupo({}, 0)}`);
+  check(generarIcs({ fecha: '2026-02-31', nombre: 'A' }) === null, 'generarIcs con una fecha que no existe debería dar null');
   const ics = generarIcs({ fecha: '2026-12-19', grupo: 'Oficina', lugar: 'Casa; sur', nombre: 'Ana', mensaje: 'Hola' }, { ahora: new Date(0), uid: 'x' });
   check(ics.includes('DTSTART;VALUE=DATE:20261219\r\n') && ics.includes('DTEND;VALUE=DATE:20261220') && ics.includes('LOCATION:Casa\\; sur') && ics.endsWith('END:VCALENDAR\r\n'), 'generarIcs');
   check(generarIcs({ fecha: '19/12/2026', nombre: 'A' }) === null, 'generarIcs sin fecha válida debería dar null');
@@ -206,7 +223,7 @@ for (const [n, grupos] of [
   check(lineas.filter((l) => l === 'BEGIN:VEVENT').length === 1 && lineas.filter((l) => /^SUMMARY:/.test(l)).length === 1 && !/[\r\n\u0000\u0007]/.test(lineas.join('')),
     `generarIcs deja inyectar líneas: ${JSON.stringify(lineas)}`);
   check(malo.includes('A\\\\') && lineas.every((l) => new TextEncoder().encode(l).length <= 75), 'generarIcs: barra sin escapar o líneas de más de 75 octetos');
-  resumen.push('lectura: participantes, duplicados, exclusiones (grupos y un sentido), CSV, WhatsApp, presupuesto e .ics');
+  resumen.push('lectura: participantes, duplicados, exclusiones (grupos y un sentido), CSV, WhatsApp, presupuesto, fecha, mensaje del grupo e .ics');
 }
 
 for (const l of resumen) console.log('  ' + l);

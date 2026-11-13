@@ -12,7 +12,7 @@
 import fs from 'node:fs';
 import {
   leerV1, crearV2, leerV2, leerEnlace, urlV2, migrarGuardado, cargarGuardado, guardar, borrarGuardado,
-  CLAVE_GUARDADO, CLAVE_GUARDADO_V1,
+  CLAVE_GUARDADO, CLAVE_GUARDADO_V1, CLAVE_BORRADOR, cargarBorrador, guardarBorrador, borrarBorrador,
 } from '../src/scripts/amigo-secreto-enlace.js';
 
 const fallos = [];
@@ -58,7 +58,12 @@ const r2 = await leerEnlace(urlV2(BASE, d));
 check(r2?.formato === 'v2' && r2.datos.nombre === completo.nombre, 'leerEnlace no reconoce un v2');
 check(/^[A-Za-z0-9_-]+$/.test(d), 'v2 debe ser base64url sin relleno');
 
-const corto = urlV2(BASE, await crearV2({ nombre: 'María José Rodríguez' }));
+// «de» (a quién va dirigido) viaja en el enlace, y un enlace sin él se sigue leyendo.
+const conDe = await leerV2(await crearV2({ ...completo, de: 'Ana' }));
+check(conDe?.de === 'Ana' && conDe.nombre === completo.nombre, `v2 con destinatario: ${JSON.stringify(conDe)}`);
+check(leido.de === undefined, 'Un v2 sin destinatario no debería inventarlo');
+
+const corto = urlV2(BASE, await crearV2({ nombre: 'María José Rodríguez', de: 'Juan Sebastián Gómez' }));
 check(corto.length < 200, `Enlace v2 sin detalles de ${corto.length} caracteres (objetivo < 200)`);
 
 const truncado = await leerEnlace(urlV2(BASE, d.slice(0, -6)));
@@ -96,6 +101,20 @@ guardar(almacen, { ...m, enlaces: [{ ...m.enlaces[0], enviado: false }] });
 check(cargarGuardado(almacen)?.enlaces[0].enviado === false, 'La clave nueva debería mandar sobre la vieja');
 borrarGuardado(almacen);
 check(!mem.has(CLAVE_GUARDADO) && !mem.has(CLAVE_GUARDADO_V1), 'borrarGuardado debería borrar las dos claves');
+
+/* --- Borrador --- */
+check(cargarBorrador(almacen) === null, 'Sin borrador debería dar null');
+guardarBorrador(almacen, { texto: 'Ana\nBruno', exclusiones: 'Ana, Bruno', detalles: { grupo: 'Oficina', fecha: 7 }, deseos: { ana: 'café' } });
+const b = cargarBorrador(almacen);
+check(b?.texto === 'Ana\nBruno' && b.exclusiones === 'Ana, Bruno' && b.detalles.grupo === 'Oficina' && !('fecha' in b.detalles) && b.deseos.ana === 'café',
+  `cargarBorrador: ${JSON.stringify(b)}`);
+mem.set(CLAVE_BORRADOR, '{"texto":5,"detalles":"x"}');
+const raro = cargarBorrador(almacen);
+check(raro?.texto === '' && raro.exclusiones === '' && JSON.stringify(raro.detalles) === '{}' && JSON.stringify(raro.deseos) === '{}', `Un borrador con tipos raros debería normalizarse: ${JSON.stringify(raro)}`);
+mem.set(CLAVE_BORRADOR, '{roto');
+check(cargarBorrador(almacen) === null, 'Un borrador corrupto debería dar null');
+borrarBorrador(almacen);
+check(!mem.has(CLAVE_BORRADOR), 'borrarBorrador no borra');
 const roto2 = { getItem: () => { throw new Error('bloqueado'); } };
 check(cargarGuardado(roto2) === null, 'Sin almacenamiento debería dar null, no lanzar');
 

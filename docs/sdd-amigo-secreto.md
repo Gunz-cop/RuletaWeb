@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Estado | **En producción** — v1.3 (2026-10-08). Fases 1 y 2a en PR #24; la versión nueva se probó en `/amigo-secreto-nuevo` (noindex, PR #24–#26) y sustituyó a `/amigo-secreto` tras la aprobación del propietario. `/amigo-secreto-nuevo` redirige con 301 a `/amigo-secreto` |
+| Estado | **En producción** — v1.3 (2026-10-08); revisión de temporada v1.4 en §11. Fases 1 y 2a en PR #24; la versión nueva se probó en `/amigo-secreto-nuevo` (noindex, PR #24–#26) y sustituyó a `/amigo-secreto` tras la aprobación del propietario. `/amigo-secreto-nuevo` redirige con 301 a `/amigo-secreto` |
 | Fecha | 2026-10-08 |
 | Alcance | `src/pages/amigo-secreto.astro`, sus componentes y su JS, tests de `/amigo-secreto`, texto SEO de la página |
 | Navegador mínimo | **Chrome 111 / Safari e iOS 16.4** (base de Tailwind 4) con el diseño completo. Por debajo, la herramienta **funciona** (sortear, repartir, abrir un enlace) aunque no se vea con todo el diseño. Decidido por el propietario el 2026-10-08 |
@@ -337,3 +337,49 @@ medias.
 | Todo push a `main` va a producción | Una fase por PR, CI verde antes de merge |
 | Web Share o Contact Picker no existen en un navegador | Mejora progresiva: el flujo de siempre queda debajo |
 | Tailwind a fondo choca con `global.css` | `class-collisions.mjs` y snapshots de CSS en cada PR |
+
+## 11. Revisión de temporada (v1.4, 2026-11-13)
+
+Pedida por el propietario con la temporada ya empezada. No cambia el sorteo
+ni el formato de los enlaces: todo enlace v1 y v2 ya repartido se lee igual.
+
+**Fallos corregidos**
+
+| Fallo | Arreglo |
+|---|---|
+| «Pasa el teléfono» conservaba los nombres tachados tras sortear de nuevo, y los perdía al recargar a media ronda | Quién abrió su sobre vive en el sorteo guardado (`abiertos`) |
+| Lo escrito se perdía al recargar antes de sortear (WhatsApp saca al navegador de memoria con frecuencia) | Borrador en `decidelo_amigo_borrador`: lista, exclusiones, detalles y deseos |
+| Un presupuesto escrito con letras («50 mil») llegaba al sobre como «50» | Con letras se respeta el texto; solo números se formatea con miles |
+| Un nombre muy largo sin espacios creaba scroll horizontal en móvil (fichas y «pasa el teléfono») | La ficha corta con puntos suspensivos; el resto parte la palabra |
+| Tras abrir el sobre, el texto seguía diciendo «Toca el sobre para abrirlo» | El texto cambia al abrir |
+| Doble toque en Sortear con la confirmación abierta lanzaba un error | Un sorteo en marcha ignora el segundo toque |
+| «Borrarlo» dejaba en pantalla un sorteo que ya no estaba guardado; «enlace(s)», «entre síse» | Textos y estados corregidos |
+| Los enlaces del artículo al blog llevaban barra final y pasaban por una redirección 307 | Sin barra, que es la canónica |
+| Una fecha imposible («2026-02-31») generaba un `.ics` en otro día | `fechaLocal` la rechaza |
+
+**Mejoras**
+
+- **Quien vuelve encuentra la página como la dejó.** Si lo escrito es lo que
+  se sorteó (`huella`), el resultado reaparece solo, con lo ya enviado, y el
+  aviso de arriba dice «Aquí sigue tu sorteo…» con «Ver los enlaces». Si no
+  coincide, el sorteo guardado se ofrece como antes.
+- **Aviso de desfase**: cambiar la lista o las opciones después de sortear
+  avisa de que los enlaces siguen siendo los del sorteo anterior.
+- **El enlace saluda a quien va dirigido** (campo `d` del JSON v2). Si a
+  alguien le llega el de otra persona, lo nota antes de abrirlo. Un lector
+  anterior ignora el campo.
+- **Al abrir**: cuántos días faltan, «Ideas para el regalo» (al blog) y
+  «Cerrar el sobre», que deja la pantalla como llegó.
+- **«Avisar al grupo»**: mensaje para el chat de todos con presupuesto, fecha
+  y lugar, sin nombres ni enlaces personales, con la dirección de la página.
+- **«Vaciar»** junto al contador, y «Pendiente» en vez de «Sin contacto» en
+  las filas sin enviar.
+
+Tests nuevos: `amigo-secreto-check.mjs` (presupuesto, fecha, cuenta de días,
+mensaje del grupo), `amigo-secreto-enlace-check.mjs` (destinatario, borrador)
+y cuatro estados en `estados.mjs` (recarga con y sin sorteo,
+pasa el teléfono tras sortear de nuevo, sobre con destinatario).
+
+**Propuestas sin hacer** (necesitan decisión del propietario): no repetir la
+pareja del sorteo anterior sin revelarla; imagen propia de Open Graph para
+el enlace que llega por WhatsApp (hoy usa la genérica del sitio).

@@ -40,7 +40,7 @@ export const faqs = [
   },
   {
     q: '¿Qué pasa si recargo la página o cierro el navegador?',
-    a: 'El sorteo queda guardado en tu teléfono o computador. Al volver aparece la opción de recuperarlo con los mismos enlaces y ver cuáles ya enviaste. Los enlaces de años anteriores siguen funcionando.'
+    a: 'Nada se pierde. La lista que estabas escribiendo y el sorteo quedan guardados en tu teléfono o computador: al volver, la página aparece como la dejaste, con los mismos enlaces y la cuenta de cuáles ya enviaste. Los enlaces de años anteriores siguen funcionando.'
   },
   {
     q: '¿Puedo subir la lista en Excel?',

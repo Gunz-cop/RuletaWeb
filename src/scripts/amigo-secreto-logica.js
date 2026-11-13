@@ -341,13 +341,70 @@ export function numeroWhatsapp(contacto) {
 }
 
 // Sin símbolo de moneda por ahora (el grupo sabe en qué moneda habla):
-// solo el número con separador de miles, «50.000».
+// solo el número con separador de miles, «50.000». Si lo escrito lleva
+// letras («50 mil», «entre 30 y 50») se respeta tal cual: quedarse solo con
+// los dígitos convertía «50 mil» en «50».
+export const presupuestoEsTexto = (valor) => /\p{L}/u.test(String(valor ?? ''));
 export function formatoPresupuesto(valor, { locale = 'es-CO' } = {}) {
-  const limpio = String(valor ?? '').replace(/[^\d]/g, '');
-  if (!limpio) return String(valor ?? '').trim();
+  const texto = String(valor ?? '').trim();
+  const limpio = texto.replace(/[^\d]/g, '');
+  if (!limpio || presupuestoEsTexto(texto)) return texto;
   try {
     return new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(Number(limpio));
   } catch { return limpio; }
+}
+
+/* ---------- la fecha del intercambio ---------- */
+
+// «2026-12-16» como fecha local (no UTC: a medianoche UTC en Bogotá todavía
+// es el día anterior). null si no es una fecha real («2026-02-31»).
+export function fechaLocal(fecha) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(fecha ?? ''))) return null;
+  const [y, m, d] = fecha.split('-').map(Number);
+  const dt = new Date(y, m - 1, d);
+  return dt.getFullYear() === y && dt.getMonth() === m - 1 && dt.getDate() === d ? dt : null;
+}
+
+export function fechaLarga(fecha, { locale = 'es-CO' } = {}) {
+  const dt = fechaLocal(fecha);
+  if (!dt) return '';
+  try {
+    return new Intl.DateTimeFormat(locale, { weekday: 'long', day: 'numeric', month: 'long' }).format(dt);
+  } catch { return fecha; }
+}
+
+/** Días de calendario que faltan (0 = hoy, negativo = ya pasó); null sin fecha. */
+export function diasHasta(fecha, hoy = new Date()) {
+  const dt = fechaLocal(fecha);
+  if (!dt) return null;
+  const base = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+  return Math.round((dt - base) / 86400000);
+}
+
+export function textoCuenta(dias) {
+  if (dias === null || dias === undefined || dias < 0) return '';
+  if (dias === 0) return 'Es hoy';
+  if (dias === 1) return 'Es mañana';
+  return `Faltan ${dias} días`;
+}
+
+/**
+ * Mensaje para el chat del grupo: avisa de que el sorteo está hecho y repite
+ * las reglas. No lleva ningún nombre ni enlace personal.
+ */
+export function mensajeGrupo(detalles = {}, personas = 0, { url = 'https://decidelo.app/amigo-secreto' } = {}) {
+  const d = detalles ?? {};
+  const lineas = [
+    `Ya está hecho el sorteo del amigo secreto${d.grupo ? ` de ${d.grupo}` : ''}.${personas ? ` Somos ${personas}.` : ''}`,
+    'A cada uno le llega su enlace por privado: ábrelo cuando nadie esté mirando y no lo reenvíes.',
+  ];
+  if (d.presupuesto) lineas.push(`Presupuesto máximo: ${formatoPresupuesto(d.presupuesto)}`);
+  const fecha = fechaLarga(d.fecha);
+  if (fecha) lineas.push(`Fecha: ${fecha}`);
+  if (d.lugar) lineas.push(`Lugar: ${d.lugar}`);
+  if (d.mensaje) lineas.push(d.mensaje);
+  lineas.push(`Sorteo hecho en ${url}`);
+  return lineas.join('\n');
 }
 
 // RFC 5545 §3.3.11: se escapan «\», «;», «,» y los saltos de línea; los
@@ -377,7 +434,7 @@ function plegar(linea) {
 
 /** Evento de día completo (RFC 5545) para el intercambio. */
 export function generarIcs({ fecha, grupo, lugar, mensaje, nombre }, { ahora = new Date(), uid = '' } = {}) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(fecha ?? ''))) return null;
+  if (!fechaLocal(fecha)) return null; // también descarta «2026-02-31»
   const [y, m, d] = fecha.split('-').map(Number);
   const dia = (dt) => dt.toISOString().slice(0, 10).replace(/-/g, '');
   const ini = new Date(Date.UTC(y, m - 1, d));

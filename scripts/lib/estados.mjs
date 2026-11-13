@@ -118,6 +118,11 @@ import { crearV2, urlV2, leerEnlace as leerEnlaceAmigo } from '../../src/scripts
 const ENLACE_V1 = JSON.parse(readFileSync(new URL('../../tests/fixtures/amigo-secreto-enlaces-v1.json', import.meta.url)))
   .casos.find((c) => c.forma === 'mas-como-espacio');
 const ENLACE_V2_HASH = urlV2('', await crearV2({ nombre: 'Ñandú José 🎁', presupuesto: '50000' }, { aleatorio: (n) => new Uint8Array(n).fill(7) })).slice(1);
+// Con destinatario, presupuesto escrito con letras y una fecha fija y lejana:
+// el enlace forma parte de la clave del estado en tests/estado-dom.json, así
+// que no puede depender del día en que corre el test.
+const FECHA_FUTURA = '2099-12-16';
+const ENLACE_V2_PARA_HASH = urlV2('', await crearV2({ nombre: 'Bruno', de: 'Ana', presupuesto: '50 mil', fecha: FECHA_FUTURA }, { aleatorio: (n) => new Uint8Array(n).fill(9) })).slice(1);
 const SEL_NOMBRE_REVELADO = '#revealed-name';
 
 
@@ -1143,6 +1148,140 @@ export const ESTADOS = [
     invariante: async (pagina) => {
       const titulo = (await pagina.textContent('#as-abrir-titulo')).trim();
       return { ok: titulo === 'Este enlace no funciona', mensaje: `un enlace dañado muestra «${titulo}»` };
+    },
+  },
+  {
+    // Lo escrito sobrevive a una recarga, y si es justo lo que se sorteó la
+    // página vuelve con su resultado y lo ya enviado, y el aviso de arriba
+    // lo dice («Aquí sigue tu sorteo…») en vez de pedir que se recupere.
+    ruta: '/amigo-secreto',
+    nombre: 'recarga-conserva-lista-y-sorteo',
+    viewport: { width: 390, height: 844 },
+    escribir: [{ sel: '#participants-textarea', texto: 'Ana\nBruno\nCarla\nDiego' }],
+    clics: ['#btn-draw'],
+    esperarSelector: '#links-list-container .link-row',
+    comprobar: [{ sel: '#as-desfase', props: ['display'] }],
+    invariante: async (pagina) => {
+      await pagina.click('.link-row:nth-child(2) [data-copiar]');
+      await pagina.waitForSelector('.link-row:nth-child(2)[data-enviado="true"]');
+      const antes = await pagina.evaluate(() => JSON.parse(localStorage.getItem('decidelo_amigo_sorteo')).enlaces.map((e) => e.url));
+      await pagina.reload();
+      await pagina.waitForSelector('#links-list-container .link-row');
+      const r = await pagina.evaluate(() => ({
+        lista: document.getElementById('participants-textarea').value,
+        filas: document.querySelectorAll('.link-row').length,
+        enviada: document.querySelector('.link-row:nth-child(2)').dataset.enviado,
+        aviso: document.getElementById('saved-draw').hidden ? '' : document.querySelector('[data-saved-info]').textContent.slice(0, 10) + '|' + document.querySelector('[data-saved-restore]').textContent,
+        desfase: document.getElementById('as-desfase').hidden,
+        urls: JSON.parse(localStorage.getItem('decidelo_amigo_sorteo')).enlaces.map((e) => e.url),
+      }));
+      // Cambiar la lista después de sortear se avisa; no toca los enlaces.
+      await pagina.fill('#participants-textarea', 'Ana\nBruno\nCarla\nDiego\nElena');
+      const desfaseTrasCambio = await pagina.evaluate(() => document.getElementById('as-desfase').hidden);
+      // «Vaciar» deja la página limpia y ofrece el sorteo guardado.
+      await pagina.click('#as-vaciar');
+      await pagina.click('#as-conf-si');
+      await pagina.waitForSelector('#saved-draw[data-modo="ofrecer"]:not([hidden])');
+      const vacio = await pagina.evaluate(() => ({
+        lista: document.getElementById('participants-textarea').value,
+        resultado: document.getElementById('results-section').hidden,
+        borrador: localStorage.getItem('decidelo_amigo_borrador'),
+      }));
+      const ok = r.lista === 'Ana\nBruno\nCarla\nDiego' && r.filas === 4 && r.enviada === 'true' && r.aviso === 'Aquí sigue|Ver los enlaces' && r.desfase
+        && JSON.stringify(r.urls) === JSON.stringify(antes) && desfaseTrasCambio === false
+        && vacio.lista === '' && vacio.resultado && vacio.borrador === null;
+      return { ok, mensaje: `tras recargar: ${JSON.stringify({ ...r, urls: r.urls.length })}; mismas URLs=${JSON.stringify(r.urls) === JSON.stringify(antes)}; desfase oculto tras cambiar=${desfaseTrasCambio}; tras vaciar: ${JSON.stringify(vacio)}` };
+    },
+  },
+  {
+    // Una lista a medio escribir (sin sortear) también vuelve tras recargar.
+    ruta: '/amigo-secreto',
+    nombre: 'recarga-conserva-borrador',
+    escribir: [{ sel: '#participants-textarea', texto: 'Ana 3001234567, Bruno' }],
+    esperarSelector: '.participant-tag',
+    comprobar: [{ sel: '#as-vaciar', props: ['display'] }],
+    invariante: async (pagina) => {
+      await pagina.evaluate(() => { document.getElementById('as-detalles').open = true; });
+      await pagina.fill('#as-presupuesto', '50 mil');
+      await pagina.waitForFunction(() => localStorage.getItem('decidelo_amigo_borrador')?.includes('50 mil'));
+      await pagina.reload();
+      await pagina.waitForSelector('.participant-tag');
+      const r = await pagina.evaluate(() => ({
+        lista: document.getElementById('participants-textarea').value,
+        fichas: document.querySelectorAll('.participant-tag').length,
+        presupuesto: document.getElementById('as-presupuesto').value,
+        resultado: document.getElementById('results-section').hidden,
+        boton: document.getElementById('btn-draw').disabled,
+      }));
+      const ok = r.lista === 'Ana 3001234567, Bruno' && r.fichas === 2 && r.presupuesto === '50 mil' && r.resultado && !r.boton;
+      return { ok, mensaje: `borrador tras recargar: ${JSON.stringify(r)}` };
+    },
+  },
+  {
+    // Un sorteo nuevo empieza «pasa el teléfono» sin nadie tachado, y lo ya
+    // abierto se conserva al recargar a media ronda.
+    ruta: '/amigo-secreto',
+    nombre: 'pasa-el-telefono-sorteo-nuevo',
+    viewport: { width: 390, height: 844 },
+    escribir: [{ sel: '#participants-textarea', texto: 'Ana\nBruno\nCarla\nDiego' }],
+    clics: ['#btn-draw', '#as-tab-telefono', '#as-empezar-telefono', '#as-tel-lista li:nth-child(1) button', '#as-tel-si'],
+    esperarSelector: '#as-tel-sobre:not([hidden])',
+    comprobar: [{ sel: '#as-telefono', props: ['display'] }],
+    invariante: async (pagina) => {
+      const tachados = () => pagina.evaluate(() => [...document.querySelectorAll('#as-tel-lista button')].filter((b) => b.disabled).length);
+      await pagina.click('#as-tel-env', { force: true });
+      await pagina.waitForSelector('#as-tel-listo:not([hidden])', { timeout: 5000 });
+      await pagina.click('#as-tel-listo');
+      const uno = await tachados();
+      // Recarga a media ronda: Ana sigue tachada.
+      await pagina.reload();
+      await pagina.waitForSelector('#links-list-container .link-row');
+      await pagina.click('#as-tab-telefono');
+      await pagina.click('#as-empezar-telefono');
+      const trasRecarga = await tachados();
+      await pagina.click('#as-tel-salir');
+      await pagina.click('#as-conf-si');
+      // Sorteo nuevo: nadie tachado.
+      await pagina.click('#as-nuevo');
+      await pagina.waitForFunction(() => JSON.parse(localStorage.getItem('decidelo_amigo_sorteo')).abiertos.length === 0);
+      await pagina.click('#as-tab-telefono');
+      await pagina.click('#as-empezar-telefono');
+      const nuevo = await tachados();
+      return { ok: uno === 1 && trasRecarga === 1 && nuevo === 0, mensaje: `tachados: tras abrir ${uno}, tras recargar ${trasRecarga}, tras sortear de nuevo ${nuevo} (se esperaba 1, 1, 0)` };
+    },
+  },
+  {
+    // El enlace saluda a quien va dirigido, cuenta los días y se puede cerrar.
+    ruta: `/amigo-secreto#${ENLACE_V2_PARA_HASH}`,
+    nombre: 'revelar-v2-con-destinatario',
+    viewport: { width: 390, height: 844 },
+    esperarSelector: '#reveal-screen:not([hidden])',
+    comprobar: [{ sel: '#as-abrir-intro', props: ['display'] }],
+    invariante: async (pagina) => {
+      const leer = () => pagina.evaluate(() => ({
+        intro: document.getElementById('as-abrir-intro').textContent.trim(),
+        estado: document.getElementById('gift-container').dataset.state,
+        detalles: document.getElementById('as-abrir-detalles').hidden,
+        presupuesto: document.querySelector('[data-campo="presupuesto"] dd').textContent.trim(),
+        cuenta: document.querySelector('[data-cuenta]').textContent.trim(),
+        cerrar: document.getElementById('as-cerrar-sobre').hidden,
+        ideas: document.getElementById('as-ideas').hidden,
+      }));
+      const cerrado = await leer();
+      await pagina.click('#gift-container', { force: true });
+      await pagina.waitForSelector('#as-cerrar-sobre:not([hidden])', { timeout: 5000 });
+      const abierto = await leer();
+      await pagina.click('#as-cerrar-sobre');
+      const recerrado = await leer();
+      await pagina.click('#gift-container', { force: true });
+      await pagina.waitForSelector('#as-cerrar-sobre:not([hidden])', { timeout: 5000 });
+      const reabierto = await leer();
+      const ok = cerrado.intro.startsWith('Ana, ') && cerrado.estado === 'cerrado' && cerrado.detalles && cerrado.cerrar
+        && abierto.estado === 'abierto' && !abierto.detalles && !abierto.ideas && abierto.presupuesto === '50 mil'
+        && /^(Faltan \d+ días|Es hoy|Es mañana)$/.test(abierto.cuenta) && !abierto.intro.includes('Toca el sobre')
+        && recerrado.estado === 'cerrado' && recerrado.detalles && recerrado.cerrar && recerrado.intro === cerrado.intro
+        && reabierto.estado === 'abierto' && !reabierto.detalles;
+      return { ok, mensaje: `cerrado ${JSON.stringify(cerrado)}; abierto ${JSON.stringify(abierto)}; recerrado ${JSON.stringify(recerrado)}; reabierto ${JSON.stringify(reabierto)}` };
     },
   },
   ...estadosAccionVisible('/amigo-secreto', '#btn-draw'),
