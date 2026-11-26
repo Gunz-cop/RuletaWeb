@@ -1858,7 +1858,9 @@ export const ESTADOS = [
       { sel: '#imp-lobby-host', props: ['display'] },
       { sel: '#imp-iniciar', props: ['display', 'backgroundColor'] },
       { sel: '#imp-espera', props: ['display'] },
-      { sel: '#imp-lista-lobby .imp-fila:nth-child(1)', props: ['display', 'gridTemplateColumns', 'borderBottomColor'] },
+      // Sin gridTemplateColumns: el ancho de las columnas «1fr» y «auto» depende de la
+      // tipografía del equipo (el runner de CI no tiene la misma que un portátil)
+      { sel: '#imp-lista-lobby .imp-fila:nth-child(1)', props: ['display', 'borderBottomColor'] },
       { sel: '#imp-lista-lobby .imp-fila:nth-child(5)', props: ['color'] },
       { sel: '#imp-zona-rol', props: ['display'] },
       { sel: '#imp-cfg-categoria', props: ['borderBottomColor', 'colorScheme'] },

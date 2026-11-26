@@ -1286,7 +1286,6 @@
     },
     "#imp-lista-lobby .imp-fila:nth-child(1)": {
       "display": "grid",
-      "gridTemplateColumns": "36px 350.172px 111.828px 0px",
       "borderBottomColor": "rgba(240, 240, 245, 0.12)"
     },
     "#imp-lista-lobby .imp-fila:nth-child(5)": {
