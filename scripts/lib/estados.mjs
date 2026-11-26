@@ -46,7 +46,7 @@ const HOLGURA_MINIMA_PX = 16;
 // `window.__enviados`. Lo que se comprueba es lo que este runner sabe mirar:
 // que cada vista recibe sus estilos y que cada botón manda el mensaje que toca.
 // El servidor de verdad, con 22 sockets, lo cubre scripts/impostor-sala-check.mjs.
-function vistaImpostor({ fase = 'lobby', anfitrion = true, n = 22, impostor = false, juega = true, extra = {} } = {}) {
+function vistaImpostor({ fase = 'lobby', anfitrion = true, n = 22, impostor = false, juega = true, aDistancia = false, pistas = [], silenciado = false, yaEnvioPista = false, turno = 2, extra = {} } = {}) {
   const jugadores = Array.from({ length: n }, (_, i) => ({
     id: i + 1,
     nombre: i === 0 ? 'Marcela' : `Jugador ${i + 1}`,
@@ -62,10 +62,11 @@ function vistaImpostor({ fase = 'lobby', anfitrion = true, n = 22, impostor = fa
     ahora: 0,
     codigo: 'KQMRT',
     fase,
+    partida: 1,
     max: 24,
     min: 3,
     yo: { id: yoId, anfitrion, juega, vivo: true },
-    config: { categoria: 'colombia', impostores: 0, segundos: 45, vueltas: 1, anfitrionJuega: juega, impostorVeCategoria: true, impostoresAuto: 3 },
+    config: { categoria: 'colombia', impostores: 0, segundos: 45, vueltas: 1, anfitrionJuega: juega, impostorVeCategoria: true, impostoresAuto: 3, aDistancia },
     jugadores,
   };
   if (fase !== 'lobby') {
@@ -73,12 +74,18 @@ function vistaImpostor({ fase = 'lobby', anfitrion = true, n = 22, impostor = fa
       ? { impostor: true, palabra: null, categoria: 'Colombia' }
       : { impostor: false, palabra: 'Arepa', categoria: 'Colombia' };
     vista.ronda = {
-      n: 1, orden: jugadores.map((j) => j.id), vueltas: 1, turno: 2, total: n, de: 3,
-      terminada: false, turnoFin: null, pausaRestante: 31000, segundos: 45,
+      n: 1, orden: jugadores.map((j) => j.id), vueltas: 1, turno, total: n, de: turno + 1,
+      terminada: false, turnoFin: null, pausaRestante: 31000, segundos: 45, yaEnvioPista,
     };
   }
+  if (aDistancia && fase !== 'lobby') {
+    vista.pistas = pistas;
+    vista.chat = { abierto: fase === 'votacion' || fase === 'resultado', puedeEscribir: !silenciado };
+  }
+  if (silenciado) jugadores[yoId - 1].silenciado = true;
   if (fase === 'votacion') {
-    delete vista.ronda;
+    // La ronda sigue en la vista real (las pistas se listan por su orden); aquí se conserva
+    vista.ronda = { ...vista.ronda, terminada: true, turno: n, de: null };
     vista.votacion = { votaron: 9, total: n, miVoto: null, puedeVotar: true };
     for (let i = 3; i < 12; i++) jugadores[i].yaVoto = true;
   }
@@ -91,7 +98,7 @@ function vistaImpostor({ fase = 'lobby', anfitrion = true, n = 22, impostor = fa
 
 // Código que se ejecuta en la página antes de cargar nada: sesión guardada +
 // WebSocket falso que responde con la vista dada
-function socketFalso(vista) {
+function socketFalso(vista, chat = []) {
   return `
     localStorage.setItem('decidelo_impostor_sesion', JSON.stringify({ codigo: 'KQMRT', nombre: 'Marcela', token: 'prueba' }));
     window.__enviados = [];
@@ -103,7 +110,12 @@ function socketFalso(vista) {
         setTimeout(() => {
           this.readyState = 1;
           if (this.onopen) this.onopen();
-          setTimeout(() => this.onmessage && this.onmessage({ data: JSON.stringify(vista) }), 5);
+          setTimeout(() => {
+            if (!this.onmessage) return;
+            this.onmessage({ data: JSON.stringify(vista) });
+            const chat = ${JSON.stringify(chat)};
+            if (chat.length) this.onmessage({ data: JSON.stringify({ t: 'chat', historial: chat }) });
+          }, 5);
         }, 5);
       }
       send(m) { if (m !== 'ping') window.__enviados.push(JSON.parse(m)); }
@@ -2092,6 +2104,149 @@ export const ESTADOS = [
     esperarSelector: `#imp-v-${fase}:not([hidden])`,
     verificarRelacion: sinDesbordeHorizontal,
   })),
+
+  // --- Impostor: modo a distancia (pistas escritas y chat) --------------------
+  {
+    ruta: '/impostor',
+    nombre: 'lobby-distancia-anfitrion',
+    init: socketFalso(vistaImpostor({ fase: 'lobby', aDistancia: true })),
+    esperarSelector: '#imp-v-lobby:not([hidden])',
+    comprobar: [
+      { sel: '#imp-cfg-distancia', props: ['accentColor', 'width'] },
+      { sel: '#imp-chat', props: ['display'] },
+    ],
+    verificarRelacion: async (pagina) => {
+      const marcado = await pagina.isChecked('#imp-cfg-distancia');
+      await pagina.click('#imp-cfg-distancia');
+      const m = await pagina.evaluate(() => window.__enviados.filter((x) => x.t === 'config'));
+      return { ok: marcado && JSON.stringify(m) === JSON.stringify([{ t: 'config', cambios: { aDistancia: false } }]), mensaje: `marcado=${marcado}, mensajes ${JSON.stringify(m)}` };
+    },
+  },
+  {
+    // Es mi turno: aparece el campo de la pista y se envía con Enter
+    ruta: '/impostor',
+    nombre: 'pista-mi-turno',
+    init: socketFalso(vistaImpostor({ fase: 'ronda', anfitrion: false, aDistancia: true, turno: 1, pistas: [{ turno: 0, id: 1, texto: 'caliente' }] })),
+    esperarSelector: '#imp-pista-form:not([hidden])',
+    comprobar: [
+      { sel: '#imp-pista-form', props: ['display'] },
+      { sel: '#imp-pista', props: ['fontSize', 'borderBottomColor', 'backgroundColor'] },
+      { sel: '#imp-pista-enviar', props: ['borderTopColor', 'borderRadius', 'backgroundColor'] },
+      { sel: '#imp-pista-enviada', props: ['display'] },
+      { sel: '#imp-turnos-titulo', props: ['display'] },
+    ],
+    verificarRelacion: async (pagina) => {
+      const enfocado = await pagina.evaluate(() => document.activeElement && document.activeElement.id);
+      await pagina.fill('#imp-pista', '  sabor   dulce ');
+      await pagina.press('#imp-pista', 'Enter');
+      const m = await pagina.evaluate(() => window.__enviados.filter((x) => x.t === 'pista'));
+      const titulo = await pagina.textContent('#imp-turnos-titulo');
+      const fila = await pagina.textContent('#imp-lista-turnos .imp-fila:nth-child(1) .imp-fila-pista');
+      return { ok: enfocado === 'imp-pista' && m.length === 1 && m[0].texto === 'sabor   dulce' && titulo === 'Pistas' && fila === 'caliente', mensaje: `enfocado=${enfocado}, mensajes ${JSON.stringify(m)}, título «${titulo}», primera fila «${fila}»` };
+    },
+  },
+  {
+    // Ya envié mi pista: el campo desaparece y se explica por qué
+    ruta: '/impostor',
+    nombre: 'pista-enviada',
+    init: socketFalso(vistaImpostor({ fase: 'ronda', anfitrion: false, aDistancia: true, turno: 1, yaEnvioPista: true, pistas: [{ turno: 0, id: 1, texto: 'caliente' }, { turno: 1, id: 2, texto: 'humo' }] })),
+    esperarSelector: '#imp-pista-enviada:not([hidden])',
+    comprobar: [
+      { sel: '#imp-pista-form', props: ['display'] },
+      { sel: '#imp-pista-enviada', props: ['display', 'color'] },
+      { sel: '#imp-lista-turnos .imp-fila:nth-child(2) .imp-fila-pista', props: ['color', 'fontSize', 'gridColumnStart'] },
+    ],
+    invariante: async (pagina) => {
+      const r = await pagina.evaluate(() => ({ pistas: [...document.querySelectorAll('#imp-lista-turnos .imp-fila-pista')].slice(0, 4).map((x) => (x.hidden ? '(oculta)' : x.textContent)) }));
+      return { ok: JSON.stringify(r.pistas) === JSON.stringify(['caliente', 'humo', '(oculta)', '(oculta)']), mensaje: JSON.stringify(r.pistas) };
+    },
+  },
+  {
+    // Un turno ya pasado sin pista se marca; el que está hablando, «Pensando…»
+    ruta: '/impostor',
+    nombre: 'pistas-lista-anfitrion',
+    init: socketFalso(vistaImpostor({ fase: 'ronda', aDistancia: true, turno: 3, pistas: [{ turno: 0, id: 1, texto: 'caliente' }, { turno: 2, id: 3, texto: 'humo' }] })),
+    esperarSelector: '#imp-v-ronda:not([hidden])',
+    comprobar: [
+      { sel: '#imp-lista-turnos .imp-fila:nth-child(2) .imp-fila-pista', props: ['color', 'fontSize'] },
+      { sel: '#imp-lista-turnos .imp-fila:nth-child(4) .imp-fila-pista', props: ['color'] },
+    ],
+    invariante: async (pagina) => {
+      const r = await pagina.evaluate(() => [1, 2, 3, 4, 5].map((i) => { const e = document.querySelector(`#imp-lista-turnos .imp-fila:nth-child(${i}) .imp-fila-pista`); return e.hidden ? '(oculta)' : e.textContent; }));
+      return { ok: JSON.stringify(r) === JSON.stringify(['caliente', 'Sin pista', 'humo', 'Pensando…', '(oculta)']), mensaje: JSON.stringify(r) };
+    },
+  },
+  {
+    // Votación: las pistas de la ronda y el chat con lo que ya se dijo
+    ruta: '/impostor',
+    nombre: 'votacion-chat',
+    init: socketFalso(
+      vistaImpostor({ fase: 'votacion', aDistancia: true, pistas: [{ turno: 0, id: 1, texto: 'caliente' }, { turno: 1, id: 2, texto: 'humo' }] }),
+      [{ id: 1, de: 3, texto: 'yo creo que es Marcela', t: 1 }, { id: 2, de: 1, texto: 'no fui yo', t: 2 }],
+    ),
+    esperarSelector: '#imp-chat:not([hidden])',
+    comprobar: [
+      { sel: '#imp-pistas-vot', props: ['display'] },
+      { sel: '#imp-chat', props: ['display', 'marginTop'] },
+      { sel: '#imp-chat-log', props: ['maxHeight', 'overflowY', 'borderBottomColor'] },
+      { sel: '#imp-chat-log .imp-chat-msg:nth-child(2)', props: ['display'] },
+      { sel: '#imp-chat-log .imp-chat-msg:nth-child(2) .imp-chat-autor', props: ['color', 'fontWeight'] },
+      { sel: '#imp-chat-texto', props: ['fontSize', 'borderBottomColor'] },
+    ],
+    verificarRelacion: async (pagina) => {
+      const msgs = await pagina.evaluate(() => [...document.querySelectorAll('#imp-chat-log .imp-chat-msg')].map((m) => m.querySelector('.imp-chat-autor').textContent + ': ' + m.querySelector('.imp-chat-cuerpo').textContent));
+      const pistas = await pagina.evaluate(() => [...document.querySelectorAll('#imp-lista-pistas-vot .imp-fila-pista')].slice(0, 3).map((x) => x.textContent));
+      await pagina.fill('#imp-chat-texto', 'votemos a Jugador 7');
+      await pagina.press('#imp-chat-texto', 'Enter');
+      const enviados = await pagina.evaluate(() => window.__enviados.filter((x) => x.t === 'chat'));
+      const vacio = await pagina.inputValue('#imp-chat-texto');
+      // El anfitrión ve «Silenciar» en los mensajes de los demás y no en los suyos
+      const silenciar = await pagina.evaluate(() => [...document.querySelectorAll('#imp-chat-log .imp-chat-silenciar')].map((b) => b.hidden));
+      await pagina.click('#imp-chat-log .imp-chat-msg:nth-child(1) .imp-chat-silenciar');
+      const sil = await pagina.evaluate(() => window.__enviados.filter((x) => x.t === 'silenciar'));
+      const ok = JSON.stringify(msgs) === JSON.stringify(['Jugador 3: yo creo que es Marcela', 'Marcela: no fui yo'])
+        && JSON.stringify(pistas) === JSON.stringify(['caliente', 'humo', 'Sin pista'])
+        && JSON.stringify(enviados) === JSON.stringify([{ t: 'chat', texto: 'votemos a Jugador 7' }]) && vacio === ''
+        && JSON.stringify(silenciar) === JSON.stringify([false, true])
+        && JSON.stringify(sil) === JSON.stringify([{ t: 'silenciar', id: 3, valor: true }]);
+      return { ok, mensaje: JSON.stringify({ msgs, pistas, enviados, vacio, silenciar, sil }) };
+    },
+  },
+  {
+    // Un silenciado lee pero no escribe
+    ruta: '/impostor',
+    nombre: 'votacion-chat-silenciado',
+    init: socketFalso(vistaImpostor({ fase: 'votacion', anfitrion: false, aDistancia: true, silenciado: true }), [{ id: 1, de: 1, texto: 'hola', t: 1 }]),
+    esperarSelector: '#imp-chat:not([hidden])',
+    comprobar: [{ sel: '#imp-chat-texto', props: ['color'] }],
+    invariante: async (pagina) => {
+      const r = await pagina.evaluate(() => ({ off: document.getElementById('imp-chat-texto').disabled, ph: document.getElementById('imp-chat-texto').placeholder, silenciar: [...document.querySelectorAll('.imp-chat-silenciar')].every((b) => b.hidden) }));
+      return { ok: r.off && r.ph === 'El anfitrión te silenció' && r.silenciar, mensaje: JSON.stringify(r) };
+    },
+  },
+  {
+    // Sin «a distancia» no hay chat ni lista de pistas en la votación
+    ruta: '/impostor',
+    nombre: 'votacion-sin-distancia',
+    init: socketFalso(vistaImpostor({ fase: 'votacion' })),
+    esperarSelector: '#imp-v-votacion:not([hidden])',
+    invariante: async (pagina) => {
+      const r = await pagina.evaluate(() => ({ chat: !document.getElementById('imp-chat').hidden, pistas: !document.getElementById('imp-pistas-vot').hidden, ir: !document.getElementById('imp-ir-chat').hidden }));
+      return { ok: !r.chat && !r.pistas && !r.ir, mensaje: JSON.stringify(r) };
+    },
+  },
+  // Sin scroll horizontal con nombres y mensajes largos, a 344 px
+  {
+    ruta: '/impostor',
+    nombre: 'sin-desborde-chat-fold-344',
+    viewport: { width: 344, height: 680 },
+    init: socketFalso(
+      vistaImpostor({ fase: 'votacion', aDistancia: true, pistas: [{ turno: 0, id: 1, texto: 'x'.repeat(40) }] }),
+      [{ id: 1, de: 3, texto: 'palabra'.repeat(28), t: 1 }, { id: 2, de: 1, texto: 'a'.repeat(200), t: 2 }],
+    ),
+    esperarSelector: '#imp-chat:not([hidden])',
+    verificarRelacion: sinDesbordeHorizontal,
+  },
   // La acción del anfitrión tiene que estar a mano en las tres vistas donde
   // manda, con la sala llena y en los tres móviles de referencia: el botón se
   // queda pegado al borde inferior (.imp-fija) aunque la lista mida 22 filas

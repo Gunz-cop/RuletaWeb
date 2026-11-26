@@ -297,6 +297,10 @@ Reglas que no se rompen sin hablarlo:
   `impostor-comun.js`, nunca `impostor-logica.js` ni `impostor-palabras.js`
   (la primera trae a la segunda). Si algún día `dist/_astro/` contiene una
   palabra de la lista, alguien rompió esto.
+- **El chat no viaja dentro de `estado`.** Va aparte (`{ t: 'chat' }`, solo el
+  mensaje nuevo, y el historial al entrar). Reenviar el chat entero con cada
+  cambio multiplicaría el tráfico por 22. Y **una pista no se rechaza por
+  contener la palabra secreta**: sería un oráculo para el impostor.
 - **Hibernación de WebSockets**, no `ws.accept()`: sin ella Cloudflare cobra
   tiempo de ejecución durante toda la partida. Por eso el estado va en
   `storage` y el jugador de cada socket en su attachment, no en variables.

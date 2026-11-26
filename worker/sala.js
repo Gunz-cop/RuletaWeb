@@ -26,6 +26,7 @@ import { DurableObject } from 'cloudflare:workers';
 import {
   crearSala, unirse, jugadorPorToken, configurar, iniciar, controlarTurno, abrirVotacion,
   votar, cerrarVotacion, continuar, nuevaPartida, quitar, ceder, salir, vistaPara,
+  enviarPista, enviarChat, silenciar, ultimosMensajes,
 } from '../src/scripts/impostor-logica.js';
 
 const INACTIVIDAD_MS = 6 * 60 * 60 * 1000;
@@ -112,6 +113,18 @@ export class SalaImpostor extends DurableObject {
     if (!jugador) { ws.close(CIERRE.RECHAZADO, 'sin identificar'); return; }
 
     const ahora = Date.now();
+
+    // El chat no pasa por `difundir()`: reenviar el estado completo de 22
+    // jugadores por cada mensaje de chat sería mucho más tráfico que el
+    // mensaje. Se guarda y se manda solo el mensaje nuevo.
+    if (datos.t === 'chat') {
+      const r = enviarChat(this.sala, jugador, datos.texto, ahora);
+      if (r.error) { ws.send(JSON.stringify({ t: 'error', error: r.error, mensaje: r.mensaje })); return; }
+      await this.guardar();
+      this.difundirChat({ t: 'chat', mensaje: r.mensaje });
+      return;
+    }
+
     let res;
     switch (datos.t) {
       case 'config': res = configurar(this.sala, jugador, datos.cambios); break;
@@ -119,6 +132,8 @@ export class SalaImpostor extends DurableObject {
       case 'turno': res = controlarTurno(this.sala, jugador, datos.op, ahora); break;
       case 'votacion': res = abrirVotacion(this.sala, jugador); break;
       case 'votar': res = votar(this.sala, jugador, Number(datos.por)); break;
+      case 'pista': res = enviarPista(this.sala, jugador, datos.texto); break;
+      case 'silenciar': res = silenciar(this.sala, jugador, Number(datos.id), datos.valor === true); break;
       case 'cerrar': res = cerrarVotacion(this.sala, jugador); break;
       case 'continuar': res = continuar(this.sala, jugador); break;
       case 'nueva': res = nuevaPartida(this.sala, jugador); break;
@@ -165,6 +180,9 @@ export class SalaImpostor extends DurableObject {
     ws.serializeAttachment({ id: jugador.id });
     ws.send(JSON.stringify({ t: 'bienvenida', id: jugador.id, token: jugador.token }));
     this.difundir();
+    // Quien vuelve (o llega a mitad de la votación) recibe lo último que se dijo
+    const historial = ultimosMensajes(this.sala);
+    if (historial.length) ws.send(JSON.stringify({ t: 'chat', historial }));
   }
 
   async webSocketClose(ws) { this.alCerrar(ws); }
@@ -220,6 +238,15 @@ export class SalaImpostor extends DurableObject {
       const j = this.sala.jugadores.find((x) => x.id === a.id);
       if (!j) continue;
       try { w.send(JSON.stringify(vistaPara(this.sala, j, ahora, conectados))); } catch { /* se cerró entre medias */ }
+    }
+  }
+
+  difundirChat(mensaje) {
+    const texto = JSON.stringify(mensaje);
+    for (const w of this.socketsAbiertos()) {
+      const a = w.deserializeAttachment();
+      if (!a || !a.id) continue;
+      try { w.send(texto); } catch { /* se cerró entre medias */ }
     }
   }
 

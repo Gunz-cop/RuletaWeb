@@ -87,6 +87,11 @@ function init() {
   let confirmaSalir = null;
   let avisoSala = null;
   let wakeLock = null;
+  let chat = []; // mensajes de esta partida, en orden
+  let partidaChat = null;
+  let noLeidos = 0;
+  let turnoEnfocado = null;
+  const tituloOriginal = document.title;
 
   /* ---------- utilidades de pantalla ---------- */
   const ocultar = (el, si) => { el.hidden = !!si; };
@@ -181,8 +186,12 @@ function init() {
         sesion.token = m.token;
         guardar(SESION_KEY, { codigo: sesion.codigo, nombre: sesion.nombre, token: sesion.token });
         history.replaceState(null, '', '#sala=' + sesion.codigo);
+      } else if (m.t === 'chat') {
+        recibirChat(m);
       } else if (m.t === 'estado') {
         desfase = m.ahora - Date.now();
+        // Una partida nueva empieza con el chat en blanco
+        if (m.partida !== partidaChat) { chat = []; partidaChat = m.partida; }
         estado = m;
         pintar();
       } else if (m.t === 'error') {
@@ -221,6 +230,8 @@ function init() {
     clearInterval(ping);
     if (ws) { ws.onclose = null; try { ws.close(); } catch (e) { /* ya cerrado */ } ws = null; }
     estado = null;
+    chat = [];
+    partidaChat = null;
     rolAbierto = false;
     sesion = null;
     liberarPantalla();
@@ -268,6 +279,7 @@ function init() {
     if (e.fase === 'ronda') pintarRonda();
     if (e.fase === 'votacion') pintarVotacion();
     if (e.fase === 'resultado') pintarResultado();
+    pintarChat();
     mostrarVista(vista);
     mantenerPantalla();
   }
@@ -360,6 +372,7 @@ function init() {
       sincronizar($('cfg-vueltas'), String(c.vueltas));
       sincronizarCheck($('cfg-juega'), c.anfitrionJuega);
       sincronizarCheck($('cfg-categoria-visible'), c.impostorVeCategoria);
+      sincronizarCheck($('cfg-distancia'), c.aDistancia);
       $('cfg-nota').textContent = `Con ${juegan} ${plural(juegan, 'jugador', 'jugadores')} habrá ${impostores} ${plural(impostores, 'impostor', 'impostores')}.`;
 
       const sel = $('ceder-sel');
@@ -378,7 +391,7 @@ function init() {
       $('faltan').textContent = faltan > 0 ? `${faltan === 1 ? 'Falta' : 'Faltan'} ${faltan} ${plural(faltan, 'jugador', 'jugadores')} para empezar.` : '';
     } else {
       const cat = c.categoria === 'azar' ? 'categoría al azar' : `categoría ${$('cfg-categoria').querySelector(`option[value="${c.categoria}"]`)?.textContent.toLowerCase() || ''}`;
-      $('resumen').textContent = `Partida: ${cat}, ${c.segundos} segundos por turno, ${c.vueltas} ${plural(c.vueltas, 'vuelta', 'vueltas')}, ${impostores} ${plural(impostores, 'impostor', 'impostores')}.`;
+      $('resumen').textContent = `Partida: ${cat}, ${c.segundos} segundos por turno, ${c.vueltas} ${plural(c.vueltas, 'vuelta', 'vueltas')}, ${impostores} ${plural(impostores, 'impostor', 'impostores')}${c.aDistancia ? ', a distancia (pistas escritas y chat)' : ''}.`;
       $('faltan').hidden = true;
     }
   }
@@ -434,6 +447,17 @@ function init() {
       $('votar-ya').hidden = r.terminada;
     }
 
+    const aDistancia = !!e.config.aDistancia;
+    const puedeEscribir = aDistancia && mio && !r.terminada && !r.yaEnvioPista && e.yo.juega && e.yo.vivo;
+    const form = $('pista-form');
+    ocultar(form, !puedeEscribir);
+    ocultar($('pista-enviada'), !(aDistancia && mio && r.yaEnvioPista));
+    if (puedeEscribir) {
+      const clave = `${r.n}:${r.turno}`;
+      if (turnoEnfocado !== clave) { turnoEnfocado = clave; $('pista').value = ''; $('pista').focus({ preventScroll: true }); }
+    }
+    $('turnos-titulo').textContent = aDistancia ? 'Pistas' : 'Orden de turnos';
+
     const pos = r.terminada ? nOrden : r.turno % nOrden;
     $('lista-turnos').replaceChildren(...r.orden.map((id, i) => {
       const j = e.jugadores.find((x) => x.id === id);
@@ -448,8 +472,21 @@ function init() {
       li.classList.toggle('is-ahora', i === pos && !r.terminada);
       li.classList.toggle('is-hecho', i < pos);
       li.classList.toggle('is-desconectado', !!j && !j.conectado);
+      if (aDistancia) {
+        const texto = (e.pistas || []).filter((p) => p.id === id).map((p) => p.texto).join(' · ');
+        const hablando = i === pos && !r.terminada;
+        const ya = i < pos || r.terminada;
+        ponerPista(li.querySelector('.imp-fila-pista'), texto, hablando ? 'Pensando…' : ya ? 'Sin pista' : '');
+      }
       return li;
     }));
+  }
+
+  // La pista de una fila: su texto, o un texto de apoyo en gris si aún no hay
+  function ponerPista(el, texto, apoyo) {
+    el.textContent = texto || apoyo;
+    el.classList.toggle('is-vacia', !texto);
+    el.hidden = !texto && !apoyo;
   }
 
   function pintarReloj() {
@@ -491,6 +528,68 @@ function init() {
     }));
 
     ocultar($('votacion-host'), !host);
+
+    const aDistancia = !!e.config.aDistancia;
+    ocultar($('pistas-vot'), !aDistancia);
+    ocultar($('ir-chat'), !aDistancia);
+    if (aDistancia && e.ronda) {
+      const r = e.ronda;
+      $('lista-pistas-vot').replaceChildren(...Array.from({ length: r.total }, (_, t) => {
+        const li = fila('tpl-turno');
+        li.querySelector('.imp-fila-num').textContent = String(t + 1).padStart(2, '0');
+        li.querySelector('.imp-fila-nombre').textContent = nombreDe(r.orden[t % r.orden.length]);
+        const p = (e.pistas || []).find((x) => x.turno === t);
+        ponerPista(li.querySelector('.imp-fila-pista'), p ? p.texto : '', 'Sin pista');
+        return li;
+      }));
+    }
+  }
+
+  /* ----- chat ----- */
+  function recibirChat(m) {
+    const nuevos = m.historial || [m.mensaje];
+    const conocidos = new Set(chat.map((x) => x.id));
+    for (const x of nuevos) if (x && !conocidos.has(x.id)) chat.push(x);
+    chat.sort((a, b) => a.id - b.id);
+    // Con la pestaña oculta se cuentan los mensajes de otros en el título
+    if (m.mensaje && document.hidden && estado && m.mensaje.de !== estado.yo.id) {
+      noLeidos += 1;
+      document.title = `(${noLeidos}) ${tituloOriginal}`;
+    }
+    if (estado) pintarChat();
+  }
+
+  function pintarChat() {
+    const e = estado;
+    const abierto = !!(e && e.chat && e.chat.abierto);
+    ocultar($('chat'), !abierto);
+    if (!abierto) return;
+    const yo = e.yo;
+    const log = $('chat-log');
+    const alFinal = log.scrollHeight - log.scrollTop - log.clientHeight < 40;
+    log.replaceChildren(...chat.map((m) => {
+      const li = fila('tpl-chat');
+      li.querySelector('.imp-chat-autor').textContent = nombreDe(m.de) || '?';
+      li.querySelector('.imp-chat-cuerpo').textContent = m.texto;
+      li.classList.toggle('is-mio', m.de === yo.id);
+      const quien = e.jugadores.find((x) => x.id === m.de);
+      const boton = li.querySelector('.imp-chat-silenciar');
+      boton.hidden = !(yo.anfitrion && m.de !== yo.id && quien);
+      if (quien) {
+        boton.textContent = quien.silenciado ? 'Quitar silencio' : 'Silenciar';
+        boton.addEventListener('click', () => enviar({ t: 'silenciar', id: m.de, valor: !quien.silenciado }));
+      }
+      return li;
+    }));
+    if (alFinal) log.scrollTop = log.scrollHeight;
+    $('chat-n').textContent = `${chat.length} ${plural(chat.length, 'mensaje', 'mensajes')}`;
+    const puede = e.chat.puedeEscribir;
+    const campo = $('chat-texto');
+    campo.disabled = !puede;
+    $('chat-enviar').disabled = !puede;
+    const yoFila = e.jugadores.find((x) => x.id === yo.id);
+    campo.placeholder = puede ? 'Escribe un mensaje'
+      : yoFila && yoFila.silenciado ? 'El anfitrión te silenció' : 'Puedes leer, no escribir';
   }
 
   /* ----- resultado ----- */
@@ -620,6 +719,24 @@ function init() {
     });
 
     $('rol').addEventListener('click', alternarRol);
+    // Un botón, no un enlace a #imp-chat: cambiaría el fragmento de la URL,
+    // que es donde viaja el código de la sala
+    $('ir-chat').addEventListener('click', () => $('chat').scrollIntoView({ behavior: reducido ? 'auto' : 'smooth' }));
+
+    $('pista-form').addEventListener('submit', (ev) => {
+      ev.preventDefault();
+      const texto = $('pista').value.trim();
+      if (!texto) { $('pista').focus(); return; }
+      enviar({ t: 'pista', texto });
+    });
+    $('chat-form').addEventListener('submit', (ev) => {
+      ev.preventDefault();
+      const campo = $('chat-texto');
+      const texto = campo.value.trim();
+      if (!texto) return;
+      enviar({ t: 'chat', texto });
+      campo.value = '';
+    });
 
     $('copiar').addEventListener('click', async () => {
       const enlace = `${location.origin}${location.pathname}#sala=${estado ? estado.codigo : ''}`;
@@ -641,6 +758,7 @@ function init() {
     cfg('cfg-vueltas', 'vueltas', (el) => Number(el.value));
     cfg('cfg-juega', 'anfitrionJuega', (el) => el.checked);
     cfg('cfg-categoria-visible', 'impostorVeCategoria', (el) => el.checked);
+    cfg('cfg-distancia', 'aDistancia', (el) => el.checked);
     $('ceder').addEventListener('click', () => {
       const id = Number($('ceder-sel').value);
       if (id) enviar({ t: 'ceder', id });
@@ -680,6 +798,7 @@ function init() {
     // Un móvil que se bloquea pierde el socket sin avisar: al volver se
     // comprueba y se reconecta sin esperar al siguiente reintento
     document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && noLeidos) { noLeidos = 0; document.title = tituloOriginal; }
       if (document.hidden) {
         if (rolAbierto) { rolAbierto = false; clearTimeout(tapaRol); if (estado) pintarRol(); }
         return;

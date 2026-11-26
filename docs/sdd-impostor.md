@@ -58,10 +58,17 @@ Cliente → servidor (JSON, máx. 2 KB, máx. 40 mensajes cada 10 s por socket):
 | `cerrar` | anfitrión, votación | cierra con los votos que haya |
 | `continuar` | anfitrión, resultado | siguiente ronda (si no hay ganador) |
 | `nueva` | anfitrión | vuelve al lobby con los mismos jugadores (vale en cualquier fase) |
+| `pista` `{texto}` | jugador con el turno | solo con «a distancia»: su pista escrita (máx. 40 letras), una por turno |
+| `chat` `{texto}` | jugador vivo, anfitrión | solo con «a distancia» y en votación o resultado (máx. 200 letras, 1 cada 0,8 s) |
+| `silenciar` `{id, valor}` | anfitrión | quita o devuelve la voz en el chat |
 | `quitar` `{id}` · `ceder` `{id}` · `salir` | ver reglas | gestión de la sala |
 
 Servidor → cliente: `bienvenida {id, token}`, `estado {…}` (la vista completa
-de ese jugador, tras cada cambio) y `error {error, mensaje}`.
+de ese jugador, tras cada cambio), `chat {mensaje}` o `chat {historial}` (los
+últimos 50 al entrar o volver) y `error {error, mensaje}`. **El chat no viaja
+dentro de `estado`**: reenviar 200 mensajes a 22 móviles por cada mensaje nuevo
+sería mucho más tráfico que el mensaje, y por eso `difundirChat` manda solo el
+nuevo.
 
 Cierres propios: `4001` otra pestaña · `4002` te quitaron · `4003` rechazado
 (partida empezada, sala llena, nombre vacío) · `4004` la sala no existe · `1008`
@@ -81,13 +88,23 @@ demasiados mensajes. Ninguno se arregla reintentando; el resto sí.
   impostor, no quién votó a quién.
 - Gana el grupo si no queda ningún impostor; ganan los impostores si son tantos
   como los demás. Entonces se revela palabra e impostores.
+- **Modo a distancia** (interruptor del anfitrión en el lobby, apagado por
+  defecto): en cada turno el jugador con el turno **escribe su pista**
+  (obligatoria: si el turno pasa sin pista, la lista dice «Sin pista»; el
+  anfitrión decide cuándo pasar). Todos ven las pistas en la ronda y en la
+  votación. Durante la votación y el resultado hay **chat** para los jugadores
+  vivos y el anfitrión; un eliminado lee y no escribe; el anfitrión puede
+  silenciar a alguien. Una pista **no se rechaza por contener la palabra**: sería
+  un oráculo (el impostor probaría palabras hasta que el servidor diga «no vale»).
 - Nadie entra con la partida empezada. Quien se cae vuelve con su token y
   recupera su rol; en plena partida queda «sin conexión».
 
 ## 5. Privacidad y límites
 
 - Se guarda: nombre, estado de la partida, un token aleatorio de 128 bits por
-  jugador. No IP, no historial, no cuentas.
+  jugador y, con el modo a distancia, las pistas de la ronda y los últimos 200
+  mensajes del chat. No IP, no historial de partidas, no cuentas.
+- El chat se vacía al empezar una partida nueva y se borra con la sala.
 - La sala se borra a las **6 h sin actividad** (alarma) o cuando sale el último
   jugador en el lobby.
 - El token no sale nunca de `bienvenida` hacia su dueño. Ninguna vista lleva
@@ -105,6 +122,10 @@ developers.cloudflare.com (páginas de Durable Objects). El plan **Workers Paid*
 encima, 0,15 USD por millón de peticiones y 12,50 USD por millón de GB-s. Un
 mensaje de entrada cuenta 1/20 de petición y los de salida no se cobran.
 
+Un mensaje de chat son unas pocas peticiones facturables como mucho (los de
+entrada cuentan 1/20 y los de salida no se cobran), así que 22 personas
+hablando durante una votación siguen siendo décimas de céntimo.
+
 Con **hibernación** (la que usa `sala.js`), una partida de 22 personas durante
 30 minutos son unos cientos de mensajes y casi nada de duración. Sin ella, el
 socket abierto cobra tiempo de ejecución durante toda la partida: por eso
@@ -112,8 +133,12 @@ socket abierto cobra tiempo de ejecución durante toda la partida: por eso
 
 ## 7. Qué no hace (todavía)
 
-- **No hay chat ni pistas escritas en la app**: las pistas se dicen en voz alta
-  o por videollamada. Es lo habitual del juego y evita moderar texto.
+- **El chat es de texto plano y sin moderación automática**: solo hay límite de
+  ritmo y longitud, y el silencio que da el anfitrión. No hay lista de palabras
+  prohibidas.
+- **Sin aviso de mensajes sin leer dentro de la página**: con la pestaña oculta
+  se cuentan en el título; con la pestaña visible, el botón «Ir al chat» de la
+  votación lleva al panel.
 - **El servidor no pasa el turno solo al llegar a cero**: el reloj se ve igual
   en todos los móviles (marcas absolutas del servidor), pero quien decide cuándo
   pasar es el anfitrión. Tampoco hay aviso sonoro: iría contra la regla de «sin

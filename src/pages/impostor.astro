@@ -5,7 +5,7 @@ import RoleCard from '../components/RoleCard.astro';
 import HubGrid from '../components/HubGrid.astro';
 import SeoArticle from '../components/SeoArticle.astro';
 import { CATEGORIAS } from '../scripts/impostor-palabras.js';
-import { SEGUNDOS_OPCIONES, VUELTAS_OPCIONES, MAX_JUGADORES, MIN_JUGADORES, MAX_NOMBRE, LARGO_CODIGO } from '../scripts/impostor-comun.js';
+import { SEGUNDOS_OPCIONES, VUELTAS_OPCIONES, MAX_JUGADORES, MIN_JUGADORES, MAX_NOMBRE, LARGO_CODIGO, MAX_PISTA, MAX_CHAT } from '../scripts/impostor-comun.js';
 
 const title = 'Juego del Impostor Online: Salas con Código, Sin App ni Registro';
 const description = 'Crea una sala, comparte el código y juega al impostor con tu grupo: cada uno ve su palabra en su propio celular y el anfitrión lleva el tiempo de cada jugador. Gratis y sin registro.';
@@ -47,6 +47,11 @@ const schemaLD = {
           "@type": "Question",
           "name": "¿Cuántas personas pueden jugar?",
           "acceptedAnswer": { "@type": "Answer", "text": "De 3 a 24 en la misma sala. Con 22 personas el reparto automático pone 3 impostores." }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Se puede jugar a distancia, cada uno en su casa?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Sí. El anfitrión activa «Jugar a distancia» en los ajustes de la sala. En cada turno el jugador escribe su pista (máximo 40 letras) y todos la ven; durante la votación hay un chat para discutir. No hace falta videollamada." }
         },
         {
           "@type": "Question",
@@ -188,6 +193,7 @@ const opcionesImpostores = Array.from({ length: 10 }, (_, i) => i + 1);
         </div>
         <label class="imp-check"><input type="checkbox" id="imp-cfg-juega"> <span>Yo también juego (si no, solo modero)</span></label>
         <label class="imp-check"><input type="checkbox" id="imp-cfg-categoria-visible"> <span>El impostor ve la categoría</span></label>
+        <label class="imp-check"><input type="checkbox" id="imp-cfg-distancia"> <span>Jugar a distancia: pistas escritas y chat</span></label>
         <p id="imp-cfg-nota" class="imp-nota mt-3 mb-0"></p>
       </div>
 
@@ -225,6 +231,15 @@ const opcionesImpostores = Array.from({ length: 10 }, (_, i) => i + 1);
         <p class="imp-nota m-0" id="imp-turno-sigue"></p>
       </div>
 
+      <form id="imp-pista-form" class="imp-pista-form mt-4" autocomplete="off" hidden>
+        <label class="imp-field flex flex-col gap-1.5">
+          <span>Tu pista</span>
+          <input id="imp-pista" type="text" maxlength={MAX_PISTA} placeholder="Una palabra o una frase corta" enterkeyhint="send">
+        </label>
+        <button class="imp-btn imp-btn-line mt-3" id="imp-pista-enviar" type="submit">Enviar pista</button>
+      </form>
+      <p id="imp-pista-enviada" class="imp-nota mt-4 mb-0" hidden>Tu pista ya está enviada. Espera a que el anfitrión pase el turno.</p>
+
       <div id="imp-ronda-host" hidden>
         <div class="imp-fija mt-4">
           <button class="imp-btn" id="imp-turno-principal" type="button">Empezar turno</button>
@@ -238,7 +253,7 @@ const opcionesImpostores = Array.from({ length: 10 }, (_, i) => i + 1);
       </div>
 
       <div class="imp-lista-cabecera mt-10">
-        <h2 class="m-0 font-display text-lg">Orden de turnos</h2>
+        <h2 class="m-0 font-display text-lg" id="imp-turnos-titulo">Orden de turnos</h2>
       </div>
       <ol class="imp-lista" id="imp-lista-turnos"></ol>
     </section>
@@ -248,7 +263,15 @@ const opcionesImpostores = Array.from({ length: 10 }, (_, i) => i + 1);
       <header class="mb-5">
         <h2 class="imp-titulo m-0">¿Quién es <em>el impostor</em>?</h2>
         <p class="imp-nota mt-2 mb-0" id="imp-votacion-progreso" aria-live="polite"></p>
+        <button class="imp-text-btn mt-3" id="imp-ir-chat" type="button" hidden>Ir al chat</button>
       </header>
+
+      <div id="imp-pistas-vot" class="mb-6" hidden>
+        <div class="imp-lista-cabecera">
+          <h2 class="m-0 font-display text-lg">Pistas de la ronda</h2>
+        </div>
+        <ol class="imp-lista" id="imp-lista-pistas-vot"></ol>
+      </div>
 
       <ul class="imp-lista" id="imp-lista-votos"></ul>
 
@@ -284,6 +307,19 @@ const opcionesImpostores = Array.from({ length: 10 }, (_, i) => i + 1);
       <ol class="imp-lista" id="imp-lista-conteo"></ol>
     </section>
 
+    {/* Chat: una sola vez, fuera de las vistas; se ve en la votación y el resultado */}
+    <section id="imp-chat" class="imp-chat mt-10" aria-label="Chat de la partida" hidden>
+      <div class="imp-lista-cabecera">
+        <h2 class="m-0 font-display text-lg">Chat</h2>
+        <span class="flex-1 text-sm text-ink-tertiary tabular-nums" id="imp-chat-n"></span>
+      </div>
+      <ol class="imp-chat-log" id="imp-chat-log" role="log" aria-live="polite"></ol>
+      <form id="imp-chat-form" class="imp-chat-form" autocomplete="off">
+        <input id="imp-chat-texto" type="text" maxlength={MAX_CHAT} placeholder="Escribe un mensaje" enterkeyhint="send" aria-label="Mensaje del chat">
+        <button class="imp-text-btn" id="imp-chat-enviar" type="submit">Enviar</button>
+      </form>
+    </section>
+
     {/* Plantillas de fila: el JS las clona y solo escribe texto */}
     <template id="imp-tpl-lobby">
       <li class="imp-fila">
@@ -298,6 +334,14 @@ const opcionesImpostores = Array.from({ length: 10 }, (_, i) => i + 1);
         <span class="imp-fila-num"></span>
         <span class="imp-fila-nombre"></span>
         <span class="imp-fila-notas"></span>
+        <span class="imp-fila-pista" hidden></span>
+      </li>
+    </template>
+    <template id="imp-tpl-chat">
+      <li class="imp-chat-msg">
+        <span class="imp-chat-autor"></span>
+        <span class="imp-chat-cuerpo"></span>
+        <button class="imp-text-btn imp-chat-silenciar" type="button" hidden>Silenciar</button>
       </li>
     </template>
     <template id="imp-tpl-voto">
@@ -331,6 +375,10 @@ const opcionesImpostores = Array.from({ length: 10 }, (_, i) => i + 1);
       <li><strong>Eliminación.</strong> Se va el más votado y se revela si era impostor. En caso de empate no se va nadie. Se repite hasta que el grupo saque a todos los impostores o los impostores igualen en número a los demás.</li>
     </ol>
 
+    <h2>Jugar a distancia: pistas escritas y chat</h2>
+    <p>Si el grupo no está en la misma habitación ni en una videollamada, el anfitrión activa <strong>«Jugar a distancia»</strong> en los ajustes de la sala. Cambia dos cosas: en cada turno quien tiene la palabra <strong>escribe su pista</strong> (hasta 40 letras) y todos la ven en la lista, y durante la votación se abre un <strong>chat</strong> para discutir quién es el impostor. Los eliminados pueden leer pero no escribir, y el anfitrión puede silenciar a alguien. Tanto el turno como el reloj siguen en manos del anfitrión.</p>
+    <p>Una pista que contiene la palabra secreta no se bloquea: si el servidor la rechazara, el impostor podría probar palabras hasta descubrir la correcta. El grupo decide qué hacer con quien la suelta.</p>
+
     <h2>Cuántos impostores poner</h2>
     <p>El modo automático pone uno por cada seis jugadores, con un mínimo de uno. El anfitrión puede cambiarlo, pero nunca más de la mitad menos uno: con más, los impostores ganarían sin que nadie vote.</p>
     <table>
@@ -354,6 +402,8 @@ const opcionesImpostores = Array.from({ length: 10 }, (_, i) => i + 1);
     <h2>Preguntas frecuentes</h2>
     <h3>¿Puede alguien ver mi rol?</h3>
     <p>No. El servidor envía a cada celular únicamente su rol; al impostor no le llega la palabra. La tarjeta, además, se muestra tapada hasta que la tocas.</p>
+    <h3>¿Se guardan los mensajes del chat?</h3>
+    <p>Solo mientras dura la partida: se borran al empezar otra y la sala entera desaparece tras seis horas sin actividad.</p>
     <h3>¿Y si se me cae el internet?</h3>
     <p>La página se reconecta sola y recuperas tu rol. Si cerraste la pestaña, abre otra vez el enlace de la sala desde el mismo navegador.</p>
     <h3>¿Puede entrar alguien con la partida empezada?</h3>
@@ -663,6 +713,98 @@ const opcionesImpostores = Array.from({ length: 10 }, (_, i) => i + 1);
 
   .imp-fila.is-desconectado .imp-fila-nombre {
     color: var(--text-secondary);
+  }
+
+  /* Pistas escritas: debajo del nombre, a todo el ancho de la fila */
+  .imp-fila-pista {
+    grid-column: 2 / -1;
+    margin-top: -0.2rem;
+    color: var(--text-primary);
+    font-size: 1.05rem;
+    overflow-wrap: anywhere;
+  }
+
+  .imp-fila-pista.is-vacia {
+    color: var(--text-tertiary);
+    font-size: 0.9rem;
+  }
+
+  .imp-pista-form {
+    padding-bottom: 0.25rem;
+  }
+
+  /* Chat */
+  .imp-chat-log {
+    list-style: none;
+    margin: 0;
+    padding: 0.5rem 0;
+    max-height: 14rem;
+    overflow-y: auto;
+    border-bottom: 1px solid var(--divider-line);
+  }
+
+  .imp-chat-log:empty::before {
+    content: 'Aún no hay mensajes';
+    color: var(--text-tertiary);
+    font-size: 0.9rem;
+  }
+
+  .imp-chat-msg {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.1rem 0.5rem;
+    padding: 0.3rem 0;
+    overflow-wrap: anywhere;
+  }
+
+  .imp-chat-autor {
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+
+  .imp-chat-msg.is-mio .imp-chat-autor {
+    color: var(--accent-warm);
+  }
+
+  .imp-chat-cuerpo {
+    flex: 1 1 8rem;
+    min-width: 0;
+    color: var(--text-primary);
+  }
+
+  .imp-chat-silenciar {
+    font-size: 0.8rem;
+    color: var(--text-tertiary);
+  }
+
+  .imp-chat-form {
+    display: flex;
+    align-items: flex-end;
+    gap: 1rem;
+    margin-top: 0.75rem;
+  }
+
+  .imp-chat-form input {
+    flex: 1;
+    min-width: 0;
+    padding: 0.4rem 0;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--divider-line);
+    border-radius: 0;
+    color: var(--text-primary);
+    font: inherit;
+    font-size: 1rem;
+  }
+
+  .imp-chat-form input:focus {
+    outline: none;
+    border-bottom-color: var(--accent-warm);
+  }
+
+  .imp-chat-form input:disabled {
+    color: var(--text-tertiary);
   }
 
   /* Turno */

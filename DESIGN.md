@@ -473,6 +473,17 @@ fija este patrón:
   rechaza la acción y la página simplemente no los pinta.
 - **Reloj**: marcas del servidor, nunca cuenta local. Detalles en
   `docs/sdd-impostor.md`.
+- **Pistas y chat** (modo a distancia): la pista de cada jugador va **debajo de
+  su nombre, a todo el ancho de la fila** (`.imp-fila-pista`), no en una
+  columna: con nombres y frases largas a 344 px una tercera columna desborda.
+  Lo que aún no existe se dice en gris («Pensando…», «Sin pista»), sin chips. El
+  campo de pista es un campo subrayado con un botón de contorno
+  (`.imp-btn-line`): el único botón relleno de la vista sigue siendo la acción
+  del anfitrión. El chat es una lista con scroll propio (`max-height`) y un
+  campo subrayado; el chat es un solo bloque fuera de las vistas, no se
+  duplica. Los controles que no aplican se ocultan; los que no te tocan se
+  quedan desactivados con el motivo en el *placeholder* («El anfitrión te
+  silenció»).
 
 **Aviso a pantalla completa** (temporizador): cuando algo termina mientras
 la gente no mira la página (pasan el móvil, respiran con los ojos

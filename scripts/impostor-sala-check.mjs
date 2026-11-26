@@ -74,6 +74,8 @@ class Jugador {
     this.estado = null;
     this.errores = [];
     this.avisos = [];
+    this.chat = [];
+    this.chatBytes = '';
   }
 
   abrir() {
@@ -91,6 +93,7 @@ class Jugador {
         if (m.t === 'estado') this.estado = m;
         if (m.t === 'bienvenida') { this.token = m.token; this.id = m.id; }
         if (m.t === 'error') this.errores.push(m);
+        if (m.t === 'chat') { this.chat.push(...(m.historial || [m.mensaje])); this.chatBytes += e.data; }
         for (const a of this.avisos.slice()) a(m);
       });
       this.ws.addEventListener('close', (e) => { this.cierre = e.code; for (const a of this.avisos.slice()) a(null); });
@@ -303,6 +306,84 @@ async function principal() {
   const entraron = extra.filter((j) => j.estado && j.cierre === null);
   const rechazados = extra.filter((j) => j.cierre === 4003 && j.errores[0]?.error === 'llena');
   check(entraron.length === 2 && rechazados.length === 2, `límite de sala: entraron ${entraron.length}, rechazados ${rechazados.length}`);
+
+
+  /* ---------- modo a distancia: pistas escritas y chat ---------- */
+  {
+    const sala2 = await (await fetch(`${BASE}/api/impostor/salas`, { method: 'POST', body: JSON.stringify({ nombre: 'Moderadora' }) })).json();
+    const ju = [new Jugador(sala2.codigo, { nombre: 'Moderadora', token: sala2.token })];
+    for (let i = 1; i <= 5; i++) ju.push(new Jugador(sala2.codigo, { nombre: `Remoto ${i}` }));
+    for (const j of ju) await j.abrir();
+    await Promise.all(ju.map((j) => j.esperar((x) => x.estado && x.estado.jugadores.length === 6)));
+    const mod = ju[0];
+
+    mod.enviar({ t: 'config', cambios: { aDistancia: true, segundos: 20, vueltas: 1, anfitrionJuega: true } });
+    await Promise.all(ju.map((j) => j.esperar((x) => x.estado.config.aDistancia === true)));
+    mod.enviar({ t: 'iniciar' });
+    await Promise.all(ju.map((j) => j.esperar((x) => x.estado.fase === 'ronda')));
+
+    // Cada uno escribe su pista en su turno; los demás reciben un error si lo intentan
+    const porId = new Map(ju.map((j) => [j.id, j]));
+    const orden = mod.estado.ronda.orden;
+    for (let i = 0; i < orden.length; i++) {
+      const toca = porId.get(orden[i]);
+      const intruso = ju.find((j) => j.id !== toca.id);
+      const erroresAntes = intruso.errores.length;
+      intruso.enviar({ t: 'pista', texto: 'fuera de turno' });
+      await intruso.esperar((j) => j.errores.length > erroresAntes);
+      check(intruso.errores.at(-1).error === 'turno', 'una pista fuera de turno no se rechaza');
+      toca.enviar({ t: 'pista', texto: `pista ${i + 1}` });
+      await Promise.all(ju.map((j) => j.esperar((x) => x.estado.pistas && x.estado.pistas.length === i + 1)));
+      check(ju.every((j) => j.estado.pistas.at(-1).texto === `pista ${i + 1}` && j.estado.pistas.at(-1).id === toca.id), 'los móviles no ven la misma pista');
+      toca.enviar({ t: 'pista', texto: 'otra' });
+      await toca.esperar((j) => j.errores.some((e) => e.mensaje === 'Ya enviaste tu pista.'));
+      mod.enviar({ t: 'turno', op: i === 0 ? 'empezar' : 'siguiente' });
+      if (i === 0) { await mod.esperar((j) => j.estado.ronda.turnoFin !== null); mod.enviar({ t: 'turno', op: 'siguiente' }); }
+      await mod.esperar((j) => j.estado.ronda.turno >= (i === 0 ? 1 : i + 1));
+    }
+    check(mod.estado.ronda.terminada, 'las pistas no completaron la ronda');
+
+    // Sin chat durante la ronda
+    ju[1].enviar({ t: 'chat', texto: 'hola' });
+    await ju[1].esperar((j) => j.errores.some((e) => e.error === 'fase'));
+
+    // Chat en la votación: lo reciben todos, y solo ese mensaje (no el estado entero)
+    mod.enviar({ t: 'votacion' });
+    await Promise.all(ju.map((j) => j.esperar((x) => x.estado.fase === 'votacion' && x.estado.chat?.abierto)));
+    ju[2].enviar({ t: 'chat', texto: 'sospecho de Remoto 4' });
+    await Promise.all(ju.map((j) => j.esperar((x) => x.chat.length === 1)));
+    check(ju.every((j) => j.chat[0].texto === 'sospecho de Remoto 4' && j.chat[0].de === ju[2].id), 'el chat no llega igual a todos');
+    check(!ju[4].bytes.replace(ju[4].chatBytes, '').includes('sospecho de Remoto 4'), 'el chat viaja dentro del estado');
+    ju[2].enviar({ t: 'chat', texto: 'rápido' });
+    await ju[2].esperar((j) => j.errores.some((e) => e.error === 'ritmo'));
+
+    // Silenciar
+    mod.enviar({ t: 'silenciar', id: ju[3].id, valor: true });
+    await ju[3].esperar((j) => j.estado.chat?.puedeEscribir === false);
+    ju[3].enviar({ t: 'chat', texto: 'no debería salir' });
+    await ju[3].esperar((j) => j.errores.some((e) => e.error === 'permiso'));
+    check(ju.every((j) => !j.chat.some((m) => m.texto === 'no debería salir')), 'un silenciado habló');
+    ju[3].enviar({ t: 'silenciar', id: ju[4].id, valor: true });
+    await ju[3].esperar((j) => j.errores.filter((e) => e.error === 'permiso').length >= 2);
+
+    // Reconexión: quien vuelve recibe el historial del chat
+    const vuelve = new Jugador(sala2.codigo, { nombre: ju[5].nombre, token: ju[5].token });
+    ju[5].cerrar();
+    await vuelve.abrir();
+    await vuelve.esperar((j) => j.chat.length === 1);
+    check(vuelve.chat[0].texto === 'sospecho de Remoto 4', 'al volver no recibe el historial del chat');
+    check(vuelve.estado.pistas.length === orden.length, 'al volver no recibe las pistas');
+
+    // Apagado, no hay pistas ni chat: nueva partida y modo normal
+    mod.enviar({ t: 'nueva' });
+    await mod.esperar((j) => j.estado.fase === 'lobby');
+    mod.enviar({ t: 'config', cambios: { aDistancia: false } });
+    await mod.esperar((j) => j.estado.config.aDistancia === false);
+    mod.enviar({ t: 'iniciar' });
+    await mod.esperar((j) => j.estado.fase === 'ronda');
+    check(mod.estado.pistas === undefined && mod.estado.chat === undefined, 'con el modo apagado la vista trae pistas o chat');
+    for (const j of [...ju, vuelve]) j.cerrar();
+  }
 
   for (const j of [...todos, ...extra]) j.cerrar();
   return 0;

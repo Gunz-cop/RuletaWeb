@@ -16,6 +16,8 @@ import {
   crearSala, unirse, jugadorPorToken, vivos, jugando,
   configurar, iniciar, controlarTurno, turnoDe, totalTurnos, abrirVotacion, votar, cerrarVotacion,
   continuar, nuevaPartida, quitar, ceder, salir, quienGana, vistaPara,
+  enviarPista, enviarChat, silenciar, ultimosMensajes, normalizarTexto,
+  MAX_PISTA, MAX_CHAT, CHAT_GUARDADO, CHAT_RITMO_MS,
 } from '../src/scripts/impostor-logica.js';
 import { CATEGORIAS, CLAVES_CATEGORIAS } from '../src/scripts/impostor-palabras.js';
 
@@ -315,6 +317,122 @@ for (const n of [3, 4, 7, 12, 22, 24]) {
   salir(sala, sala.jugadores[0]);
   const ultima = salir(sala, sala.jugadores[0]);
   check(sala.jugadores.length === 0 && ultima.vacia === true, 'la sala no se vacía');
+}
+
+
+/* ---------- modo a distancia: pistas escritas y chat ---------- */
+{
+  const { sala, anfitrion, todos, rand } = montarSala(6, { aDistancia: true, impostores: 1, anfitrionJuega: true });
+  check(sala.config.aDistancia === true, 'no se activa el modo a distancia');
+  check(configurar(sala, todos[1], { aDistancia: false }).error === 'permiso', 'un jugador pudo apagar el modo a distancia');
+  iniciar(sala, anfitrion, rand);
+  const r = sala.ronda;
+  const quien = (id) => sala.jugadores.find((j) => j.id === id);
+  const tienePrimero = quien(turnoDe(sala));
+  const otro = sala.jugadores.find((j) => j.id !== tienePrimero.id && !j.anfitrion);
+
+  check(enviarPista(sala, otro, 'hola').error === 'turno', 'alguien escribió pista fuera de su turno');
+  check(enviarPista(sala, tienePrimero, '   ').error === 'datos', 'acepta una pista vacía');
+  check(enviarPista(sala, tienePrimero, '  café   con‮  leche  ').ok, 'no acepta una pista normal');
+  check(r.pistas[0].texto === 'café con leche', `pista sin limpiar: «${r.pistas[0].texto}»`);
+  check(enviarPista(sala, tienePrimero, 'otra').error === 'turno', 'mandó dos pistas en el mismo turno');
+  check(Array.from(normalizarTexto('x'.repeat(300), MAX_PISTA)).length === MAX_PISTA, 'pista sin recortar');
+
+  // La vista enseña las pistas a todos y marca si ya la mandó quien tiene el turno
+  const v1 = vistaPara(sala, otro, 0, new Set());
+  check(v1.pistas.length === 1 && v1.pistas[0].id === tienePrimero.id && v1.pistas[0].texto === 'café con leche', 'los demás no ven la pista');
+  check(vistaPara(sala, tienePrimero, 0, new Set()).ronda.yaEnvioPista === true, 'no marca que ya envió');
+  check(!JSON.stringify(v1).includes('"chat":{"abierto":true'), 'el chat está abierto en plena ronda');
+
+  // Sin chat antes de la votación
+  check(enviarChat(sala, otro, 'hola', 10000).error === 'fase', 'se puede chatear durante la ronda de pistas');
+
+  // El siguiente turno, otra persona
+  controlarTurno(sala, anfitrion, 'siguiente', 1000);
+  const segundo = quien(turnoDe(sala));
+  check(enviarPista(sala, tienePrimero, 'tarde').error === 'turno', 'el turno anterior aún puede escribir');
+  check(enviarPista(sala, segundo, 'dulce').ok, 'el segundo no pudo enviar su pista');
+  // Un turno sin pista queda sin pista (el anfitrión puede pasar)
+  controlarTurno(sala, anfitrion, 'siguiente', 2000);
+  controlarTurno(sala, anfitrion, 'siguiente', 3000);
+  check(r.pistas.length === 2, 'los turnos saltados no deberían tener pista');
+
+  // Chat en la votación
+  abrirVotacion(sala, anfitrion);
+  const hablador = sala.jugadores.find((j) => !j.anfitrion && j.id !== otro.id);
+  check(enviarChat(sala, hablador, '  yo creo que\n es Ana  ', 100000).ok, 'no entra un mensaje normal');
+  check(sala.chat.at(-1).texto === 'yo creo que es Ana' && sala.chat.at(-1).de === hablador.id, 'el mensaje no se limpia o no lleva autor');
+  check(enviarChat(sala, hablador, 'otra vez', 100100).error === 'ritmo', 'no frena a quien escribe demasiado rápido');
+  check(enviarChat(sala, hablador, 'ahora sí', 100000 + CHAT_RITMO_MS).ok, 'el ritmo no se libera');
+  check(enviarChat(sala, otro, ' ', 200000).error === 'datos', 'acepta un mensaje vacío');
+  check(Array.from(sala.chat.at(-1).texto).length <= MAX_CHAT, 'mensaje sin recortar');
+  enviarChat(sala, otro, 'y'.repeat(1000), 300000);
+  check(Array.from(sala.chat.at(-1).texto).length === MAX_CHAT, 'un mensaje larguísimo no se recorta a MAX_CHAT');
+
+  // Silenciar: solo el anfitrión, y no a sí mismo
+  check(silenciar(sala, otro, hablador.id, true).error === 'permiso', 'un jugador pudo silenciar');
+  check(silenciar(sala, anfitrion, anfitrion.id, true).error === 'datos', 'el anfitrión pudo silenciarse');
+  check(silenciar(sala, anfitrion, hablador.id, true).ok, 'el anfitrión no pudo silenciar');
+  check(enviarChat(sala, hablador, 'sigo', 900000).error === 'permiso', 'un silenciado sigue escribiendo');
+  check(vistaPara(sala, hablador, 0, new Set()).chat.puedeEscribir === false, 'la vista no dice que está silenciado');
+  silenciar(sala, anfitrion, hablador.id, false);
+  check(enviarChat(sala, hablador, 'ya puedo', 900000).ok, 'un silenciado no recupera la voz');
+
+  // Un eliminado lee y no escribe
+  const objetivo = sala.jugadores.find((j) => j.id !== hablador.id && j.id !== otro.id && !j.impostor && !j.anfitrion);
+  const restantes = vivos(sala);
+  for (const j of restantes) votar(sala, j, restantes.find((x) => x.id !== j.id && x.id !== objetivo.id && !x.impostor && x.id !== j.id)?.id ?? objetivo.id);
+  cerrarVotacion(sala, anfitrion);
+  const fuera = sala.jugadores.find((j) => !j.vivo);
+  if (fuera) {
+    check(enviarChat(sala, fuera, 'hola', 990000).error === 'permiso', 'un eliminado pudo escribir');
+    check(vistaPara(sala, fuera, 0, new Set()).chat.puedeEscribir === false, 'la vista no avisa al eliminado');
+  }
+
+  // Tope de mensajes guardados y entrega de los últimos
+  for (let i = 0; i < CHAT_GUARDADO + 30; i++) { sala.fase = 'votacion'; const j = sala.jugadores.find((x) => x.vivo); j.ultimoChat = 0; enviarChat(sala, j, `m${i}`, 2_000_000 + i * 1000); }
+  check(sala.chat.length === CHAT_GUARDADO, `el chat guarda ${sala.chat.length}, no ${CHAT_GUARDADO}`);
+  check(ultimosMensajes(sala).length === 50 && ultimosMensajes(sala).at(-1).texto === `m${CHAT_GUARDADO + 29}`, 'el historial entregado no son los últimos');
+  const ids = sala.chat.map((m) => m.id);
+  check(new Set(ids).size === ids.length && ids.every((x, i) => i === 0 || x > ids[i - 1]), 'ids de mensaje repetidos o desordenados');
+
+  // Nueva partida: se limpia
+  nuevaPartida(sala, anfitrion);
+  check(sala.chat.length === 0 && ultimosMensajes(sala).length === 0 && sala.jugadores.every((j) => !j.silenciado), 'una partida nueva arrastra chat o silencios');
+}
+
+{
+  // Sin «a distancia» no hay pistas ni chat ni campos en la vista
+  const { sala, anfitrion, todos, rand } = montarSala(5);
+  iniciar(sala, anfitrion, rand);
+  const j = sala.jugadores.find((x) => x.id === turnoDe(sala));
+  check(enviarPista(sala, j, 'hola').error === 'fase', 'hay pistas escritas con el modo apagado');
+  abrirVotacion(sala, anfitrion);
+  check(enviarChat(sala, j, 'hola', 1e6).error === 'fase', 'hay chat con el modo apagado');
+  const v = vistaPara(sala, j, 0, new Set());
+  check(v.pistas === undefined && v.chat === undefined, 'la vista trae pistas o chat con el modo apagado');
+  check(ultimosMensajes(sala).length === 0, 'entrega mensajes con el modo apagado');
+}
+
+{
+  // Un anfitrión que modera puede escribir, no tiene turno
+  const { sala, anfitrion, todos, rand } = montarSala(5, { aDistancia: true, anfitrionJuega: false });
+  iniciar(sala, anfitrion, rand);
+  check(enviarPista(sala, anfitrion, 'hola').error === 'turno', 'el moderador escribió pista');
+  abrirVotacion(sala, anfitrion);
+  check(enviarChat(sala, anfitrion, 'a votar', 1e6).ok, 'el moderador no puede escribir en el chat');
+  check(vistaPara(sala, anfitrion, 0, new Set()).chat.puedeEscribir === true, 'el moderador no puede escribir según la vista');
+}
+
+{
+  // El chat no se cuela en la vista de estado ni lleva datos ajenos
+  const { sala, anfitrion, rand } = montarSala(6, { aDistancia: true });
+  iniciar(sala, anfitrion, rand);
+  abrirVotacion(sala, anfitrion);
+  enviarChat(sala, anfitrion, 'secreto-del-chat', 1e6);
+  const v = JSON.stringify(vistaPara(sala, sala.jugadores[2], 0, new Set()));
+  check(!v.includes('secreto-del-chat'), 'los mensajes viajan dentro del estado (hay que mandarlos aparte)');
+  check(!/token/i.test(v), 'la vista lleva tokens');
 }
 
 if (fallos.length) {

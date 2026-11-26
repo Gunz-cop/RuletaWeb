@@ -17,6 +17,12 @@ export const ALFABETO_CODIGO = 'ABCDEFGHJKMNPQRSTUVWXYZ';
 export const SEGUNDOS_OPCIONES = [20, 30, 45, 60, 90, 120];
 export const VUELTAS_OPCIONES = [1, 2, 3];
 export const MAS_SEGUNDOS = 15;
+// Modo a distancia: pistas escritas por turno y chat en la votación
+export const MAX_PISTA = 40;
+export const MAX_CHAT = 200;
+export const CHAT_GUARDADO = 200;
+export const CHAT_ENTREGA = 50;
+export const CHAT_RITMO_MS = 800;
 
 /** Lo que escribió alguien → código válido, o '' si no lo es. */
 export function normalizarCodigo(texto) {
@@ -31,7 +37,12 @@ export function normalizarCodigo(texto) {
 // desordenar la lista de los demás.
 const RARO = new RegExp('[\\u0000-\\u001f\\u007f-\\u009f\\u200b-\\u200f\\u2028-\\u202e\\u2060-\\u206f\\ufeff]', 'g');
 
-export function normalizarNombre(texto) {
+/** Texto escrito por alguien, sin caracteres de control y recortado a `max` letras. */
+export function normalizarTexto(texto, max) {
   const limpio = String(texto ?? '').replace(RARO, ' ').replace(/\s+/g, ' ').trim();
-  return Array.from(limpio).slice(0, MAX_NOMBRE).join('').trim();
+  return Array.from(limpio).slice(0, max).join('').trim();
+}
+
+export function normalizarNombre(texto) {
+  return normalizarTexto(texto, MAX_NOMBRE);
 }

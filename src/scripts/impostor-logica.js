@@ -25,11 +25,13 @@ import { CATEGORIAS, CLAVES_CATEGORIAS, CATEGORIA_AL_AZAR } from './impostor-pal
 import {
   MAX_JUGADORES, MIN_JUGADORES, MAX_NOMBRE, LARGO_CODIGO, ALFABETO_CODIGO,
   SEGUNDOS_OPCIONES, VUELTAS_OPCIONES, MAS_SEGUNDOS, normalizarNombre, normalizarCodigo,
+  MAX_PISTA, MAX_CHAT, CHAT_GUARDADO, CHAT_ENTREGA, CHAT_RITMO_MS, normalizarTexto,
 } from './impostor-comun.js';
 
 export {
   MAX_JUGADORES, MIN_JUGADORES, MAX_NOMBRE, LARGO_CODIGO, ALFABETO_CODIGO,
   SEGUNDOS_OPCIONES, VUELTAS_OPCIONES, MAS_SEGUNDOS, normalizarNombre, normalizarCodigo,
+  MAX_PISTA, MAX_CHAT, CHAT_GUARDADO, CHAT_ENTREGA, CHAT_RITMO_MS, normalizarTexto,
 };
 
 /* ---------- límites y opciones ---------- */
@@ -43,6 +45,9 @@ export const CONFIG_INICIAL = Object.freeze({
   vueltas: 1,
   anfitrionJuega: true,
   impostorVeCategoria: true,
+  // Jugar cada uno en su casa: pista escrita obligatoria en cada turno y
+  // chat durante la votación. Apagado, se juega como siempre (de viva voz).
+  aDistancia: false,
 });
 
 /* ---------- azar ---------- */
@@ -144,6 +149,8 @@ export function crearSala(codigo, nombreAnfitrion, ahora) {
     votos: {},
     resultado: null,
     partidas: 0,
+    chat: [],
+    siguienteMsg: 1,
   };
   const anfitrion = nuevoJugador(sala, nombreAnfitrion, true);
   return { sala, anfitrion };
@@ -158,6 +165,8 @@ function nuevoJugador(sala, nombre, anfitrion) {
     juega: true,
     vivo: true,
     impostor: false,
+    silenciado: false,
+    ultimoChat: 0,
   };
   sala.jugadores.push(j);
   return j;
@@ -221,6 +230,7 @@ export function configurar(sala, quien, cambios) {
   if ('vueltas' in cambios) c.vueltas = enteroEn(cambios.vueltas, VUELTAS_OPCIONES, c.vueltas);
   if ('anfitrionJuega' in cambios) c.anfitrionJuega = cambios.anfitrionJuega === true;
   if ('impostorVeCategoria' in cambios) c.impostorVeCategoria = cambios.impostorVeCategoria === true;
+  if ('aDistancia' in cambios) c.aDistancia = cambios.aDistancia === true;
   return { ok: true };
 }
 
@@ -251,6 +261,7 @@ export function iniciar(sala, quien, rand = u32) {
   sala.palabra = elegir(CATEGORIAS[clave].palabras, rand);
   sala.votos = {};
   sala.resultado = null;
+  sala.chat = [];
   sala.partidas += 1;
   empezarRonda(sala, 1, rand);
   return { ok: true };
@@ -266,6 +277,8 @@ function empezarRonda(sala, n, rand) {
     vueltas: sala.config.vueltas,
     // Posición dentro de orden × vueltas. Si llega al total, todos hablaron.
     turno: 0,
+    // Pistas escritas de esta ronda: { turno, id, texto }
+    pistas: [],
     turnoFin: null,
     pausaRestante: null,
   };
@@ -411,8 +424,61 @@ export function nuevaPartida(sala, quien) {
   sala.ronda = null;
   sala.votos = {};
   sala.resultado = null;
-  for (const j of sala.jugadores) { j.vivo = true; j.impostor = false; j.juega = true; }
+  sala.chat = [];
+  for (const j of sala.jugadores) { j.vivo = true; j.impostor = false; j.juega = true; j.silenciado = false; }
   return { ok: true };
+}
+
+
+/* ---------- modo a distancia: pistas escritas y chat ---------- */
+// Dos decisiones que parecen descuidos y no lo son:
+//
+//  - Una pista no se rechaza por contener la palabra secreta. Rechazarla
+//    daría un oráculo: el impostor probaría palabras hasta que el servidor
+//    dijera «no vale» y así descubriría la palabra. Quien la suelta, la suelta.
+//  - Ni la pista ni el chat pasan por la vista de estado completa: el chat
+//    viaja aparte (`{ t: 'chat' }`) para no reenviar 200 mensajes a 22 móviles
+//    con cada mensaje nuevo.
+
+export function enviarPista(sala, quien, texto) {
+  if (!sala.config.aDistancia) return { error: 'fase', mensaje: 'Esta sala no usa pistas escritas.' };
+  if (sala.fase !== 'ronda') return FASE_MAL;
+  const r = sala.ronda;
+  if (turnoDe(sala) !== quien.id) return { error: 'turno', mensaje: 'No es tu turno.' };
+  if (r.pistas.some((p) => p.turno === r.turno)) return { error: 'turno', mensaje: 'Ya enviaste tu pista.' };
+  const t = normalizarTexto(texto, MAX_PISTA);
+  if (!t) return { error: 'datos', mensaje: 'Escribe tu pista.' };
+  r.pistas.push({ turno: r.turno, id: quien.id, texto: t });
+  return { ok: true };
+}
+
+export function enviarChat(sala, quien, texto, ahora) {
+  if (!sala.config.aDistancia) return { error: 'fase', mensaje: 'Esta sala no usa chat.' };
+  if (sala.fase !== 'votacion' && sala.fase !== 'resultado') {
+    return { error: 'fase', mensaje: 'El chat se abre cuando empieza la votación.' };
+  }
+  if (quien.juega && !quien.vivo) return { error: 'permiso', mensaje: 'Te sacaron de la partida: puedes leer, no escribir.' };
+  if (quien.silenciado) return { error: 'permiso', mensaje: 'El anfitrión te silenció.' };
+  if (ahora - quien.ultimoChat < CHAT_RITMO_MS) return { error: 'ritmo', mensaje: 'Más despacio.' };
+  const t = normalizarTexto(texto, MAX_CHAT);
+  if (!t) return { error: 'datos', mensaje: 'Escribe un mensaje.' };
+  const mensaje = { id: sala.siguienteMsg++, de: quien.id, texto: t, t: ahora };
+  sala.chat.push(mensaje);
+  if (sala.chat.length > CHAT_GUARDADO) sala.chat.splice(0, sala.chat.length - CHAT_GUARDADO);
+  quien.ultimoChat = ahora;
+  return { ok: true, mensaje };
+}
+
+export function silenciar(sala, quien, id, valor) {
+  if (!quien.anfitrion) return NO_AUTORIZADO;
+  const j = jugadorPorId(sala, id);
+  if (!j || j.anfitrion) return { error: 'datos', mensaje: 'No se puede silenciar a ese jugador.' };
+  j.silenciado = valor === true;
+  return { ok: true };
+}
+
+export function ultimosMensajes(sala) {
+  return sala.config.aDistancia ? sala.chat.slice(-CHAT_ENTREGA) : [];
 }
 
 /* ---------- gente que entra y sale ---------- */
@@ -464,6 +530,7 @@ export function vistaPara(sala, yo, ahora, conectados) {
     ahora,
     codigo: sala.codigo,
     fase: sala.fase,
+    partida: sala.partidas,
     max: MAX_JUGADORES,
     min: MIN_JUGADORES,
     yo: { id: yo.id, anfitrion: yo.anfitrion, juega: yo.juega, vivo: yo.vivo },
@@ -476,6 +543,7 @@ export function vistaPara(sala, yo, ahora, conectados) {
       juega: enPartida ? j.juega : true,
       vivo: j.vivo,
       yaVoto: sala.fase === 'votacion' ? sala.votos[j.id] !== undefined : false,
+      silenciado: j.silenciado,
       // Solo se ve el rol de alguien cuando ya no está en la partida y la
       // ronda terminó, o cuando acaba todo. Mientras haya partida, no.
       impostor: terminada ? j.impostor : undefined,
@@ -512,6 +580,17 @@ export function vistaPara(sala, yo, ahora, conectados) {
       turnoFin: r.turnoFin,
       pausaRestante: r.pausaRestante,
       segundos: sala.config.segundos,
+      yaEnvioPista: r.pistas.some((p) => p.turno === r.turno),
+    };
+  }
+
+  if (sala.config.aDistancia && sala.ronda && enPartida) {
+    vista.pistas = sala.ronda.pistas.map((p) => ({ turno: p.turno, id: p.id, texto: p.texto }));
+  }
+  if (sala.config.aDistancia) {
+    vista.chat = {
+      abierto: sala.fase === 'votacion' || sala.fase === 'resultado',
+      puedeEscribir: !yo.silenciado && !(yo.juega && !yo.vivo),
     };
   }
 
