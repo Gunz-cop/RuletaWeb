@@ -91,6 +91,7 @@ function init() {
   let partidaChat = null;
   let noLeidos = 0;
   let turnoEnfocado = null;
+  let enfocarPista = false;
   const tituloOriginal = document.title;
 
   /* ---------- utilidades de pantalla ---------- */
@@ -281,6 +282,7 @@ function init() {
     if (e.fase === 'resultado') pintarResultado();
     pintarChat();
     mostrarVista(vista);
+    if (enfocarPista) { enfocarPista = false; $('pista').focus({ preventScroll: true }); }
     mantenerPantalla();
   }
 
@@ -454,7 +456,8 @@ function init() {
     ocultar($('pista-enviada'), !(aDistancia && mio && r.yaEnvioPista));
     if (puedeEscribir) {
       const clave = `${r.n}:${r.turno}`;
-      if (turnoEnfocado !== clave) { turnoEnfocado = clave; $('pista').value = ''; $('pista').focus({ preventScroll: true }); }
+      // El foco se pide al final de pintar(): aquí la vista aún puede estar oculta
+      if (turnoEnfocado !== clave) { turnoEnfocado = clave; $('pista').value = ''; enfocarPista = true; }
     }
     $('turnos-titulo').textContent = aDistancia ? 'Pistas' : 'Orden de turnos';
 
