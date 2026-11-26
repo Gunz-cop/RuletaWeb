@@ -11,7 +11,7 @@
  */
 export const PAGINAS = [
   'index', 'ruleta', 'amigo-secreto', 'dados', 'equipos', 'moneda', 'numeros',
-  'piedra-papel-tijera', 'si-o-no', 'temporizador',
+  'piedra-papel-tijera', 'si-o-no', 'temporizador', 'impostor',
   'contacto', 'sobre', 'politica-privacidad', 'terminos-condiciones',
   'blog', 'blog/moneda/decision-moneda',
   'blog/amigo-secreto/amigo-secreto-online-guia',

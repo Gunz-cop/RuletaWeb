@@ -16,8 +16,11 @@ utilidad de Tailwind — vive en **[DESIGN.md](./DESIGN.md)**.
 
 **Decídelo.app** (https://decidelo.app) es un hub de herramientas de decisión
 aleatoria: ruleta, dados, moneda, equipos, amigo secreto, temporizador y
-otras. Todo se ejecuta en el navegador del visitante. No hay backend, ni
-base de datos, ni cuentas de usuario, ni estado en servidor.
+otras. Todo se ejecuta en el navegador del visitante. No hay base de datos,
+ni cuentas de usuario, ni estado en servidor, con **una única excepción**: el
+juego del impostor (`/impostor`), que necesita que los celulares de varios
+jugadores se enteren unos de otros y por eso tiene un Worker con salas
+efímeras (regla 3 bis). Cualquier otra herramienta sigue siendo cliente puro.
 
 El repositorio se llama `RuletaWeb` por razones históricas: nació siendo
 solo la ruleta. El nombre del producto es Decídelo.app.
@@ -40,7 +43,8 @@ es un requisito de producto, no una optimización opcional.**
 | Tailwind CSS | 4.x | Plugin de Vite, en convivencia con CSS propio |
 | @astrojs/sitemap | 3.x | Sitemap filtrado, ver más abajo |
 | sharp | 0.35.x | Optimización de imágenes en build |
-| wrangler | 4.x | Solo para desarrollo y despliegue manual |
+| wrangler | 4.x | Desarrollo, despliegue manual y el Worker del impostor en local |
+| Cloudflare Workers + Durable Objects | — | Solo `worker/`, solo el impostor. Ver regla 3 bis |
 
 No hay framework de UI (ni React, ni Vue, ni Svelte). La interactividad es
 **JavaScript vanilla** en `src/scripts/`. Esto es deliberado: mantiene el
@@ -53,12 +57,13 @@ framework de UI sin que se haya pedido explícitamente.**
 npm run dev          # servidor de desarrollo
 npm run build        # build de producción a dist/
 npm run preview      # previsualiza el build con Astro
-npm run preview:cf   # previsualiza en el runtime real de Cloudflare
+npm run preview:cf   # previsualiza en el runtime real de Cloudflare (aquí sí funciona el impostor; con `npm run dev` y `preview` no hay Worker)
 npm run deploy       # build + despliegue manual con wrangler
 npm test             # build + paridad de tokens + snapshots de CSS
 npm run test:update  # reescribe la línea base de snapshots
 npm run test:visual  # compara capturas contra main (lento, dos builds)
 npm run test:estado  # estilos computados tras pulsar (modo foco, pestañas)
+npm run test:sala    # impostor de punta a punta: wrangler dev + 22 sockets (necesita dist/)
 ```
 
 No hay linter. Los tests que hay vigilan el CSS, que es lo único que puede
@@ -141,6 +146,17 @@ herramienta migrada se ve sin scroll en los tres móviles de referencia (Android
 que lo hace visible dejó de llegar, por ejemplo— eso se anota como fallo de
 ese estado y los demás siguen corriendo, en vez de reventar el proceso.
 
+`scripts/impostor-check.mjs` prueba las reglas del impostor sin red
+(`src/scripts/impostor-logica.js`): una sala de 22, partidas enteras hasta que
+gana alguien, empates, el anfitrión que modera y, sobre todo, que nadie vea lo
+que no le toca (el impostor nunca recibe la palabra, nadie recibe un token
+ajeno). Corre dentro de `npm test`. `scripts/impostor-sala-check.mjs` hace lo
+mismo contra un Worker de verdad: arranca `wrangler dev`, mete 22 WebSockets,
+juega una partida, reconecta a uno con su token y comprueba en los bytes que
+cruzan el cable que la palabra no llega al impostor. Corre en CI como paso
+aparte. Los estados del navegador de `/impostor` usan un `WebSocket` falso
+(`socketFalso` en `scripts/lib/estados.mjs`) que entrega una sala armada.
+
 `scripts/visual-diff.mjs` compara píxeles, que es lo que los otros dos no
 hacen: construye la rama de referencia en un worktree aparte, fotografía las
 13 páginas a 390, 768, 1280 y 1536px con Playwright, y señala dónde cambia
@@ -173,6 +189,7 @@ src/
   content/blog/   52 posts en Markdown, organizados por categoría
   assets/blog/    Imágenes de cabecera, procesadas por Astro
   lib/            Utilidades compartidas
+worker/           Solo el impostor: index.js (rutas /api/impostor) y sala.js (Durable Object)
   styles/         global.css (sistema propio) y tailwind.css (capa Tailwind)
   data/           adsenseEditorial.ts, listas de slugs editoriales
 ```
@@ -258,6 +275,39 @@ nuevo y vacío y dejaría decidelo.app apuntando al viejo.
 GitHub Actions (`.github/workflows/ci.yml`) corre en cada push `npm test` y
 `npm run test:estado`, pero **no despliega**: solo avisa. El despliegue lo
 hace Cloudflare por su cuenta.
+
+### 3 bis. El impostor tiene un Worker (la única parte con servidor)
+
+`/impostor` es el único sitio donde hay código de servidor, y el motivo es
+funcional, no de gusto: cada jugador está en su propio celular y tiene que ver
+su rol y el turno de los demás. Una sala es un Durable Object
+(`worker/sala.js`) con WebSockets; `worker/index.js` solo crea salas y reenvía
+el socket. El resto del sitio **no pasa por el Worker**: `run_worker_first` en
+`wrangler.jsonc` lo limita a `/api/*`, y lo demás sale de `dist/` gratis. El
+detalle de protocolo y límites está en `docs/sdd-impostor.md`.
+
+Reglas que no se rompen sin hablarlo:
+
+- **El servidor no decide nada del juego.** Todas las reglas están en
+  `src/scripts/impostor-logica.js`, que no toca red ni DOM y se prueba con
+  Node. El Durable Object solo guarda la sala y reenvía la vista de cada uno.
+- **Cada jugador recibe solo su vista** (`vistaPara`). Nunca se difunde el
+  estado completo: ahí viajan los roles y los tokens.
+- **La lista de palabras no viaja al navegador.** La página importa
+  `impostor-comun.js`, nunca `impostor-logica.js` ni `impostor-palabras.js`
+  (la primera trae a la segunda). Si algún día `dist/_astro/` contiene una
+  palabra de la lista, alguien rompió esto.
+- **Hibernación de WebSockets**, no `ws.accept()`: sin ella Cloudflare cobra
+  tiempo de ejecución durante toda la partida. Por eso el estado va en
+  `storage` y el jugador de cada socket en su attachment, no en variables.
+- **Nada permanente**: la sala se borra sola a las 6 horas sin actividad
+  (alarma). No se guarda IP ni historial. La política de privacidad lo
+  describe (sección 3); si cambia lo que se guarda, cambia ese texto en el
+  mismo commit.
+- **Cambios en `migrations`** (`wrangler.jsonc`) son irreversibles en
+  producción: un tag nuevo por cada cambio de clase, nunca editar el existente.
+- El primer despliegue a `main` crea el Durable Object en Cloudflare. Antes de
+  mergear, `npm run test:sala` y `npm run preview:cf` con dos navegadores.
 
 ### 4. El sitemap está filtrado a mano
 

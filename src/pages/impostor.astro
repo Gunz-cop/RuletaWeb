@@ -1,0 +1,878 @@
+---
+import Layout from '../layouts/Layout.astro';
+import AdSlot from '../components/AdSlot.astro';
+import RoleCard from '../components/RoleCard.astro';
+import HubGrid from '../components/HubGrid.astro';
+import SeoArticle from '../components/SeoArticle.astro';
+import { CATEGORIAS } from '../scripts/impostor-palabras.js';
+import { SEGUNDOS_OPCIONES, VUELTAS_OPCIONES, MAX_JUGADORES, MIN_JUGADORES, MAX_NOMBRE, LARGO_CODIGO } from '../scripts/impostor-comun.js';
+
+const title = 'Juego del Impostor Online: Salas con Código, Sin App ni Registro';
+const description = 'Crea una sala, comparte el código y juega al impostor con tu grupo: cada uno ve su palabra en su propio celular y el anfitrión lleva el tiempo de cada jugador. Gratis y sin registro.';
+const keywords = 'juego del impostor, impostor online, juego del impostor online, impostor palabra secreta, quién es el impostor, juego de impostor para grupos, impostor con código de sala, juego para reuniones, juego de oficina, impostor multijugador, juego para videollamada';
+
+const schemaLD = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebApplication",
+      "@id": "https://decidelo.app/impostor#webapp",
+      "name": "Juego del impostor online — Decídelo.app",
+      "description": "Juego del impostor para grupos de 3 a 24 personas: una sala con código, cada jugador ve su rol en su propio celular y el anfitrión controla el turno y el tiempo de cada uno. Gratis, sin app y sin registro.",
+      "url": "https://decidelo.app/impostor",
+      "applicationCategory": "GameApplication",
+      "operatingSystem": "All",
+      "browserRequirements": "Requires JavaScript and WebSocket support",
+      "softwareVersion": "1.0.0",
+      "inLanguage": "es",
+      "offers": { "@type": "Offer", "price": "0.00", "priceCurrency": "USD" },
+      "publisher": {
+        "@type": "Organization",
+        "@id": "https://decidelo.app/#organization",
+        "name": "Decídelo.app",
+        "url": "https://decidelo.app/",
+        "logo": { "@type": "ImageObject", "url": "https://decidelo.app/favicon.svg" }
+      }
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://decidelo.app/impostor#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "¿Cómo se juega al impostor?",
+          "acceptedAnswer": { "@type": "Answer", "text": "A todos los jugadores les toca la misma palabra menos a uno o varios, los impostores, que solo saben la categoría. Por turnos, cada uno dice una pista sobre la palabra sin nombrarla. Después se vota a quién sacar. Si el grupo saca a todos los impostores, gana; si los impostores quedan tantos como los demás, ganan ellos." }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Cuántas personas pueden jugar?",
+          "acceptedAnswer": { "@type": "Answer", "text": "De 3 a 24 en la misma sala. Con 22 personas el reparto automático pone 3 impostores." }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Hay que instalar una app o crear una cuenta?",
+          "acceptedAnswer": { "@type": "Answer", "text": "No. Se juega desde el navegador del celular. Quien organiza crea la sala y comparte el enlace o el código de cinco letras; los demás entran con su nombre." }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Cómo lleva el anfitrión el tiempo de cada jugador?",
+          "acceptedAnswer": { "@type": "Answer", "text": "El anfitrión ve un panel con el turno actual y una cuenta atrás por jugador (de 20 a 120 segundos). Puede pausar, sumar 15 segundos, reiniciar el tiempo o pasar al siguiente. Todos los celulares ven de quién es el turno y cuánto le queda." }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Alguien puede ver el rol de otro?",
+          "acceptedAnswer": { "@type": "Answer", "text": "No. El servidor manda a cada celular solo su propio rol: al impostor nunca le llega la palabra. El rol se muestra tapado y hay que tocar la tarjeta para verlo." }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Qué pasa si se me cae la conexión o se me bloquea el celular?",
+          "acceptedAnswer": { "@type": "Answer", "text": "La página se reconecta sola y recuperas tu rol y tu turno. Si cierras la pestaña, vuelve a abrir el enlace de la sala desde el mismo navegador." }
+        },
+        {
+          "@type": "Question",
+          "name": "¿Qué datos se guardan?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Solo el nombre que escribas y el estado de la partida, mientras la sala está activa. La sala se borra sola tras seis horas sin actividad. No hay cuentas, y los nombres pueden ser apodos." }
+        }
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://decidelo.app/impostor#breadcrumb",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Inicio", "item": "https://decidelo.app/" },
+        { "@type": "ListItem", "position": 2, "name": "Impostor", "item": "https://decidelo.app/impostor" }
+      ]
+    }
+  ]
+};
+
+const categorias = Object.entries(CATEGORIAS).map(([clave, c]) => ({ clave, etiqueta: c.etiqueta }));
+const opcionesImpostores = Array.from({ length: 10 }, (_, i) => i + 1);
+---
+
+<Layout title={title} description={description} keywords={keywords} schemaLD={schemaLD} showHomeHeader={false}>
+  <Fragment slot="head">
+    {/* Newsreader itálica: acento del sistema editorial (ver DESIGN.md) */}
+    <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@1,400&display=swap" rel="stylesheet">
+  </Fragment>
+
+  <main id="imp-app" class="wrap w-full max-w-2xl pt-5 pb-8 sm:pt-8" data-max-nombre={MAX_NOMBRE} data-largo-codigo={LARGO_CODIGO} data-min={MIN_JUGADORES} data-max={MAX_JUGADORES}>
+
+    {/* Barra de la sala: solo dentro de una sala */}
+    <div id="imp-barra" class="imp-barra mb-5" hidden>
+      <p class="m-0 flex-1 min-w-0 text-sm text-ink-secondary">
+        Sala <strong class="imp-barra-codigo" id="imp-barra-codigo"></strong>
+        <span class="text-ink-tertiary"> · </span><span id="imp-barra-n"></span>
+      </p>
+      <span class="imp-conexion" id="imp-conexion" role="status" aria-live="polite"></span>
+      <button class="imp-text-btn" id="imp-salir" type="button">Salir</button>
+    </div>
+
+    {/* La tarjeta de rol es una sola y está fuera de las vistas: se ve durante
+        toda la partida y sus ids no se repiten. */}
+    <div id="imp-zona-rol" class="mb-4 sm:mb-6" hidden>
+      <RoleCard />
+    </div>
+
+    {/* ---------- 1. Entrada ---------- */}
+    <section id="imp-v-entrada" class="imp-vista" aria-label="Crear o unirse a una sala">
+      <header class="imp-hero text-center sm:text-left mb-5 sm:mb-6">
+        <h1>El impostor, <em>cada uno en su celular</em></h1>
+        <p class="imp-intro my-0 mx-auto sm:mx-0 max-w-lg text-sm sm:text-base text-ink-secondary">Crea una sala, comparte el código y juega con tu grupo. Todos reciben la misma palabra menos el impostor. El anfitrión lleva el tiempo de cada jugador.</p>
+      </header>
+
+      <label class="imp-field flex flex-col gap-1.5 mb-5">
+        <span>Tu nombre</span>
+        <input id="imp-nombre" type="text" maxlength={MAX_NOMBRE} placeholder="Como te conocen en el grupo" autocomplete="off" enterkeyhint="go">
+      </label>
+
+      <div id="imp-bloque-crear" class="flex flex-col items-start gap-3">
+        <button class="imp-btn" id="imp-crear" type="button">Crear sala</button>
+      </div>
+
+      <div id="imp-bloque-unirse" class="imp-unirse mt-8 pt-6">
+        <p id="imp-invitacion" class="imp-invitacion mt-0 mb-4" hidden>Te invitaron a una sala. Escribe tu nombre y entra.</p>
+        <p id="imp-unirse-titulo" class="imp-sub mt-0 mb-3">¿Ya tienes un código?</p>
+        <div class="flex items-end gap-4">
+          <label class="imp-field flex flex-col gap-1.5 min-w-0 flex-1">
+            <span>Código de la sala</span>
+            <input id="imp-codigo" class="imp-codigo-input" type="text" maxlength={LARGO_CODIGO} placeholder="KQMRT" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="go">
+          </label>
+          <button class="imp-btn imp-btn-line" id="imp-unirse" type="button">Unirme</button>
+        </div>
+      </div>
+
+      <p id="imp-aviso" class="imp-aviso" role="alert" hidden></p>
+    </section>
+
+    {/* ---------- 2. Lobby ---------- */}
+    <section id="imp-v-lobby" class="imp-vista" aria-label="Sala de espera" hidden>
+      <header class="mb-6">
+        <p class="imp-eyebrow m-0">Código de la sala</p>
+        <p class="imp-codigo-grande" id="imp-lobby-codigo" aria-live="polite"></p>
+        <div class="flex flex-wrap items-center gap-x-6 gap-y-2">
+          <a class="imp-text-btn" id="imp-wa" href="https://wa.me/" target="_blank" rel="noopener">Invitar por WhatsApp</a>
+          <button class="imp-text-btn" id="imp-copiar" type="button">Copiar enlace</button>
+        </div>
+      </header>
+
+      <div id="imp-lobby-host" hidden>
+        <p class="imp-eyebrow mt-0 mb-3">Ajustes de la partida</p>
+        <div class="grid grid-cols-2 gap-x-4 gap-y-4 mb-4">
+          <label class="imp-field flex flex-col gap-1.5 min-w-0">
+            <span>Categoría</span>
+            <select id="imp-cfg-categoria">
+              <option value="azar">Al azar</option>
+              {categorias.map((c) => <option value={c.clave}>{c.etiqueta}</option>)}
+            </select>
+          </label>
+          <label class="imp-field flex flex-col gap-1.5 min-w-0">
+            <span>Impostores</span>
+            <select id="imp-cfg-impostores">
+              <option value="0">Automático</option>
+              {opcionesImpostores.map((n) => <option value={n}>{n}</option>)}
+            </select>
+          </label>
+          <label class="imp-field flex flex-col gap-1.5 min-w-0">
+            <span>Tiempo por turno</span>
+            <select id="imp-cfg-segundos">
+              {SEGUNDOS_OPCIONES.map((s) => <option value={s}>{s} segundos</option>)}
+            </select>
+          </label>
+          <label class="imp-field flex flex-col gap-1.5 min-w-0">
+            <span>Vueltas de pistas</span>
+            <select id="imp-cfg-vueltas">
+              {VUELTAS_OPCIONES.map((v) => <option value={v}>{v}</option>)}
+            </select>
+          </label>
+        </div>
+        <label class="imp-check"><input type="checkbox" id="imp-cfg-juega"> <span>Yo también juego (si no, solo modero)</span></label>
+        <label class="imp-check"><input type="checkbox" id="imp-cfg-categoria-visible"> <span>El impostor ve la categoría</span></label>
+        <p id="imp-cfg-nota" class="imp-nota mt-3 mb-0"></p>
+      </div>
+
+      <p id="imp-resumen" class="imp-nota mt-0 mb-4" hidden></p>
+
+      <div class="imp-fija mt-6 mb-6">
+        <button class="imp-btn" id="imp-iniciar" type="button" hidden>Empezar partida</button>
+        <p id="imp-espera" class="imp-nota m-0" hidden>Esperando a que el anfitrión empiece la partida…</p>
+        <p id="imp-faltan" class="imp-nota mt-2 mb-0" role="status" hidden></p>
+      </div>
+
+      <div class="imp-lista-cabecera">
+        <h2 class="m-0 font-display text-lg">Jugadores</h2>
+        <span class="flex-1 text-sm text-ink-tertiary tabular-nums" id="imp-lobby-n"></span>
+      </div>
+      <ol class="imp-lista" id="imp-lista-lobby"></ol>
+
+      <div id="imp-ceder-bloque" class="mt-8" hidden>
+        <label class="imp-field flex flex-col gap-1.5">
+          <span>Pasar el mando a otro jugador</span>
+          <select id="imp-ceder-sel"></select>
+        </label>
+        <button class="imp-text-btn mt-3" id="imp-ceder" type="button">Pasar el mando</button>
+      </div>
+    </section>
+
+    {/* ---------- 3. Ronda de pistas ---------- */}
+    <section id="imp-v-ronda" class="imp-vista" aria-label="Ronda de pistas" hidden>
+      <p class="imp-eyebrow mt-0 mb-3" id="imp-ronda-etiqueta"></p>
+
+      <div class="imp-turno" id="imp-turno">
+        <p class="imp-eyebrow m-0" id="imp-turno-etiqueta">Habla ahora</p>
+        <p class="imp-turno-nombre" id="imp-turno-nombre" aria-live="polite"></p>
+        <p class="imp-reloj" id="imp-reloj" role="timer" aria-live="off">0:00</p>
+        <p class="imp-nota m-0" id="imp-turno-sigue"></p>
+      </div>
+
+      <div id="imp-ronda-host" hidden>
+        <div class="imp-fija mt-4">
+          <button class="imp-btn" id="imp-turno-principal" type="button">Empezar turno</button>
+        </div>
+        <div class="flex flex-wrap items-center gap-x-5 gap-y-2 mt-2">
+          <button class="imp-text-btn" id="imp-pausa" type="button">Pausar</button>
+          <button class="imp-text-btn" id="imp-mas" type="button">+15 s</button>
+          <button class="imp-text-btn" id="imp-reiniciar" type="button">Reiniciar tiempo</button>
+          <button class="imp-text-btn" id="imp-votar-ya" type="button">Votar ya</button>
+        </div>
+      </div>
+
+      <div class="imp-lista-cabecera mt-10">
+        <h2 class="m-0 font-display text-lg">Orden de turnos</h2>
+      </div>
+      <ol class="imp-lista" id="imp-lista-turnos"></ol>
+    </section>
+
+    {/* ---------- 4. Votación ---------- */}
+    <section id="imp-v-votacion" class="imp-vista" aria-label="Votación" hidden>
+      <header class="mb-5">
+        <h2 class="imp-titulo m-0">¿Quién es <em>el impostor</em>?</h2>
+        <p class="imp-nota mt-2 mb-0" id="imp-votacion-progreso" aria-live="polite"></p>
+      </header>
+
+      <ul class="imp-lista" id="imp-lista-votos"></ul>
+
+      <div id="imp-votacion-host" class="imp-fija mt-4" hidden>
+        <button class="imp-btn" id="imp-cerrar" type="button">Cerrar votación</button>
+      </div>
+    </section>
+
+    {/* ---------- 5. Resultado ---------- */}
+    <section id="imp-v-resultado" class="imp-vista" aria-label="Resultado" hidden>
+      <p class="imp-resultado" aria-live="polite">
+        <span class="imp-resultado-principal" id="imp-res-principal"></span>
+        <span class="imp-resultado-lado" id="imp-res-lado"></span>
+      </p>
+
+      <div id="imp-final" class="imp-final" hidden>
+        <p class="imp-eyebrow m-0">La palabra era</p>
+        <p class="imp-final-palabra" id="imp-final-palabra"></p>
+        <p class="imp-nota mt-0 mb-4" id="imp-final-categoria"></p>
+        <p class="imp-eyebrow m-0" id="imp-final-etiqueta">Los impostores eran</p>
+        <p class="imp-final-impostores" id="imp-final-impostores"></p>
+      </div>
+
+      <div class="imp-fija mt-6 mb-6">
+        <button class="imp-btn" id="imp-continuar" type="button" hidden>Siguiente ronda</button>
+        <button class="imp-btn" id="imp-nueva" type="button" hidden>Jugar otra vez</button>
+        <p id="imp-resultado-espera" class="imp-nota m-0" hidden>Esperando al anfitrión…</p>
+      </div>
+
+      <div class="imp-lista-cabecera">
+        <h2 class="m-0 font-display text-lg">Votos</h2>
+      </div>
+      <ol class="imp-lista" id="imp-lista-conteo"></ol>
+    </section>
+
+    {/* Plantillas de fila: el JS las clona y solo escribe texto */}
+    <template id="imp-tpl-lobby">
+      <li class="imp-fila">
+        <span class="imp-fila-num"></span>
+        <span class="imp-fila-nombre"></span>
+        <span class="imp-fila-notas"></span>
+        <button class="imp-text-btn imp-fila-accion" type="button" hidden>Quitar</button>
+      </li>
+    </template>
+    <template id="imp-tpl-turno">
+      <li class="imp-fila">
+        <span class="imp-fila-num"></span>
+        <span class="imp-fila-nombre"></span>
+        <span class="imp-fila-notas"></span>
+      </li>
+    </template>
+    <template id="imp-tpl-voto">
+      <li class="imp-voto-item">
+        <button class="imp-voto" type="button" aria-pressed="false">
+          <span class="imp-voto-nombre"></span>
+          <span class="imp-voto-nota"></span>
+        </button>
+      </li>
+    </template>
+    <template id="imp-tpl-conteo">
+      <li class="imp-fila">
+        <span class="imp-fila-num"></span>
+        <span class="imp-fila-nombre"></span>
+        <span class="imp-fila-notas"></span>
+      </li>
+    </template>
+  </main>
+
+  <AdSlot position="top" />
+
+  <SeoArticle title="El juego del impostor online: una sala, tu grupo y un celular por cabeza">
+    <p><strong>¿Quieres jugar al impostor sin que nadie tenga que pasarse el celular?</strong> Aquí el anfitrión crea una sala, comparte un enlace o un código de cinco letras y cada jugador entra desde su propio teléfono. A todos les toca la misma palabra menos al impostor, que solo sabe la categoría. Funciona en el navegador, sin instalar nada y sin crear cuenta, y está pensado para grupos grandes: desde 3 hasta 24 personas en la misma sala.</p>
+
+    <h2>Cómo se juega, paso a paso</h2>
+    <ol>
+      <li><strong>El anfitrión crea la sala</strong> y comparte el enlace por WhatsApp o dicta el código. Los demás entran con su nombre.</li>
+      <li><strong>Se reparten los roles en secreto.</strong> Cada celular muestra, tapada, su tarjeta: la palabra o «impostor». Se toca para verla y se toca otra vez para taparla.</li>
+      <li><strong>Ronda de pistas.</strong> Por turnos, cada uno dice una pista sobre la palabra sin nombrarla. El anfitrión controla el turno y una cuenta atrás por jugador, y todos ven de quién es el turno.</li>
+      <li><strong>Votación.</strong> Cada jugador vota desde su celular. Si todos votan, el resultado sale solo.</li>
+      <li><strong>Eliminación.</strong> Se va el más votado y se revela si era impostor. En caso de empate no se va nadie. Se repite hasta que el grupo saque a todos los impostores o los impostores igualen en número a los demás.</li>
+    </ol>
+
+    <h2>Cuántos impostores poner</h2>
+    <p>El modo automático pone uno por cada seis jugadores, con un mínimo de uno. El anfitrión puede cambiarlo, pero nunca más de la mitad menos uno: con más, los impostores ganarían sin que nadie vote.</p>
+    <table>
+      <thead>
+        <tr><th>Jugadores</th><th>Impostores (automático)</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>3 a 11</td><td>1</td></tr>
+        <tr><td>12 a 17</td><td>2</td></tr>
+        <tr><td>18 a 23</td><td>3</td></tr>
+        <tr><td>24</td><td>4</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Para un grupo de trabajo o una videollamada</h2>
+    <p>La categoría «Oficina y trabajo» trae palabras que cualquier equipo conoce, y el anfitrión puede jugar o solo moderar: si no juega, ve la palabra y los impostores y se dedica a llevar el tiempo. Con equipos grandes conviene un turno de 30 a 45 segundos y una sola vuelta de pistas; con grupos de menos de ocho, dos vueltas hacen el juego más difícil para el impostor.</p>
+
+    <h2>Qué pasa con tus datos</h2>
+    <p>Esta herramienta es la única del sitio que usa un servidor, porque necesita que los celulares se enteren unos de otros. Solo se guardan los nombres que escribas (pueden ser apodos) y el estado de la partida, mientras la sala está activa. La sala se borra sola a las seis horas sin actividad, no se guarda tu dirección IP en la partida y no hace falta cuenta.</p>
+
+    <h2>Preguntas frecuentes</h2>
+    <h3>¿Puede alguien ver mi rol?</h3>
+    <p>No. El servidor envía a cada celular únicamente su rol; al impostor no le llega la palabra. La tarjeta, además, se muestra tapada hasta que la tocas.</p>
+    <h3>¿Y si se me cae el internet?</h3>
+    <p>La página se reconecta sola y recuperas tu rol. Si cerraste la pestaña, abre otra vez el enlace de la sala desde el mismo navegador.</p>
+    <h3>¿Puede entrar alguien con la partida empezada?</h3>
+    <p>No: la sala se cierra a nuevos jugadores al empezar, para que nadie se cuele con un rol a medias. Entre partidas, el anfitrión puede volver a la sala de espera.</p>
+    <h3>¿Y si quiero jugar con un solo celular?</h3>
+    <p>Esta versión es para jugar cada uno en su celular. Para sortear quién empieza o ponerse en equipos mientras tanto, prueba la <a href="/ruleta">ruleta</a> o los <a href="/equipos">equipos al azar</a>.</p>
+  </SeoArticle>
+
+  <AdSlot position="bottom" />
+
+  <section class="hub-section wrap">
+    <div class="section-header reveal">
+      <div class="section-tag">🧰 Caja de Herramientas</div>
+      <h2 class="section-heading">Prueba otras herramientas de decisión</h2>
+    </div>
+    <HubGrid activeToolId="impostor" />
+  </section>
+
+  <script src="../scripts/impostor.js"></script>
+</Layout>
+
+<style>
+  [hidden] {
+    display: none !important;
+  }
+
+  .imp-hero h1 {
+    font-family: 'Outfit', sans-serif;
+    font-size: clamp(2.2rem, 6vw, 3.6rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin: 0 0 1rem;
+  }
+
+  .imp-hero em,
+  .imp-titulo em {
+    font-family: 'Newsreader', Georgia, serif;
+    font-style: italic;
+    font-weight: 400;
+    color: var(--accent-warm);
+  }
+
+  .imp-titulo {
+    font-family: 'Outfit', sans-serif;
+    font-size: clamp(1.8rem, 5vw, 2.6rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+
+  /* Barra de la sala */
+  .imp-barra {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--divider-line);
+  }
+
+  .imp-barra p {
+    text-align: left;
+  }
+
+  .imp-barra-codigo {
+    font-family: 'Outfit', sans-serif;
+    letter-spacing: 0.12em;
+    color: var(--text-primary);
+  }
+
+  .imp-conexion {
+    font-size: 0.8rem;
+    color: var(--text-tertiary);
+  }
+
+  .imp-conexion.is-caida {
+    color: var(--accent-warm);
+  }
+
+  /* Campos: subrayados, sin cajas */
+  .imp-field > span,
+  .imp-eyebrow {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+  }
+
+  .imp-field input,
+  .imp-field select {
+    width: 100%;
+    padding: 0.4rem 0;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--divider-line);
+    border-radius: 0;
+    color: var(--text-primary);
+    color-scheme: dark;
+    font: inherit;
+    font-size: 1.15rem;
+  }
+
+  .imp-field select {
+    font-size: 1rem;
+  }
+
+  .imp-field input::placeholder {
+    color: var(--text-tertiary);
+  }
+
+  .imp-field input:focus,
+  .imp-field select:focus-visible {
+    outline: none;
+    border-bottom-color: var(--accent-warm);
+  }
+
+  .imp-codigo-input {
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+  }
+
+  .imp-check {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.35rem 0;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    cursor: pointer;
+  }
+
+  .imp-check input {
+    width: 1.1rem;
+    height: 1.1rem;
+    accent-color: var(--accent-warm);
+  }
+
+  .imp-nota,
+  .imp-sub {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+  }
+
+  .imp-invitacion {
+    color: var(--text-primary);
+  }
+
+  .imp-unirse {
+    border-top: 1px solid var(--divider-line);
+  }
+
+  .imp-aviso {
+    margin: 1rem 0 0;
+    color: var(--accent-warm);
+    font-size: 0.95rem;
+  }
+
+  /* Botón principal: acento liso, sin degradado ni glow */
+  .imp-btn {
+    padding: 0.9rem 2.2rem;
+    border: 0;
+    border-radius: 999px;
+    background: var(--accent-warm);
+    color: #1a0e06;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 1.05rem;
+    cursor: pointer;
+    transition: transform 0.15s ease-out, opacity 0.15s ease-out;
+  }
+
+  .imp-btn:active {
+    transform: scale(0.97);
+  }
+
+  .imp-btn:disabled {
+    opacity: 0.55;
+    cursor: default;
+  }
+
+  .imp-btn:focus-visible {
+    outline: 2px solid var(--accent-warm);
+    outline-offset: 3px;
+  }
+
+  /* «Unirme» es secundario salvo que vengas de una invitación */
+  .imp-btn-line {
+    padding: 0.55rem 1.4rem;
+    background: transparent;
+    border: 1px solid var(--divider-line);
+    color: var(--text-primary);
+    font-size: 1rem;
+  }
+
+  .imp-btn-line.is-principal {
+    padding: 0.9rem 2.2rem;
+    background: var(--accent-warm);
+    border-color: var(--accent-warm);
+    color: #1a0e06;
+  }
+
+  @media (hover: hover) {
+    .imp-btn-line:not(.is-principal):hover {
+      border-color: var(--accent-warm);
+      color: var(--accent-warm);
+    }
+  }
+
+  /* Botones de texto: acción secundaria, subrayada, nunca rellena */
+  .imp-text-btn {
+    background: none;
+    border: 0;
+    border-bottom: 1px solid var(--divider-line);
+    padding: 0.25rem 0;
+    color: var(--text-primary);
+    font: inherit;
+    font-size: 0.95rem;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .imp-text-btn:hover,
+  .imp-text-btn:focus-visible {
+    outline: none;
+    color: var(--accent-warm);
+    border-bottom-color: currentColor;
+  }
+
+  .imp-text-btn:disabled {
+    color: var(--text-tertiary);
+    cursor: default;
+  }
+
+  /* Código de sala */
+  .imp-codigo-grande {
+    margin: 0.25rem 0 0.75rem;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: clamp(2.6rem, 14vw, 4.2rem);
+    letter-spacing: 0.14em;
+    line-height: 1;
+    color: var(--text-primary);
+  }
+
+  /* Listas divididas por líneas de 1px (patrón hub-row) */
+  .imp-lista-cabecera {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--divider-line);
+  }
+
+  .imp-lista {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .imp-fila {
+    display: grid;
+    grid-template-columns: 2.25rem minmax(0, 1fr) auto auto;
+    gap: 0.75rem;
+    align-items: baseline;
+    padding: 0.7rem 0;
+    border-bottom: 1px solid var(--divider-line);
+  }
+
+  .imp-fila-num {
+    color: var(--text-tertiary);
+    font-variant-numeric: tabular-nums;
+    font-size: 0.85rem;
+  }
+
+  .imp-fila-nombre {
+    color: var(--text-primary);
+    overflow-wrap: anywhere;
+  }
+
+  .imp-fila-notas {
+    color: var(--text-tertiary);
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-align: right;
+  }
+
+  .imp-fila-accion {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+
+  .imp-fila.is-ahora .imp-fila-nombre,
+  .imp-fila.is-ahora .imp-fila-notas {
+    color: var(--accent-warm);
+    font-weight: 600;
+  }
+
+  .imp-fila.is-hecho .imp-fila-nombre {
+    color: var(--text-tertiary);
+  }
+
+  .imp-fila.is-fuera .imp-fila-nombre {
+    color: var(--text-tertiary);
+    text-decoration: line-through;
+  }
+
+  .imp-fila.is-desconectado .imp-fila-nombre {
+    color: var(--text-secondary);
+  }
+
+  /* Turno */
+  .imp-turno {
+    padding: 1.25rem 0;
+    border-top: 1px solid var(--divider-line);
+    border-bottom: 1px solid var(--divider-line);
+    text-align: center;
+  }
+
+  .imp-turno.is-mio {
+    border-color: var(--accent-warm);
+  }
+
+  .imp-turno-nombre {
+    margin: 0.25rem 0 0;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: clamp(1.8rem, 7vw, 2.6rem);
+    line-height: 1.1;
+    overflow-wrap: anywhere;
+  }
+
+  .imp-reloj {
+    margin: 0.15rem 0 0.35rem;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: clamp(2.6rem, 13vw, 4.5rem);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-primary);
+  }
+
+  .imp-reloj.is-pausa {
+    color: var(--text-tertiary);
+  }
+
+  .imp-reloj.is-agotado {
+    color: var(--accent-warm);
+  }
+
+  /* Votación: una fila por jugador, la elegida se marca con el acento */
+  .imp-voto-item {
+    border-bottom: 1px solid var(--divider-line);
+  }
+
+  .imp-voto {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    width: 100%;
+    min-height: 3rem;
+    padding: 0.8rem 0;
+    background: none;
+    border: 0;
+    color: var(--text-primary);
+    font: inherit;
+    font-size: 1.1rem;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .imp-voto-nombre {
+    overflow-wrap: anywhere;
+  }
+
+  .imp-voto-nota {
+    flex: none;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+  }
+
+  .imp-voto[aria-pressed="true"] {
+    color: var(--accent-warm);
+    font-weight: 600;
+  }
+
+  .imp-voto[aria-pressed="true"] .imp-voto-nota {
+    color: var(--accent-warm);
+  }
+
+  .imp-voto:focus-visible {
+    outline: 2px solid var(--accent-warm);
+    outline-offset: -2px;
+  }
+
+  .imp-voto:disabled {
+    cursor: default;
+    color: var(--text-tertiary);
+  }
+
+  @media (hover: hover) {
+    .imp-voto:not(:disabled):hover {
+      color: var(--accent-warm);
+    }
+  }
+
+  /* Resultado */
+  .imp-resultado {
+    margin: 0 0 1.5rem;
+    text-align: center;
+  }
+
+  .imp-resultado-principal {
+    display: block;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: clamp(2rem, 8vw, 3.2rem);
+    line-height: 1.1;
+    overflow-wrap: anywhere;
+  }
+
+  .imp-resultado-lado {
+    display: block;
+    margin-top: 0.4rem;
+    font-size: 0.8rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+  }
+
+  .imp-final {
+    margin: 0 0 1.5rem;
+    padding: 1.25rem 0;
+    border-top: 1px solid var(--divider-line);
+    border-bottom: 1px solid var(--divider-line);
+    text-align: center;
+  }
+
+  .imp-final-palabra,
+  .imp-final-impostores {
+    margin: 0.2rem 0 0.4rem;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: clamp(1.6rem, 6vw, 2.2rem);
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+  }
+
+  .imp-final-impostores {
+    color: var(--accent-warm);
+  }
+
+  /* La acción principal de cada vista se queda pegada al borde inferior:
+     con 22 nombres en la lista, el anfitrión no puede tener que bajar para
+     pulsar «Empezar» o «Siguiente jugador» */
+  .imp-fija {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0.75rem 0 1.75rem;
+    background: var(--bg-body);
+  }
+
+  @media (max-width: 639px) {
+    .imp-hero h1 {
+      font-size: 1.7rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .imp-turno {
+      padding: 0.6rem 0;
+    }
+
+    .imp-fija {
+      align-items: stretch;
+    }
+
+    .imp-btn {
+      width: 100%;
+    }
+
+    .imp-btn-line:not(.is-principal) {
+      width: auto;
+    }
+  }
+
+  /* Pantallas bajas (iPhone SE, Android con barra de Chrome): la entradilla y
+     el rótulo de la ronda ceden su sitio para que la acción quepa sin scroll */
+  @media (max-width: 639px) and (max-height: 620px) {
+    .imp-intro,
+    #imp-ronda-etiqueta {
+      display: none;
+    }
+
+    #imp-app {
+      padding-top: 0.75rem;
+    }
+
+    #imp-barra {
+      margin-bottom: 0.6rem;
+      padding-bottom: 0.4rem;
+    }
+
+    #imp-zona-rol {
+      margin-bottom: 0.6rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .imp-btn,
+    .imp-btn:active {
+      transition: none;
+      transform: none;
+    }
+  }
+</style>

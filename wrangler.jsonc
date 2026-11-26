@@ -5,6 +5,11 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "azares",
   "compatibility_date": "2026-09-09",
+  // Un Worker solo para /api/impostor (worker/index.js). El resto del sitio
+  // sigue siendo estático: `run_worker_first` hace que únicamente /api/*
+  // pase por él, y todo lo demás lo sirve Cloudflare directamente desde
+  // `dist/`, gratis e ilimitado.
+  "main": "worker/index.js",
   "observability": {
     "enabled": true
   },
@@ -14,8 +19,24 @@
     // defecto (auto-trailing-slash) servía /amigo-secreto/ como página
     // aparte: Google la indexaba duplicada. Con este modo /ruta/ redirige
     // con 307 a /ruta, que es la canónica (trailingSlash: 'never').
-    "html_handling": "drop-trailing-slash"
+    "html_handling": "drop-trailing-slash",
+    "run_worker_first": ["/api/*"]
   },
+  // Una sala de El Impostor = un Durable Object (worker/sala.js). Con SQLite
+  // porque es el almacenamiento que Cloudflare ofrece también en el plan
+  // gratuito; la sala usa solo la API clave-valor.
+  "durable_objects": {
+    "bindings": [{ "name": "SALAS", "class_name": "SalaImpostor" }]
+  },
+  "migrations": [
+    { "tag": "v1-impostor", "new_sqlite_classes": ["SalaImpostor"] }
+  ],
+  // Frenos por IP contra quien cree salas o abra sockets en bucle. El
+  // Worker los trata como opcionales (worker/index.js).
+  "ratelimits": [
+    { "name": "LIMITE_SALAS", "namespace_id": "1001", "simple": { "limit": 10, "period": 60 } },
+    { "name": "LIMITE_CONEXIONES", "namespace_id": "1002", "simple": { "limit": 60, "period": 60 } }
+  ],
   "compatibility_flags": [
     "nodejs_compat"
   ]

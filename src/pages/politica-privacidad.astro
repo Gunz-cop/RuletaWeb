@@ -10,7 +10,7 @@ const description = 'Conoce nuestra política de privacidad. Transparencia sobre
   <section class="legal-hero">
     <div class="wrap text-center">
       <h1>Política de <span class="gradient-text">Privacidad</span></h1>
-      <p class="subtitle">Última actualización: 30 de septiembre de 2026</p>
+      <p class="subtitle">Última actualización: 26 de noviembre de 2026</p>
     </div>
   </section>
 
@@ -25,7 +25,7 @@ const description = 'Conoce nuestra política de privacidad. Transparencia sobre
         <h2>1. Almacenamiento Local (Local Storage)</h2>
         <p>A diferencia de la mayoría de los sitios web modernos, <strong>decídelo.app</strong> está diseñado para ejecutarse principalmente en tu navegador de forma cliente (client-side). Esto significa que:</p>
         <ul>
-          <li>Tus opciones de ruleta, nombres, configuraciones de dados y listas de sorteos no se envían a ningún servidor externo.</li>
+          <li>Tus opciones de ruleta, nombres, configuraciones de dados y listas de sorteos no se envían a ningún servidor externo (la única excepción es el juego del impostor, ver la sección 3).</li>
           <li>Esta información se guarda directamente en tu dispositivo utilizando la tecnología <code>localStorage</code> de HTML5.</li>
           <li>Puedes borrar completamente tus datos en cualquier momento limpiando la caché de tu navegador.</li>
         </ul>
@@ -41,31 +41,43 @@ const description = 'Conoce nuestra política de privacidad. Transparencia sobre
         </ul>
         <p>El <strong>dado de opciones</strong> de Dados se comparte igual: lo que se decide y las opciones viajan en el enlace, después del símbolo <code>#</code>, y no pasan por ningún servidor. Quien reciba el enlace, y la aplicación con la que lo compartas, puede leerlos.</p>
 
-        <h2>3. Archivos de Registro (Log Files)</h2>
+        <h2>3. Salas del juego del impostor</h2>
+        <p>El juego del impostor es la <strong>única herramienta de decídelo.app que usa un servidor</strong>, porque necesita que los celulares de todos los jugadores se enteren unos de otros en tiempo real. Así funciona, para que sepas qué pasa con lo que escribes:</p>
+        <ul>
+          <li><strong>Qué se guarda</strong>: el nombre que escribas al entrar (puede ser un apodo), el estado de la partida (jugadores, roles, turnos y votos) y un identificador aleatorio que permite volver a tu sala si se corta la conexión.</li>
+          <li><strong>Dónde</strong>: en los servidores de Cloudflare, el mismo proveedor que aloja el sitio, en una sala temporal creada para tu partida.</li>
+          <li><strong>Cuánto tiempo</strong>: la sala se borra sola tras seis horas sin actividad, y desaparece también cuando todos salen de ella en la sala de espera. No guardamos un historial de partidas.</li>
+          <li><strong>Qué ven los demás jugadores</strong>: el nombre que escribas y si estás conectado. Nadie ve el rol de otro: el servidor envía a cada celular únicamente el suyo.</li>
+          <li><strong>Sin cuentas</strong>: no hace falta registrarse ni se pide correo ni teléfono. Tu dirección IP no se guarda en la partida; solo se usa al momento para limitar el número de salas y conexiones por red y evitar abusos.</li>
+          <li>Tu navegador recuerda en su <code>localStorage</code> tu nombre y la sala en la que estás para reconectarte si recargas la página. Se borra al salir de la sala o al limpiar los datos del navegador.</li>
+        </ul>
+        <p>No escribas en tu nombre nada que no quieras que vean los demás jugadores de la sala.</p>
+
+        <h2>4. Archivos de Registro (Log Files)</h2>
         <p><strong>decídelo.app</strong> sigue un procedimiento estándar de uso de archivos de registro. Estos archivos registran a los visitantes cuando visitan sitios web. Todas las empresas de alojamiento web hacen esto y forman parte del análisis de los servicios de alojamiento. La información recopilada por los archivos de registro incluye direcciones de protocolo de internet (IP), tipo de navegador, proveedor de servicios de internet (ISP), marca de fecha y hora, páginas de referencia/salida y, posiblemente, el número de clics. Estos datos no están vinculados a ninguna información que sea personalmente identificable. El propósito de la información es analizar tendencias, administrar el sitio, rastrear el movimiento de los usuarios en el sitio web y recopilar información demográfica.</p>
 
-        <h2>4. Política de Cookies y Web Beacons</h2>
+        <h2>5. Política de Cookies y Web Beacons</h2>
         <p>Como cualquier otro sitio web, <strong>decídelo.app</strong> utiliza "cookies". Estas cookies se utilizan para almacenar información, incluidas las preferencias de los visitantes y las páginas del sitio web a las que el visitante accedió o visitó. La información se utiliza para optimizar la experiencia de los usuarios al personalizar el contenido de nuestra página web en función del tipo de navegador de los visitantes y/u otra información.</p>
 
-        <h2>5. Publicidad y cookies de terceros</h2>
+        <h2>6. Publicidad y cookies de terceros</h2>
         <p>Actualmente <strong>decídelo.app</strong> no muestra anuncios personalizados ni carga el script de Google AdSense mientras el sitio se prepara para una nueva revisión. Si en el futuro activamos publicidad, actualizaremos esta política y los proveedores externos podrían utilizar cookies o tecnologías similares para publicar y medir anuncios.</p>
         <p><a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener noreferrer">https://policies.google.com/technologies/ads</a></p>
 
-        <h2>6. Posibles socios publicitarios</h2>
+        <h2>7. Posibles socios publicitarios</h2>
         <p>Si el sitio es aprobado para monetización, el socio publicitario previsto es Google AdSense. Cada proveedor externo mantiene su propia política de privacidad y opciones de control para los usuarios. Para referencia, enlazamos la información de Google sobre publicidad:</p>
         <ul>
           <li><strong>Google:</strong> <a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener noreferrer">https://policies.google.com/technologies/ads</a></li>
         </ul>
 
-        <h2>7. Políticas de Privacidad de Terceros</h2>
+        <h2>8. Políticas de Privacidad de Terceros</h2>
         <p>La Política de privacidad de <strong>decídelo.app</strong> no se aplica a otros anunciantes o sitios web. Por lo tanto, te aconsejamos que consultes las respectivas Políticas de privacidad de estos servidores de anuncios de terceros para obtener información más detallada. Puede incluir sus prácticas e instrucciones sobre cómo optar por no participar en ciertas opciones.</p>
         <p>Puedes optar por desactivar las cookies a través de las opciones de tu navegador individual. Para obtener información más detallada sobre la gestión de cookies con navegadores web específicos, se puede encontrar en los respectivos sitios web de los navegadores.</p>
 
-        <h2>8. Información para Niños</h2>
+        <h2>9. Información para Niños</h2>
         <p>Otra parte de nuestra prioridad es añadir protección para los niños mientras usan internet. Animamos a los padres y tutores a observar, participar y/o monitorear y guiar su actividad en línea.</p>
         <p><strong>decídelo.app</strong> no recopila a sabiendas ninguna información de identificación personal de niños menores de 13 años. Si crees que tu hijo proporcionó este tipo de información en nuestro sitio web, te sugerimos encarecidamente que te pongas en contacto con nosotros inmediatamente y haremos todo lo posible para eliminar rápidamente dicha información de nuestros registros.</p>
 
-        <h2>9. Consentimiento</h2>
+        <h2>10. Consentimiento</h2>
         <p>Al utilizar nuestro sitio web, aceptas nuestra Política de Privacidad y estás de acuerdo con sus términos.</p>
       </article>
     </div>

@@ -37,6 +37,88 @@ const TOLERANCIA_PX = 2;
 // demasiado chica para un dedo: no se baja el umbral, se agranda la holgura.
 const HOLGURA_MINIMA_PX = 16;
 
+
+// --- Impostor: ayudas de los estados ----------------------------------------
+// La sala vive en un servidor, y estos tests solo sirven HTML estático. En vez
+// de levantar el Worker se sustituye `WebSocket` por uno falso que entrega una
+// vista de sala ya armada (la misma forma que produce `vistaPara` de
+// src/scripts/impostor-logica.js) y apunta lo que la página envía en
+// `window.__enviados`. Lo que se comprueba es lo que este runner sabe mirar:
+// que cada vista recibe sus estilos y que cada botón manda el mensaje que toca.
+// El servidor de verdad, con 22 sockets, lo cubre scripts/impostor-sala-check.mjs.
+function vistaImpostor({ fase = 'lobby', anfitrion = true, n = 22, impostor = false, juega = true, extra = {} } = {}) {
+  const jugadores = Array.from({ length: n }, (_, i) => ({
+    id: i + 1,
+    nombre: i === 0 ? 'Marcela' : `Jugador ${i + 1}`,
+    anfitrion: i === 0,
+    conectado: i !== 4,
+    juega: true,
+    vivo: true,
+    yaVoto: false,
+  }));
+  const yoId = anfitrion ? 1 : 2;
+  const vista = {
+    t: 'estado',
+    ahora: 0,
+    codigo: 'KQMRT',
+    fase,
+    max: 24,
+    min: 3,
+    yo: { id: yoId, anfitrion, juega, vivo: true },
+    config: { categoria: 'colombia', impostores: 0, segundos: 45, vueltas: 1, anfitrionJuega: juega, impostorVeCategoria: true, impostoresAuto: 3 },
+    jugadores,
+  };
+  if (fase !== 'lobby') {
+    vista.rol = impostor
+      ? { impostor: true, palabra: null, categoria: 'Colombia' }
+      : { impostor: false, palabra: 'Arepa', categoria: 'Colombia' };
+    vista.ronda = {
+      n: 1, orden: jugadores.map((j) => j.id), vueltas: 1, turno: 2, total: n, de: 3,
+      terminada: false, turnoFin: null, pausaRestante: 31000, segundos: 45,
+    };
+  }
+  if (fase === 'votacion') {
+    delete vista.ronda;
+    vista.votacion = { votaron: 9, total: n, miVoto: null, puedeVotar: true };
+    for (let i = 3; i < 12; i++) jugadores[i].yaVoto = true;
+  }
+  if (fase === 'resultado') {
+    delete vista.ronda;
+    vista.resultado = { expulsado: 7, eraImpostor: true, empate: false, conteo: { 7: 11, 9: 6, 12: 3 }, ganan: null };
+  }
+  return { ...vista, ...extra };
+}
+
+// Código que se ejecuta en la página antes de cargar nada: sesión guardada +
+// WebSocket falso que responde con la vista dada
+function socketFalso(vista) {
+  return `
+    localStorage.setItem('decidelo_impostor_sesion', JSON.stringify({ codigo: 'KQMRT', nombre: 'Marcela', token: 'prueba' }));
+    window.__enviados = [];
+    const vista = ${JSON.stringify(vista)};
+    vista.ahora = Date.now();
+    window.WebSocket = class {
+      constructor() {
+        this.readyState = 0;
+        setTimeout(() => {
+          this.readyState = 1;
+          if (this.onopen) this.onopen();
+          setTimeout(() => this.onmessage && this.onmessage({ data: JSON.stringify(vista) }), 5);
+        }, 5);
+      }
+      send(m) { if (m !== 'ping') window.__enviados.push(JSON.parse(m)); }
+      close() { this.readyState = 3; }
+    };
+    window.WebSocket.OPEN = 1;
+  `;
+}
+
+// Sin scroll horizontal: lo que más se rompe con 22 nombres en una lista
+async function sinDesbordeHorizontal(pagina) {
+  const r = await pagina.evaluate(() => ({ ancho: document.documentElement.scrollWidth, ventana: window.innerWidth }));
+  return { ok: r.ancho <= r.ventana + 1, mensaje: `ancho de página ${r.ancho}px en una ventana de ${r.ventana}px` };
+}
+
 // --- Ruleta: ayudas de los estados ----------------------------------------
 // Fuerza el azar que decide ganador y final: crypto.getRandomValues saca antes
 // los valores que el estado deje en `window.__azar` (se ejecuta en la página,
@@ -1721,4 +1803,305 @@ export const ESTADOS = [
     // El modo impulso muestra más campos; el botón no debe moverse de sitio
     { nombre: 'impulso-android-360x560', viewport: { width: 360, height: 560 }, preparar: (p) => p.click('#timer-modes [data-mode="impulso"]') },
   ]),
+
+  // --- Impostor ----------------------------------------------------------
+  // Sala en tiempo real (worker/sala.js). Estos estados usan un WebSocket
+  // falso (ver socketFalso): miran estilos y mensajes enviados, no el juego.
+  {
+    ruta: '/impostor',
+    nombre: 'entrada',
+    comprobar: [
+      { sel: '#imp-crear', props: ['display', 'backgroundColor', 'color', 'borderRadius'] },
+      { sel: '#imp-nombre', props: ['fontSize', 'borderBottomColor', 'backgroundColor'] },
+      { sel: '#imp-unirse', props: ['backgroundColor', 'borderTopColor', 'color'] },
+      { sel: '#imp-codigo', props: ['textTransform', 'fontSize'] },
+      { sel: '#imp-barra', props: ['display'] },
+      { sel: '#imp-v-lobby', props: ['display'] },
+      { sel: '.imp-hero h1', props: ['fontSize', 'fontFamily'] },
+    ],
+  },
+  {
+    // Quien llega por una invitación no necesita «Crear sala»: el botón
+    // principal pasa a ser entrar con el código ya escrito
+    ruta: '/impostor#sala=KQMRT',
+    nombre: 'invitacion',
+    comprobar: [
+      { sel: '#imp-bloque-crear', props: ['display'] },
+      { sel: '#imp-invitacion', props: ['display'] },
+      { sel: '#imp-unirse', props: ['backgroundColor', 'color'] },
+    ],
+    invariante: async (pagina) => {
+      const r = await pagina.evaluate(() => ({ codigo: document.getElementById('imp-codigo').value, boton: document.getElementById('imp-unirse').textContent }));
+      return { ok: r.codigo === 'KQMRT' && r.boton === 'Entrar a la sala', mensaje: `código «${r.codigo}», botón «${r.boton}»` };
+    },
+  },
+  {
+    // Entrar sin escribir el nombre no manda nada: avisa
+    ruta: '/impostor',
+    nombre: 'entrada-sin-nombre',
+    clics: ['#imp-crear'],
+    comprobar: [{ sel: '#imp-aviso', props: ['display', 'color'] }],
+    invariante: async (pagina) => {
+      const t = await pagina.textContent('#imp-aviso');
+      return { ok: /nombre/i.test(t), mensaje: `aviso: «${t}»` };
+    },
+  },
+  {
+    ruta: '/impostor',
+    nombre: 'lobby-anfitrion-22',
+    init: socketFalso(vistaImpostor({ fase: 'lobby' })),
+    esperarSelector: '#imp-v-lobby:not([hidden])',
+    comprobar: [
+      { sel: '#imp-v-entrada', props: ['display'] },
+      { sel: '#imp-barra', props: ['display', 'borderBottomColor'] },
+      { sel: '#imp-lobby-codigo', props: ['fontSize', 'letterSpacing'] },
+      { sel: '#imp-lobby-host', props: ['display'] },
+      { sel: '#imp-iniciar', props: ['display', 'backgroundColor'] },
+      { sel: '#imp-espera', props: ['display'] },
+      { sel: '#imp-lista-lobby .imp-fila:nth-child(1)', props: ['display', 'gridTemplateColumns', 'borderBottomColor'] },
+      { sel: '#imp-lista-lobby .imp-fila:nth-child(5)', props: ['color'] },
+      { sel: '#imp-zona-rol', props: ['display'] },
+      { sel: '#imp-cfg-categoria', props: ['borderBottomColor', 'colorScheme'] },
+    ],
+    invariante: async (pagina) => {
+      const r = await pagina.evaluate(() => ({
+        filas: document.querySelectorAll('#imp-lista-lobby .imp-fila').length,
+        quitar: [...document.querySelectorAll('#imp-lista-lobby .imp-fila-accion')].filter((b) => !b.hidden).length,
+        nota: document.getElementById('imp-cfg-nota').textContent,
+        iniciar: document.getElementById('imp-iniciar').disabled,
+      }));
+      return { ok: r.filas === 22 && r.quitar === 21 && /3 impostores/.test(r.nota) && !r.iniciar, mensaje: `filas ${r.filas}, «Quitar» en ${r.quitar}, nota «${r.nota}», iniciar desactivado=${r.iniciar}` };
+    },
+  },
+  {
+    ruta: '/impostor',
+    nombre: 'lobby-jugador',
+    init: socketFalso(vistaImpostor({ fase: 'lobby', anfitrion: false })),
+    esperarSelector: '#imp-v-lobby:not([hidden])',
+    comprobar: [
+      { sel: '#imp-lobby-host', props: ['display'] },
+      { sel: '#imp-iniciar', props: ['display'] },
+      { sel: '#imp-espera', props: ['display'] },
+      { sel: '#imp-resumen', props: ['display'] },
+    ],
+    invariante: async (pagina) => {
+      const r = await pagina.evaluate(() => ({ quitar: [...document.querySelectorAll('.imp-fila-accion')].filter((b) => !b.hidden).length }));
+      return { ok: r.quitar === 0, mensaje: `un jugador ve ${r.quitar} botones «Quitar»` };
+    },
+  },
+  {
+    // Un anfitrión con solo 2 personas no puede empezar
+    ruta: '/impostor',
+    nombre: 'lobby-pocos',
+    init: socketFalso(vistaImpostor({ fase: 'lobby', n: 2 })),
+    esperarSelector: '#imp-v-lobby:not([hidden])',
+    comprobar: [{ sel: '#imp-iniciar', props: ['opacity'] }, { sel: '#imp-faltan', props: ['display'] }],
+    invariante: async (pagina) => {
+      const r = await pagina.evaluate(() => ({ off: document.getElementById('imp-iniciar').disabled, texto: document.getElementById('imp-faltan').textContent }));
+      return { ok: r.off && /Falta 1 jugador/.test(r.texto), mensaje: `desactivado=${r.off}, texto «${r.texto}»` };
+    },
+  },
+  {
+    // Ronda de pistas: la tarjeta de rol, el turno, el reloj y el orden
+    ruta: '/impostor',
+    nombre: 'ronda-anfitrion',
+    init: socketFalso(vistaImpostor({ fase: 'ronda' })),
+    esperarSelector: '#imp-v-ronda:not([hidden])',
+    comprobar: [
+      { sel: '#imp-zona-rol', props: ['display'] },
+      { sel: '#imp-rol', props: ['backgroundColor', 'borderTopColor', 'borderRadius'] },
+      { sel: '#imp-turno', props: ['borderTopColor', 'textAlign'] },
+      { sel: '#imp-reloj', props: ['fontSize', 'color', 'fontVariantNumeric'] },
+      { sel: '#imp-ronda-host', props: ['display'] },
+      { sel: '#imp-turno-principal', props: ['backgroundColor', 'color'] },
+      { sel: '#imp-lista-turnos .imp-fila:nth-child(3)', props: ['color'] },
+      { sel: '#imp-lista-turnos .imp-fila:nth-child(3) .imp-fila-nombre', props: ['color', 'fontWeight'] },
+      { sel: '#imp-lista-turnos .imp-fila:nth-child(1) .imp-fila-nombre', props: ['color'] },
+    ],
+    invariante: async (pagina) => {
+      const r = await pagina.evaluate(() => ({
+        reloj: document.getElementById('imp-reloj').textContent,
+        nombre: document.getElementById('imp-turno-nombre').textContent,
+        boton: document.getElementById('imp-turno-principal').textContent,
+        accion: document.getElementById('imp-turno-principal').dataset.accion,
+        ahora: document.querySelectorAll('#imp-lista-turnos .is-ahora').length,
+      }));
+      return { ok: r.reloj === '0:31' && r.nombre === 'Jugador 3' && r.boton === 'Siguiente jugador' && r.accion === 'siguiente' && r.ahora === 1, mensaje: `reloj ${r.reloj}, turno ${r.nombre}, botón «${r.boton}» (${r.accion}), filas «ahora» ${r.ahora}` };
+    },
+  },
+  {
+    // La tarjeta se destapa con un toque, enseña la palabra y vuelve a taparse
+    ruta: '/impostor',
+    nombre: 'rol-inocente-destapado',
+    init: socketFalso(vistaImpostor({ fase: 'ronda' })),
+    esperarSelector: '#imp-v-ronda:not([hidden])',
+    clics: ['#imp-rol'],
+    comprobar: [
+      { sel: '#imp-rol .role-face', props: ['display'] },
+      { sel: '#imp-rol .role-back', props: ['display'] },
+      { sel: '#imp-rol-principal', props: ['fontSize', 'color'] },
+    ],
+    invariante: async (pagina) => {
+      const abierto = await pagina.evaluate(() => ({ palabra: document.getElementById('imp-rol-principal').textContent, visible: !document.querySelector('#imp-rol .role-face').hidden }));
+      await pagina.click('#imp-rol');
+      const tapado = await pagina.evaluate(() => document.querySelector('#imp-rol .role-face').hidden);
+      return { ok: abierto.palabra === 'Arepa' && abierto.visible && tapado, mensaje: `palabra «${abierto.palabra}», visible=${abierto.visible}, vuelve a taparse=${tapado}` };
+    },
+  },
+  {
+    // El impostor ve IMPOSTOR, en acento, y ni rastro de la palabra
+    ruta: '/impostor',
+    nombre: 'rol-impostor-destapado',
+    init: socketFalso(vistaImpostor({ fase: 'ronda', impostor: true })),
+    esperarSelector: '#imp-v-ronda:not([hidden])',
+    clics: ['#imp-rol'],
+    comprobar: [{ sel: '#imp-rol-principal', props: ['color'] }, { sel: '#imp-rol-secundario', props: ['color'] }],
+    invariante: async (pagina) => {
+      const r = await pagina.evaluate(() => ({ principal: document.getElementById('imp-rol-principal').textContent, todo: document.getElementById('imp-zona-rol').textContent }));
+      return { ok: r.principal === 'IMPOSTOR' && !/Arepa/.test(r.todo), mensaje: `principal «${r.principal}», aparece la palabra=${/Arepa/.test(r.todo)}` };
+    },
+  },
+  {
+    // Los botones del anfitrión mandan los mensajes del protocolo
+    ruta: '/impostor',
+    nombre: 'ronda-mensajes-anfitrion',
+    init: socketFalso(vistaImpostor({ fase: 'ronda' })),
+    esperarSelector: '#imp-v-ronda:not([hidden])',
+    verificarRelacion: async (pagina) => {
+      for (const sel of ['#imp-turno-principal', '#imp-pausa', '#imp-mas', '#imp-reiniciar', '#imp-votar-ya']) await pagina.click(sel);
+      const m = await pagina.evaluate(() => window.__enviados.filter((x) => x.t !== 'hola'));
+      const esperado = [{ t: 'turno', op: 'siguiente' }, { t: 'turno', op: 'empezar' }, { t: 'turno', op: 'mas' }, { t: 'turno', op: 'reiniciar' }, { t: 'votacion' }];
+      return { ok: JSON.stringify(m) === JSON.stringify(esperado), mensaje: `mensajes ${JSON.stringify(m)}` };
+    },
+  },
+  {
+    // Un jugador que no es anfitrión no ve los controles del turno
+    ruta: '/impostor',
+    nombre: 'ronda-jugador',
+    init: socketFalso(vistaImpostor({ fase: 'ronda', anfitrion: false })),
+    esperarSelector: '#imp-v-ronda:not([hidden])',
+    comprobar: [{ sel: '#imp-ronda-host', props: ['display'] }],
+    invariante: async (pagina) => {
+      const visible = await pagina.isVisible('#imp-ronda-host');
+      return { ok: !visible, mensaje: 'un jugador ve los controles del anfitrión' };
+    },
+  },
+  {
+    // Cuando el turno es tuyo, el panel lo marca con el acento
+    ruta: '/impostor',
+    nombre: 'ronda-te-toca',
+    init: socketFalso(vistaImpostor({ fase: 'ronda', anfitrion: false, extra: { ronda: { n: 1, orden: Array.from({ length: 22 }, (_, i) => i + 1), vueltas: 1, turno: 1, total: 22, de: 2, terminada: false, turnoFin: null, pausaRestante: 45000, segundos: 45 } } })),
+    esperarSelector: '#imp-v-ronda:not([hidden])',
+    comprobar: [{ sel: '#imp-turno', props: ['borderTopColor'] }],
+    invariante: async (pagina) => {
+      const r = await pagina.evaluate(() => ({ nombre: document.getElementById('imp-turno-nombre').textContent, sigue: document.getElementById('imp-turno-sigue').textContent, mio: document.getElementById('imp-turno').classList.contains('is-mio') }));
+      return { ok: r.mio && /\(tú\)/.test(r.nombre) && /Te toca/.test(r.sigue), mensaje: `turno «${r.nombre}», «${r.sigue}», is-mio=${r.mio}` };
+    },
+  },
+  {
+    ruta: '/impostor',
+    nombre: 'votacion',
+    init: socketFalso(vistaImpostor({ fase: 'votacion' })),
+    esperarSelector: '#imp-v-votacion:not([hidden])',
+    comprobar: [
+      { sel: '#imp-v-ronda', props: ['display'] },
+      { sel: '#imp-lista-votos .imp-voto-item:nth-child(1)', props: ['borderBottomColor'] },
+      { sel: '#imp-lista-votos .imp-voto:nth-child(1)', props: ['display', 'minHeight', 'color'] },
+      { sel: '#imp-cerrar', props: ['backgroundColor'] },
+    ],
+    verificarRelacion: async (pagina) => {
+      const filas = await pagina.evaluate(() => document.querySelectorAll('#imp-lista-votos .imp-voto').length);
+      await pagina.click('#imp-lista-votos .imp-voto-item:nth-child(3) .imp-voto');
+      await pagina.click('#imp-cerrar');
+      const m = await pagina.evaluate(() => window.__enviados.filter((x) => x.t !== 'hola'));
+      // El 1 (yo) no sale; la tercera fila es el jugador 4
+      const ok = filas === 21 && JSON.stringify(m) === JSON.stringify([{ t: 'votar', por: 4 }, { t: 'cerrar' }]);
+      return { ok, mensaje: `filas ${filas}, mensajes ${JSON.stringify(m)}` };
+    },
+  },
+  {
+    // El voto elegido se marca con el acento y dice «Tu voto»
+    ruta: '/impostor',
+    nombre: 'votacion-mi-voto',
+    init: socketFalso(vistaImpostor({ fase: 'votacion', anfitrion: false, extra: { votacion: { votaron: 9, total: 22, miVoto: 5, puedeVotar: true } } })),
+    esperarSelector: '#imp-v-votacion:not([hidden])',
+    comprobar: [
+      { sel: '#imp-lista-votos .imp-voto[aria-pressed="true"]', props: ['color', 'fontWeight'] },
+      { sel: '#imp-lista-votos .imp-voto[aria-pressed="true"] .imp-voto-nota', props: ['color'] },
+      { sel: '#imp-votacion-host', props: ['display'] },
+    ],
+    invariante: async (pagina) => {
+      const r = await pagina.evaluate(() => ({ marcados: document.querySelectorAll('#imp-lista-votos .imp-voto[aria-pressed="true"]').length, nota: document.querySelector('#imp-lista-votos .imp-voto[aria-pressed="true"] .imp-voto-nota').textContent }));
+      return { ok: r.marcados === 1 && r.nota === 'Tu voto', mensaje: `marcados ${r.marcados}, nota «${r.nota}»` };
+    },
+  },
+  {
+    ruta: '/impostor',
+    nombre: 'resultado-ronda',
+    init: socketFalso(vistaImpostor({ fase: 'resultado' })),
+    esperarSelector: '#imp-v-resultado:not([hidden])',
+    comprobar: [
+      { sel: '#imp-res-principal', props: ['fontSize', 'textAlign'] },
+      { sel: '#imp-res-lado', props: ['color', 'textTransform'] },
+      { sel: '#imp-final', props: ['display'] },
+      { sel: '#imp-continuar', props: ['display', 'backgroundColor'] },
+      { sel: '#imp-nueva', props: ['display'] },
+    ],
+    invariante: async (pagina) => {
+      const r = await pagina.evaluate(() => ({ principal: document.getElementById('imp-res-principal').textContent, lado: document.getElementById('imp-res-lado').textContent, filas: document.querySelectorAll('#imp-lista-conteo .imp-fila').length, primera: document.querySelector('#imp-lista-conteo .imp-fila-notas').textContent }));
+      return { ok: r.principal === 'Jugador 7 se va' && r.lado === 'Era impostor' && r.filas === 3 && r.primera === '11 votos', mensaje: `«${r.principal}», «${r.lado}», ${r.filas} filas, primera «${r.primera}»` };
+    },
+  },
+  {
+    // Al final de la partida se revela la palabra y quiénes eran
+    ruta: '/impostor',
+    nombre: 'resultado-final',
+    init: socketFalso(vistaImpostor({ fase: 'resultado', extra: { resultado: { expulsado: 7, eraImpostor: true, empate: false, conteo: { 7: 12 }, ganan: 'grupo', palabra: 'Arepa', categoria: 'Colombia', impostores: [{ id: 7, nombre: 'Jugador 7' }, { id: 9, nombre: 'Jugador 9' }] } } })),
+    esperarSelector: '#imp-v-resultado:not([hidden])',
+    comprobar: [
+      { sel: '#imp-final', props: ['display', 'borderTopColor'] },
+      { sel: '#imp-final-palabra', props: ['fontSize'] },
+      { sel: '#imp-final-impostores', props: ['color'] },
+      { sel: '#imp-nueva', props: ['display', 'backgroundColor'] },
+      { sel: '#imp-continuar', props: ['display'] },
+    ],
+    invariante: async (pagina) => {
+      const r = await pagina.evaluate(() => ({ lado: document.getElementById('imp-res-lado').textContent, palabra: document.getElementById('imp-final-palabra').textContent, quienes: document.getElementById('imp-final-impostores').textContent, etiqueta: document.getElementById('imp-final-etiqueta').textContent }));
+      return { ok: r.lado === 'Era impostor · Gana el grupo' && r.palabra === 'Arepa' && r.quienes === 'Jugador 7, Jugador 9' && r.etiqueta === 'Los impostores eran', mensaje: JSON.stringify(r) };
+    },
+  },
+  {
+    // Un empate no saca a nadie
+    ruta: '/impostor',
+    nombre: 'resultado-empate',
+    init: socketFalso(vistaImpostor({ fase: 'resultado', extra: { resultado: { expulsado: null, eraImpostor: null, empate: true, conteo: { 3: 5, 4: 5 }, ganan: null } } })),
+    esperarSelector: '#imp-v-resultado:not([hidden])',
+    invariante: async (pagina) => {
+      const t = await pagina.textContent('#imp-res-principal');
+      return { ok: /Empate/.test(t), mensaje: `«${t}»` };
+    },
+  },
+  // Nada de scroll horizontal con 22 nombres, en las cuatro vistas, a 344px
+  ...['lobby', 'ronda', 'votacion', 'resultado'].map((fase) => ({
+    ruta: '/impostor',
+    nombre: `sin-desborde-${fase}-fold-344`,
+    viewport: { width: 344, height: 680 },
+    init: socketFalso(vistaImpostor({ fase })),
+    esperarSelector: `#imp-v-${fase}:not([hidden])`,
+    verificarRelacion: sinDesbordeHorizontal,
+  })),
+  // La acción del anfitrión tiene que estar a mano en las tres vistas donde
+  // manda, con la sala llena y en los tres móviles de referencia: el botón se
+  // queda pegado al borde inferior (.imp-fija) aunque la lista mida 22 filas
+  ...[['lobby', '#imp-iniciar'], ['ronda', '#imp-turno-principal'], ['votacion', '#imp-cerrar'], ['resultado', '#imp-continuar']].flatMap(([fase, boton]) =>
+    Object.entries(VIEWPORTS_MOVIL).map(([nombre, viewport]) => ({
+      ruta: '/impostor',
+      nombre: `${fase}-accion-visible-${nombre}`,
+      viewport,
+      init: socketFalso(vistaImpostor({ fase })),
+      esperarSelector: `#imp-v-${fase}:not([hidden])`,
+      verificarRelacion: accionPrincipalVisible(boton),
+    }))),
+  ...estadosAccionVisible('/impostor', '#imp-crear'),
+  ...estadosResponsive('/impostor', '#imp-crear'),
 ];

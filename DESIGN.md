@@ -126,7 +126,9 @@ temporizador (`temporizador.astro` + `TimerObject.astro`) y los dados
 (`dados.astro` + `Dice.astro`, con D4 a D20, modo rol y dado de opciones) y la
 ruleta (`ruleta.astro` + `Wheel.astro` + `ruleta.js`, con la lógica pura en
 `ruleta-logica.js`; la página que da nombre al sitio, ver las excepciones del
-propietario en "Anatomía"). El resto
+propietario en "Anatomía") y el juego del impostor (`impostor.astro` +
+`RoleCard.astro` + `impostor.js`, la primera pensada desde cero con este
+sistema y la única con servidor; ver "Sala en tiempo real" en "Anatomía"). El resto
 de herramientas (equipos...) sigue con los botones y tarjetas
 en degradado de la estética anterior — migrarlas es una tarea aparte, una
 herramienta a la vez, porque toca UI interactiva con sus propios tests de
@@ -438,6 +440,39 @@ recuerda la respuesta para que reabrir el enlace no deje elegir otra vez.
 Lógica pura en `src/scripts/ppt-reto.js`, probada con node
 (`scripts/ppt-reto-check.mjs`). Límites y la alternativa con servidor:
 `docs/propuesta-backend-retos.md`.
+
+**Sala en tiempo real** (impostor): cuando varias personas usan la herramienta
+a la vez, cada una desde su móvil, la página cambia de *vista* según la fase de
+la partida (entrada, sala de espera, ronda, votación, resultado) en lugar de
+apilar todos los usos. Una sola está visible; el resto lleva `hidden`. Lo que
+fija este patrón:
+
+- **Barra de sala** arriba (`Sala KQMRT · 22 jugadores`, estado de la conexión
+  y «Salir» en dos toques): es lo único que se repite en todas las vistas. Un
+  mensaje de la sala (permiso, fase) aparece un rato en el hueco de la
+  conexión, sin diálogos nativos ni toasts.
+- **Un objeto que se tapa** (`RoleCard.astro`): lo secreto no se muestra hasta
+  que su dueño lo toca, se vuelve a tapar al tocarlo otra vez, a los 10 s y al
+  salir de la pestaña. Es un botón (`aria-pressed`), no un texto. El rol del
+  impostor se distingue con el acento y la posición, nunca con rojo.
+- **Acción principal pegada al borde** (`.imp-fija`, `position: sticky`):
+  con 22 filas en la lista, quien lleva la partida no puede tener que bajar
+  para pulsar «Empezar» o «Siguiente jugador». Lleva holgura inferior de
+  1.75 rem para cumplir el invariante de 16 px en los tres móviles, y los
+  estados `*-accion-visible-*` de `/impostor` lo vigilan en las cuatro vistas.
+- **Listas de personas** con el patrón `.hub-row` (`.imp-fila`): número en
+  texto terciario, nombre, notas en mayúsculas pequeñas («Ahora · Tú · Sin
+  conexión»). Quien habla ahora se marca con el acento; los que ya hablaron
+  bajan a texto terciario; los eliminados, tachados. Nada de chips de color.
+- **Votar es elegir de N con N hasta 23**: la regla de «N botones iguales en una
+  fila» no vale; son filas de la lista, cada una un botón, y la elegida se marca
+  con el acento y la nota «Tu voto».
+- **Qué ve cada rol**: el jugador ve su vista; el anfitrión ve además los
+  controles del turno; un anfitrión que modera (no juega) ve la palabra y los
+  impostores. Los controles que no te tocan no se ocultan con CSS: el servidor
+  rechaza la acción y la página simplemente no los pinta.
+- **Reloj**: marcas del servidor, nunca cuenta local. Detalles en
+  `docs/sdd-impostor.md`.
 
 **Aviso a pantalla completa** (temporizador): cuando algo termina mientras
 la gente no mira la página (pasan el móvil, respiran con los ojos

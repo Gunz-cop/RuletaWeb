@@ -1211,5 +1211,401 @@
       "ok": true,
       "mensaje": "#timer-start.bottom=420.9px con 560px visibles (holgura 139.1px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
     }
+  },
+  "/impostor [entrada]": {
+    "#imp-crear": {
+      "display": "block",
+      "backgroundColor": "rgb(226, 144, 90)",
+      "color": "rgb(26, 14, 6)",
+      "borderRadius": "999px"
+    },
+    "#imp-nombre": {
+      "fontSize": "18.4px",
+      "borderBottomColor": "rgba(240, 240, 245, 0.12)",
+      "backgroundColor": "rgba(0, 0, 0, 0)"
+    },
+    "#imp-unirse": {
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderTopColor": "rgba(240, 240, 245, 0.12)",
+      "color": "rgb(240, 240, 245)"
+    },
+    "#imp-codigo": {
+      "textTransform": "uppercase",
+      "fontSize": "18.4px"
+    },
+    "#imp-barra": {
+      "display": "none"
+    },
+    "#imp-v-lobby": {
+      "display": "none"
+    },
+    ".imp-hero h1": {
+      "fontSize": "57.6px",
+      "fontFamily": "Outfit, sans-serif"
+    }
+  },
+  "/impostor#sala=KQMRT [invitacion]": {
+    "#imp-bloque-crear": {
+      "display": "none"
+    },
+    "#imp-invitacion": {
+      "display": "block"
+    },
+    "#imp-unirse": {
+      "backgroundColor": "rgb(226, 144, 90)",
+      "color": "rgb(26, 14, 6)"
+    }
+  },
+  "/impostor [entrada-sin-nombre]": {
+    "#imp-aviso": {
+      "display": "block",
+      "color": "rgb(226, 144, 90)"
+    }
+  },
+  "/impostor [lobby-anfitrion-22]": {
+    "#imp-v-entrada": {
+      "display": "none"
+    },
+    "#imp-barra": {
+      "display": "flex",
+      "borderBottomColor": "rgba(240, 240, 245, 0.12)"
+    },
+    "#imp-lobby-codigo": {
+      "fontSize": "67.2px",
+      "letterSpacing": "9.408px"
+    },
+    "#imp-lobby-host": {
+      "display": "block"
+    },
+    "#imp-iniciar": {
+      "display": "block",
+      "backgroundColor": "rgb(226, 144, 90)"
+    },
+    "#imp-espera": {
+      "display": "none"
+    },
+    "#imp-lista-lobby .imp-fila:nth-child(1)": {
+      "display": "grid",
+      "gridTemplateColumns": "36px 350.172px 111.828px 0px",
+      "borderBottomColor": "rgba(240, 240, 245, 0.12)"
+    },
+    "#imp-lista-lobby .imp-fila:nth-child(5)": {
+      "color": "rgb(240, 240, 245)"
+    },
+    "#imp-zona-rol": {
+      "display": "none"
+    },
+    "#imp-cfg-categoria": {
+      "borderBottomColor": "rgba(240, 240, 245, 0.12)",
+      "colorScheme": "dark"
+    }
+  },
+  "/impostor [lobby-jugador]": {
+    "#imp-lobby-host": {
+      "display": "none"
+    },
+    "#imp-iniciar": {
+      "display": "none"
+    },
+    "#imp-espera": {
+      "display": "block"
+    },
+    "#imp-resumen": {
+      "display": "block"
+    }
+  },
+  "/impostor [lobby-pocos]": {
+    "#imp-iniciar": {
+      "opacity": "0.55"
+    },
+    "#imp-faltan": {
+      "display": "block"
+    }
+  },
+  "/impostor [ronda-anfitrion]": {
+    "#imp-zona-rol": {
+      "display": "block"
+    },
+    "#imp-rol": {
+      "backgroundColor": "rgb(20, 20, 29)",
+      "borderTopColor": "rgba(240, 240, 245, 0.12)",
+      "borderRadius": "16px"
+    },
+    "#imp-turno": {
+      "borderTopColor": "rgba(240, 240, 245, 0.12)",
+      "textAlign": "center"
+    },
+    "#imp-reloj": {
+      "fontSize": "72px",
+      "color": "rgb(90, 90, 110)",
+      "fontVariantNumeric": "tabular-nums"
+    },
+    "#imp-ronda-host": {
+      "display": "block"
+    },
+    "#imp-turno-principal": {
+      "backgroundColor": "rgb(226, 144, 90)",
+      "color": "rgb(26, 14, 6)"
+    },
+    "#imp-lista-turnos .imp-fila:nth-child(3)": {
+      "color": "rgb(240, 240, 245)"
+    },
+    "#imp-lista-turnos .imp-fila:nth-child(3) .imp-fila-nombre": {
+      "color": "rgb(226, 144, 90)",
+      "fontWeight": "600"
+    },
+    "#imp-lista-turnos .imp-fila:nth-child(1) .imp-fila-nombre": {
+      "color": "rgb(90, 90, 110)"
+    }
+  },
+  "/impostor [rol-inocente-destapado]": {
+    "#imp-rol .role-face": {
+      "display": "flex"
+    },
+    "#imp-rol .role-back": {
+      "display": "none"
+    },
+    "#imp-rol-principal": {
+      "fontSize": "48px",
+      "color": "rgb(240, 240, 245)"
+    }
+  },
+  "/impostor [rol-impostor-destapado]": {
+    "#imp-rol-principal": {
+      "color": "rgb(226, 144, 90)"
+    },
+    "#imp-rol-secundario": {
+      "color": "rgb(139, 139, 158)"
+    }
+  },
+  "/impostor [ronda-mensajes-anfitrion]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "mensajes [{\"t\":\"turno\",\"op\":\"siguiente\"},{\"t\":\"turno\",\"op\":\"empezar\"},{\"t\":\"turno\",\"op\":\"mas\"},{\"t\":\"turno\",\"op\":\"reiniciar\"},{\"t\":\"votacion\"}]"
+    }
+  },
+  "/impostor [ronda-jugador]": {
+    "#imp-ronda-host": {
+      "display": "none"
+    }
+  },
+  "/impostor [ronda-te-toca]": {
+    "#imp-turno": {
+      "borderTopColor": "rgb(226, 144, 90)"
+    }
+  },
+  "/impostor [votacion]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "filas 21, mensajes [{\"t\":\"votar\",\"por\":4},{\"t\":\"cerrar\"}]"
+    }
+  },
+  "/impostor [votacion-mi-voto]": {
+    "#imp-lista-votos .imp-voto[aria-pressed=\"true\"]": {
+      "color": "rgb(226, 144, 90)",
+      "fontWeight": "600"
+    },
+    "#imp-lista-votos .imp-voto[aria-pressed=\"true\"] .imp-voto-nota": {
+      "color": "rgb(226, 144, 90)"
+    },
+    "#imp-votacion-host": {
+      "display": "none"
+    }
+  },
+  "/impostor [resultado-ronda]": {
+    "#imp-res-principal": {
+      "fontSize": "51.2px",
+      "textAlign": "center"
+    },
+    "#imp-res-lado": {
+      "color": "rgb(90, 90, 110)",
+      "textTransform": "uppercase"
+    },
+    "#imp-final": {
+      "display": "none"
+    },
+    "#imp-continuar": {
+      "display": "block",
+      "backgroundColor": "rgb(226, 144, 90)"
+    },
+    "#imp-nueva": {
+      "display": "none"
+    }
+  },
+  "/impostor [resultado-final]": {
+    "#imp-final": {
+      "display": "block",
+      "borderTopColor": "rgba(240, 240, 245, 0.12)"
+    },
+    "#imp-final-palabra": {
+      "fontSize": "35.2px"
+    },
+    "#imp-final-impostores": {
+      "color": "rgb(226, 144, 90)"
+    },
+    "#imp-nueva": {
+      "display": "block",
+      "backgroundColor": "rgb(226, 144, 90)"
+    },
+    "#imp-continuar": {
+      "display": "none"
+    }
+  },
+  "/impostor [resultado-empate]": {},
+  "/impostor [sin-desborde-lobby-fold-344]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "ancho de página 344px en una ventana de 344px"
+    }
+  },
+  "/impostor [sin-desborde-ronda-fold-344]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "ancho de página 344px en una ventana de 344px"
+    }
+  },
+  "/impostor [sin-desborde-votacion-fold-344]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "ancho de página 344px en una ventana de 344px"
+    }
+  },
+  "/impostor [sin-desborde-resultado-fold-344]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "ancho de página 344px en una ventana de 344px"
+    }
+  },
+  "/impostor [accion-principal-visible-android-360x560]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#imp-crear.bottom=326.1px con 560px visibles (holgura 233.9px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/impostor [accion-principal-visible-iphone-se-375x548]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#imp-crear.bottom=326.1px con 548px visibles (holgura 221.9px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/impostor [accion-principal-visible-iphone-393x659]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#imp-crear.bottom=414.1px con 659px visibles (holgura 244.9px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/impostor [responsive-fold-cerrado-344x680]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#imp-crear.bottom=414.1px con 680px visibles (holgura 265.9px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/impostor [responsive-fold-abierto-673x760]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#imp-crear.bottom=416.3px con 760px visibles (holgura 343.7px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/impostor [responsive-tablet-vertical-768x960]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#imp-crear.bottom=471.7px con 960px visibles (holgura 488.3px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/impostor [responsive-tablet-horizontal-1024x700]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#imp-crear.bottom=495.9px con 700px visibles (holgura 204.1px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/impostor [responsive-movil-horizontal-740x340]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "sin scroll horizontal (740px en 740px)"
+    }
+  },
+  "/impostor [responsive-escritorio-1280x720]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#imp-crear.bottom=495.9px con 720px visibles (holgura 224.1px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/impostor [responsive-escritorio-1920x1000]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#imp-crear.bottom=495.9px con 1000px visibles (holgura 504.1px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/impostor [lobby-accion-visible-android-360x560]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#imp-iniciar.bottom=539.0px con 560px visibles (holgura 21.0px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/impostor [lobby-accion-visible-iphone-se-375x548]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#imp-iniciar.bottom=527.0px con 548px visibles (holgura 21.0px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/impostor [lobby-accion-visible-iphone-393x659]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#imp-iniciar.bottom=638.0px con 659px visibles (holgura 21.0px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/impostor [ronda-accion-visible-android-360x560]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#imp-turno-principal.bottom=462.3px con 560px visibles (holgura 97.7px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/impostor [ronda-accion-visible-iphone-se-375x548]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#imp-turno-principal.bottom=465.2px con 548px visibles (holgura 82.8px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/impostor [ronda-accion-visible-iphone-393x659]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#imp-turno-principal.bottom=554.3px con 659px visibles (holgura 104.7px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/impostor [votacion-accion-visible-android-360x560]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#imp-cerrar.bottom=540.0px con 560px visibles (holgura 20.0px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/impostor [votacion-accion-visible-iphone-se-375x548]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#imp-cerrar.bottom=527.0px con 548px visibles (holgura 21.0px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/impostor [votacion-accion-visible-iphone-393x659]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#imp-cerrar.bottom=638.0px con 659px visibles (holgura 21.0px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/impostor [resultado-accion-visible-android-360x560]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#imp-continuar.bottom=378.5px con 560px visibles (holgura 181.5px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/impostor [resultado-accion-visible-iphone-se-375x548]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#imp-continuar.bottom=378.5px con 548px visibles (holgura 169.5px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/impostor [resultado-accion-visible-iphone-393x659]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "#imp-continuar.bottom=434.0px con 659px visibles (holgura 225.0px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
   }
 }

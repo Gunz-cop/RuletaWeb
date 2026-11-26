@@ -5,7 +5,7 @@ interface Tool {
   desc: string;
   href: string;
   status: 'active' | 'coming-soon';
-  icon: 'wheel' | 'coin' | 'dice' | 'rps' | 'secret-friend' | 'numbers' | 'teams' | 'oracle' | 'timer';
+  icon: 'wheel' | 'coin' | 'dice' | 'rps' | 'secret-friend' | 'numbers' | 'teams' | 'oracle' | 'timer' | 'impostor';
   /** Un color por herramienta, no un solo acento: mismo criterio de luminosidad
    * y saturación moderada (nada de neón), hue distinto por categoría. Codifica
    * "son actividades distintas", no decoración — ver DESIGN.md. */
@@ -99,6 +99,15 @@ const tools: Tool[] = [
     status: 'active',
     icon: 'timer',
     color: '91,163,176',
+  },
+  {
+    id: 'impostor',
+    name: 'Juego del Impostor',
+    desc: 'Crea una sala con código y juega con tu grupo: cada uno ve su palabra en su celular y el anfitrión lleva el tiempo.',
+    href: '/impostor',
+    status: 'active',
+    icon: 'impostor',
+    color: '201,122,110',
   }
 ];
 
@@ -180,6 +189,13 @@ const tools: Tool[] = [
               <circle cx="12" cy="12" r="10"/>
               <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
               <path d="M2 12h20"/>
+            </svg>
+          )}
+          {tool.icon === 'impostor' && (
+            <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 10a8 8 0 0 1 16 0v3a8 8 0 0 1-16 0z"/>
+              <path d="M8.5 10.5h2M13.5 10.5h2"/>
+              <path d="M9 15.5c1.8 1.2 4.2 1.2 6 0"/>
             </svg>
           )}
           {tool.icon === 'timer' && (

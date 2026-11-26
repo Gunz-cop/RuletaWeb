@@ -1,8 +1,10 @@
 name: CI
 
-# El sitio no tiene backend ni suite de comportamiento: lo que se puede romper
-# sin avisar es el CSS. Este workflow construye el sitio y comprueba que las
-# reglas que llegan a cada página siguen siendo las mismas.
+# El sitio es estático salvo el impostor (worker/): lo que se puede romper sin
+# avisar es el CSS, y para el impostor, el servidor de la sala. Este workflow
+# construye el sitio, comprueba que las reglas que llegan a cada página siguen
+# siendo las mismas y juega una partida entera de 22 sockets contra un Worker
+# local.
 
 on:
   push:
@@ -42,6 +44,11 @@ jobs:
       # CSS se sigue emitiendo igual aunque ya no se aplique a nadie.
       - run: npx playwright install --with-deps chromium
       - run: npm run test:estado
+
+      # El impostor de punta a punta: arranca `wrangler dev` (workerd, el mismo
+      # runtime que producción) y juega una partida con 22 sockets reales,
+      # incluida una reconexión. Necesita el dist/ que dejó `npm test`.
+      - run: npm run test:sala
 
       # Si los snapshots fallan, el diff de arriba dice qué reglas cambiaron.
       # Esto deja además el dist/ construido a mano para poder inspeccionarlo.

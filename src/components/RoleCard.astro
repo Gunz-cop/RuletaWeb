@@ -1,0 +1,144 @@
+---
+// El objeto de El Impostor: la tarjeta con el rol de cada jugador.
+//
+// Es un botón, no un texto: el rol está tapado hasta que su dueño lo toca y
+// se vuelve a tapar al tocarlo otra vez, al pasar unos segundos o al salir de
+// la pestaña. Con 22 personas en la misma sala (a veces en la misma mesa) lo
+// que más se rompe en este juego es que alguien mire el móvil del de al lado.
+//
+// El JS (impostor.js) solo escribe texto en los tres huecos y alterna
+// `is-open`; la apariencia vive aquí. Como la moneda, es un objeto: se
+// permite superficie y relieve, nada de degradados en el resto de la página.
+---
+
+<div class="role">
+  <button id="imp-rol" class="role-card" type="button" aria-pressed="false" aria-describedby="imp-rol-nota">
+    <span class="role-back">
+      <span class="role-eyebrow">Tu rol</span>
+      <span class="role-hint">Toca para verlo</span>
+    </span>
+    <span class="role-face" hidden>
+      <span class="role-eyebrow" id="imp-rol-etiqueta">Tu palabra</span>
+      <span class="role-main" id="imp-rol-principal"></span>
+      <span class="role-side" id="imp-rol-secundario"></span>
+    </span>
+  </button>
+  <p id="imp-rol-nota" class="role-note">Tápalo antes de que alguien mire tu pantalla.</p>
+</div>
+
+<style>
+  .role {
+    width: 100%;
+  }
+
+  .role-card {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 7.5rem;
+    padding: 1.25rem 1rem;
+    border: 1px solid var(--divider-line);
+    border-radius: 1rem;
+    background: var(--bg-surface-alt);
+    color: var(--text-primary);
+    font: inherit;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.15s ease-out, transform 0.15s ease-out;
+  }
+
+  .role-card:active {
+    transform: scale(0.99);
+  }
+
+  .role-card:focus-visible {
+    outline: 2px solid var(--accent-warm);
+    outline-offset: 3px;
+  }
+
+  @media (hover: hover) {
+    .role-card:hover {
+      border-color: var(--accent-warm);
+    }
+  }
+
+  .role-back,
+  .role-face {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    width: 100%;
+  }
+
+  .role-eyebrow {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+  }
+
+  .role-hint {
+    font-family: 'Newsreader', Georgia, serif;
+    font-style: italic;
+    font-size: 1.5rem;
+    color: var(--accent-warm);
+  }
+
+  .role-main {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: clamp(2rem, 9vw, 3rem);
+    line-height: 1.05;
+    overflow-wrap: anywhere;
+  }
+
+  /* El impostor se distingue por el acento y la posición, no por rojo:
+     un solo color por pantalla (DESIGN.md, «Color») */
+  .role-card.is-impostor .role-main {
+    color: var(--accent-warm);
+  }
+
+  .role-side {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    overflow-wrap: anywhere;
+  }
+
+  .role-side:empty {
+    display: none;
+  }
+
+  .role-note {
+    margin: 0.5rem 0 0;
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--text-tertiary);
+  }
+
+  [hidden] {
+    display: none !important;
+  }
+
+  /* Pantallas bajas: la nota de «tápalo…» cede su sitio, salvo el aviso de
+     que te sacaron de la partida, que sí hay que leer */
+  @media (max-width: 639px) and (max-height: 620px) {
+    .role-note:not(.is-importante) {
+      display: none;
+    }
+  }
+
+  @media (max-width: 639px) {
+    .role-card {
+      min-height: 5.25rem;
+      padding: 0.75rem;
+    }
+
+    .role-note {
+      margin-top: 0.35rem;
+    }
+  }
+</style>
