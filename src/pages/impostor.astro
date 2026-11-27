@@ -7,9 +7,27 @@ import SeoArticle from '../components/SeoArticle.astro';
 import { CATEGORIAS } from '../scripts/impostor-palabras.js';
 import { SEGUNDOS_OPCIONES, VUELTAS_OPCIONES, MAX_JUGADORES, MIN_JUGADORES, MAX_NOMBRE, LARGO_CODIGO, MAX_PISTA, MAX_CHAT } from '../scripts/impostor-comun.js';
 
-const title = 'Juego del Impostor Online: Salas con Código, Sin App ni Registro';
-const description = 'Crea una sala, comparte el código y juega al impostor con tu grupo: cada uno ve su palabra en su propio celular y el anfitrión lleva el tiempo de cada jugador. Gratis y sin registro.';
-const keywords = 'juego del impostor, impostor online, juego del impostor online, impostor palabra secreta, quién es el impostor, juego de impostor para grupos, impostor con código de sala, juego para reuniones, juego de oficina, impostor multijugador, juego para videollamada';
+const title = 'Juego del Impostor Online Gratis: Juega con Amigos, Sin App';
+const description = '¿Quieres jugar al impostor online con amigos? Crea una sala, comparte el código y cada uno ve su palabra en su móvil o celular. Gratis y sin app.';
+// Ordenadas por demanda (Ubersuggest, nov. 2026): España pesa más que Colombia y
+// México juntos, así que «móvil» entra junto a «celular». Los términos de
+// videollamada se quedan fuera a propósito: no llegan a 30 búsquedas al mes.
+const keywords = 'juego del impostor, impostor online, juego del impostor online, juego impostor online, el impostor online, jugar al impostor online, juego del impostor palabras, juego del impostor gratis, impostor online con amigos, juego del impostor app, palabras para el juego del impostor, como se juega al impostor, impostor sin app, impostor para grupos';
+
+// Una sola fuente de verdad: de aquí salen las preguntas del JSON-LD y las del
+// artículo, con el mismo texto (texto plano: el JSON-LD no admite enlaces).
+const faqs = [
+  { q: '¿Cómo se juega al impostor?', a: 'A todos los jugadores les toca la misma palabra menos a uno o varios, los impostores, que no la saben. Por turnos, cada uno da una pista sin nombrar la palabra y después se vota a quién sacar. Si el grupo saca a todos los impostores, gana; si los impostores igualan en número a los demás, ganan ellos.' },
+  { q: '¿Cuántas personas pueden jugar al impostor online?', a: 'De 3 a 24 en la misma sala. Con 22 personas el reparto automático pone 3 impostores.' },
+  { q: '¿Hay que descargar una app o crear una cuenta?', a: 'No. Se juega desde el navegador del móvil, la tablet o el computador, sin descargar nada. Quien organiza crea la sala y comparte el enlace o el código de cinco letras; los demás entran con su nombre.' },
+  { q: '¿Se puede jugar al impostor a distancia, cada uno en su casa?', a: 'Sí. El anfitrión activa «Jugar a distancia: pistas escritas y chat» al preparar la sala. En cada turno el jugador escribe su pista (hasta 40 letras) y todos la ven; durante la votación hay un chat para discutir. No hace falta videollamada.' },
+  { q: '¿Cómo lleva el anfitrión el tiempo de cada jugador?', a: 'El anfitrión ve un panel con el turno actual y una cuenta atrás por jugador, de 20 a 120 segundos. Puede pausar, sumar 15 segundos, reiniciar el tiempo o pasar al siguiente. Todos los celulares ven de quién es el turno y cuánto le queda.' },
+  { q: '¿Cuántos impostores conviene poner?', a: 'El modo automático pone uno por cada seis jugadores, con un mínimo de uno. El anfitrión puede cambiarlo, pero siempre habrá menos impostores que jugadores inocentes: si no, ganarían sin que nadie vote.' },
+  { q: '¿Alguien puede ver el rol de otro?', a: 'No. El servidor manda a cada celular solo su propio rol: al impostor nunca le llega la palabra. Además, la tarjeta del rol aparece tapada, hay que tocarla para verla y se vuelve a tapar sola a los 10 segundos.' },
+  { q: '¿Qué pasa si se me cae la conexión o se me bloquea el celular?', a: 'La página se reconecta sola y recuperas tu rol y tu turno. Si cierras la pestaña, abre otra vez el enlace de la sala desde el mismo navegador.' },
+  { q: '¿Puede entrar alguien con la partida empezada?', a: 'No: la sala se cierra a nuevos jugadores al empezar, para que nadie se cuele con un rol a medias. Entre partidas, el anfitrión puede volver a la sala de espera.' },
+  { q: '¿Qué datos se guardan y por cuánto tiempo?', a: 'Solo el nombre que escribas, el estado de la partida y, en el modo a distancia, las pistas y los últimos 200 mensajes del chat, mientras la sala está activa. La sala se borra sola tras seis horas sin actividad. No hay cuentas, y los nombres pueden ser apodos.' },
+];
 
 const schemaLD = {
   "@context": "https://schema.org",
@@ -18,12 +36,12 @@ const schemaLD = {
       "@type": "WebApplication",
       "@id": "https://decidelo.app/impostor#webapp",
       "name": "Juego del impostor online — Decídelo.app",
-      "description": "Juego del impostor para grupos de 3 a 24 personas: una sala con código, cada jugador ve su rol en su propio celular y el anfitrión controla el turno y el tiempo de cada uno. Gratis, sin app y sin registro.",
+      "description": "Juego del impostor online para grupos de 3 a 24 personas: una sala con código, cada jugador ve su rol en su propio móvil o celular y el anfitrión controla el turno y el tiempo de cada uno. Se puede jugar a distancia con pistas escritas y chat. Gratis, sin app y sin registro.",
       "url": "https://decidelo.app/impostor",
       "applicationCategory": "GameApplication",
       "operatingSystem": "All",
       "browserRequirements": "Requires JavaScript and WebSocket support",
-      "softwareVersion": "1.0.0",
+      "softwareVersion": "1.1.0",
       "inLanguage": "es",
       "offers": { "@type": "Offer", "price": "0.00", "priceCurrency": "USD" },
       "publisher": {
@@ -37,48 +55,7 @@ const schemaLD = {
     {
       "@type": "FAQPage",
       "@id": "https://decidelo.app/impostor#faq",
-      "mainEntity": [
-        {
-          "@type": "Question",
-          "name": "¿Cómo se juega al impostor?",
-          "acceptedAnswer": { "@type": "Answer", "text": "A todos los jugadores les toca la misma palabra menos a uno o varios, los impostores, que solo saben la categoría. Por turnos, cada uno dice una pista sobre la palabra sin nombrarla. Después se vota a quién sacar. Si el grupo saca a todos los impostores, gana; si los impostores quedan tantos como los demás, ganan ellos." }
-        },
-        {
-          "@type": "Question",
-          "name": "¿Cuántas personas pueden jugar?",
-          "acceptedAnswer": { "@type": "Answer", "text": "De 3 a 24 en la misma sala. Con 22 personas el reparto automático pone 3 impostores." }
-        },
-        {
-          "@type": "Question",
-          "name": "¿Se puede jugar a distancia, cada uno en su casa?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Sí. El anfitrión activa «Jugar a distancia» en los ajustes de la sala. En cada turno el jugador escribe su pista (máximo 40 letras) y todos la ven; durante la votación hay un chat para discutir. No hace falta videollamada." }
-        },
-        {
-          "@type": "Question",
-          "name": "¿Hay que instalar una app o crear una cuenta?",
-          "acceptedAnswer": { "@type": "Answer", "text": "No. Se juega desde el navegador del celular. Quien organiza crea la sala y comparte el enlace o el código de cinco letras; los demás entran con su nombre." }
-        },
-        {
-          "@type": "Question",
-          "name": "¿Cómo lleva el anfitrión el tiempo de cada jugador?",
-          "acceptedAnswer": { "@type": "Answer", "text": "El anfitrión ve un panel con el turno actual y una cuenta atrás por jugador (de 20 a 120 segundos). Puede pausar, sumar 15 segundos, reiniciar el tiempo o pasar al siguiente. Todos los celulares ven de quién es el turno y cuánto le queda." }
-        },
-        {
-          "@type": "Question",
-          "name": "¿Alguien puede ver el rol de otro?",
-          "acceptedAnswer": { "@type": "Answer", "text": "No. El servidor manda a cada celular solo su propio rol: al impostor nunca le llega la palabra. El rol se muestra tapado y hay que tocar la tarjeta para verlo." }
-        },
-        {
-          "@type": "Question",
-          "name": "¿Qué pasa si se me cae la conexión o se me bloquea el celular?",
-          "acceptedAnswer": { "@type": "Answer", "text": "La página se reconecta sola y recuperas tu rol y tu turno. Si cierras la pestaña, vuelve a abrir el enlace de la sala desde el mismo navegador." }
-        },
-        {
-          "@type": "Question",
-          "name": "¿Qué datos se guardan?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Solo el nombre que escribas y el estado de la partida, mientras la sala está activa. La sala se borra sola tras seis horas sin actividad. No hay cuentas, y los nombres pueden ser apodos." }
-        }
-      ]
+      "mainEntity": faqs.map((f) => ({ "@type": "Question", "name": f.q, "acceptedAnswer": { "@type": "Answer", "text": f.a } }))
     },
     {
       "@type": "BreadcrumbList",
@@ -122,8 +99,8 @@ const opcionesImpostores = Array.from({ length: 10 }, (_, i) => i + 1);
     {/* ---------- 1. Entrada ---------- */}
     <section id="imp-v-entrada" class="imp-vista" aria-label="Crear o unirse a una sala">
       <header class="imp-hero text-center sm:text-left mb-5 sm:mb-6">
-        <h1>El impostor, <em>cada uno en su celular</em></h1>
-        <p class="imp-intro my-0 mx-auto sm:mx-0 max-w-lg text-sm sm:text-base text-ink-secondary">Crea una sala, comparte el código y juega con tu grupo. Todos reciben la misma palabra menos el impostor. El anfitrión lleva el tiempo de cada jugador.</p>
+        <h1>Juego del impostor, <em>cada uno en su celular</em></h1>
+        <p class="imp-intro my-0 mx-auto sm:mx-0 max-w-lg text-sm sm:text-base text-ink-secondary">Crea una sala, comparte el código y juega al impostor online con tu grupo. Todos reciben la misma palabra menos el impostor. Gratis y sin app.</p>
       </header>
 
       <label class="imp-field flex flex-col gap-1.5 mb-5">
@@ -363,24 +340,33 @@ const opcionesImpostores = Array.from({ length: 10 }, (_, i) => i + 1);
 
   <AdSlot position="top" />
 
-  <SeoArticle title="El juego del impostor online: una sala, tu grupo y un celular por cabeza">
-    <p><strong>¿Quieres jugar al impostor sin que nadie tenga que pasarse el celular?</strong> Aquí el anfitrión crea una sala, comparte un enlace o un código de cinco letras y cada jugador entra desde su propio teléfono. A todos les toca la misma palabra menos al impostor, que solo sabe la categoría. Funciona en el navegador, sin instalar nada y sin crear cuenta, y está pensado para grupos grandes: desde 3 hasta 24 personas en la misma sala.</p>
+  <SeoArticle title="Juego del impostor online: crea una sala y juega con tu grupo, cada uno en su móvil">
+    <p><strong>¿Quieres jugar al impostor online con tus amigos, tu familia o tu equipo de trabajo sin pasarte el celular ni descargar nada?</strong> Aquí creas una sala, compartes un enlace o un código de cinco letras y cada jugador entra desde su propio móvil. A todos les toca la misma palabra menos al impostor, que tiene que disimular. Es un <strong>juego del impostor gratis</strong>, sin app y sin registro, pensado para grupos de 3 a 24 personas. <a href="#imp-app">Pruébalo ahora, está justo arriba</a>.</p>
 
-    <h2>Cómo se juega, paso a paso</h2>
+    <h2>Cómo se juega al impostor online, paso a paso</h2>
     <ol>
-      <li><strong>El anfitrión crea la sala</strong> y comparte el enlace por WhatsApp o dicta el código. Los demás entran con su nombre.</li>
-      <li><strong>Se reparten los roles en secreto.</strong> Cada celular muestra, tapada, su tarjeta: la palabra o «impostor». Se toca para verla y se toca otra vez para taparla.</li>
-      <li><strong>Ronda de pistas.</strong> Por turnos, cada uno dice una pista sobre la palabra sin nombrarla. El anfitrión controla el turno y una cuenta atrás por jugador, y todos ven de quién es el turno.</li>
-      <li><strong>Votación.</strong> Cada jugador vota desde su celular. Si todos votan, el resultado sale solo.</li>
-      <li><strong>Eliminación.</strong> Se va el más votado y se revela si era impostor. En caso de empate no se va nadie. Se repite hasta que el grupo saque a todos los impostores o los impostores igualen en número a los demás.</li>
+      <li><strong>Crea la sala.</strong> Escribe tu nombre y pulsa «Crear sala». Verás un código de cinco letras y dos accesos: «Invitar por WhatsApp» y «Copiar enlace».</li>
+      <li><strong>Invita al grupo.</strong> Cada persona abre el enlace, o escribe el código en «Unirme», pone su nombre y entra a la sala de espera. Desde ahí ves quién está conectado.</li>
+      <li><strong>Ajusta la partida.</strong> Elige la categoría de palabras, cuántos impostores, el tiempo por turno y las vueltas de pistas, y pulsa «Empezar partida».</li>
+      <li><strong>Mira tu rol.</strong> Cada celular muestra una tarjeta tapada, «Toca para verlo»: ahí aparece tu palabra o «IMPOSTOR». Se vuelve a tapar al tocarla otra vez.</li>
+      <li><strong>Da tu pista.</strong> Por turnos, cada jugador dice una pista sobre la palabra sin nombrarla. El anfitrión controla el turno con «Siguiente jugador» y el reloj de cada uno.</li>
+      <li><strong>Vota.</strong> Cuando todos hablaron, el anfitrión pasa a la votación y cada jugador elige a quién sacar. Si votan todos, el resultado sale solo.</li>
+      <li><strong>Repite o termina.</strong> Se va el más votado y se revela si era impostor. Con «Siguiente ronda» sigue el juego; al terminar, «Jugar otra vez» vuelve a la sala con los mismos jugadores.</li>
     </ol>
 
-    <h2>Jugar a distancia: pistas escritas y chat</h2>
-    <p>Si el grupo no está en la misma habitación ni en una videollamada, el anfitrión activa <strong>«Jugar a distancia»</strong> en los ajustes de la sala. Cambia dos cosas: en cada turno quien tiene la palabra <strong>escribe su pista</strong> (hasta 40 letras) y todos la ven en la lista, y durante la votación se abre un <strong>chat</strong> para discutir quién es el impostor. Los eliminados pueden leer pero no escribir, y el anfitrión puede silenciar a alguien. Tanto el turno como el reloj siguen en manos del anfitrión.</p>
-    <p>Una pista que contiene la palabra secreta no se bloquea: si el servidor la rechazara, el impostor podría probar palabras hasta descubrir la correcta. El grupo decide qué hacer con quien la suelta.</p>
+    <h2>Reglas del juego del impostor</h2>
+    <p>En enero de 2026, el diario La Capital describía el impostor como un juego «que se volvió viral en los últimos días» y lo resumía así: todos los jugadores reciben una palabra secreta menos el impostor, cada uno dice una sola palabra relacionada en su turno y después se vota a quién eliminar<sup><a href="#fuente-1">[1]</a></sup>. Esta versión sigue esa idea con estas reglas:</p>
+    <ul>
+      <li><strong>De 3 a 24 jugadores.</strong> Con menos de tres no hay a quién engañar.</li>
+      <li><strong>El impostor no recibe la palabra.</strong> Por defecto sí ve la categoría; el anfitrión puede ocultársela para que el juego sea más difícil.</li>
+      <li><strong>Un voto por jugador vivo.</strong> No puedes votar por ti y puedes cambiar tu voto hasta que se cierra la votación.</li>
+      <li><strong>Empate o sin votos: nadie se va</strong> y la partida sigue.</li>
+      <li><strong>Gana el grupo</strong> si no queda ningún impostor; <strong>ganan los impostores</strong> si son tantos como los demás. Con un solo impostor es lo mismo que en las versiones que le dan la victoria cuando quedan solo dos jugadores<sup><a href="#fuente-1">[1]</a></sup>.</li>
+      <li><strong>Quien se va</strong> sigue viendo la partida, pero ya no vota ni da pistas.</li>
+    </ul>
 
     <h2>Cuántos impostores poner</h2>
-    <p>El modo automático pone uno por cada seis jugadores, con un mínimo de uno. El anfitrión puede cambiarlo, pero nunca más de la mitad menos uno: con más, los impostores ganarían sin que nadie vote.</p>
+    <p>El modo automático pone uno por cada seis jugadores, con un mínimo de uno. El anfitrión puede cambiarlo, pero siempre habrá menos impostores que inocentes: si no, ganarían sin que nadie vote.</p>
     <table>
       <thead>
         <tr><th>Jugadores</th><th>Impostores (automático)</th></tr>
@@ -393,23 +379,83 @@ const opcionesImpostores = Array.from({ length: 10 }, (_, i) => i + 1);
       </tbody>
     </table>
 
-    <h2>Para un grupo de trabajo o una videollamada</h2>
-    <p>La categoría «Oficina y trabajo» trae palabras que cualquier equipo conoce, y el anfitrión puede jugar o solo moderar: si no juega, ve la palabra y los impostores y se dedica a llevar el tiempo. Con equipos grandes conviene un turno de 30 a 45 segundos y una sola vuelta de pistas; con grupos de menos de ocho, dos vueltas hacen el juego más difícil para el impostor.</p>
+    <h2>Jugar al impostor a distancia: pistas escritas y chat</h2>
+    <p>Si el grupo no está en la misma habitación ni en una videollamada, el anfitrión activa <strong>«Jugar a distancia: pistas escritas y chat»</strong> al preparar la sala. Cambia dos cosas: en cada turno, quien tiene la palabra <strong>escribe su pista</strong> (hasta 40 letras) y todos la ven en la lista, y durante la votación se abre un <strong>chat</strong> para discutir quién es el impostor. Si el turno pasa sin pista, la lista dice «Sin pista». Los eliminados pueden leer pero no escribir, y el anfitrión puede silenciar a alguien. El turno y el reloj siguen en manos del anfitrión.</p>
+    <p>Una pista que contiene la palabra secreta no se bloquea: si el servidor la rechazara, el impostor podría probar palabras hasta descubrir la correcta. El grupo decide qué hacer con quien la suelta.</p>
 
-    <h2>Qué pasa con tus datos</h2>
-    <p>Esta herramienta es la única del sitio que usa un servidor, porque necesita que los celulares se enteren unos de otros. Solo se guardan los nombres que escribas (pueden ser apodos) y el estado de la partida, mientras la sala está activa. La sala se borra sola a las seis horas sin actividad, no se guarda tu dirección IP en la partida y no hace falta cuenta.</p>
+    <h2>Ajustes recomendados según tu grupo</h2>
+    <table>
+      <thead>
+        <tr><th>Situación</th><th>Jugadores</th><th>Ajustes</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Mesa de amigos o familia</td><td>4 a 8</td><td>2 vueltas, 45 s por turno</td></tr>
+        <tr><td>Reunión de trabajo o clase</td><td>12 a 24</td><td>1 vuelta, 30 s, categoría «Oficina y trabajo»</td></tr>
+        <tr><td>Amigos en distintas ciudades</td><td>5 a 12</td><td>«Jugar a distancia», 45 s, 1 vuelta</td></tr>
+        <tr><td>Grupo de WhatsApp o cena familiar</td><td>8 a 15</td><td>Enlace por WhatsApp, categoría «Comida» o «Colombia»</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Categorías de palabras del juego del impostor</h2>
+    <p>Cada categoría trae 40 palabras de uso cotidiano que cualquiera del grupo conoce: Animales, Comida, Lugares, Oficina y trabajo, Cosas de la casa, Deportes y juegos, Profesiones, Colombia y Cine y series. También puedes dejarla en «Al azar». Las palabras no aparecen en esta página a propósito: viajan solo al servidor, que es quien reparte los roles, así que nadie puede mirar la lista antes de jugar.</p>
+
+    <h2>¿Hay app del juego del impostor? No hace falta descargar nada</h2>
+    <p>Funciona en el navegador del móvil, la tablet o el computador. No hay que instalar nada ni crear una cuenta: <a href="#imp-crear">pulsa «Crear sala»</a>, comparte el enlace y cada quien entra con su nombre.</p>
+
+    <h2>Cómo se reparten los roles</h2>
+    <p>El impostor y la palabra salen del generador de valores aleatorios criptográficamente fuertes de la Web Crypto API (<code>crypto.getRandomValues</code>)<sup><a href="#fuente-3">[3]</a></sup>, con la misma probabilidad para cada jugador. Ninguna partida depende de la anterior.</p>
+
+    <h2>Trucos para jugar mejor</h2>
+    <h3>1. Da pistas ni muy obvias ni muy raras</h3>
+    <p>Una pista que casi dice la palabra le regala la respuesta al impostor; una demasiado rara hace que sospechen de ti.</p>
+    <h3>2. Si eres el impostor, escucha antes de hablar</h3>
+    <p>Mira cómo responden los demás y busca una pista que encaje con lo que ya se dijo. En un turno tardío tienes más información que en uno temprano.</p>
+    <h3>3. En grupos grandes, 30 segundos y una vuelta</h3>
+    <p>Con 22 personas y 45 segundos por turno, una sola vuelta son unos 16 minutos. Con 30 segundos queda en 11 y nadie se aburre esperando.</p>
+    <h3>4. Pónganse de acuerdo sobre las pistas que sueltan la palabra</h3>
+    <p>El juego no las bloquea, así que decidan antes: por ejemplo, que ese turno cuente como «sin pista».</p>
+    <h3>5. Un empate es información</h3>
+    <p>Si el voto se parte y nadie se va, el grupo todavía no está seguro. Aprovecha la siguiente ronda para fijarte en quién cambió de pista o de voto.</p>
+
+    <h2>¿Impostor, moneda, ruleta o dados? Elige la herramienta correcta</h2>
+    <p>Decídelo.app tiene una herramienta para cada tipo de duda. Todas son gratis y funcionan en el móvil.</p>
+    <table>
+      <thead>
+        <tr><th>Si necesitas…</th><th>Usa</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Elegir entre dos opciones</td><td><a href="/moneda">Moneda: cara o sello</a></td></tr>
+        <tr><td>Elegir a una persona entre varias</td><td><a href="/ruleta">Ruleta de nombres</a></td></tr>
+        <tr><td>Sacar un número en un rango</td><td><a href="/numeros">Número aleatorio</a></td></tr>
+        <tr><td>Tirar dados para un juego de mesa</td><td><a href="/dados">Dados online</a></td></tr>
+        <tr><td>Dividir al grupo en equipos</td><td><a href="/equipos">Generador de equipos</a></td></tr>
+        <tr><td>Resolver un empate jugando</td><td><a href="/piedra-papel-tijera">Piedra, papel o tijera</a></td></tr>
+        <tr><td>Organizar el intercambio de regalos</td><td><a href="/amigo-secreto">Amigo secreto online</a></td></tr>
+        <tr><td>Responder una pregunta de sí o no</td><td><a href="/si-o-no">Pregunta sí o no</a></td></tr>
+        <tr><td>Medir el tiempo por turnos</td><td><a href="/temporizador">Temporizador</a></td></tr>
+      </tbody>
+    </table>
+
+    <h2>De dónde viene el juego</h2>
+    <p>El impostor se parece a otros juegos de roles ocultos. Un antecedente conocido es <em>Spyfall</em>, un juego de cartas de 2014 diseñado por Alexander Ushan y publicado por Hobby World, en el que todos los jugadores reciben la misma ubicación menos el espía, que tiene que descubrirla sin delatarse<sup><a href="#fuente-2">[2]</a></sup>. La versión de palabra secreta es la que se hizo viral en redes y la que se juega aquí.</p>
+
+    <h2>Crea tu sala y empieza a jugar</h2>
+    <p>Sube a <a href="#imp-app">la sala del juego del impostor</a>, escribe tu nombre, pulsa «Crear sala» y pasa el enlace por WhatsApp. En un minuto tienes a todo el grupo dentro, cada uno con su rol en su propio móvil.</p>
 
     <h2>Preguntas frecuentes</h2>
-    <h3>¿Puede alguien ver mi rol?</h3>
-    <p>No. El servidor envía a cada celular únicamente su rol; al impostor no le llega la palabra. La tarjeta, además, se muestra tapada hasta que la tocas.</p>
-    <h3>¿Se guardan los mensajes del chat?</h3>
-    <p>Solo mientras dura la partida: se borran al empezar otra y la sala entera desaparece tras seis horas sin actividad.</p>
-    <h3>¿Y si se me cae el internet?</h3>
-    <p>La página se reconecta sola y recuperas tu rol. Si cerraste la pestaña, abre otra vez el enlace de la sala desde el mismo navegador.</p>
-    <h3>¿Puede entrar alguien con la partida empezada?</h3>
-    <p>No: la sala se cierra a nuevos jugadores al empezar, para que nadie se cuele con un rol a medias. Entre partidas, el anfitrión puede volver a la sala de espera.</p>
-    <h3>¿Y si quiero jugar con un solo celular?</h3>
-    <p>Esta versión es para jugar cada uno en su celular. Para sortear quién empieza o ponerse en equipos mientras tanto, prueba la <a href="/ruleta">ruleta</a> o los <a href="/equipos">equipos al azar</a>.</p>
+    {faqs.map((f) => (
+      <>
+        <h3>{f.q}</h3>
+        <p>{f.a}</p>
+      </>
+    ))}
+
+    <h2>Fuentes</h2>
+    <ol>
+      <li id="fuente-1">La Capital (23 de enero de 2026). «Cómo se juega al "Impostor", el juego viral en redes sociales». <em>Diario La Capital</em>. <a href="https://www.lacapital.com.ar/informacion-general/como-se-juega-al-impostor-el-juego-viral-redes-sociales-n10241306.html/amp" rel="noopener" target="_blank">www.lacapital.com.ar</a></li>
+      <li id="fuente-2">Wikipedia. «Spyfall (card game)». <a href="https://en.wikipedia.org/wiki/Spyfall_(card_game)" rel="noopener" target="_blank">en.wikipedia.org</a></li>
+      <li id="fuente-3">MDN Web Docs. «Crypto.getRandomValues()». <a href="https://developer.mozilla.org/es/docs/Web/API/Crypto/getRandomValues" rel="noopener" target="_blank">developer.mozilla.org</a></li>
+    </ol>
   </SeoArticle>
 
   <AdSlot position="bottom" />

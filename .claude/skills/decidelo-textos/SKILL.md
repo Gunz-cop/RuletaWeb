@@ -51,6 +51,7 @@ persiguen la misma consulta, Google alterna entre ellas y ninguna sube.
 | `/piedra-papel-tijera` | Jugar piedra, papel o tijera | Romper empates en general (solo como juego) |
 | `/amigo-secreto` | Intercambio de regalos, sorteo de amigo secreto | Sorteos genéricos |
 | `/temporizador` | Temporizador, turnos con tiempo, pomodoro | — |
+| `/impostor` | Juego del impostor online, impostor con amigos, jugar al impostor, palabras del impostor, impostor gratis y sin app | «Juegos para videollamada o reuniones» (menos de 30 búsquedas al mes: va en el texto, no en el título); juegos de mesa o cartas físicos |
 
 Reglas:
 
