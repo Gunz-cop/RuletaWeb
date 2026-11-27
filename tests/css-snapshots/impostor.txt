@@ -57,6 +57,20 @@
 .imp-fila[S].is-hecho .imp-fila-nombre[S]{color:var(--text-tertiary)}
 .imp-fila[S].is-fuera .imp-fila-nombre[S]{color:var(--text-tertiary);text-decoration:line-through}
 .imp-fila[S].is-desconectado .imp-fila-nombre[S]{color:var(--text-secondary)}
+.imp-fila-pista[S]{color:var(--text-primary);overflow-wrap:anywhere;grid-column:2/-1;margin-top:-.2rem;font-size:1.05rem}
+.imp-fila-pista[S].is-vacia{color:var(--text-tertiary);font-size:.9rem}
+.imp-pista-form[S]{padding-bottom:.25rem}
+.imp-chat-log[S]{border-bottom:1px solid var(--divider-line);max-height:14rem;margin:0;padding:.5rem 0;list-style:none;overflow-y:auto}
+.imp-chat-log[S]:empty:before{content:"Aún no hay mensajes";color:var(--text-tertiary);font-size:.9rem}
+.imp-chat-msg[S]{overflow-wrap:anywhere;flex-wrap:wrap;align-items:baseline;gap:.1rem .5rem;padding:.3rem 0;display:flex}
+.imp-chat-autor[S]{color:var(--text-secondary);font-weight:600}
+.imp-chat-msg[S].is-mio .imp-chat-autor[S]{color:var(--accent-warm)}
+.imp-chat-cuerpo[S]{min-width:0;color:var(--text-primary);flex:8rem}
+.imp-chat-silenciar[S]{color:var(--text-tertiary);font-size:.8rem}
+.imp-chat-form[S]{align-items:flex-end;gap:1rem;margin-top:.75rem;display:flex}
+.imp-chat-form[S] input[S]{border:0;border-bottom:1px solid var(--divider-line);min-width:0;color:var(--text-primary);font:inherit;background:0 0;border-radius:0;flex:1;padding:.4rem 0;font-size:1rem}
+.imp-chat-form[S] input[S]:focus{border-bottom-color:var(--accent-warm);outline:none}
+.imp-chat-form[S] input[S]:disabled{color:var(--text-tertiary)}
 .imp-turno[S]{border-top:1px solid var(--divider-line);border-bottom:1px solid var(--divider-line);text-align:center;padding:1.25rem 0}
 .imp-turno[S].is-mio{border-color:var(--accent-warm)}
 .imp-turno-nombre[S]{overflow-wrap:anywhere;margin:.25rem 0 0;font-family:Outfit,sans-serif;font-size:clamp(1.8rem,7vw,2.6rem);font-weight:700;line-height:1.1}

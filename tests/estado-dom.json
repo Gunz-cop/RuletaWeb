@@ -1538,13 +1538,13 @@
   "/impostor [lobby-accion-visible-android-360x560]": {
     "relacion": {
       "ok": true,
-      "mensaje": "#imp-iniciar.bottom=539.0px con 560px visibles (holgura 21.0px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+      "mensaje": "#imp-iniciar.bottom=538.1px con 560px visibles (holgura 21.9px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
     }
   },
   "/impostor [lobby-accion-visible-iphone-se-375x548]": {
     "relacion": {
       "ok": true,
-      "mensaje": "#imp-iniciar.bottom=527.0px con 548px visibles (holgura 21.0px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+      "mensaje": "#imp-iniciar.bottom=526.1px con 548px visibles (holgura 21.9px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
     }
   },
   "/impostor [lobby-accion-visible-iphone-393x659]": {
@@ -1556,13 +1556,13 @@
   "/impostor [ronda-accion-visible-android-360x560]": {
     "relacion": {
       "ok": true,
-      "mensaje": "#imp-turno-principal.bottom=462.3px con 560px visibles (holgura 97.7px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+      "mensaje": "#imp-turno-principal.bottom=460.5px con 560px visibles (holgura 99.5px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
     }
   },
   "/impostor [ronda-accion-visible-iphone-se-375x548]": {
     "relacion": {
       "ok": true,
-      "mensaje": "#imp-turno-principal.bottom=465.2px con 548px visibles (holgura 82.8px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+      "mensaje": "#imp-turno-principal.bottom=464.2px con 548px visibles (holgura 83.8px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
     }
   },
   "/impostor [ronda-accion-visible-iphone-393x659]": {
@@ -1574,13 +1574,13 @@
   "/impostor [votacion-accion-visible-android-360x560]": {
     "relacion": {
       "ok": true,
-      "mensaje": "#imp-cerrar.bottom=540.0px con 560px visibles (holgura 20.0px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+      "mensaje": "#imp-cerrar.bottom=539.0px con 560px visibles (holgura 21.0px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
     }
   },
   "/impostor [votacion-accion-visible-iphone-se-375x548]": {
     "relacion": {
       "ok": true,
-      "mensaje": "#imp-cerrar.bottom=527.0px con 548px visibles (holgura 21.0px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+      "mensaje": "#imp-cerrar.bottom=526.1px con 548px visibles (holgura 21.9px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
     }
   },
   "/impostor [votacion-accion-visible-iphone-393x659]": {
@@ -1592,7 +1592,7 @@
   "/impostor [resultado-accion-visible-android-360x560]": {
     "relacion": {
       "ok": true,
-      "mensaje": "#imp-continuar.bottom=378.5px con 560px visibles (holgura 181.5px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+      "mensaje": "#imp-continuar.bottom=379.5px con 560px visibles (holgura 180.5px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
     }
   },
   "/impostor [resultado-accion-visible-iphone-se-375x548]": {
@@ -1604,7 +1604,60 @@
   "/impostor [resultado-accion-visible-iphone-393x659]": {
     "relacion": {
       "ok": true,
-      "mensaje": "#imp-continuar.bottom=434.0px con 659px visibles (holgura 225.0px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+      "mensaje": "#imp-continuar.bottom=434.9px con 659px visibles (holgura 224.1px, mínimo 16px). Por debajo del mínimo hay que hacer scroll para usar la herramienta: compacta el hero o el objeto en móvil, no bajes el umbral."
+    }
+  },
+  "/impostor [lobby-distancia-anfitrion]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "marcado=true, mensajes [{\"t\":\"config\",\"cambios\":{\"aDistancia\":false}}]"
+    }
+  },
+  "/impostor [pista-mi-turno]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "enfocado=imp-pista, mensajes [{\"t\":\"pista\",\"texto\":\"sabor   dulce\"}], título «Pistas», primera fila «caliente»"
+    }
+  },
+  "/impostor [pista-enviada]": {
+    "#imp-pista-form": {
+      "display": "none"
+    },
+    "#imp-pista-enviada": {
+      "display": "block",
+      "color": "rgb(139, 139, 158)"
+    },
+    "#imp-lista-turnos .imp-fila:nth-child(2) .imp-fila-pista": {
+      "color": "rgb(240, 240, 245)",
+      "fontSize": "16.8px",
+      "gridColumnStart": "2"
+    }
+  },
+  "/impostor [pistas-lista-anfitrion]": {
+    "#imp-lista-turnos .imp-fila:nth-child(2) .imp-fila-pista": {
+      "color": "rgb(90, 90, 110)",
+      "fontSize": "14.4px"
+    },
+    "#imp-lista-turnos .imp-fila:nth-child(4) .imp-fila-pista": {
+      "color": "rgb(90, 90, 110)"
+    }
+  },
+  "/impostor [votacion-chat]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "{\"msgs\":[\"Jugador 3: yo creo que es Marcela\",\"Marcela: no fui yo\"],\"pistas\":[\"caliente\",\"humo\",\"Sin pista\"],\"enviados\":[{\"t\":\"chat\",\"texto\":\"votemos a Jugador 7\"}],\"vacio\":\"\",\"silenciar\":[false,true],\"sil\":[{\"t\":\"silenciar\",\"id\":3,\"valor\":true}]}"
+    }
+  },
+  "/impostor [votacion-chat-silenciado]": {
+    "#imp-chat-texto": {
+      "color": "rgb(90, 90, 110)"
+    }
+  },
+  "/impostor [votacion-sin-distancia]": {},
+  "/impostor [sin-desborde-chat-fold-344]": {
+    "relacion": {
+      "ok": true,
+      "mensaje": "ancho de página 344px en una ventana de 344px"
     }
   }
 }
